@@ -17,7 +17,7 @@ export default function LandingPage() {
         margin: '0 auto',
         width: '100%',
       }}>
-        <Image src="/logo.png" alt="Hokmá" width={40} height={40} style={{ display: 'block' }} />
+        <Image src="/logo.svg" alt="Hokmá" width={160} height={40} style={{ display: 'block' }} unoptimized />
         <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem' }}>
           <a href="#metodologia" style={{ color: 'var(--text-secondary)', fontSize: '0.88rem', textDecoration: 'none' }}>
             Metodologia
@@ -43,7 +43,7 @@ export default function LandingPage() {
         textAlign: 'center',
       }}>
         <Image
-          src="/logo.png"
+          src="/logo.svg"
           alt="Hokmá"
           width={100}
           height={100}

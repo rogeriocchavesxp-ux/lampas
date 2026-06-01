@@ -45,15 +45,16 @@ export default function LoginPage() {
         {/* Logo */}
         <div style={{ textAlign: 'center', marginBottom: '2.5rem' }}>
           <Image
-            src="/logo.png"
+            src="/logo.svg"
             alt="Hokmá"
-            width={120}
-            height={120}
+            width={192}
+            height={48}
             style={{ margin: '0 auto 0.75rem', display: 'block' }}
             priority
+            unoptimized
           />
           <div style={{ color: 'var(--text-muted)', fontSize: '0.82rem', letterSpacing: '0.04em' }}>
-            κῆρυξ — o arauto da Palavra
+            חָכְמָה — sabedoria para a Palavra
           </div>
         </div>
 
