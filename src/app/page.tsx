@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import Image from 'next/image'
+import { HokmaLogo, HokmaMarkIcon } from '@/components/HokmaLogo'
 
 export default function LandingPage() {
   return (
@@ -17,7 +17,7 @@ export default function LandingPage() {
         margin: '0 auto',
         width: '100%',
       }}>
-        <Image src="/logo.svg" alt="Hokmá" width={160} height={40} style={{ display: 'block' }} unoptimized />
+        <HokmaLogo height={38} />
         <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem' }}>
           <a href="#metodologia" style={{ color: 'var(--text-secondary)', fontSize: '0.88rem', textDecoration: 'none' }}>
             Metodologia
@@ -42,14 +42,9 @@ export default function LandingPage() {
         padding: '6rem 2rem 5rem',
         textAlign: 'center',
       }}>
-        <Image
-          src="/logo.svg"
-          alt="Hokmá"
-          width={100}
-          height={100}
-          style={{ margin: '0 auto 1.5rem', display: 'block' }}
-          priority
-        />
+        <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '1.5rem' }}>
+          <HokmaMarkIcon size={72} />
+        </div>
         <div style={{
           display: 'inline-block',
           background: 'var(--accent-subtle)',

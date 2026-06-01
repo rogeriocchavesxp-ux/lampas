@@ -1,8 +1,8 @@
 'use client'
 
 import { useState, useMemo } from 'react'
-import Image from 'next/image'
 import { createClient } from '@/lib/supabase/client'
+import { HokmaLogo } from '@/components/HokmaLogo'
 
 export default function LoginPage() {
   const [email, setEmail] = useState('')
@@ -44,15 +44,9 @@ export default function LoginPage() {
 
         {/* Logo */}
         <div style={{ textAlign: 'center', marginBottom: '2.5rem' }}>
-          <Image
-            src="/logo.svg"
-            alt="Hokmá"
-            width={192}
-            height={48}
-            style={{ margin: '0 auto 0.75rem', display: 'block' }}
-            priority
-            unoptimized
-          />
+          <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '0.75rem' }}>
+            <HokmaLogo height={48} />
+          </div>
           <div style={{ color: 'var(--text-muted)', fontSize: '0.82rem', letterSpacing: '0.04em' }}>
             חָכְמָה — sabedoria para a Palavra
           </div>
