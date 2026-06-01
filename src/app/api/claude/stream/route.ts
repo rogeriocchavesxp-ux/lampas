@@ -1,5 +1,6 @@
 import Anthropic from '@anthropic-ai/sdk'
 import { createClient } from '@/lib/supabase/server'
+import { checkAIUsage, incrementAIUsage } from '@/lib/billing'
 import { EXEGESE_SYSTEM_PROMPT } from '@/lib/prompts/exegese-system'
 import { getSectionBySlug } from '@/lib/workspace-sections'
 import { getToolAreaBySlug } from '@/lib/tools-content'
@@ -50,6 +51,18 @@ export async function POST(req: Request) {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) {
     return Response.json({ error: 'Não autorizado' }, { status: 401 })
+  }
+
+  // ── Verificar limite de IA do plano ──
+  const usage = await checkAIUsage(user.id)
+  if (!usage.canUse) {
+    return Response.json({
+      error: 'Limite de consultas de IA atingido para este mês.',
+      used: usage.used,
+      limit: usage.limit,
+      plan: usage.plan,
+      upgrade: true,
+    }, { status: 429 })
   }
 
   const body = await req.json()
@@ -117,6 +130,9 @@ export async function POST(req: Request) {
     ],
     messages: anthropicMessages,
   })
+
+  // Incrementar uso de IA (non-blocking)
+  incrementAIUsage(user.id).catch(() => {})
 
   // Log token usage (non-blocking)
   stream.finalMessage().then(async (msg) => {
