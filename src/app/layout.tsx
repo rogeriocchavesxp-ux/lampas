@@ -2,7 +2,7 @@ import type { Metadata } from 'next'
 import './globals.css'
 
 export const metadata: Metadata = {
-  title: 'Keryx — Do texto ao púlpito',
+  title: 'Hokmá — Do texto ao púlpito',
   description: 'Sistema guiado de exegese reformada e produção homilética com IA',
 }
 

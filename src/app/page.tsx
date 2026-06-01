@@ -17,7 +17,7 @@ export default function LandingPage() {
         margin: '0 auto',
         width: '100%',
       }}>
-        <Image src="/logo.png" alt="Keryx" width={40} height={40} style={{ display: 'block' }} />
+        <Image src="/logo.png" alt="Hokmá" width={40} height={40} style={{ display: 'block' }} />
         <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem' }}>
           <a href="#metodologia" style={{ color: 'var(--text-secondary)', fontSize: '0.88rem', textDecoration: 'none' }}>
             Metodologia
@@ -44,7 +44,7 @@ export default function LandingPage() {
       }}>
         <Image
           src="/logo.png"
-          alt="Keryx"
+          alt="Hokmá"
           width={100}
           height={100}
           style={{ margin: '0 auto 1.5rem', display: 'block' }}
@@ -256,7 +256,7 @@ export default function LandingPage() {
         textAlign: 'center',
       }}>
         <div style={{ fontSize: '1rem', fontWeight: '700', color: 'var(--accent)', marginBottom: '0.4rem', letterSpacing: '-0.02em' }}>
-          Keryx
+          Hokmá
         </div>
         <p style={{ color: 'var(--text-muted)', fontSize: '0.78rem' }}>
           κῆρυξ — o arauto da Palavra · Sistema de exegese e homilética reformada

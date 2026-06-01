@@ -16,6 +16,8 @@ import { TOOL_AREAS, getToolAreaBySlug, isToolSlug } from '@/lib/tools-content'
 import SectionWorkspace from './SectionWorkspace'
 import SynthesisView from './SynthesisView'
 import OriginalTextWorkspace from './OriginalTextWorkspace'
+import TermosChaveWorkspace from './TermosChaveWorkspace'
+import EstruturaLiterariaWorkspace from './EstruturaLiterariaWorkspace'
 import ToolsWorkspace from './ToolsWorkspace'
 import CollagesWorkspace from './CollagesWorkspace'
 import SermonBuilderWorkspace from './SermonBuilderWorkspace'
@@ -293,10 +295,10 @@ export default function WorkspaceClient({ user, project, initialSections }: Prop
   aiWidthRef.current = aiWidth
 
   useEffect(() => {
-    const sw = localStorage.getItem('keryx_sidebar_w')
-    const rw = localStorage.getItem('keryx_ref_w')
-    const aw = localStorage.getItem('keryx_ai_w')
-    const sc = localStorage.getItem('keryx_sidebar_c')
+    const sw = localStorage.getItem('hokma_sidebar_w')
+    const rw = localStorage.getItem('hokma_ref_w')
+    const aw = localStorage.getItem('hokma_ai_w')
+    const sc = localStorage.getItem('hokma_sidebar_c')
     if (sw) setSidebarWidth(Number(sw))
     if (rw) setReferenceWidth(Number(rw))
     if (aw) setAiWidth(Number(aw))
@@ -311,7 +313,7 @@ export default function WorkspaceClient({ user, project, initialSections }: Prop
       setSidebarWidth(w); sidebarWidthRef.current = w
     }
     const onUp = () => {
-      localStorage.setItem('keryx_sidebar_w', String(sidebarWidthRef.current))
+      localStorage.setItem('hokma_sidebar_w', String(sidebarWidthRef.current))
       window.removeEventListener('mousemove', onMove); window.removeEventListener('mouseup', onUp)
     }
     window.addEventListener('mousemove', onMove); window.addEventListener('mouseup', onUp)
@@ -325,7 +327,7 @@ export default function WorkspaceClient({ user, project, initialSections }: Prop
       setReferenceWidth(w); referenceWidthRef.current = w
     }
     const onUp = () => {
-      localStorage.setItem('keryx_ref_w', String(referenceWidthRef.current))
+      localStorage.setItem('hokma_ref_w', String(referenceWidthRef.current))
       window.removeEventListener('mousemove', onMove); window.removeEventListener('mouseup', onUp)
     }
     window.addEventListener('mousemove', onMove); window.addEventListener('mouseup', onUp)
@@ -339,7 +341,7 @@ export default function WorkspaceClient({ user, project, initialSections }: Prop
       setAiWidth(w); aiWidthRef.current = w
     }
     const onUp = () => {
-      localStorage.setItem('keryx_ai_w', String(aiWidthRef.current))
+      localStorage.setItem('hokma_ai_w', String(aiWidthRef.current))
       window.removeEventListener('mousemove', onMove); window.removeEventListener('mouseup', onUp)
     }
     window.addEventListener('mousemove', onMove); window.addEventListener('mouseup', onUp)
@@ -544,7 +546,7 @@ export default function WorkspaceClient({ user, project, initialSections }: Prop
             /* ── Sidebar collapsed ────────────────────────────────── */
             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.15rem', paddingTop: '0.45rem' }}>
               <button
-                onClick={() => { setSidebarCollapsed(false); localStorage.setItem('keryx_sidebar_c', '0') }}
+                onClick={() => { setSidebarCollapsed(false); localStorage.setItem('hokma_sidebar_c', '0') }}
                 title="Expandir menu"
                 style={{ width: '32px', height: '26px', background: 'transparent', border: 'none', cursor: 'pointer', color: 'var(--text-muted)', fontSize: '0.95rem', borderRadius: '3px', fontFamily: 'inherit' }}
                 onMouseEnter={e => e.currentTarget.style.color = 'var(--text-secondary)'}
@@ -552,7 +554,7 @@ export default function WorkspaceClient({ user, project, initialSections }: Prop
               >›</button>
               {NAV_PHASES.map(ph => (
                 <button key={ph.id} title={ph.label}
-                  onClick={() => { setSidebarCollapsed(false); localStorage.setItem('keryx_sidebar_c', '0'); setExpandedPhases(prev => new Set([...prev, ph.id])) }}
+                  onClick={() => { setSidebarCollapsed(false); localStorage.setItem('hokma_sidebar_c', '0'); setExpandedPhases(prev => new Set([...prev, ph.id])) }}
                   style={{ width: '32px', height: '26px', background: 'transparent', border: 'none', cursor: 'pointer', color: ph.color, fontSize: '0.64rem', fontWeight: 900, borderRadius: '3px', fontFamily: 'inherit' }}
                 >{ph.roman}</button>
               ))}
@@ -562,7 +564,7 @@ export default function WorkspaceClient({ user, project, initialSections }: Prop
             <>
               <div style={{ display: 'flex', justifyContent: 'flex-end', padding: '0.3rem 0.4rem 0', flexShrink: 0 }}>
                 <button
-                  onClick={() => { setSidebarCollapsed(true); localStorage.setItem('keryx_sidebar_c', '1') }}
+                  onClick={() => { setSidebarCollapsed(true); localStorage.setItem('hokma_sidebar_c', '1') }}
                   title="Recolher menu"
                   style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: 'var(--text-muted)', fontSize: '0.82rem', padding: '0.1rem 0.3rem', borderRadius: '3px', fontFamily: 'inherit' }}
                   onMouseEnter={e => e.currentTarget.style.color = 'var(--text-secondary)'}
@@ -913,6 +915,26 @@ export default function WorkspaceClient({ user, project, initialSections }: Prop
                 project={project}
                 userId={user.id}
                 existingSection={activeSection}
+                onUpdate={handleSectionUpdate}
+                onAskAI={prompt => { setAiPrompt(prompt); setAiOpen(true) }}
+              />
+            ) : activeSlug === 'termos_chave' ? (
+              <TermosChaveWorkspace
+                key={activeSlug}
+                project={project}
+                userId={user.id}
+                existingSection={activeSection}
+                onUpdate={handleSectionUpdate}
+                onAskAI={prompt => { setAiPrompt(prompt); setAiOpen(true) }}
+              />
+            ) : activeSlug === 'estrutura_literaria' ? (
+              <EstruturaLiterariaWorkspace
+                key={activeSlug}
+                sectionDef={activeDef!}
+                project={project}
+                userId={user.id}
+                existingSection={activeSection}
+                savedSections={sections}
                 onUpdate={handleSectionUpdate}
                 onAskAI={prompt => { setAiPrompt(prompt); setAiOpen(true) }}
               />

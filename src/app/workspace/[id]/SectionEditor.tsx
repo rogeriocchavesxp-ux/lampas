@@ -207,7 +207,7 @@ export default function SectionEditor({
           color: 'var(--text-muted)',
           fontSize: '0.85rem',
         }}>
-          Use "Gerar com IA" para que o Keryx produza o conteúdo desta seção,<br />
+          Use "Gerar com IA" para que o Hokmá produza o conteúdo desta seção,<br />
           ou "Perguntar à IA" para fazer perguntas específicas.
         </div>
       )}

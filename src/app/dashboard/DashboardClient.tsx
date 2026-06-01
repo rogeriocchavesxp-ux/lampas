@@ -100,7 +100,7 @@ export default function DashboardClient({ user, projects, profile }: Props) {
         justifyContent: 'space-between',
         background: 'var(--surface)',
       }}>
-        <Image src="/logo.png" alt="Keryx" width={36} height={36} style={{ display: 'block' }} />
+        <Image src="/logo.png" alt="Hokmá" width={36} height={36} style={{ display: 'block' }} />
         <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
           <span style={{ color: 'var(--text-muted)', fontSize: '0.82rem' }}>{user.email}</span>
           <button onClick={handleSignOut} style={{

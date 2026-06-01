@@ -57,9 +57,10 @@ export async function POST(req: Request) {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return Response.json({ error: 'Não autorizado' }, { status: 401 })
 
-  const { sectionSlug, cardId, project } = await req.json() as {
+  const { sectionSlug, cardId, cardIds, project } = await req.json() as {
     sectionSlug: string
     cardId?: string
+    cardIds?: string[]
     project: ProjectContext
   }
 
@@ -68,6 +69,8 @@ export async function POST(req: Request) {
 
   const cardsToGenerate = cardId
     ? sectionDef.cards.filter(c => c.id === cardId)
+    : cardIds
+    ? sectionDef.cards.filter(c => cardIds.includes(c.id))
     : sectionDef.cards
 
   if (cardsToGenerate.length === 0) {
@@ -112,9 +115,10 @@ Campos a gerar:
 ${fieldDescriptions}
 
 INSTRUÇÕES CRÍTICAS:
-- Retorne APENAS JSON válido, sem markdown, sem explicações, sem código
-- Cada valor deve ser um parágrafo acadêmico completo em português do Brasil
-- Mínimo de 3-5 frases por campo
+- Retorne APENAS JSON válido, sem explicações, sem texto fora do JSON
+- Cada valor deve ser texto em markdown bem estruturado, em português do Brasil
+- Use ### para títulos de termos, **negrito** para labels de campos, tabelas para dados comparativos, - para listas
+- Newlines dentro dos valores JSON devem ser escapados como \\n (JSON padrão)
 - Use rigor exegético reformado
 - Adapte tom, vocabulário e organização ao modo ministerial indicado
 - Estrutura exata esperada:
@@ -127,7 +131,7 @@ ${jsonKeys}
     const response = await anthropic.messages.create({
       model: 'claude-sonnet-4-6',
       max_tokens: 4000,
-      system: EXEGESE_SYSTEM_PROMPT + '\n\nIMPORTANTE: Quando solicitado a gerar JSON estruturado, retorne SOMENTE o JSON válido, sem blocos de código, sem markdown, sem texto fora do JSON.',
+      system: EXEGESE_SYSTEM_PROMPT + '\n\nIMPORTANTE: Quando solicitado a gerar JSON estruturado, retorne SOMENTE o JSON válido, sem blocos de código markdown envolvendo o JSON, sem texto fora do JSON. Os valores dentro do JSON podem e devem conter markdown (### títulos, **negrito**, tabelas, listas) para estruturar o conteúdo exegeticamente.',
       messages: [{ role: 'user', content: userPrompt }],
     })
 

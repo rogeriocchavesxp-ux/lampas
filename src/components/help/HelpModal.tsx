@@ -38,7 +38,7 @@ const paragraphStyle: CSSProperties = {
 
 function buildPrompt(entry: HelpEntry): string {
   return [
-    `Explique pedagogicamente como preencher o campo "${entry.titulo}" no workspace Keryx.`,
+    `Explique pedagogicamente como preencher o campo "${entry.titulo}" no workspace Hokmá.`,
     'Contexto: exegese bíblica e homilética reformada.',
     'Inclua objetivo, passos práticos, perguntas de diagnóstico, erros comuns e um exemplo bíblico específico.',
   ].join(' ')

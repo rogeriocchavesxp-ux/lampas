@@ -46,7 +46,7 @@ export default function LoginPage() {
         <div style={{ textAlign: 'center', marginBottom: '2.5rem' }}>
           <Image
             src="/logo.png"
-            alt="Keryx"
+            alt="Hokmá"
             width={120}
             height={120}
             style={{ margin: '0 auto 0.75rem', display: 'block' }}
@@ -88,7 +88,7 @@ export default function LoginPage() {
             </div>
           ) : (
             <>
-              <h2 style={{ marginBottom: '0.25rem' }}>Entrar no Keryx</h2>
+              <h2 style={{ marginBottom: '0.25rem' }}>Entrar no Hokmá</h2>
               <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem', marginBottom: '1.5rem' }}>
                 Insira seu email para receber o link de acesso
               </p>

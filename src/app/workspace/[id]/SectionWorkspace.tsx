@@ -5,6 +5,14 @@ import { createClient } from '@/lib/supabase/client'
 import type { Project, Section } from '@/types/database'
 import type { SectionDef } from '@/lib/workspace-sections'
 import HelpIcon from '@/components/help/HelpIcon'
+import MarkdownRenderer from '@/components/MarkdownRenderer'
+
+const CARD_COLORS: Record<string, string> = {
+  verbos_principais:    '#c9955a',
+  substantivos_casos:   'var(--ai)',
+  estrutura_sintatica:  '#9b7ec8',
+  particulas_conectivos: 'var(--success)',
+}
 
 type CardState = 'idle' | 'generating' | 'saving' | 'saved'
 
@@ -66,6 +74,7 @@ export default function SectionWorkspace({
 
   const [cardContent, setCardContent] = useState<Record<string, string>>(loadCards)
   const [expandedCards, setExpandedCards] = useState<Set<string>>(() => new Set([sectionDef.cards[0]?.id]))
+  const [editingCards, setEditingCards] = useState<Set<string>>(() => new Set())
   const [questionsOpen, setQuestionsOpen] = useState(false)
   const [saving, setSaving] = useState(false)
   const [savedAt, setSavedAt] = useState<Date | null>(null)
@@ -118,6 +127,14 @@ export default function SectionWorkspace({
     })
   }
 
+  function toggleEdit(cardId: string) {
+    setEditingCards(prev => {
+      const next = new Set(prev)
+      if (next.has(cardId)) next.delete(cardId); else next.add(cardId)
+      return next
+    })
+  }
+
   async function generateCard(cardId: string) {
     setCardStates(prev => ({ ...prev, [cardId]: 'generating' }))
     setExpandedCards(prev => new Set([...prev, cardId]))
@@ -137,6 +154,7 @@ export default function SectionWorkspace({
       setCardStates(prev => ({ ...prev, [cardId]: 'saving' }))
       await performSave(next)
       setCardStates(prev => ({ ...prev, [cardId]: 'saved' }))
+      setEditingCards(prev => { const next = new Set(prev); next.delete(cardId); return next })
       setTimeout(() => setCardStates(prev => ({ ...prev, [cardId]: 'idle' })), 2000)
     } catch {
       setCardStates(prev => ({ ...prev, [cardId]: 'idle' }))
@@ -168,6 +186,7 @@ export default function SectionWorkspace({
       const allSaved: Record<string, CardState> = {}
       sectionDef.cards.forEach(c => { allSaved[c.id] = 'saved' })
       setCardStates(allSaved)
+      setEditingCards(new Set())
       setTimeout(() => setCardStates({}), 2500)
     } catch {
       setCardStates({})
@@ -341,10 +360,12 @@ export default function SectionWorkspace({
           const dc = dotColor(content)
           const state = cardStates[card.id] ?? 'idle'
           const isWorking = state === 'generating' || state === 'saving'
-          const preview = !expanded && content.trim()
+          const hasContent = content.trim().length > 0
+          const isEditing = editingCards.has(card.id) || !hasContent
+          const preview = !expanded && hasContent
             ? content.trim().slice(0, 130) + (content.trim().length > 130 ? '…' : '')
             : ''
-
+          const cardColor = CARD_COLORS[card.id] ?? moduleColor
           const isLast = idx === sectionDef.cards.length - 1
 
           return (
@@ -367,15 +388,16 @@ export default function SectionWorkspace({
               >
                 <span style={{
                   width: '5px', height: '5px', borderRadius: '50%', flexShrink: 0,
-                  background: dc,
-                  boxShadow: dc !== 'var(--border)' ? `0 0 4px ${dc}50` : 'none',
+                  background: dc === 'var(--border)' ? 'var(--border)' : cardColor,
+                  boxShadow: dc !== 'var(--border)' ? `0 0 4px ${cardColor}55` : 'none',
                 }} />
 
                 <span style={{
                   fontSize: '0.72rem', fontWeight: '700',
                   letterSpacing: '0.06em', textTransform: 'uppercase',
-                  color: expanded ? 'var(--text-primary)' : 'var(--text-secondary)',
+                  color: expanded ? cardColor : 'var(--text-secondary)',
                   flex: 1,
+                  transition: 'color 0.15s',
                 }}>
                   {card.title}
                 </span>
@@ -387,14 +409,14 @@ export default function SectionWorkspace({
                   disabled={isWorking || generatingAll}
                   style={{
                     background: 'transparent', border: 'none',
-                    color: state === 'saved' ? 'var(--success)' : isWorking ? 'var(--text-muted)' : 'var(--ai)',
+                    color: state === 'saved' ? 'var(--success)' : isWorking ? 'var(--text-muted)' : cardColor,
                     cursor: isWorking || generatingAll ? 'wait' : 'pointer',
                     fontFamily: 'inherit', fontSize: '0.71rem', fontWeight: '600',
                     padding: '0', letterSpacing: '0.01em', whiteSpace: 'nowrap',
                     transition: 'color 0.15s',
                   }}
                   onMouseEnter={e => { if (!isWorking && state !== 'saved') e.currentTarget.style.color = 'var(--text-primary)' }}
-                  onMouseLeave={e => { if (!isWorking && state !== 'saved') e.currentTarget.style.color = 'var(--ai)' }}
+                  onMouseLeave={e => { if (!isWorking && state !== 'saved') e.currentTarget.style.color = cardColor }}
                 >
                   {state === 'generating' ? 'Gerando…'
                     : state === 'saving' ? 'Salvando…'
@@ -421,33 +443,67 @@ export default function SectionWorkspace({
                 </p>
               )}
 
-              {/* Expanded textarea */}
+              {/* Expanded content — view or edit */}
               {expanded && (
                 <>
-                  <textarea
-                    value={content}
-                    onChange={e => scheduleAutosave(card.id, e.target.value)}
-                    placeholder={card.placeholder}
-                    rows={6}
-                    style={{
+                  {isEditing ? (
+                    <textarea
+                      value={content}
+                      onChange={e => scheduleAutosave(card.id, e.target.value)}
+                      placeholder={card.placeholder}
+                      rows={8}
+                      style={{
+                        width: '100%',
+                        background: 'var(--surface)',
+                        border: '1px solid var(--border-subtle)',
+                        borderRadius: '6px',
+                        padding: '0.9rem 1rem',
+                        color: 'var(--text-primary)',
+                        fontSize: '0.9rem', lineHeight: '1.78',
+                        resize: 'vertical', outline: 'none',
+                        fontFamily: 'var(--font-serif)',
+                        boxSizing: 'border-box',
+                        caretColor: cardColor,
+                      }}
+                      onFocus={e => e.target.style.borderColor = cardColor + '60'}
+                      onBlur={e => e.target.style.borderColor = 'var(--border-subtle)'}
+                    />
+                  ) : (
+                    <div style={{
                       width: '100%',
                       background: 'var(--surface)',
                       border: '1px solid var(--border-subtle)',
                       borderRadius: '6px',
-                      padding: '0.9rem 1rem',
-                      color: 'var(--text-primary)',
-                      fontSize: '0.92rem', lineHeight: '1.78',
-                      resize: 'vertical', outline: 'none',
-                      fontFamily: 'var(--font-serif)',
+                      padding: '1rem 1.1rem',
                       boxSizing: 'border-box',
-                      caretColor: moduleColor,
-                    }}
-                    onFocus={e => e.target.style.borderColor = moduleColor + '60'}
-                    onBlur={e => e.target.style.borderColor = 'var(--border-subtle)'}
-                  />
-                  <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '0.3rem' }}>
+                      minHeight: '5rem',
+                    }}>
+                      <MarkdownRenderer content={content} moduleColor={cardColor} />
+                    </div>
+                  )}
+
+                  <div style={{
+                    display: 'flex', justifyContent: 'space-between',
+                    alignItems: 'center', marginTop: '0.4rem',
+                  }}>
+                    {hasContent && (
+                      <button
+                        onClick={() => toggleEdit(card.id)}
+                        style={{
+                          background: 'transparent', border: 'none',
+                          cursor: 'pointer', fontFamily: 'inherit',
+                          fontSize: '0.69rem', color: 'var(--text-muted)',
+                          padding: 0,
+                          transition: 'color 0.12s',
+                        }}
+                        onMouseEnter={e => { e.currentTarget.style.color = 'var(--text-secondary)' }}
+                        onMouseLeave={e => { e.currentTarget.style.color = 'var(--text-muted)' }}
+                      >
+                        {isEditing ? '← Visualizar' : 'Editar'}
+                      </button>
+                    )}
                     <span style={{
-                      fontSize: '0.67rem',
+                      fontSize: '0.67rem', marginLeft: 'auto',
                       color: fieldStatus(content) === 'empty' ? 'transparent' : fieldStatus(content) === 'draft' ? 'var(--accent)' : 'var(--success)',
                       opacity: 0.75,
                     }}>

@@ -127,8 +127,8 @@ export default function SynthesisView({
         @media print {
           @page { size: A4; margin: 1.5cm 2cm; }
           body * { visibility: hidden; }
-          #keryx-synthesis-doc, #keryx-synthesis-doc * { visibility: visible; }
-          #keryx-synthesis-doc {
+          #hokma-synthesis-doc, #hokma-synthesis-doc * { visibility: visible; }
+          #hokma-synthesis-doc {
             position: fixed;
             top: 0; left: 0;
             width: 100%;
@@ -164,7 +164,7 @@ export default function SynthesisView({
       </div>
 
       {/* ── Document sheet ───────────────────────────────────────────────── */}
-      <div id="keryx-synthesis-doc" style={{
+      <div id="hokma-synthesis-doc" style={{
         maxWidth: '760px',
         margin: '0 auto',
         background: '#ffffff',
@@ -185,7 +185,7 @@ export default function SynthesisView({
             color: '#888',
             marginBottom: '0.75rem',
           }}>
-            Keryx — Estudo Exegético
+            Hokmá — Estudo Exegético
           </div>
 
           <h1 style={{

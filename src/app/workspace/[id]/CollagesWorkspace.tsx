@@ -58,35 +58,61 @@ export default function CollagesWorkspace({ project, userId, existingSection, on
   const [saving, setSaving] = useState(false)
   const [savedAt, setSavedAt] = useState<Date | null>(null)
   const [readingItem, setReadingItem] = useState<CollageItem | null>(null)
-  const [isFullscreen, setIsFullscreen] = useState(false)
+  const [modalMode, setModalMode] = useState<'read' | 'edit'>('read')
+  const [modalDraft, setModalDraft] = useState<CollageDraft | null>(null)
   const dragRef = useRef<{ id: string; offsetX: number; offsetY: number } | null>(null)
 
   useEffect(() => {
     if (!readingItem) return
+    setModalMode('read')
+    setModalDraft(null)
     function onKey(e: KeyboardEvent) { if (e.key === 'Escape') setReadingItem(null) }
     document.addEventListener('keydown', onKey)
     return () => document.removeEventListener('keydown', onKey)
   }, [readingItem])
 
-  useEffect(() => {
-    function onFsChange() { setIsFullscreen(!!document.fullscreenElement) }
-    document.addEventListener('fullscreenchange', onFsChange)
-    return () => document.removeEventListener('fullscreenchange', onFsChange)
-  }, [])
+  function openModalEdit() {
+    if (!readingItem) return
+    setModalDraft({
+      type: readingItem.type,
+      title: readingItem.title,
+      content: readingItem.content,
+      author: readingItem.author,
+      work: readingItem.work,
+      page: readingItem.page,
+      tags: readingItem.tags.join(', '),
+      category: readingItem.category,
+      linkedTo: readingItem.linkedTo,
+    })
+    setModalMode('edit')
+  }
+
+  function saveModalEdit() {
+    if (!readingItem || !modalDraft) return
+    const changes: Partial<CollageItem> = {
+      type: modalDraft.type,
+      title: modalDraft.title.trim() || itemTypeLabel(modalDraft.type),
+      content: modalDraft.content.trim(),
+      author: modalDraft.author.trim(),
+      work: modalDraft.work.trim(),
+      page: modalDraft.page.trim(),
+      tags: parseTags(modalDraft.tags),
+      category: modalDraft.category,
+      linkedTo: modalDraft.linkedTo.trim(),
+    }
+    const nextItems = items.map(item => item.id === readingItem.id ? { ...item, ...changes } : item)
+    updateItems(nextItems)
+    const updated = { ...readingItem, ...changes }
+    setReadingItem(updated)
+    setModalMode('read')
+    setModalDraft(null)
+  }
 
   function handlePrint() {
-    const toolbar = document.getElementById('keryx-reading-toolbar')
+    const toolbar = document.getElementById('hokma-reading-toolbar')
     if (toolbar) toolbar.style.display = 'none'
     window.print()
     requestAnimationFrame(() => { if (toolbar) toolbar.style.display = '' })
-  }
-
-  function toggleFullscreen() {
-    if (!document.fullscreenElement) {
-      document.documentElement.requestFullscreen().catch(() => {})
-    } else {
-      document.exitFullscreen().catch(() => {})
-    }
   }
 
   async function save(nextItems: CollageItem[]) {
@@ -143,7 +169,7 @@ export default function CollagesWorkspace({ project, userId, existingSection, on
 
   function askAI(prompt: string, item?: CollageItem) {
     onAskAI([
-      'Você é assistente de pesquisa e organização das Colagens do Keryx.',
+      'Você é assistente de pesquisa e organização das Colagens do Hokmá.',
       `Projeto atual: ${projectRef} (${project.original_language}).`,
       item ? `Colagem selecionada: ${itemTypeLabel(item.type)} — ${item.title}\n${item.content}` : '',
       '',
@@ -328,152 +354,266 @@ export default function CollagesWorkspace({ project, userId, existingSection, on
       </div>
 
       {readingItem && (
-        <div style={{
-          position: 'fixed', inset: 0, zIndex: 200,
-          background: '#ffffff',
-          overflowY: 'auto',
-          fontFamily: '"Times New Roman", Times, serif',
-        }}>
-          {/* ── Toolbar ── */}
-          <div
-            id="keryx-reading-toolbar"
-            style={{
-              position: 'sticky', top: 0, zIndex: 10,
-              background: '#f5f3ee',
-              borderBottom: '1px solid #ddd8d0',
-              padding: '0.5rem 2rem',
-              display: 'flex', alignItems: 'center', gap: '0.25rem',
-              fontFamily: 'system-ui, -apple-system, sans-serif',
-            }}
-          >
-            <button
-              onClick={() => setReadingItem(null)}
-              style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: '#555', fontSize: '0.78rem', padding: '0.3rem 0.6rem', borderRadius: '4px', fontFamily: 'inherit' }}
-              onMouseEnter={e => e.currentTarget.style.background = '#e8e4dc'}
-              onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
-            >← Voltar</button>
+        /* ── Overlay escuro ── */
+        <div
+          onClick={e => { if (e.target === e.currentTarget) setReadingItem(null) }}
+          style={{
+            position: 'fixed', inset: 0, zIndex: 200,
+            background: 'rgba(10,12,20,0.78)',
+            backdropFilter: 'blur(3px)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            padding: '1.5rem',
+          }}
+        >
+          {/* ── Modal box ── */}
+          <div style={{
+            width: 'min(850px, 90vw)',
+            maxHeight: '85vh',
+            background: '#ffffff',
+            borderRadius: '10px',
+            boxShadow: '0 32px 96px rgba(0,0,0,0.60), 0 0 0 1px rgba(255,255,255,0.06)',
+            display: 'flex',
+            flexDirection: 'column',
+            overflow: 'hidden',
+            fontFamily: '"Times New Roman", Times, serif',
+          }}>
 
-            <div style={{ width: '1px', height: '14px', background: '#ddd', margin: '0 0.4rem' }} />
+            {/* ── Barra superior ── */}
+            <div
+              id="hokma-reading-toolbar"
+              style={{
+                display: 'flex', alignItems: 'center', gap: '0.2rem',
+                padding: '0.5rem 0.9rem',
+                background: '#f5f3ee',
+                borderBottom: '1px solid #ddd8d0',
+                flexShrink: 0,
+                fontFamily: 'system-ui, -apple-system, sans-serif',
+              }}
+            >
+              <span style={{
+                fontSize: '0.78rem', color: '#444', fontWeight: 600,
+                flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+                marginRight: '0.5rem',
+              }}>
+                {readingItem.title}
+              </span>
 
-            <span style={{ fontSize: '0.72rem', color: '#888', flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-              {readingItem.title}
-            </span>
-
-            {[
-              { label: 'Editar', action: () => setReadingItem(null) },
-              { label: 'Imprimir', action: handlePrint },
-              { label: 'Gerar PDF', action: handlePrint },
-              { label: isFullscreen ? 'Sair da tela cheia' : 'Tela cheia', action: toggleFullscreen },
-            ].map(btn => (
+              {/* Editar / Visualizar */}
               <button
-                key={btn.label}
-                onClick={btn.action}
-                style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: '#555', fontSize: '0.76rem', padding: '0.3rem 0.65rem', borderRadius: '4px', fontFamily: 'inherit', whiteSpace: 'nowrap' }}
+                onClick={() => modalMode === 'read' ? openModalEdit() : setModalMode('read')}
+                style={{
+                  background: modalMode === 'edit' ? '#e8e4dc' : 'transparent',
+                  border: 'none', cursor: 'pointer', color: '#444',
+                  fontSize: '0.75rem', padding: '0.3rem 0.65rem',
+                  borderRadius: '4px', fontFamily: 'inherit', whiteSpace: 'nowrap',
+                }}
+                onMouseEnter={e => e.currentTarget.style.background = '#e8e4dc'}
+                onMouseLeave={e => e.currentTarget.style.background = modalMode === 'edit' ? '#e8e4dc' : 'transparent'}
+              >
+                {modalMode === 'read' ? 'Editar' : '← Visualizar'}
+              </button>
+
+              <div style={{ width: '1px', height: '13px', background: '#ddd', margin: '0 0.15rem' }} />
+
+              <button
+                onClick={handlePrint}
+                style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: '#666', fontSize: '0.75rem', padding: '0.3rem 0.55rem', borderRadius: '4px', fontFamily: 'inherit' }}
                 onMouseEnter={e => e.currentTarget.style.background = '#e8e4dc'}
                 onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
-              >{btn.label}</button>
-            ))}
-          </div>
+              >Imprimir</button>
 
-          {/* ── Conteúdo ── */}
-          <div style={{ maxWidth: '850px', margin: '0 auto', padding: '3.5rem 3rem 8rem' }}>
+              <button
+                onClick={handlePrint}
+                style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: '#666', fontSize: '0.75rem', padding: '0.3rem 0.55rem', borderRadius: '4px', fontFamily: 'inherit' }}
+                onMouseEnter={e => e.currentTarget.style.background = '#e8e4dc'}
+                onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+              >PDF</button>
 
-            {/* Tipo + categoria */}
-            <div style={{ fontSize: '0.68rem', color: '#999', textTransform: 'uppercase', letterSpacing: '0.12em', marginBottom: '0.75rem', fontFamily: 'system-ui, sans-serif' }}>
-              {itemTypeLabel(readingItem.type)}{readingItem.category ? ` · ${readingItem.category}` : ''}
+              <div style={{ width: '1px', height: '13px', background: '#ddd', margin: '0 0.15rem' }} />
+
+              <button
+                onClick={() => setReadingItem(null)}
+                style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: '#888', fontSize: '1rem', padding: '0.2rem 0.45rem', borderRadius: '4px', lineHeight: 1 }}
+                onMouseEnter={e => e.currentTarget.style.background = '#e8e4dc'}
+                onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+                title="Fechar (Esc)"
+              >✕</button>
             </div>
 
-            {/* Título */}
-            <h1 style={{ fontSize: '1.65rem', color: '#000000', lineHeight: 1.3, margin: '0 0 1.75rem', fontWeight: 700, fontFamily: '"Times New Roman", Times, serif', letterSpacing: 0 }}>
-              {readingItem.title}
-            </h1>
+            {/* ── Conteúdo com scroll ── */}
+            <div style={{ flex: 1, overflowY: 'auto' }}>
 
-            {/* Cabeçalho bibliográfico */}
-            {(readingItem.author || readingItem.work || readingItem.page || readingItem.linkedTo) && (
-              <div style={{
-                marginBottom: '2.5rem',
-                paddingBottom: '1.5rem',
-                borderBottom: '1px solid #e0ddd8',
-                color: '#333',
-                fontSize: '12pt',
-                lineHeight: 1.6,
-              }}>
-                {readingItem.author && (
-                  <div style={{ fontWeight: 700, color: '#000' }}>{readingItem.author}</div>
-                )}
-                {readingItem.work && (
-                  <div style={{ fontStyle: 'italic', color: '#333' }}>{readingItem.work}</div>
-                )}
-                {readingItem.page && (
-                  <div style={{ color: '#555' }}>p. {readingItem.page}</div>
-                )}
-                {readingItem.linkedTo && (
-                  <div style={{ marginTop: '0.35rem', color: '#888', fontSize: '0.8rem', fontFamily: 'system-ui, sans-serif' }}>
-                    Vinculado a: {readingItem.linkedTo}
+              {/* ─── MODO LEITURA ─── */}
+              {modalMode === 'read' && (
+                <div style={{ padding: '2.5rem 3rem 3.5rem', fontFamily: '"Times New Roman", Times, serif' }}>
+
+                  <div style={{ fontSize: '0.65rem', color: '#999', textTransform: 'uppercase', letterSpacing: '0.12em', marginBottom: '0.6rem', fontFamily: 'system-ui, sans-serif' }}>
+                    {itemTypeLabel(readingItem.type)}{readingItem.category ? ` · ${readingItem.category}` : ''}
                   </div>
-                )}
-              </div>
-            )}
 
-            {/* Corpo — citação */}
-            {readingItem.type === 'citacao' ? (
-              <blockquote style={{
-                margin: '0 0 2.5rem',
-                padding: '1.25rem 1.75rem',
-                borderLeft: '3px solid #ccc',
-                background: '#faf9f6',
-                color: '#000000',
-                fontSize: '12pt',
-                lineHeight: 1.6,
-                fontStyle: 'italic',
-              }}>
-                {readingItem.content.split('\n\n').map((para, i) => (
-                  <p key={i} style={{ margin: i === 0 ? 0 : '1em 0 0' }}>
-                    {para.split('\n').map((line, j) => (
-                      <span key={j}>{j > 0 && <br />}{line}</span>
-                    ))}
-                  </p>
-                ))}
-              </blockquote>
-            ) : (
-              /* Corpo — demais tipos */
-              <div style={{ color: '#000000', fontSize: '12pt', lineHeight: 1.6, marginBottom: '2.5rem' }}>
-                {readingItem.content.split('\n\n').map((para, i) => (
-                  <p key={i} style={{ margin: i === 0 ? 0 : '1.1em 0 0', textIndent: i > 0 ? '1.5em' : 0 }}>
-                    {para.split('\n').map((line, j) => (
-                      <span key={j}>{j > 0 && <br />}{line}</span>
-                    ))}
-                  </p>
-                ))}
-              </div>
-            )}
+                  <h1 style={{ fontSize: '1.55rem', color: '#000', lineHeight: 1.3, margin: '0 0 1.5rem', fontWeight: 700, letterSpacing: 0 }}>
+                    {readingItem.title}
+                  </h1>
 
-            {/* Tags */}
-            {readingItem.tags.length > 0 && (
-              <div style={{ marginTop: '2.5rem', paddingTop: '1.25rem', borderTop: '1px solid #e0ddd8' }}>
-                <div style={{ fontSize: '0.66rem', color: '#aaa', textTransform: 'uppercase', letterSpacing: '0.12em', marginBottom: '0.5rem', fontFamily: 'system-ui, sans-serif' }}>
-                  Palavras-chave
+                  {(readingItem.author || readingItem.work || readingItem.page || readingItem.linkedTo) && (
+                    <div style={{ marginBottom: '2rem', paddingBottom: '1.25rem', borderBottom: '1px solid #e0ddd8', color: '#333', fontSize: '12pt', lineHeight: 1.6 }}>
+                      {readingItem.author && <div style={{ fontWeight: 700, color: '#000' }}>{readingItem.author}</div>}
+                      {readingItem.work && <div style={{ fontStyle: 'italic' }}>{readingItem.work}</div>}
+                      {readingItem.page && <div style={{ color: '#555' }}>p. {readingItem.page}</div>}
+                      {readingItem.linkedTo && (
+                        <div style={{ marginTop: '0.3rem', color: '#888', fontSize: '0.78rem', fontFamily: 'system-ui, sans-serif' }}>
+                          Vinculado a: {readingItem.linkedTo}
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  {readingItem.type === 'citacao' ? (
+                    <blockquote style={{ margin: '0 0 2rem', padding: '1.1rem 1.5rem', borderLeft: '3px solid #ccc', background: '#faf9f6', color: '#000', fontSize: '12pt', lineHeight: 1.6, fontStyle: 'italic' }}>
+                      {readingItem.content.split('\n\n').map((para, i) => (
+                        <p key={i} style={{ margin: i === 0 ? 0 : '1em 0 0' }}>
+                          {para.split('\n').map((line, j) => <span key={j}>{j > 0 && <br />}{line}</span>)}
+                        </p>
+                      ))}
+                    </blockquote>
+                  ) : (
+                    <div style={{ color: '#000', fontSize: '12pt', lineHeight: 1.6, marginBottom: '2rem' }}>
+                      {readingItem.content.split('\n\n').map((para, i) => (
+                        <p key={i} style={{ margin: i === 0 ? 0 : '1.1em 0 0', textIndent: i > 0 ? '1.5em' : 0 }}>
+                          {para.split('\n').map((line, j) => <span key={j}>{j > 0 && <br />}{line}</span>)}
+                        </p>
+                      ))}
+                    </div>
+                  )}
+
+                  {readingItem.tags.length > 0 && (
+                    <div style={{ marginTop: '2rem', paddingTop: '1rem', borderTop: '1px solid #e0ddd8' }}>
+                      <div style={{ fontSize: '0.63rem', color: '#aaa', textTransform: 'uppercase', letterSpacing: '0.12em', marginBottom: '0.4rem', fontFamily: 'system-ui, sans-serif' }}>
+                        Palavras-chave
+                      </div>
+                      <div style={{ fontSize: '0.88rem', color: '#555', fontFamily: 'system-ui, sans-serif', lineHeight: 1.8 }}>
+                        {readingItem.tags.join('  ·  ')}
+                      </div>
+                    </div>
+                  )}
+
+                  <div style={{ marginTop: '2rem', paddingTop: '1.25rem', borderTop: '1px solid #e0ddd8', display: 'flex', gap: '0.65rem', flexWrap: 'wrap', fontFamily: 'system-ui, sans-serif' }}>
+                    <button
+                      onClick={() => { askAI('Relacione esta colagem com a passagem atual, indicando conexões exegéticas, teológicas e homiléticas.', readingItem); setReadingItem(null) }}
+                      style={{ background: 'transparent', border: `1px solid ${colorFor(readingItem.type)}`, color: colorFor(readingItem.type), borderRadius: '6px', cursor: 'pointer', fontFamily: 'inherit', fontSize: '0.75rem', fontWeight: 700, padding: '0.38rem 0.8rem' }}
+                    >
+                      Relacionar com IA
+                    </button>
+                    <button
+                      onClick={() => { askAI('Sugira tags, categoria, vínculos e possíveis agrupamentos para esta colagem.', readingItem); setReadingItem(null) }}
+                      style={{ background: 'transparent', border: '1px solid #ccc', color: '#666', borderRadius: '6px', cursor: 'pointer', fontFamily: 'inherit', fontSize: '0.75rem', padding: '0.38rem 0.8rem' }}
+                    >
+                      Organizar
+                    </button>
+                  </div>
                 </div>
-                <div style={{ fontSize: '0.88rem', color: '#555', fontFamily: 'system-ui, sans-serif', lineHeight: 1.8 }}>
-                  {readingItem.tags.join('  ·  ')}
-                </div>
-              </div>
-            )}
+              )}
 
-            {/* Ações IA */}
-            <div style={{ marginTop: '3rem', paddingTop: '1.5rem', borderTop: '1px solid #e0ddd8', display: 'flex', gap: '0.75rem', flexWrap: 'wrap', fontFamily: 'system-ui, sans-serif' }}>
-              <button
-                onClick={() => { askAI('Relacione esta colagem com a passagem atual, indicando conexões exegéticas, teológicas e homiléticas.', readingItem); setReadingItem(null) }}
-                style={{ background: 'transparent', border: `1px solid ${colorFor(readingItem.type)}`, color: colorFor(readingItem.type), borderRadius: '6px', cursor: 'pointer', fontFamily: 'inherit', fontSize: '0.76rem', fontWeight: 700, padding: '0.4rem 0.85rem' }}
-              >
-                Relacionar com IA
-              </button>
-              <button
-                onClick={() => { askAI('Sugira tags, categoria, vínculos e possíveis agrupamentos para esta colagem.', readingItem); setReadingItem(null) }}
-                style={{ background: 'transparent', border: '1px solid #ccc', color: '#666', borderRadius: '6px', cursor: 'pointer', fontFamily: 'inherit', fontSize: '0.76rem', padding: '0.4rem 0.85rem' }}
-              >
-                Organizar
-              </button>
+              {/* ─── MODO EDIÇÃO ─── */}
+              {modalMode === 'edit' && modalDraft && (
+                <div style={{ padding: '1.75rem 2rem 2.5rem', fontFamily: 'system-ui, -apple-system, sans-serif' }}>
+                  <div style={{ display: 'grid', gap: '0.75rem' }}>
+
+                    {/* Tipo + Título */}
+                    <div style={{ display: 'grid', gridTemplateColumns: '150px 1fr', gap: '0.65rem' }}>
+                      <select
+                        value={modalDraft.type}
+                        onChange={e => setModalDraft(prev => prev ? { ...prev, type: e.target.value as CollageType } : prev)}
+                        style={{ background: '#f8f7f4', border: '1px solid #ddd', borderRadius: '5px', color: '#333', padding: '0.5rem', fontFamily: 'inherit', fontSize: '0.88rem' }}
+                      >
+                        {COLLAGE_TYPES.map(t => <option key={t.id} value={t.id}>{t.label}</option>)}
+                      </select>
+                      <input
+                        value={modalDraft.title}
+                        onChange={e => setModalDraft(prev => prev ? { ...prev, title: e.target.value } : prev)}
+                        placeholder="Título"
+                        style={{ background: '#f8f7f4', border: '1px solid #ddd', borderRadius: '5px', color: '#333', padding: '0.5rem 0.7rem', fontFamily: 'inherit', fontSize: '0.88rem', outline: 'none' }}
+                        onFocus={e => e.target.style.borderColor = '#9b7ec8'}
+                        onBlur={e => e.target.style.borderColor = '#ddd'}
+                      />
+                    </div>
+
+                    {/* Conteúdo */}
+                    <textarea
+                      value={modalDraft.content}
+                      onChange={e => setModalDraft(prev => prev ? { ...prev, content: e.target.value } : prev)}
+                      placeholder="Conteúdo da colagem..."
+                      rows={8}
+                      style={{ background: '#f8f7f4', border: '1px solid #ddd', borderRadius: '5px', color: '#333', padding: '0.7rem', resize: 'vertical', fontFamily: '"Times New Roman", Times, serif', fontSize: '12pt', lineHeight: 1.6, outline: 'none' }}
+                      onFocus={e => e.target.style.borderColor = '#9b7ec8'}
+                      onBlur={e => e.target.style.borderColor = '#ddd'}
+                    />
+
+                    {/* Autor, Obra, Página */}
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 80px', gap: '0.55rem' }}>
+                      {[
+                        { key: 'author' as const, placeholder: 'Autor' },
+                        { key: 'work' as const, placeholder: 'Obra / fonte' },
+                        { key: 'page' as const, placeholder: 'p.' },
+                      ].map(f => (
+                        <input
+                          key={f.key}
+                          value={modalDraft[f.key]}
+                          onChange={e => setModalDraft(prev => prev ? { ...prev, [f.key]: e.target.value } : prev)}
+                          placeholder={f.placeholder}
+                          style={{ background: '#f8f7f4', border: '1px solid #ddd', borderRadius: '5px', color: '#333', padding: '0.45rem 0.65rem', fontFamily: 'inherit', fontSize: '0.85rem', outline: 'none' }}
+                          onFocus={e => e.target.style.borderColor = '#9b7ec8'}
+                          onBlur={e => e.target.style.borderColor = '#ddd'}
+                        />
+                      ))}
+                    </div>
+
+                    {/* Tags, Categoria, Vínculo */}
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 150px 160px', gap: '0.55rem' }}>
+                      <input
+                        value={modalDraft.tags}
+                        onChange={e => setModalDraft(prev => prev ? { ...prev, tags: e.target.value } : prev)}
+                        placeholder="tags: aliança, presença..."
+                        style={{ background: '#f8f7f4', border: '1px solid #ddd', borderRadius: '5px', color: '#333', padding: '0.45rem 0.65rem', fontFamily: 'inherit', fontSize: '0.85rem', outline: 'none' }}
+                        onFocus={e => e.target.style.borderColor = '#9b7ec8'}
+                        onBlur={e => e.target.style.borderColor = '#ddd'}
+                      />
+                      <select
+                        value={modalDraft.category}
+                        onChange={e => setModalDraft(prev => prev ? { ...prev, category: e.target.value } : prev)}
+                        style={{ background: '#f8f7f4', border: '1px solid #ddd', borderRadius: '5px', color: '#333', padding: '0.45rem', fontFamily: 'inherit', fontSize: '0.85rem' }}
+                      >
+                        {COLLAGE_CATEGORIES.map(c => <option key={c}>{c}</option>)}
+                      </select>
+                      <select
+                        value={modalDraft.linkedTo}
+                        onChange={e => setModalDraft(prev => prev ? { ...prev, linkedTo: e.target.value } : prev)}
+                        style={{ background: '#f8f7f4', border: '1px solid #ddd', borderRadius: '5px', color: '#333', padding: '0.45rem', fontFamily: 'inherit', fontSize: '0.85rem' }}
+                      >
+                        <option>{projectRef}</option>
+                        {COLLAGE_LINK_TARGETS.map(t => <option key={t}>{t}</option>)}
+                      </select>
+                    </div>
+
+                    {/* Botões */}
+                    <div style={{ display: 'flex', gap: '0.65rem', paddingTop: '0.35rem' }}>
+                      <button
+                        onClick={saveModalEdit}
+                        style={{ background: '#9b7ec8', border: 'none', borderRadius: '6px', color: '#fff', cursor: 'pointer', fontFamily: 'inherit', fontSize: '0.82rem', fontWeight: 700, padding: '0.5rem 1.1rem' }}
+                      >
+                        Salvar
+                      </button>
+                      <button
+                        onClick={() => setModalMode('read')}
+                        style={{ background: 'transparent', border: '1px solid #ddd', borderRadius: '6px', color: '#666', cursor: 'pointer', fontFamily: 'inherit', fontSize: '0.82rem', padding: '0.5rem 0.9rem' }}
+                      >
+                        Cancelar
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
+
             </div>
           </div>
         </div>

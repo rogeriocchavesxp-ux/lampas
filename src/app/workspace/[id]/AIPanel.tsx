@@ -4,6 +4,7 @@ import { useState, useRef, useEffect } from 'react'
 import type { Project } from '@/types/database'
 import { getSectionBySlug } from '@/lib/workspace-sections'
 import { getToolAreaBySlug } from '@/lib/tools-content'
+import MarkdownRenderer from '@/components/MarkdownRenderer'
 
 interface Message {
   role: 'user' | 'assistant'
@@ -132,7 +133,7 @@ export default function AIPanel({ project, activeSlug, activeTitle, context, onC
         flexShrink: 0,
       }}>
         <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: 'var(--ai)', display: 'inline-block' }} />
-        <span style={{ fontSize: '0.82rem', fontWeight: '600', color: 'var(--ai)' }}>Keryx IA</span>
+        <span style={{ fontSize: '0.82rem', fontWeight: '600', color: 'var(--ai)' }}>Hokmá IA</span>
         <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginLeft: 'auto' }}>
           {activeTitle.split(' ').slice(0, 3).join(' ')}
         </span>
@@ -181,32 +182,46 @@ export default function AIPanel({ project, activeSlug, activeTitle, context, onC
             </div>
           </div>
         ) : (
-          messages.map((msg, i) => (
-            <div key={i} style={{ marginBottom: '1rem' }}>
-              <div style={{
-                fontSize: '0.7rem',
-                color: msg.role === 'user' ? 'var(--text-muted)' : 'var(--ai)',
-                marginBottom: '0.3rem',
-                textTransform: 'uppercase',
-                letterSpacing: '0.06em',
-                fontWeight: '600',
-              }}>
-                {msg.role === 'user' ? 'Você' : 'Keryx'}
-              </div>
-              <div style={{
-                fontSize: '0.87rem',
-                lineHeight: '1.7',
-                color: 'var(--text-primary)',
-                whiteSpace: 'pre-wrap',
-                fontFamily: msg.role === 'assistant' ? 'var(--font-serif)' : 'inherit',
-              }}>
-                {msg.content}
-                {loading && i === messages.length - 1 && msg.role === 'assistant' && !msg.content && (
-                  <span style={{ opacity: 0.5 }}>▌</span>
+          messages.map((msg, i) => {
+            const isStreaming = loading && i === messages.length - 1 && msg.role === 'assistant'
+            return (
+              <div key={i} style={{ marginBottom: '1.25rem' }}>
+                <div style={{
+                  fontSize: '0.7rem',
+                  color: msg.role === 'user' ? 'var(--text-muted)' : 'var(--ai)',
+                  marginBottom: '0.35rem',
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.06em',
+                  fontWeight: '600',
+                }}>
+                  {msg.role === 'user' ? 'Você' : 'Hokmá'}
+                </div>
+                {msg.role === 'assistant' ? (
+                  isStreaming ? (
+                    <div style={{
+                      fontSize: '0.87rem',
+                      lineHeight: '1.72',
+                      color: 'var(--text-primary)',
+                      whiteSpace: 'pre-wrap',
+                      fontFamily: 'var(--font-serif)',
+                    }}>
+                      {msg.content || <span className="ai-cursor" />}
+                    </div>
+                  ) : (
+                    <MarkdownRenderer content={msg.content} moduleColor="var(--ai)" />
+                  )
+                ) : (
+                  <div style={{
+                    fontSize: '0.87rem',
+                    lineHeight: '1.7',
+                    color: 'var(--text-primary)',
+                  }}>
+                    {msg.content}
+                  </div>
                 )}
               </div>
-            </div>
-          ))
+            )
+          })
         )}
         <div ref={bottomRef} />
       </div>
