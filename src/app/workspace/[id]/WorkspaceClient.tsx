@@ -500,20 +500,38 @@ export default function WorkspaceClient({ user, project, initialSections }: Prop
               }}
             />
           ) : (
-            <span
+            <button
               onClick={startTitleEdit}
-              title="Clique para editar o título"
+              title="Editar título do estudo"
               style={{
-                fontWeight: '600', fontSize: '0.86rem', color: 'var(--text-primary)',
-                overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
-                flexShrink: 1, cursor: 'text', borderRadius: '3px',
-                padding: '0.1rem 0.25rem', marginLeft: '-0.25rem',
+                background: 'transparent', border: 'none', cursor: 'text',
+                display: 'inline-flex', alignItems: 'center', gap: '0.3rem',
+                padding: '0.15rem 0.35rem', borderRadius: '4px',
+                marginLeft: '-0.35rem', flexShrink: 1, minWidth: 0,
+                fontFamily: 'inherit',
               }}
-              onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.04)'}
-              onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+              onMouseEnter={e => {
+                e.currentTarget.style.background = 'rgba(255,255,255,0.05)'
+                const icon = e.currentTarget.querySelector('.edit-icon') as HTMLElement
+                if (icon) icon.style.opacity = '1'
+              }}
+              onMouseLeave={e => {
+                e.currentTarget.style.background = 'transparent'
+                const icon = e.currentTarget.querySelector('.edit-icon') as HTMLElement
+                if (icon) icon.style.opacity = '0'
+              }}
             >
-              {titleValue}
-            </span>
+              <span style={{
+                fontWeight: 600, fontSize: '0.86rem', color: 'var(--text-primary)',
+                overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+              }}>
+                {titleValue}
+              </span>
+              <span className="edit-icon" style={{
+                fontSize: '0.7rem', color: 'var(--text-muted)',
+                opacity: 0, transition: 'opacity 0.12s', flexShrink: 0,
+              }}>✎</span>
+            </button>
           )}
           <span style={{ color: 'var(--border)', fontSize: '0.78rem', flexShrink: 0 }}>·</span>
           <span style={{ fontSize: '0.78rem', color: 'var(--text-muted)', flexShrink: 0, whiteSpace: 'nowrap' }}>
