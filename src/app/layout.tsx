@@ -3,7 +3,12 @@ import './globals.css'
 
 export const metadata: Metadata = {
   title: 'Hokmá — Do texto ao púlpito',
-  description: 'Sistema guiado de exegese reformada e produção homilética com IA',
+  description: 'Plataforma de estudo bíblico e produção homilética com IA reformada',
+  icons: {
+    icon: '/mark.svg',
+    shortcut: '/mark.svg',
+    apple: '/mark.svg',
+  },
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

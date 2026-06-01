@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 36 36" fill="none">
+  <!-- Fundo arredondado -->
+  <rect width="36" height="36" rx="8" fill="#111620"/>
+  <!-- ח estilizado centralizado -->
+  <line x1="7"  y1="28" x2="7"  y2="9"  stroke="#b8922a" stroke-width="3" stroke-linecap="round"/>
+  <line x1="29" y1="28" x2="29" y2="9"  stroke="#b8922a" stroke-width="3" stroke-linecap="round"/>
+  <line x1="7"  y1="9"  x2="17" y2="9"  stroke="#b8922a" stroke-width="3" stroke-linecap="round"/>
+  <line x1="21" y1="9"  x2="29" y2="9"  stroke="#b8922a" stroke-width="2.6" stroke-linecap="round" opacity="0.5"/>
+</svg>

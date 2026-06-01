@@ -1,25 +1,32 @@
 @import "tailwindcss";
+@import url('https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&display=swap');
 
 :root {
-  --background: #0e1119;
-  --surface: #141926;
-  --surface-2: #1b2133;
-  --surface-3: #222a3f;
-  --border: #2d374f;
-  --border-subtle: #1e2840;
-  --text-primary: #ede8df;
-  --text-secondary: #9b9488;
-  --text-muted: #62605a;
-  --accent: #b8922a;
-  --accent-hover: #cda132;
-  --accent-subtle: rgba(184, 146, 42, 0.12);
-  --error: #e57373;
+  /* ── Hokmá — Acadêmico Dourado ── */
+  --background:    #0c1018;
+  --surface:       #111620;
+  --surface-2:     #171e2d;
+  --surface-3:     #1e2638;
+  --border:        #263040;
+  --border-subtle: #191f2e;
+
+  --text-primary:   #ede8df;
+  --text-secondary: #9b9080;
+  --text-muted:     #5a5750;
+
+  --accent:        #b8922a;
+  --accent-hover:  #d4a83a;
+  --accent-subtle: rgba(184, 146, 42, 0.10);
+  --brand:         #c9a44e;
+
+  --error:   #e57373;
   --success: #6db8a0;
   --warning: #ffb74d;
-  --ai: #7c9cbf;
-  --ai-subtle: rgba(124, 156, 191, 0.1);
-  --font-serif: 'Georgia', 'Times New Roman', serif;
-  --font-sans: system-ui, -apple-system, sans-serif;
+  --ai:      #7c9cbf;
+  --ai-subtle: rgba(124, 156, 191, 0.10);
+
+  --font-serif: 'EB Garamond', Georgia, 'Times New Roman', serif;
+  --font-sans:  system-ui, -apple-system, sans-serif;
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
