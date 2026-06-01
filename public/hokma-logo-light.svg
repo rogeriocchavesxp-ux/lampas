@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 520 120">
+  <!-- Fundo branco -->
+  <rect width="520" height="120" fill="#ffffff" rx="12"/>
+
+  <!-- Símbolo ח — pilar esquerdo -->
+  <line x1="48" y1="88" x2="48" y2="32" stroke="#b8922a" stroke-width="7" stroke-linecap="round"/>
+  <!-- Pilar direito -->
+  <line x1="84" y1="88" x2="84" y2="32" stroke="#b8922a" stroke-width="7" stroke-linecap="round"/>
+  <!-- Barra superior esquerda -->
+  <line x1="48" y1="32" x2="66" y2="32" stroke="#b8922a" stroke-width="7" stroke-linecap="round"/>
+  <!-- Barra superior direita -->
+  <line x1="72" y1="32" x2="84" y2="32" stroke="#b8922a" stroke-width="5.5" stroke-linecap="round" opacity="0.45"/>
+
+  <!-- Wordmark escuro para fundo claro -->
+  <text
+    x="114" y="80"
+    font-family="Georgia, 'Times New Roman', serif"
+    font-size="56"
+    font-weight="400"
+    letter-spacing="-1"
+    fill="#1a1410"
+  >Hokm<tspan fill="#b8922a">á</tspan></text>
+</svg>
