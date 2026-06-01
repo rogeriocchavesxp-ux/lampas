@@ -1,9 +1,10 @@
 'use client'
 
-import { useState, useCallback, useRef, useEffect } from 'react'
+import { useState, useCallback, useRef, useEffect, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
 import type { User } from '@supabase/supabase-js'
 import type { Project, Section } from '@/types/database'
+import { createClient } from '@/lib/supabase/client'
 import {
   WORKSPACE_SECTIONS,
   SYNTHESIS_DEFS,
@@ -270,6 +271,32 @@ function ResizeHandle({ onMouseDown }: { onMouseDown: (e: React.MouseEvent) => v
 
 export default function WorkspaceClient({ user, project, initialSections }: Props) {
   const router = useRouter()
+  const supabase = useMemo(() => createClient(), [])
+
+  // ── Título editável ───────────────────────────────────────────────────────
+  const [titleValue,    setTitleValue]    = useState(project.title)
+  const [titleDraft,    setTitleDraft]    = useState('')
+  const [editingTitle,  setEditingTitle]  = useState(false)
+  const titleInputRef = useRef<HTMLInputElement>(null)
+
+  function startTitleEdit() {
+    setTitleDraft(titleValue)
+    setEditingTitle(true)
+    setTimeout(() => titleInputRef.current?.select(), 0)
+  }
+
+  async function commitTitle() {
+    const trimmed = titleDraft.trim()
+    setEditingTitle(false)
+    if (!trimmed || trimmed === titleValue) return
+    setTitleValue(trimmed)
+    await supabase.from('projects').update({ title: trimmed }).eq('id', project.id)
+  }
+
+  function cancelTitle() {
+    setEditingTitle(false)
+  }
+
   const [sections, setSections] = useState<Section[]>(initialSections)
   const [activeSlug, setActiveSlug] = useState('preparacao_espiritual')
   const [expandedPhases, setExpandedPhases] = useState<Set<string>>(() => new Set(['preparar', 'investigar', 'ferramentas']))
@@ -447,12 +474,47 @@ export default function WorkspaceClient({ user, project, initialSections }: Prop
         <div style={{ width: '1px', height: '14px', background: 'var(--border-subtle)', marginRight: '0.6rem', flexShrink: 0 }} />
 
         <div style={{ flex: 1, minWidth: 0, display: 'flex', alignItems: 'baseline', gap: '0.45rem', overflow: 'hidden' }}>
-          <span style={{
-            fontWeight: '600', fontSize: '0.86rem', color: 'var(--text-primary)',
-            overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', flexShrink: 1,
-          }}>
-            {project.title}
-          </span>
+          {editingTitle ? (
+            <input
+              ref={titleInputRef}
+              value={titleDraft}
+              onChange={e => setTitleDraft(e.target.value)}
+              onBlur={commitTitle}
+              onKeyDown={e => {
+                if (e.key === 'Enter') { e.preventDefault(); void commitTitle() }
+                if (e.key === 'Escape') cancelTitle()
+              }}
+              style={{
+                background: 'var(--surface-2)',
+                border: '1px solid var(--accent)',
+                borderRadius: '4px',
+                color: 'var(--text-primary)',
+                fontFamily: 'inherit',
+                fontSize: '0.86rem',
+                fontWeight: 600,
+                outline: 'none',
+                padding: '0.1rem 0.4rem',
+                minWidth: '160px',
+                maxWidth: '360px',
+                flexShrink: 1,
+              }}
+            />
+          ) : (
+            <span
+              onClick={startTitleEdit}
+              title="Clique para editar o título"
+              style={{
+                fontWeight: '600', fontSize: '0.86rem', color: 'var(--text-primary)',
+                overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+                flexShrink: 1, cursor: 'text', borderRadius: '3px',
+                padding: '0.1rem 0.25rem', marginLeft: '-0.25rem',
+              }}
+              onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.04)'}
+              onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+            >
+              {titleValue}
+            </span>
+          )}
           <span style={{ color: 'var(--border)', fontSize: '0.78rem', flexShrink: 0 }}>·</span>
           <span style={{ fontSize: '0.78rem', color: 'var(--text-muted)', flexShrink: 0, whiteSpace: 'nowrap' }}>
             {project.book} {project.passage_ref}
@@ -999,7 +1061,7 @@ export default function WorkspaceClient({ user, project, initialSections }: Prop
               <AIPanel
                 project={project}
                 activeSlug={activeSlug}
-                activeTitle={activeSlug === 'colagens' ? 'Colagens' : activeSlug === 'comentario_expositivo' ? 'Comentário Expositivo' : activeTool?.title ?? activeDef?.title ?? ''}
+                activeTitle={activeSlug === 'colagens' ? 'Colagens' : activeSlug === 'comentario_expositivo' ? 'Comentário Expositivo' : activeTool?.title ?? activeDef?.title ?? titleValue}
                 context={aiPrompt}
                 onClearContext={() => setAiPrompt('')}
               />
