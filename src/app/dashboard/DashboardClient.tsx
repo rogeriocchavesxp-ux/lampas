@@ -103,6 +103,19 @@ export default function DashboardClient({ user, projects, profile }: Props) {
         <Image src="/logo.png" alt="Hokmá" width={36} height={36} style={{ display: 'block' }} />
         <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
           <span style={{ color: 'var(--text-muted)', fontSize: '0.82rem' }}>{user.email}</span>
+          <button
+            onClick={() => router.push('/billing')}
+            style={{
+              background: 'transparent', border: '1px solid var(--border)',
+              color: 'var(--text-secondary)', padding: '0.3rem 0.75rem',
+              borderRadius: '6px', cursor: 'pointer', fontSize: '0.82rem',
+              fontFamily: 'inherit',
+            }}
+            onMouseEnter={e => { e.currentTarget.style.borderColor = '#b8922a'; e.currentTarget.style.color = '#b8922a' }}
+            onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.color = 'var(--text-secondary)' }}
+          >
+            Planos
+          </button>
           <button onClick={handleSignOut} style={{
             background: 'transparent', border: '1px solid var(--border)',
             color: 'var(--text-secondary)', padding: '0.3rem 0.75rem',
