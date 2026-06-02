@@ -237,17 +237,39 @@ export default function VisaoGeralWorkspace({
     updateClassificationInDB(id, fields)
   }
 
-  // ── Generate field inline (AI → save directly into cls, no side chat) ─────
+  // ── Abre o painel de detalhe para um termo (batched com outros setState) ───
+  function openTermDetail(c: Classification) {
+    const node = NODES.find(n => n.clsTypes?.includes(c.type))
+    if (node) setActivePanel(node.key)
+    setDictSaved(false)
+    setActiveItem(c)
+  }
+
+  // ── Generate field inline (AI → salva no próprio termo, nunca abre chat) ──
   async function generateField(c: Classification, kind: string, fieldKey: keyof Classification) {
-    const loadKey = `${c.id}:${kind}`
+    const FIELD_NAMES: Record<string, string> = {
+      description: 'Definição', analysis: 'Explicação', lexical: 'Estudo Lexical',
+      theological_biblical: 'Teologia Bíblica', narrative_function: 'Função Narrativa',
+      applications: 'Aplicações', original_term: 'Línguas Originais',
+    }
+    const fieldName = FIELD_NAMES[kind] ?? kind
+    const loadKey   = `${c.id}:${kind}`
+
     setFieldLoading(prev => ({ ...prev, [loadKey]: true }))
     try {
-      const res = await fetch('/api/claude/classify', {
+      const res  = await fetch('/api/claude/classify', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ term: c.selectedText, type: c.type, startVerse: c.startVerse, book: project.book, passageRef: project.passage_ref, kind }),
       })
-      const data = await res.json() as { result?: string }
+      const data = await res.json() as { result?: string; error?: string; upgrade?: boolean }
+
+      if (!res.ok || data.error) {
+        if (data.upgrade) showToast('Limite de IA atingido — faça upgrade do plano')
+        else showToast(`Erro ao gerar ${fieldName}: ${data.error ?? 'Tente novamente'}`)
+        return
+      }
+
       if (data.result) {
         if (kind === 'original_term') {
           const parts = data.result.split('|').map((s: string) => s.trim())
@@ -255,9 +277,15 @@ export default function VisaoGeralWorkspace({
         } else {
           updateClsField(c.id, { [fieldKey]: data.result })
         }
+        showToast(`${fieldName} gerada para "${c.selectedText}"`)
+      } else {
+        showToast(`Resposta vazia da IA — tente novamente`)
       }
-    } catch { /* noop */ }
-    finally { setFieldLoading(prev => { const n = { ...prev }; delete n[loadKey]; return n }) }
+    } catch {
+      showToast('Erro de conexão com a IA — tente novamente')
+    } finally {
+      setFieldLoading(prev => { const n = { ...prev }; delete n[loadKey]; return n })
+    }
   }
 
   // ── Save classification to Dicionário Lampas ──────────────────────────────
@@ -720,6 +748,8 @@ export default function VisaoGeralWorkspace({
                       )
                     }
 
+                    const isAnyLoading = Object.keys(fieldLoading).some(k => k.startsWith(c.id))
+
                     return (
                       <div>
                         {/* Term header */}
@@ -731,6 +761,13 @@ export default function VisaoGeralWorkspace({
                             v.{c.startVerse}{c.endVerse !== c.startVerse ? `–${c.endVerse}` : ''} · {TYPE_LABELS[c.type]}
                           </div>
                           {c.note && <div style={{ fontSize: '0.68rem', color: '#64748B', marginTop: '3px', fontStyle: 'italic' }}>{c.note}</div>}
+                          {/* Loading banner */}
+                          {isAnyLoading && (
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginTop: '8px', padding: '6px 9px', background: `${color}10`, border: `1px solid ${color}25`, borderRadius: '7px' }}>
+                              <Loader2 size={11} strokeWidth={2} style={{ color, animation: 'spin 0.8s linear infinite', flexShrink: 0 }} />
+                              <span style={{ fontSize: '0.68rem', color, fontWeight: 500 }}>Gerando com IA…</span>
+                            </div>
+                          )}
                         </div>
 
                         {/* Empty state */}
@@ -1074,18 +1111,17 @@ export default function VisaoGeralWorkspace({
             {sep('IA — preenche no termo')}
             {mi('Gerar explicação com IA', '✦', () => {
               setItemMenuState(null)
-              const node = NODES.find(n => n.clsTypes?.includes(c.type))
-              if (node) { setActivePanel(node.key); setTimeout(() => { setDictSaved(false); setActiveItem(c); generateField(c, 'description', 'definition') }, 0) }
-              else { generateField(c, 'description', 'definition') }
+              openTermDetail(c)
+              generateField(c, 'description', 'definition')
             })}
             {mi('Gerar estudo lexical', '📚', () => {
               setItemMenuState(null)
-              const node = NODES.find(n => n.clsTypes?.includes(c.type))
-              if (node) { setActivePanel(node.key); setTimeout(() => { setDictSaved(false); setActiveItem(c); generateField(c, 'lexical', 'lexical_study') }, 0) }
-              else { generateField(c, 'lexical', 'lexical_study') }
+              openTermDetail(c)
+              generateField(c, 'lexical', 'lexical_study')
             })}
             {mi('Gerar aplicações', '🎯', () => {
               setItemMenuState(null)
+              openTermDetail(c)
               generateField(c, 'applications', 'applications')
             })}
 
