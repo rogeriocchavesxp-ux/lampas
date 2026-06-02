@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120">
+  <!-- Fundo dourado sutil -->
+  <rect width="120" height="120" rx="22" fill="#1a1408"/>
+
+  <!-- Chama maior, mais intensa -->
+  <path d="M44 4
+    C50 12 56 25 52 37
+    C49 45 44 49 44 49
+    C44 49 39 45 36 37
+    C32 25 38 12 44 4 Z"
+    fill="#e0a820"/>
+
+  <!-- Brilho interno vivo -->
+  <path d="M44 13
+    C47 19 49 29 47 37
+    C46 41 44 43 44 43
+    C44 43 42 41 41 37
+    C39 29 41 19 44 13 Z"
+    fill="#fff0a0" opacity="0.55"/>
+
+  <!-- Núcleo da chama -->
+  <path d="M44 20
+    C46 24 46 30 45 35
+    C44.5 37 44 38 44 38
+    C44 38 43.5 37 43 35
+    C42 30 42 24 44 20 Z"
+    fill="#ffffff" opacity="0.25"/>
+
+  <!-- L dourado -->
+  <path d="M44 47 L44 94 L86 94"
+    stroke="#e0a820"
+    stroke-width="12"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+    fill="none"/>
+</svg>

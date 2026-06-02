@@ -6,6 +6,7 @@ import type { Project, Section } from '@/types/database'
 import type { SectionDef } from '@/lib/workspace-sections'
 import MarkdownRenderer from '@/components/MarkdownRenderer'
 import { ChevronDown, ChevronUp, MoreHorizontal } from 'lucide-react'
+import BibleTextBlock from './BibleTextBlock'
 
 type CardState = 'idle' | 'generating' | 'saving' | 'saved'
 
@@ -260,6 +261,15 @@ export default function SectionWorkspace({
       <p style={{ fontSize: '0.82rem', color: 'var(--text-muted)', marginBottom: '1.5rem', letterSpacing: '0.01em' }}>
         {project.book} {project.passage_ref} · {project.original_language}
       </p>
+
+      {/* Bible text — always visible, loads automatically */}
+      <BibleTextBlock
+        book={project.book}
+        passageRef={project.passage_ref}
+        testament={project.testament}
+        projectId={project.id}
+        userId={userId}
+      />
 
       {/* Objective */}
       <p style={{

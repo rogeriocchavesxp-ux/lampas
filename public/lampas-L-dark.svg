@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120">
+  <!-- Fundo -->
+  <rect width="120" height="120" rx="22" fill="#0c1018"/>
+
+  <!-- Chama no topo do L -->
+  <path d="M44 6
+    C49 13 54 24 50 35
+    C48 42 44 46 44 46
+    C44 46 40 42 38 35
+    C34 24 39 13 44 6 Z"
+    fill="#c9921a"/>
+
+  <!-- Brilho interno da chama -->
+  <path d="M44 14
+    C47 19 48 28 46 35
+    C45 38 44 40 44 40
+    C44 40 43 38 42 35
+    C40 28 41 19 44 14 Z"
+    fill="#f2d06a" opacity="0.5"/>
+
+  <!-- L — traço vertical + horizontal, arredondados -->
+  <path d="M44 44 L44 92 L84 92"
+    stroke="#c9921a"
+    stroke-width="11"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+    fill="none"/>
+</svg>

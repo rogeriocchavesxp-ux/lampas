@@ -705,7 +705,7 @@ export default function WorkspaceClient({ user, project, initialSections }: Prop
                       <div style={{
                         width: '2px', height: '14px',
                         background: 'var(--border)',
-                        marginLeft: '16px',
+                        marginLeft: '19px',
                         borderRadius: '1px',
                       }} />
                     )}
@@ -724,26 +724,26 @@ export default function WorkspaceClient({ user, project, initialSections }: Prop
                       onMouseEnter={e => { if (!phaseOpen) e.currentTarget.style.background = 'rgba(0,0,0,0.03)' }}
                       onMouseLeave={e => { if (!phaseOpen) e.currentTarget.style.background = 'transparent' }}
                     >
-                      {/* Colored dot — journey node */}
+                      {/* Numbered circle — journey node */}
                       <div style={{
-                        width: '10px', height: '10px', borderRadius: '50%',
-                        background: phaseOpen ? phase.color : `${phase.color}55`,
-                        flexShrink: 0, marginTop: '5px',
-                        boxShadow: phaseOpen ? `0 0 0 3px ${phase.color}18` : 'none',
-                        transition: 'background 0.2s, box-shadow 0.2s',
-                      }} />
+                        width: '20px', height: '20px', borderRadius: '50%',
+                        background: phaseOpen ? phase.color : `${phase.color}18`,
+                        border: `1.5px solid ${phaseOpen ? phase.color : phase.color + '55'}`,
+                        flexShrink: 0, marginTop: '2px',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        boxShadow: phaseOpen ? `0 0 0 3px ${phase.color}15` : 'none',
+                        transition: 'all 0.2s',
+                      }}>
+                        <span style={{
+                          fontSize: '0.6rem', fontWeight: 700, lineHeight: 1,
+                          color: phaseOpen ? '#FFFFFF' : phase.color,
+                          userSelect: 'none',
+                        }}>
+                          {phaseIdx + 1}
+                        </span>
+                      </div>
 
                       <div style={{ flex: 1, minWidth: 0 }}>
-                        {/* Small roman numeral */}
-                        <span style={{
-                          display: 'block',
-                          fontSize: '0.55rem', fontWeight: 800,
-                          letterSpacing: '0.12em', textTransform: 'uppercase',
-                          color: `${phase.color}70`, marginBottom: '2px',
-                          lineHeight: 1,
-                        }}>
-                          {phase.roman}
-                        </span>
                         {/* Main title — large and prominent */}
                         <div style={{
                           fontSize: '1.0rem', fontWeight: 700,
@@ -772,7 +772,7 @@ export default function WorkspaceClient({ user, project, initialSections }: Prop
                     {/* ── Phase body — left border = journey line ── */}
                     {phaseOpen && (
                       <div style={{
-                        marginLeft: '15px',
+                        marginLeft: '20px',
                         borderLeft: `2px solid ${phase.color}22`,
                         paddingBottom: '6px',
                       }}>
