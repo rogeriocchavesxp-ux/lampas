@@ -24,8 +24,7 @@ export async function getUserPlan(userId: string): Promise<PlanId> {
 }
 
 export async function checkAIUsage(userId: string): Promise<UsageStatus> {
-  // Bypass em desenvolvimento ou quando a variável de ambiente estiver ativa
-  if (process.env.BYPASS_AI_BILLING === 'true' || process.env.NODE_ENV === 'development') {
+  if (process.env.NODE_ENV === 'development') {
     return { plan: 'avancado', used: 0, limit: -1, canUse: true, remaining: -1 }
   }
 

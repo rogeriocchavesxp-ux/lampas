@@ -49,10 +49,10 @@ export async function POST(req: Request) {
   // Auth check
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
-  // auth desativado temporariamente
+  if (!user) return Response.json({ error: 'Não autorizado' }, { status: 401 })
 
   // ── Verificar limite de IA do plano ──
-  const usage = await checkAIUsage(user?.id ?? '')
+  const usage = await checkAIUsage(user.id)
   if (!usage.canUse) {
     return Response.json({
       error: 'Limite de consultas de IA atingido para este mês.',
@@ -141,7 +141,7 @@ export async function POST(req: Request) {
       cache_creation_input_tokens?: number
     }
     await supabase.from('ai_interactions').insert({
-      user_id: user?.id ?? '',
+      user_id: user.id,
       section_slug: activeSlug,
       mode: 'exegese',
       input_tokens: usage.input_tokens,

@@ -56,16 +56,16 @@ async function loadOriginalTextContext(
 export async function POST(req: Request) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
-  // auth desativado temporariamente
+  if (!user) return Response.json({ error: 'Não autorizado' }, { status: 401 })
 
-  const usage = await checkAIUsage(user?.id ?? '')
+  const usage = await checkAIUsage(user.id)
   if (!usage.canUse) {
     return Response.json({
       error: 'Limite de consultas de IA atingido para este mês.',
       used: usage.used, limit: usage.limit, plan: usage.plan, upgrade: true,
     }, { status: 429 })
   }
-  if (user) incrementAIUsage(user.id).catch(() => {})
+  incrementAIUsage(user.id).catch(() => {})
 
   const { sectionSlug, cardId, cardIds, project } = await req.json() as {
     sectionSlug: string
