@@ -130,7 +130,7 @@ export async function POST(req: Request) {
   })
 
   // Incrementar uso de IA (non-blocking)
-  incrementAIUsage(user.id).catch(() => {})
+  if (user) incrementAIUsage(user.id).catch(() => {})
 
   // Log token usage (non-blocking)
   stream.finalMessage().then(async (msg) => {
@@ -141,7 +141,7 @@ export async function POST(req: Request) {
       cache_creation_input_tokens?: number
     }
     await supabase.from('ai_interactions').insert({
-      user_id: user.id,
+      user_id: user?.id ?? '',
       section_slug: activeSlug,
       mode: 'exegese',
       input_tokens: usage.input_tokens,
