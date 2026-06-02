@@ -114,12 +114,19 @@ export default function VisaoGeralWorkspace({
     return () => ro.disconnect()
   }, [])
 
-  // fechar menu ao clicar fora
+  // fechar menu ao clicar fora — setTimeout garante que o listener só existe
+  // no próximo tick, após o click atual terminar de propagar
   useEffect(() => {
     if (!itemMenuState) return
-    const h = () => setItemMenuState(null)
-    document.addEventListener('click', h)
-    return () => document.removeEventListener('click', h)
+    let handler: (() => void) | null = null
+    const timer = setTimeout(() => {
+      handler = () => setItemMenuState(null)
+      document.addEventListener('click', handler)
+    }, 0)
+    return () => {
+      clearTimeout(timer)
+      if (handler) document.removeEventListener('click', handler)
+    }
   }, [itemMenuState])
 
   const cards = useMemo(
@@ -537,40 +544,39 @@ export default function VisaoGeralWorkspace({
                         <div style={{ fontSize: '0.7rem', color: activeNode.color, marginTop: '5px' }}>Marque palavras no Texto Bíblico.</div>
                       </div>
                     ) : (
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: '1px' }}>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
                         {items.map(c => (
-                          <div key={c.id} style={{ borderRadius: '8px', overflow: 'hidden' }}>
-                            <div
-                              style={{ display: 'flex', alignItems: 'flex-start', gap: '8px', padding: '7px 8px', borderRadius: '8px', transition: 'background 0.1s' }}
-                              onMouseEnter={e => { e.currentTarget.style.background = activeNode.bg }}
-                              onMouseLeave={e => { e.currentTarget.style.background = 'transparent' }}
-                            >
-                              <div style={{ width: '5px', height: '5px', borderRadius: '50%', background: activeNode.color, flexShrink: 0, marginTop: '6px', opacity: 0.65 }} />
-                              <div style={{ flex: 1, minWidth: 0 }}>
-                                <div style={{ fontSize: '0.83rem', fontFamily: "'EB Garamond', Georgia, serif", fontStyle: 'italic', color: '#1E293B', lineHeight: 1.35 }}>
-                                  {c.selectedText}
-                                </div>
-                                <div style={{ fontSize: '0.63rem', color: '#94A3B8', marginTop: '1px' }}>
-                                  v.{c.startVerse}{c.endVerse !== c.startVerse ? `–${c.endVerse}` : ''}{c.note ? ` · ${c.note}` : ''}
-                                </div>
-                                {/* AI explanation inline */}
-                                {aiLoading === c.id && (
-                                  <div style={{ fontSize: '0.68rem', color: '#8B5CF6', marginTop: '5px', fontStyle: 'italic' }}>Gerando explicação…</div>
-                                )}
-                                {aiResults[c.id] && (
-                                  <div style={{ marginTop: '5px', padding: '6px 8px', background: 'rgba(139,92,246,0.06)', border: '1px solid rgba(139,92,246,0.15)', borderRadius: '6px', fontSize: '0.76rem', color: '#475569', lineHeight: 1.5 }}>
-                                    {aiResults[c.id]}
-                                  </div>
-                                )}
+                          <div
+                            key={c.id}
+                            onClick={e => openItemMenu(e, c.id)}
+                            style={{
+                              display: 'flex', alignItems: 'flex-start', gap: '8px',
+                              padding: '8px 10px', borderRadius: '8px',
+                              cursor: 'pointer', transition: 'background 0.1s',
+                              background: itemMenuState?.id === c.id ? activeNode.bg : 'transparent',
+                              border: `1px solid ${itemMenuState?.id === c.id ? activeNode.color + '25' : 'transparent'}`,
+                            }}
+                            onMouseEnter={e => { if (itemMenuState?.id !== c.id) e.currentTarget.style.background = '#F8FAFC' }}
+                            onMouseLeave={e => { if (itemMenuState?.id !== c.id) e.currentTarget.style.background = 'transparent' }}
+                          >
+                            <div style={{ width: '5px', height: '5px', borderRadius: '50%', background: activeNode.color, flexShrink: 0, marginTop: '6px', opacity: 0.7 }} />
+                            <div style={{ flex: 1, minWidth: 0 }}>
+                              <div style={{ fontSize: '0.84rem', fontFamily: "'EB Garamond', Georgia, serif", fontStyle: 'italic', color: '#1E293B', lineHeight: 1.4 }}>
+                                {c.selectedText}
                               </div>
-                              <button onClick={e => openItemMenu(e, c.id)}
-                                style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#CBD5E1', padding: '2px 3px', borderRadius: '4px', display: 'flex', flexShrink: 0, transition: 'color 0.1s' }}
-                                onMouseEnter={e => e.currentTarget.style.color = '#64748B'}
-                                onMouseLeave={e => e.currentTarget.style.color = '#CBD5E1'}
-                              >
-                                <MoreHorizontal size={13} strokeWidth={1.75} />
-                              </button>
+                              <div style={{ fontSize: '0.63rem', color: '#94A3B8', marginTop: '2px' }}>
+                                v.{c.startVerse}{c.endVerse !== c.startVerse ? `–${c.endVerse}` : ''}{c.note ? ` · ${c.note}` : ''}
+                              </div>
+                              {aiLoading === c.id && (
+                                <div style={{ fontSize: '0.68rem', color: '#8B5CF6', marginTop: '5px', fontStyle: 'italic' }}>Gerando…</div>
+                              )}
+                              {aiResults[c.id] && (
+                                <div style={{ marginTop: '5px', padding: '6px 8px', background: 'rgba(139,92,246,0.06)', border: '1px solid rgba(139,92,246,0.15)', borderRadius: '6px', fontSize: '0.76rem', color: '#475569', lineHeight: 1.5 }}>
+                                  {aiResults[c.id]}
+                                </div>
+                              )}
                             </div>
+                            <MoreHorizontal size={13} strokeWidth={1.75} style={{ color: '#94A3B8', flexShrink: 0, marginTop: '2px' }} />
                           </div>
                         ))}
                       </div>
