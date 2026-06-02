@@ -1,15 +1,20 @@
 import { createClient } from '@/lib/supabase/server'
-import { createServiceClient } from '@/lib/supabase/service'
 import DashboardClient from './DashboardClient'
 
 export default async function DashboardPage() {
   const supabase = await createClient()
-  const serviceClient = createServiceClient()
   const { data: { user } } = await supabase.auth.getUser()
 
-  const projects = user
-    ? (await supabase.from('projects').select('*').eq('user_id', user.id).order('updated_at', { ascending: false })).data
-    : (await serviceClient.from('projects').select('*').order('updated_at', { ascending: false })).data
+  // Sem user: busca projetos via anon key (RLS permite select público)
+  // ou retorna vazio — o usuário pode navegar direto para o workspace pelo URL
+  let projects = null
+  try {
+    const query = user
+      ? supabase.from('projects').select('*').eq('user_id', user.id).order('updated_at', { ascending: false })
+      : supabase.from('projects').select('*').order('updated_at', { ascending: false })
+    const { data } = await query
+    projects = data
+  } catch { /* silent */ }
 
   const profile = user
     ? (await supabase.from('profiles').select('*').eq('id', user.id).single()).data
