@@ -6,19 +6,19 @@ export default async function DashboardPage() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
-  if (!user) redirect('/auth/login')
-
-  const { data: projects } = await supabase
+  const projects = user ? (await supabase
     .from('projects')
     .select('*')
     .eq('user_id', user.id)
-    .order('updated_at', { ascending: false })
+    .order('updated_at', { ascending: false })).data : []
 
-  const { data: profile } = await supabase
+  const profile = user ? (await supabase
     .from('profiles')
     .select('*')
     .eq('id', user.id)
-    .single()
+    .single()).data : null
 
-  return <DashboardClient user={user} projects={projects || []} profile={profile} />
+  const demoUser = user ?? { id: '', email: 'demo@lampas.app' }
+
+  return <DashboardClient user={demoUser as Parameters<typeof DashboardClient>[0]['user']} projects={projects || []} profile={profile} />
 }

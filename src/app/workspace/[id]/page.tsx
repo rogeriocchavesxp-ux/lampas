@@ -11,13 +11,10 @@ export default async function WorkspacePage({ params }: Props) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
-  if (!user) redirect('/auth/login')
-
   const { data: project } = await supabase
     .from('projects')
     .select('*')
     .eq('id', id)
-    .eq('user_id', user.id)
     .single()
 
   if (!project) notFound()
@@ -28,9 +25,11 @@ export default async function WorkspacePage({ params }: Props) {
     .eq('project_id', id)
     .order('created_at', { ascending: true })
 
+  const demoUser = user ?? { id: project.user_id ?? '', email: 'demo@lampas.app' }
+
   return (
     <WorkspaceClient
-      user={user}
+      user={demoUser as Parameters<typeof WorkspaceClient>[0]['user']}
       project={project}
       initialSections={sections || []}
     />
