@@ -6,7 +6,7 @@ import type { SectionDef } from '@/lib/workspace-sections'
 import type { CollageItem } from '@/lib/collages-content'
 import { createClient } from '@/lib/supabase/client'
 import SectionWorkspace from './SectionWorkspace'
-import { Sparkles, Map, List, MoreHorizontal, X, BookOpen } from 'lucide-react'
+import { Sparkles, Map, List, MoreHorizontal, X, BookOpen, ChevronLeft, Loader2, Check, BookMarked } from 'lucide-react'
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -19,6 +19,25 @@ interface Classification {
   id: string; type: ClassType; selectedText: string
   startVerse: number; endVerse: number
   note: string; createdAt: string
+  // Extended study fields — stored in localStorage, populated progressively
+  definition?: string
+  explanation?: string
+  lexical_study?: string
+  original_term?: string
+  transliteration?: string
+  meaning?: string
+  occurrences_note?: string
+  theological_biblical?: string
+  narrative_function?: string
+  applications?: string
+  personal_notes?: string
+}
+
+const TYPE_LABELS: Record<ClassType, string> = {
+  personagem: 'Personagem', lugar: 'Lugar', tema: 'Tema', termo_chave: 'Termo-Chave',
+  conflito: 'Conflito', repeticao: 'Repetição', teologia: 'Teologia', tempo: 'Tempo',
+  instituicao: 'Instituição', cargo: 'Cargo', objetivo: 'Objetivo',
+  comentario: 'Comentário', insight: 'Insight', observacao: 'Observação',
 }
 
 // ── Storage ───────────────────────────────────────────────────────────────────
@@ -32,11 +51,12 @@ function writeCls(pid: string, v: Classification[]) {
 
 // ── Canvas ────────────────────────────────────────────────────────────────────
 
-const CW     = 800
-const CH     = 540
-const CX     = 400
-const CY     = 270
-const RADIUS = 205
+const CW      = 800
+const CH      = 540
+const CX      = 400
+const CY      = 270
+const RADIUS  = 205
+const PANEL_W = 300
 
 // ── Node definitions — 8 nós a 45° exatos ─────────────────────────────────────
 
@@ -99,6 +119,10 @@ export default function VisaoGeralWorkspace({
   const [aiLoading,    setAiLoading]   = useState<string | null>(null)      // cls id
   const [aiResults,    setAiResults]   = useState<Record<string, string>>({}) // cls id → text
   const [toast,        setToast]       = useState<string | null>(null)
+  const [activeItem,   setActiveItem]  = useState<Classification | null>(null)
+  const [fieldLoading, setFieldLoading]= useState<Record<string, boolean>>({})
+  const [dictSaving,   setDictSaving]  = useState(false)
+  const [dictSaved,    setDictSaved]   = useState(false)
 
   // ── Data ───────────────────────────────────────────────────────────────────
   useEffect(() => {
@@ -171,8 +195,72 @@ export default function VisaoGeralWorkspace({
     finally { setSavingCard(null) }
   }, [supabase, project.id, userId, sectionDef, onUpdate])
 
+  // Reset detail panel when node changes
+  useEffect(() => { setActiveItem(null); setDictSaved(false) }, [activePanel])
+
   // ── Toast helper ──────────────────────────────────────────────────────────
   function showToast(msg: string) { setToast(msg); setTimeout(() => setToast(null), 3000) }
+
+  // ── Update cls field (also keeps activeItem in sync) ──────────────────────
+  function updateClsField(id: string, fields: Partial<Classification>) {
+    setCls(prev => {
+      const next = prev.map(c => c.id === id ? { ...c, ...fields } : c)
+      writeCls(project.id, next)
+      return next
+    })
+    setActiveItem(prev => (prev?.id === id ? { ...prev, ...fields } : prev))
+  }
+
+  // ── Generate field inline (AI → save directly into cls, no side chat) ─────
+  async function generateField(c: Classification, kind: string, fieldKey: keyof Classification) {
+    const loadKey = `${c.id}:${kind}`
+    setFieldLoading(prev => ({ ...prev, [loadKey]: true }))
+    try {
+      const res = await fetch('/api/claude/classify', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ term: c.selectedText, type: c.type, startVerse: c.startVerse, book: project.book, passageRef: project.passage_ref, kind }),
+      })
+      const data = await res.json() as { result?: string }
+      if (data.result) {
+        if (kind === 'original_term') {
+          const parts = data.result.split('|').map((s: string) => s.trim())
+          updateClsField(c.id, { original_term: parts[0] ?? '', transliteration: parts[1] ?? '', meaning: parts[2] ?? '' })
+        } else {
+          updateClsField(c.id, { [fieldKey]: data.result })
+        }
+      }
+    } catch { /* noop */ }
+    finally { setFieldLoading(prev => { const n = { ...prev }; delete n[loadKey]; return n }) }
+  }
+
+  // ── Save classification to Dicionário Lampas ──────────────────────────────
+  async function saveToDictionary(item: Classification) {
+    setDictSaving(true)
+    try {
+      const catMap: Partial<Record<ClassType, string>> = {
+        personagem: 'personagem', cargo: 'personagem', lugar: 'lugar',
+        tema: 'tema', teologia: 'doutrina', termo_chave: 'termo_biblico',
+        repeticao: 'termo_biblico',
+      }
+      await supabase.from('lampas_dictionary').insert({
+        user_id: userId, title: item.selectedText,
+        category: catMap[item.type] ?? 'conceito_historico',
+        trust_level: 1,
+        definition: item.definition ?? item.explanation ?? null,
+        transliteration: item.transliteration ?? null,
+        occurrences: item.occurrences_note ?? null,
+        main_texts: `${project.book} ${project.passage_ref}, v.${item.startVerse}`,
+        theological_biblical: item.theological_biblical ?? null,
+        applications: item.applications ?? null,
+        sources: ['Visão Geral'], tags: [item.type],
+        cross_references: [], related_terms: [],
+      })
+      setDictSaved(true)
+      showToast(`"${item.selectedText}" salvo no Dicionário Lampas`)
+    } catch { /* noop */ }
+    finally { setDictSaving(false) }
+  }
 
   // ── Remove cls item ────────────────────────────────────────────────────────
   const removeCls = (id: string) => {
@@ -250,7 +338,6 @@ export default function VisaoGeralWorkspace({
   }
 
   // ── Layout ─────────────────────────────────────────────────────────────────
-  const PANEL_W  = 284
   const PANEL_GAP = 12
   const canvasAreaW  = activePanel ? Math.max(wrapW - PANEL_W - PANEL_GAP, 300) : wrapW
   const scale        = Math.min(1, (canvasAreaW - 8) / CW)
@@ -504,26 +591,40 @@ export default function VisaoGeralWorkspace({
                 boxShadow: `0 4px 24px rgba(0,0,0,0.07), 0 1px 4px rgba(0,0,0,0.04)`,
                 animation: 'slideInRight 0.2s cubic-bezier(0.16,1,0.3,1)',
                 alignSelf: 'flex-start',
+                display: 'flex', flexDirection: 'column',
+                maxHeight: '560px',
               }}>
 
                 {/* Panel header */}
                 <div style={{
+                  flexShrink: 0,
                   display: 'flex', alignItems: 'center', justifyContent: 'space-between',
                   padding: '12px 14px', background: activeNode.bg,
                   borderBottom: `1px solid ${activeNode.color}18`,
                 }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '7px' }}>
-                    <span style={{ fontSize: '1rem' }}>{activeNode.icon}</span>
-                    <span style={{ fontSize: '0.8rem', fontWeight: 700, color: activeNode.color }}>
-                      {activeNode.label}
-                    </span>
-                    {getCount(activeNode) > 0 && (
-                      <span style={{ fontSize: '0.63rem', fontWeight: 700, color: activeNode.color, background: activeNode.color + '20', borderRadius: '10px', padding: '1px 7px' }}>
-                        {getCount(activeNode)}
-                      </span>
+                    {activeItem && activeNode.kind === 'cls' ? (
+                      <button
+                        onClick={() => setActiveItem(null)}
+                        style={{ display: 'flex', alignItems: 'center', gap: '4px', background: 'none', border: 'none', cursor: 'pointer', color: activeNode.color, fontSize: '0.72rem', fontWeight: 600, padding: 0, fontFamily: 'inherit' }}
+                      >
+                        <ChevronLeft size={13} strokeWidth={2} /> {activeNode.label}
+                      </button>
+                    ) : (
+                      <>
+                        <span style={{ fontSize: '1rem' }}>{activeNode.icon}</span>
+                        <span style={{ fontSize: '0.8rem', fontWeight: 700, color: activeNode.color }}>
+                          {activeNode.label}
+                        </span>
+                        {getCount(activeNode) > 0 && (
+                          <span style={{ fontSize: '0.63rem', fontWeight: 700, color: activeNode.color, background: activeNode.color + '20', borderRadius: '10px', padding: '1px 7px' }}>
+                            {getCount(activeNode)}
+                          </span>
+                        )}
+                      </>
                     )}
                   </div>
-                  <button onClick={() => setActivePanel(null)}
+                  <button onClick={() => { setActiveItem(null); setActivePanel(null) }}
                     style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#94A3B8', padding: '3px', display: 'flex', borderRadius: '5px', transition: 'color 0.1s' }}
                     onMouseEnter={e => e.currentTarget.style.color = '#475569'}
                     onMouseLeave={e => e.currentTarget.style.color = '#94A3B8'}
@@ -533,10 +634,159 @@ export default function VisaoGeralWorkspace({
                 </div>
 
                 {/* Panel body */}
-                <div style={{ maxHeight: '360px', overflowY: 'auto', padding: '8px' }}>
+                <div style={{ flex: 1, overflowY: 'auto', padding: activeItem && activeNode.kind === 'cls' ? '0' : '8px' }}>
 
-                  {/* CLS items */}
-                  {activeNode.kind === 'cls' && (() => {
+                  {/* ── DETAIL VIEW — termo selecionado ── */}
+                  {activeItem && activeNode.kind === 'cls' && (() => {
+                    const c     = activeItem
+                    const color = activeNode.color
+
+                    function aiBtn(kind: string, fieldKey: keyof Classification) {
+                      const loading = fieldLoading[`${c.id}:${kind}`]
+                      return (
+                        <button
+                          onClick={() => generateField(c, kind, fieldKey)}
+                          disabled={loading}
+                          style={{ display: 'flex', alignItems: 'center', gap: '3px', background: 'none', border: `1px solid ${color}35`, borderRadius: '4px', padding: '2px 6px', fontSize: '0.58rem', fontWeight: 600, color: loading ? '#CBD5E1' : color, cursor: loading ? 'wait' : 'pointer', fontFamily: 'inherit', flexShrink: 0 }}
+                        >
+                          {loading ? <Loader2 size={8} strokeWidth={2} style={{ animation: 'spin 0.8s linear infinite' }} /> : <Sparkles size={8} strokeWidth={2} />}
+                          {loading ? '…' : 'IA'}
+                        </button>
+                      )
+                    }
+
+                    function fieldRow(label: string, fieldKey: keyof Classification, kind: string, rows = 2) {
+                      const val = (c[fieldKey] as string | undefined) ?? ''
+                      return (
+                        <div style={{ marginBottom: '12px' }}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '5px' }}>
+                            <label style={{ fontSize: '0.59rem', fontWeight: 700, color: '#94A3B8', textTransform: 'uppercase', letterSpacing: '0.07em' }}>{label}</label>
+                            {aiBtn(kind, fieldKey)}
+                          </div>
+                          <textarea
+                            value={val}
+                            rows={rows}
+                            onChange={e => updateClsField(c.id, { [fieldKey]: e.target.value })}
+                            placeholder="Escreva ou gere com IA…"
+                            style={{ width: '100%', boxSizing: 'border-box', resize: 'vertical', background: '#FAFAFA', border: '1px solid #E2E8F0', borderRadius: '7px', padding: '6px 8px', fontSize: '0.78rem', fontFamily: 'inherit', outline: 'none', color: '#1E293B', lineHeight: 1.5 }}
+                            onFocus={e => e.currentTarget.style.borderColor = color + '80'}
+                            onBlur={e => e.currentTarget.style.borderColor = '#E2E8F0'}
+                          />
+                        </div>
+                      )
+                    }
+
+                    function inputRow(label: string, fieldKey: keyof Classification) {
+                      const val = (c[fieldKey] as string | undefined) ?? ''
+                      return (
+                        <div style={{ marginBottom: '7px' }}>
+                          <label style={{ display: 'block', fontSize: '0.59rem', fontWeight: 700, color: '#94A3B8', textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: '3px' }}>{label}</label>
+                          <input
+                            value={val}
+                            onChange={e => updateClsField(c.id, { [fieldKey]: e.target.value })}
+                            style={{ width: '100%', boxSizing: 'border-box', background: '#FAFAFA', border: '1px solid #E2E8F0', borderRadius: '6px', padding: '5px 8px', fontSize: '0.78rem', fontFamily: 'inherit', outline: 'none', color: '#1E293B' }}
+                            onFocus={e => e.currentTarget.style.borderColor = color + '80'}
+                            onBlur={e => e.currentTarget.style.borderColor = '#E2E8F0'}
+                          />
+                        </div>
+                      )
+                    }
+
+                    return (
+                      <div>
+                        {/* Term header */}
+                        <div style={{ padding: '12px 14px 10px', borderBottom: '1px solid #F1F5F9' }}>
+                          <div style={{ fontSize: '1.05rem', fontWeight: 700, color: '#0F172A', lineHeight: 1.25, fontFamily: "'EB Garamond', Georgia, serif", fontStyle: 'italic' }}>
+                            {c.selectedText}
+                          </div>
+                          <div style={{ fontSize: '0.62rem', color: '#94A3B8', marginTop: '3px' }}>
+                            v.{c.startVerse}{c.endVerse !== c.startVerse ? `–${c.endVerse}` : ''} · {TYPE_LABELS[c.type]}
+                          </div>
+                          {c.note && <div style={{ fontSize: '0.68rem', color: '#64748B', marginTop: '3px', fontStyle: 'italic' }}>{c.note}</div>}
+                        </div>
+
+                        {/* Fields */}
+                        <div style={{ padding: '14px' }}>
+                          {fieldRow('Definição', 'definition', 'description', 2)}
+                          {fieldRow('Explicação', 'explanation', 'analysis', 2)}
+                          {fieldRow('Estudo Lexical', 'lexical_study', 'lexical', 3)}
+
+                          {/* Original languages — single IA button generates all three */}
+                          <div style={{ marginBottom: '12px' }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
+                              <label style={{ fontSize: '0.59rem', fontWeight: 700, color: '#94A3B8', textTransform: 'uppercase', letterSpacing: '0.07em' }}>Línguas Originais</label>
+                              {aiBtn('original_term', 'original_term')}
+                            </div>
+                            {inputRow('Termo original', 'original_term')}
+                            {inputRow('Transliteração', 'transliteration')}
+                            {inputRow('Significado', 'meaning')}
+                          </div>
+
+                          {fieldRow('Uso Bíblico', 'occurrences_note', 'occurrences', 2)}
+                          {fieldRow('Teologia Bíblica', 'theological_biblical', 'theological_biblical', 3)}
+                          {fieldRow('Função Narrativa', 'narrative_function', 'narrative_function', 2)}
+                          {fieldRow('Aplicações', 'applications', 'applications', 3)}
+
+                          {/* Personal notes — no AI */}
+                          <div style={{ marginBottom: '12px' }}>
+                            <label style={{ display: 'block', fontSize: '0.59rem', fontWeight: 700, color: '#94A3B8', textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: '5px' }}>Notas Pessoais</label>
+                            <textarea
+                              value={c.personal_notes ?? ''}
+                              rows={2}
+                              onChange={e => updateClsField(c.id, { personal_notes: e.target.value })}
+                              placeholder="Observações livres…"
+                              style={{ width: '100%', boxSizing: 'border-box', resize: 'vertical', background: '#FAFAFA', border: '1px solid #E2E8F0', borderRadius: '7px', padding: '6px 8px', fontSize: '0.78rem', fontFamily: 'inherit', outline: 'none', color: '#1E293B', lineHeight: 1.5 }}
+                            />
+                          </div>
+                        </div>
+
+                        {/* Detail footer — save to dictionary */}
+                        <div style={{ padding: '10px 14px', borderTop: '1px solid #F1F5F9', display: 'flex', flexDirection: 'column', gap: '5px' }}>
+                          <button
+                            onClick={() => saveToDictionary(c)}
+                            disabled={dictSaving || dictSaved}
+                            style={{
+                              display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px',
+                              background: dictSaved ? '#F0FDF4' : color, border: 'none',
+                              borderRadius: '8px', padding: '8px', fontSize: '0.73rem', fontWeight: 600,
+                              color: dictSaved ? '#10B981' : '#FFFFFF',
+                              cursor: dictSaving || dictSaved ? 'default' : 'pointer',
+                              fontFamily: 'inherit', transition: 'all 0.15s',
+                              opacity: dictSaving ? 0.7 : 1,
+                            }}
+                          >
+                            {dictSaved
+                              ? <><Check size={12} strokeWidth={2.5} /> Salvo no Dicionário</>
+                              : dictSaving
+                                ? 'Salvando…'
+                                : <><BookMarked size={12} strokeWidth={1.75} /> Salvar no Dicionário Lampas</>
+                            }
+                          </button>
+                          <button
+                            onClick={() => { sendToSection(c, 'termos_chave', '2.4 Termos-Chave') }}
+                            style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '5px', background: 'transparent', border: '1px solid #E2E8F0', borderRadius: '7px', padding: '6px', fontSize: '0.7rem', color: '#64748B', cursor: 'pointer', fontFamily: 'inherit' }}
+                          >
+                            → Enviar para Termos-Chave
+                          </button>
+                          <button
+                            onClick={() => { createCollage(c) }}
+                            style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '5px', background: 'transparent', border: '1px solid #E2E8F0', borderRadius: '7px', padding: '6px', fontSize: '0.7rem', color: '#64748B', cursor: 'pointer', fontFamily: 'inherit' }}
+                          >
+                            📌 Adicionar às Colagens
+                          </button>
+                          <button
+                            onClick={() => { removeCls(c.id); setActiveItem(null) }}
+                            style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '5px', background: 'transparent', border: '1px solid #FEE2E2', borderRadius: '7px', padding: '5px', fontSize: '0.67rem', color: '#EF4444', cursor: 'pointer', fontFamily: 'inherit' }}
+                          >
+                            Remover classificação
+                          </button>
+                        </div>
+                      </div>
+                    )
+                  })()}
+
+                  {/* ── LIST VIEW — cls items ── */}
+                  {(!activeItem || activeNode.kind !== 'cls') && activeNode.kind === 'cls' && (() => {
                     const items = getClsItems(activeNode)
                     return items.length === 0 ? (
                       <div style={{ padding: '18px 10px', textAlign: 'center' }}>
@@ -548,16 +798,16 @@ export default function VisaoGeralWorkspace({
                         {items.map(c => (
                           <div
                             key={c.id}
-                            onClick={e => openItemMenu(e, c.id)}
+                            onClick={() => { setDictSaved(false); setActiveItem(c) }}
                             style={{
                               display: 'flex', alignItems: 'flex-start', gap: '8px',
                               padding: '8px 10px', borderRadius: '8px',
                               cursor: 'pointer', transition: 'background 0.1s',
-                              background: itemMenuState?.id === c.id ? activeNode.bg : 'transparent',
-                              border: `1px solid ${itemMenuState?.id === c.id ? activeNode.color + '25' : 'transparent'}`,
+                              background: 'transparent',
+                              border: '1px solid transparent',
                             }}
-                            onMouseEnter={e => { if (itemMenuState?.id !== c.id) e.currentTarget.style.background = '#F8FAFC' }}
-                            onMouseLeave={e => { if (itemMenuState?.id !== c.id) e.currentTarget.style.background = 'transparent' }}
+                            onMouseEnter={e => { e.currentTarget.style.background = '#F8FAFC'; e.currentTarget.style.borderColor = activeNode.color + '18' }}
+                            onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.borderColor = 'transparent' }}
                           >
                             <div style={{ width: '5px', height: '5px', borderRadius: '50%', background: activeNode.color, flexShrink: 0, marginTop: '6px', opacity: 0.7 }} />
                             <div style={{ flex: 1, minWidth: 0 }}>
@@ -567,16 +817,14 @@ export default function VisaoGeralWorkspace({
                               <div style={{ fontSize: '0.63rem', color: '#94A3B8', marginTop: '2px' }}>
                                 v.{c.startVerse}{c.endVerse !== c.startVerse ? `–${c.endVerse}` : ''}{c.note ? ` · ${c.note}` : ''}
                               </div>
-                              {aiLoading === c.id && (
-                                <div style={{ fontSize: '0.68rem', color: '#8B5CF6', marginTop: '5px', fontStyle: 'italic' }}>Gerando…</div>
-                              )}
-                              {aiResults[c.id] && (
-                                <div style={{ marginTop: '5px', padding: '6px 8px', background: 'rgba(139,92,246,0.06)', border: '1px solid rgba(139,92,246,0.15)', borderRadius: '6px', fontSize: '0.76rem', color: '#475569', lineHeight: 1.5 }}>
-                                  {aiResults[c.id]}
+                              {/* Preview first generated field */}
+                              {(c.definition || c.explanation) && (
+                                <div style={{ marginTop: '4px', fontSize: '0.72rem', color: '#64748B', lineHeight: 1.4, overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>
+                                  {c.definition || c.explanation}
                                 </div>
                               )}
                             </div>
-                            <MoreHorizontal size={13} strokeWidth={1.75} style={{ color: '#94A3B8', flexShrink: 0, marginTop: '2px' }} />
+                            <ChevronLeft size={11} strokeWidth={1.75} style={{ color: '#CBD5E1', flexShrink: 0, marginTop: '3px', transform: 'rotate(180deg)' }} />
                           </div>
                         ))}
                       </div>
@@ -626,36 +874,38 @@ export default function VisaoGeralWorkspace({
                   })()}
                 </div>
 
-                {/* Panel footer */}
-                <div style={{ padding: '8px', borderTop: `1px solid ${activeNode.color}12`, display: 'flex', flexDirection: 'column', gap: '5px' }}>
-                  {activeNode.kind === 'cls' && (
-                    <button onClick={() => onOpenBible?.()}
+                {/* Panel footer — only when NOT in detail view */}
+                {!(activeItem && activeNode.kind === 'cls') && (
+                  <div style={{ flexShrink: 0, padding: '8px', borderTop: `1px solid ${activeNode.color}12`, display: 'flex', flexDirection: 'column', gap: '5px' }}>
+                    {activeNode.kind === 'cls' && (
+                      <button onClick={() => onOpenBible?.()}
+                        style={{
+                          display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '5px',
+                          background: 'transparent', border: `1px solid ${activeNode.color}30`,
+                          borderRadius: '7px', padding: '7px', fontSize: '0.73rem',
+                          color: activeNode.color, cursor: 'pointer', fontFamily: 'inherit', transition: 'all 0.12s',
+                        }}
+                        onMouseEnter={e => { e.currentTarget.style.background = activeNode.bg }}
+                        onMouseLeave={e => { e.currentTarget.style.background = 'transparent' }}
+                      >
+                        <BookOpen size={11} strokeWidth={1.75} /> Abrir Texto Bíblico
+                      </button>
+                    )}
+                    <button
+                      onClick={() => onAskAI(`Analise ${project.book} ${project.passage_ref} e liste os principais elementos de "${activeNode.label}" na passagem, com breve nota sobre cada um.`)}
                       style={{
                         display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '5px',
-                        background: 'transparent', border: `1px solid ${activeNode.color}30`,
+                        background: 'transparent', border: '1px solid #E2E8F0',
                         borderRadius: '7px', padding: '7px', fontSize: '0.73rem',
-                        color: activeNode.color, cursor: 'pointer', fontFamily: 'inherit', transition: 'all 0.12s',
+                        color: '#64748B', cursor: 'pointer', fontFamily: 'inherit', transition: 'all 0.12s',
                       }}
-                      onMouseEnter={e => { e.currentTarget.style.background = activeNode.bg }}
-                      onMouseLeave={e => { e.currentTarget.style.background = 'transparent' }}
+                      onMouseEnter={e => { e.currentTarget.style.borderColor = '#8B5CF6'; e.currentTarget.style.color = '#7C3AED' }}
+                      onMouseLeave={e => { e.currentTarget.style.borderColor = '#E2E8F0'; e.currentTarget.style.color = '#64748B' }}
                     >
-                      <BookOpen size={11} strokeWidth={1.75} /> Abrir Texto Bíblico
+                      <Sparkles size={11} strokeWidth={1.75} /> Organizar com IA
                     </button>
-                  )}
-                  <button
-                    onClick={() => onAskAI(`Analise ${project.book} ${project.passage_ref} e liste os principais elementos de "${activeNode.label}" na passagem, com breve nota sobre cada um.`)}
-                    style={{
-                      display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '5px',
-                      background: 'transparent', border: '1px solid #E2E8F0',
-                      borderRadius: '7px', padding: '7px', fontSize: '0.73rem',
-                      color: '#64748B', cursor: 'pointer', fontFamily: 'inherit', transition: 'all 0.12s',
-                    }}
-                    onMouseEnter={e => { e.currentTarget.style.borderColor = '#8B5CF6'; e.currentTarget.style.color = '#7C3AED' }}
-                    onMouseLeave={e => { e.currentTarget.style.borderColor = '#E2E8F0'; e.currentTarget.style.color = '#64748B' }}
-                  >
-                    <Sparkles size={11} strokeWidth={1.75} /> Organizar com IA
-                  </button>
-                </div>
+                  </div>
+                )}
               </div>
             )}
           </div>
@@ -747,15 +997,12 @@ export default function VisaoGeralWorkspace({
               "{c.selectedText}" — v.{c.startVerse}
             </div>
 
-            {sep('Estudar')}
-            {mi('Gerar explicação com IA', '✦', () => generateExplanation(c))}
-            {mi('Gerar estudo lexical', '📚', () => { setItemMenuState(null); onAskAI(`Produza um estudo lexical completo de "${c.selectedText}" em ${project.book} ${project.passage_ref}: (1) termo original e transliteração, (2) significado e range semântico, (3) principais ocorrências no AT e NT, (4) teologia bíblica, (5) aplicações exegéticas.`) })}
+            {sep('Abrir')}
+            {mi('Ver detalhes do termo', '✦', () => { setItemMenuState(null); const node = NODES.find(n => n.clsTypes?.includes(c.type)); if (node) { setActivePanel(node.key); setTimeout(() => { setDictSaved(false); setActiveItem(c) }, 0) } })}
 
             {sep('Pesquisar')}
-            {mi('Dicionário', '📖', () => { setItemMenuState(null); onNavigate?.('ferramentas_dicionario'); onAskAI(`Pesquise o verbete "${c.selectedText}" em dicionários bíblicos reformados (BDAG, HALOT, TWOT, NIDOTTE, NIDNTTE). Apresente: definição, campo semântico, ocorrências, teologia e autores de referência.`) })}
-            {mi('Bíblia', '📖', () => { setItemMenuState(null); onNavigate?.('ferramentas_biblica'); onAskAI(`Pesquise "${c.selectedText}" na Bíblia: principais passagens onde aparece, contexto de cada ocorrência, padrões de uso no livro de ${project.book} e progressão canônica do termo.`) })}
-            {mi('Biblioteca', '📚', () => { setItemMenuState(null); onNavigate?.('ferramentas_livros'); onAskAI(`Indique as principais obras reformadas que tratam de "${c.selectedText}" em ${project.book} ${project.passage_ref}: comentários, monografias e artigos, com breve descrição da contribuição de cada obra.`) })}
-            {mi('Referências cruzadas', '🔗', () => { setItemMenuState(null); onNavigate?.('ferramentas_refs_cruzadas'); onAskAI(`Liste as principais referências cruzadas para "${c.selectedText}" em ${project.book} ${project.passage_ref}: paralelos verbais, ecos literários, tipologia e progressão redentivo-histórica.`) })}
+            {mi('Dicionário Lampas', '📖', () => { setItemMenuState(null); onNavigate?.('ferramentas_dicionario') })}
+            {mi('Referências cruzadas', '🔗', () => { setItemMenuState(null); onNavigate?.('ferramentas_refs_cruzadas') })}
 
             {sep('Enviar para')}
             {mi('Termos-Chave', '🔑', () => sendToSection(c, 'termos_chave', '2.4 Termos-Chave'))}
