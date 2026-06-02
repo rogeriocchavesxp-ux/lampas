@@ -25,6 +25,7 @@ import SermonBuilderWorkspace from './SermonBuilderWorkspace'
 import CommentaryWorkspace from './CommentaryWorkspace'
 import LiveReferencePanel from './LiveReferencePanel'
 import AIPanel from './AIPanel'
+import BibleFloatingWindow from './BibleFloatingWindow'
 import {
   Heart, BookOpen, FileText, Crosshair, Landmark, Languages, GraduationCap,
   Sparkles, BookMarked, Flame, MessageSquareText, Layers, Book, Library,
@@ -341,6 +342,7 @@ export default function WorkspaceClient({ user, project, initialSections }: Prop
   const [referenceCollapsed, setReferenceCollapsed] = useState(false)
   const [focusMode, setFocusMode] = useState(false)
   const [sideBySide, setSideBySide] = useState(false)
+  const [bibleOpen, setBibleOpen] = useState(false)
 
   const sidebarWidthRef = useRef(264)
   const referenceWidthRef = useRef(280)
@@ -616,6 +618,25 @@ export default function WorkspaceClient({ user, project, initialSections }: Prop
           }}
         >
           {focusMode ? 'Sair' : 'Foco'}
+        </button>
+
+        <button
+          onClick={() => setBibleOpen(o => !o)}
+          title="Abrir Texto Bíblico"
+          style={{
+            marginLeft: '0.5rem', flexShrink: 0,
+            background: bibleOpen ? 'rgba(217,119,6,0.08)' : 'transparent',
+            border: `1px solid ${bibleOpen ? '#D97706' : 'var(--border-subtle)'}`,
+            color: bibleOpen ? '#D97706' : 'var(--text-muted)',
+            borderRadius: '5px', padding: '0.2rem 0.55rem',
+            fontSize: '0.73rem', fontWeight: '700', letterSpacing: '0.04em',
+            cursor: 'pointer', fontFamily: 'inherit', transition: 'all 0.15s',
+            display: 'flex', alignItems: 'center', gap: '0.3rem',
+          }}
+          onMouseEnter={e => { if (!bibleOpen) { e.currentTarget.style.borderColor = '#D97706'; e.currentTarget.style.color = '#D97706' } }}
+          onMouseLeave={e => { if (!bibleOpen) { e.currentTarget.style.borderColor = 'var(--border-subtle)'; e.currentTarget.style.color = 'var(--text-muted)' } }}
+        >
+          <BookOpen size={11} strokeWidth={2} /> Texto
         </button>
 
         <button
@@ -1204,6 +1225,18 @@ export default function WorkspaceClient({ user, project, initialSections }: Prop
 
         </div>
       </div>
+
+      {/* ── Bible floating window ─────────────────────────────────── */}
+      {bibleOpen && (
+        <BibleFloatingWindow
+          book={project.book}
+          passageRef={project.passage_ref}
+          testament={project.testament}
+          projectId={project.id}
+          userId={user.id}
+          onClose={() => setBibleOpen(false)}
+        />
+      )}
     </div>
   )
 }
