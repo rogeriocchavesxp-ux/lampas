@@ -1,10 +1,10 @@
 import Stripe from 'stripe'
 import { createServiceClient } from '@/lib/supabase/service'
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!)
-const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET!
-
 export async function POST(req: Request) {
+  const stripe        = new Stripe(process.env.STRIPE_SECRET_KEY!)
+  const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET!
+
   const body      = await req.text()
   const signature = req.headers.get('stripe-signature')
 
