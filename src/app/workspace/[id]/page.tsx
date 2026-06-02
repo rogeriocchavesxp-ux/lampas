@@ -1,6 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
-import { createServiceClient } from '@/lib/supabase/service'
-import { notFound } from 'next/navigation'
+import { notFound, redirect } from 'next/navigation'
 import WorkspaceClient from './WorkspaceClient'
 
 interface Props {
@@ -9,11 +8,12 @@ interface Props {
 
 export default async function WorkspacePage({ params }: Props) {
   const { id } = await params
-  const authClient    = await createClient()
-  const serviceClient = createServiceClient()
-  const { data: { user } } = await authClient.auth.getUser()
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
 
-  const { data: project } = await serviceClient
+  if (!user) redirect('/auth/login')
+
+  const { data: project } = await supabase
     .from('projects')
     .select('*')
     .eq('id', id)
@@ -21,17 +21,15 @@ export default async function WorkspacePage({ params }: Props) {
 
   if (!project) notFound()
 
-  const { data: sections } = await serviceClient
+  const { data: sections } = await supabase
     .from('sections')
     .select('*')
     .eq('project_id', id)
     .order('created_at', { ascending: true })
 
-  const demoUser = user ?? { id: project.user_id ?? '', email: 'demo@lampas.app' }
-
   return (
     <WorkspaceClient
-      user={demoUser as Parameters<typeof WorkspaceClient>[0]['user']}
+      user={user}
       project={project}
       initialSections={sections || []}
     />
