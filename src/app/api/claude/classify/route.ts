@@ -16,13 +16,13 @@ const TYPE_LABELS: Record<string, string> = {
 export async function POST(req: Request) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return Response.json({ error: 'Não autorizado' }, { status: 401 })
+  if (!user && process.env.NODE_ENV !== 'development') return Response.json({ error: 'Não autorizado' }, { status: 401 })
 
-  const usage = await checkAIUsage(user.id)
+  const usage = await checkAIUsage(user?.id ?? '')
   if (!usage.canUse) {
     return Response.json({ error: 'Limite de consultas de IA atingido.', upgrade: true }, { status: 429 })
   }
-  incrementAIUsage(user.id).catch(() => {})
+  if (user) incrementAIUsage(user.id).catch(() => {})
 
   const { term, type, startVerse, book, passageRef, kind } = await req.json() as {
     term: string; type: string; startVerse: number; book: string; passageRef: string

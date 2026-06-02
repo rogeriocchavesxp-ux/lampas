@@ -10,15 +10,17 @@ export default async function BillingPage({
 }) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
-  if (!user) redirect('/auth/login')
+  if (!user && process.env.NODE_ENV !== 'development') redirect('/auth/login')
 
-  const { data: sub } = await supabase
+  const userId = user?.id ?? ''
+
+  const { data: sub } = userId ? await supabase
     .from('subscriptions')
     .select('plan, status, current_period_end, cancel_at_period_end')
-    .eq('user_id', user.id)
-    .maybeSingle()
+    .eq('user_id', userId)
+    .maybeSingle() : { data: null }
 
-  const usage  = await checkAIUsage(user.id)
+  const usage  = await checkAIUsage(userId)
   const params = await searchParams
   const justUpgraded = params.upgraded === '1'
 
