@@ -1,9 +1,13 @@
 'use client'
 
+import { useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { LampasLogo, LampasMarkIcon } from '@/components/LampasLogo'
 
 export default function LandingPage() {
+  const router = useRouter()
+  useEffect(() => { router.replace('/dashboard') }, [router])
   return (
     <div style={{ minHeight: '100vh', background: 'var(--background)', color: 'var(--text-primary)' }}>
 
