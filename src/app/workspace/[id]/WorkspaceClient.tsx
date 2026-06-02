@@ -26,6 +26,7 @@ import CommentaryWorkspace from './CommentaryWorkspace'
 import LiveReferencePanel from './LiveReferencePanel'
 import AIPanel from './AIPanel'
 import BibleFloatingWindow from './BibleFloatingWindow'
+import VisaoGeralWorkspace from './VisaoGeralWorkspace'
 import {
   Heart, BookOpen, FileText, Crosshair, Landmark, Languages, GraduationCap,
   Sparkles, BookMarked, Flame, MessageSquareText, Layers, Book, Library,
@@ -1167,6 +1168,16 @@ export default function WorkspaceClient({ user, project, initialSections }: Prop
             ) : activeSlug === 'comentario_expositivo' ? (
               <CommentaryWorkspace
                 key={activeSlug}
+                project={project}
+                userId={user.id}
+                existingSection={activeSection}
+                onUpdate={handleSectionUpdate}
+                onAskAI={prompt => { setAiPrompt(prompt); setAiOpen(true) }}
+              />
+            ) : activeSlug === 'preparar_visao_geral' && activeDef ? (
+              <VisaoGeralWorkspace
+                key={activeSlug}
+                sectionDef={activeDef}
                 project={project}
                 userId={user.id}
                 existingSection={activeSection}
