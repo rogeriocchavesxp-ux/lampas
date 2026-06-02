@@ -664,6 +664,7 @@ export default function VisaoGeralWorkspace({
                             {aiBtn(kind, fieldKey)}
                           </div>
                           <textarea
+                            id={`field-${fieldKey}-${c.id}`}
                             value={val}
                             rows={rows}
                             onChange={e => updateClsField(c.id, { [fieldKey]: e.target.value })}
@@ -704,6 +705,39 @@ export default function VisaoGeralWorkspace({
                           </div>
                           {c.note && <div style={{ fontSize: '0.68rem', color: '#64748B', marginTop: '3px', fontStyle: 'italic' }}>{c.note}</div>}
                         </div>
+
+                        {/* Empty state */}
+                        {!c.definition && !c.explanation && !c.lexical_study && !c.theological_biblical && (
+                          <div style={{ padding: '16px 14px 8px', borderBottom: '1px solid #F1F5F9' }}>
+                            <div style={{ fontSize: '0.74rem', color: '#94A3B8', marginBottom: '10px', lineHeight: 1.4 }}>
+                              Nenhuma explicação gerada ainda.
+                            </div>
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
+                              <button
+                                onClick={() => generateField(c, 'description', 'definition')}
+                                disabled={!!fieldLoading[`${c.id}:description`]}
+                                style={{ display: 'flex', alignItems: 'center', gap: '6px', background: color, border: 'none', borderRadius: '7px', padding: '7px 12px', fontSize: '0.73rem', fontWeight: 600, color: '#FFF', cursor: 'pointer', fontFamily: 'inherit' }}
+                              >
+                                {fieldLoading[`${c.id}:description`] ? <Loader2 size={11} style={{ animation: 'spin 0.8s linear infinite' }} /> : <Sparkles size={11} strokeWidth={1.75} />}
+                                Gerar explicação com IA
+                              </button>
+                              <button
+                                onClick={() => generateField(c, 'lexical', 'lexical_study')}
+                                disabled={!!fieldLoading[`${c.id}:lexical`]}
+                                style={{ display: 'flex', alignItems: 'center', gap: '6px', background: 'transparent', border: `1px solid ${color}40`, borderRadius: '7px', padding: '7px 12px', fontSize: '0.73rem', fontWeight: 600, color, cursor: 'pointer', fontFamily: 'inherit' }}
+                              >
+                                {fieldLoading[`${c.id}:lexical`] ? <Loader2 size={11} style={{ animation: 'spin 0.8s linear infinite' }} /> : '📚'}
+                                Gerar estudo lexical
+                              </button>
+                              <button
+                                onClick={() => { /* focus definition textarea via ref would be ideal — just scroll to it */ document.getElementById(`field-definition-${c.id}`)?.focus() }}
+                                style={{ display: 'flex', alignItems: 'center', gap: '6px', background: 'transparent', border: '1px solid #E2E8F0', borderRadius: '7px', padding: '7px 12px', fontSize: '0.73rem', color: '#64748B', cursor: 'pointer', fontFamily: 'inherit' }}
+                              >
+                                ✎ Adicionar manualmente
+                              </button>
+                            </div>
+                          </div>
+                        )}
 
                         {/* Fields */}
                         <div style={{ padding: '14px' }}>
@@ -801,7 +835,7 @@ export default function VisaoGeralWorkspace({
                             onClick={() => { setDictSaved(false); setActiveItem(c) }}
                             style={{
                               display: 'flex', alignItems: 'flex-start', gap: '8px',
-                              padding: '8px 10px', borderRadius: '8px',
+                              padding: '8px 8px 8px 10px', borderRadius: '8px',
                               cursor: 'pointer', transition: 'background 0.1s',
                               background: 'transparent',
                               border: '1px solid transparent',
@@ -817,14 +851,27 @@ export default function VisaoGeralWorkspace({
                               <div style={{ fontSize: '0.63rem', color: '#94A3B8', marginTop: '2px' }}>
                                 v.{c.startVerse}{c.endVerse !== c.startVerse ? `–${c.endVerse}` : ''}{c.note ? ` · ${c.note}` : ''}
                               </div>
-                              {/* Preview first generated field */}
                               {(c.definition || c.explanation) && (
                                 <div style={{ marginTop: '4px', fontSize: '0.72rem', color: '#64748B', lineHeight: 1.4, overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>
                                   {c.definition || c.explanation}
                                 </div>
                               )}
                             </div>
-                            <ChevronLeft size={11} strokeWidth={1.75} style={{ color: '#CBD5E1', flexShrink: 0, marginTop: '3px', transform: 'rotate(180deg)' }} />
+                            {/* ⋯ — único gatilho do context menu */}
+                            <button
+                              onClick={e => { e.stopPropagation(); openItemMenu(e, c.id) }}
+                              style={{
+                                background: itemMenuState?.id === c.id ? '#F1F5F9' : 'transparent',
+                                border: `1px solid ${itemMenuState?.id === c.id ? '#E2E8F0' : 'transparent'}`,
+                                borderRadius: '5px', cursor: 'pointer', padding: '3px 4px',
+                                display: 'flex', alignItems: 'center', flexShrink: 0, marginTop: '0px',
+                                color: '#94A3B8', transition: 'all 0.1s',
+                              }}
+                              onMouseEnter={e => { e.currentTarget.style.background = '#F1F5F9'; e.currentTarget.style.borderColor = '#E2E8F0'; e.currentTarget.style.color = '#475569' }}
+                              onMouseLeave={e => { if (itemMenuState?.id !== c.id) { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.borderColor = 'transparent'; e.currentTarget.style.color = '#94A3B8' } }}
+                            >
+                              <MoreHorizontal size={13} strokeWidth={1.75} />
+                            </button>
                           </div>
                         ))}
                       </div>
@@ -997,8 +1044,23 @@ export default function VisaoGeralWorkspace({
               "{c.selectedText}" — v.{c.startVerse}
             </div>
 
-            {sep('Abrir')}
-            {mi('Ver detalhes do termo', '✦', () => { setItemMenuState(null); const node = NODES.find(n => n.clsTypes?.includes(c.type)); if (node) { setActivePanel(node.key); setTimeout(() => { setDictSaved(false); setActiveItem(c) }, 0) } })}
+            {sep('IA — preenche no termo')}
+            {mi('Gerar explicação com IA', '✦', () => {
+              setItemMenuState(null)
+              const node = NODES.find(n => n.clsTypes?.includes(c.type))
+              if (node) { setActivePanel(node.key); setTimeout(() => { setDictSaved(false); setActiveItem(c); generateField(c, 'description', 'definition') }, 0) }
+              else { generateField(c, 'description', 'definition') }
+            })}
+            {mi('Gerar estudo lexical', '📚', () => {
+              setItemMenuState(null)
+              const node = NODES.find(n => n.clsTypes?.includes(c.type))
+              if (node) { setActivePanel(node.key); setTimeout(() => { setDictSaved(false); setActiveItem(c); generateField(c, 'lexical', 'lexical_study') }, 0) }
+              else { generateField(c, 'lexical', 'lexical_study') }
+            })}
+            {mi('Gerar aplicações', '🎯', () => {
+              setItemMenuState(null)
+              generateField(c, 'applications', 'applications')
+            })}
 
             {sep('Pesquisar')}
             {mi('Dicionário Lampas', '📖', () => { setItemMenuState(null); onNavigate?.('ferramentas_dicionario') })}
@@ -1014,7 +1076,7 @@ export default function VisaoGeralWorkspace({
 
             {sep('Gerenciar')}
             {mi('Ver no Texto Bíblico', '📖', () => { setItemMenuState(null); onOpenBible?.() })}
-            {mi('Remover classificação', '🗑', () => removeCls(c.id), true)}
+            {mi('Remover classificação', '🗑', () => { removeCls(c.id); setActiveItem(null) }, true)}
           </div>
         )
       })()}
