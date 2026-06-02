@@ -56,7 +56,7 @@ async function loadOriginalTextContext(
 export async function POST(req: Request) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
-  if (!user && process.env.NODE_ENV !== 'development') return Response.json({ error: 'Não autorizado' }, { status: 401 })
+  // auth desativado temporariamente
 
   const usage = await checkAIUsage(user?.id ?? '')
   if (!usage.canUse) {
