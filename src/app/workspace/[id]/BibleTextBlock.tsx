@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback, useRef, useMemo } from 'react'
 import { BookOpen, Copy, ChevronDown, ChevronUp, Check, RefreshCw, Layers, ChevronLeft, MoreHorizontal, Loader2, Sparkles } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import type { CollageItem } from '@/lib/collages-content'
+import { loadClassificationsFromDB, saveClassificationToDB, deleteClassificationFromDB } from '@/lib/classification-sync'
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -217,8 +218,22 @@ export default function BibleTextBlock({ book, passageRef, testament, projectId,
   // Pre-index
   const clsById = useMemo(() => Object.fromEntries(clsList.map(c => [c.id, c])), [clsList])
 
-  // ── Load ──────────────────────────────────────────────────────────────────
-  useEffect(() => { setClsList(rcl(projectId)); setHlList(rhl(projectId)) }, [projectId])
+  // ── Load ─────────────────────────────────────────────────────────────────
+  useEffect(() => {
+    // Carrega do localStorage imediatamente (rápido)
+    const local = rcl(projectId)
+    setClsList(local)
+    setHlList(rhl(projectId))
+    // Depois sincroniza com o banco (fonte de verdade)
+    loadClassificationsFromDB(projectId).then(fromDB => {
+      if (fromDB.length === 0) return
+      const dbIds = new Set(fromDB.map(c => c.id))
+      const onlyLocal = local.filter(c => !dbIds.has(c.id))
+      const merged = [...fromDB, ...onlyLocal] as Classification[]
+      setClsList(merged)
+      wcl(projectId, merged)
+    })
+  }, [projectId])
 
   // ── Fetch text ────────────────────────────────────────────────────────────
   const fetchText = useCallback(async (v: Version, force = false) => {
@@ -406,8 +421,9 @@ export default function BibleTextBlock({ book, passageRef, testament, projectId,
 
     if (menuCtx.kind === 'new') {
       const p   = menuCtx.pending
-      const cls: Classification = { id: Date.now().toString(36) + Math.random().toString(36).slice(2), type, selectedText: p.text, startVerse: p.startVerse, endVerse: p.endVerse, startOffset: p.startOffset, endOffset: p.endOffset, note: noteVal, createdAt: new Date().toISOString() }
+      const cls: Classification = { id: crypto.randomUUID(), type, selectedText: p.text, startVerse: p.startVerse, endVerse: p.endVerse, startOffset: p.startOffset, endOffset: p.endOffset, note: noteVal, createdAt: new Date().toISOString() }
       const next = [...clsList, cls]; setClsList(next); wcl(projectId, next)
+      saveClassificationToDB(cls, projectId, userId)
       if (def.sectionSlug) {
         await saveToSection(def, p.text)
         setSavedTo(def.sectionTitle ?? def.label)
@@ -461,6 +477,7 @@ export default function BibleTextBlock({ book, passageRef, testament, projectId,
     const n = clsList.filter(c => c.id !== id); setClsList(n); wcl(projectId, n)
     setCardMenuId(null); setCardMenuPos(null)
     setAiResults(prev => { const r = { ...prev }; delete r[id]; return r })
+    deleteClassificationFromDB(id)
   }
 
   // ── Helpers ───────────────────────────────────────────────────────────────

@@ -7,6 +7,7 @@ import type { CollageItem } from '@/lib/collages-content'
 import { createClient } from '@/lib/supabase/client'
 import SectionWorkspace from './SectionWorkspace'
 import { Sparkles, Map, List, MoreHorizontal, X, BookOpen, ChevronLeft, Loader2, Check, BookMarked } from 'lucide-react'
+import { loadClassificationsFromDB, saveClassificationToDB, deleteClassificationFromDB, updateClassificationInDB } from '@/lib/classification-sync'
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -124,11 +125,26 @@ export default function VisaoGeralWorkspace({
   const [dictSaving,   setDictSaving]  = useState(false)
   const [dictSaved,    setDictSaved]   = useState(false)
 
-  // ── Data ───────────────────────────────────────────────────────────────────
+  // ── Data — carrega do banco (fonte de verdade) e sincroniza localStorage ───
   useEffect(() => {
     let mounted = true
-    setCls(readCls(project.id))
-    const id = window.setInterval(() => {
+    // 1. Exibe localStorage imediatamente (zero latência)
+    const local = readCls(project.id)
+    setCls(local)
+
+    // 2. Sincroniza com o banco em background
+    loadClassificationsFromDB(project.id).then(fromDB => {
+      if (!mounted) return
+      if (fromDB.length === 0) return
+      const dbIds = new Set(fromDB.map(c => c.id))
+      const onlyLocal = local.filter(c => !dbIds.has(c.id))
+      const merged = [...fromDB, ...onlyLocal] as Classification[]
+      setCls(merged)
+      writeCls(project.id, merged)
+    })
+
+    // 3. Polling leve para capturar mudanças do BibleTextBlock (mesma aba)
+    const intervalId = window.setInterval(() => {
       if (!mounted) return
       const fresh = readCls(project.id)
       setCls(prev => {
@@ -136,7 +152,8 @@ export default function VisaoGeralWorkspace({
         return fresh
       })
     }, 2000)
-    return () => { mounted = false; window.clearInterval(id) }
+
+    return () => { mounted = false; window.clearInterval(intervalId) }
   }, [project.id])
 
   useEffect(() => {
@@ -217,6 +234,7 @@ export default function VisaoGeralWorkspace({
       return next
     })
     setActiveItem(prev => (prev?.id === id ? { ...prev, ...fields } : prev))
+    updateClassificationInDB(id, fields)
   }
 
   // ── Generate field inline (AI → save directly into cls, no side chat) ─────
@@ -275,6 +293,7 @@ export default function VisaoGeralWorkspace({
     const next = cls.filter(c => c.id !== id)
     setCls(next); writeCls(project.id, next)
     setItemMenuState(null)
+    deleteClassificationFromDB(id)
   }
 
   // ── Open item menu at button position ──────────────────────────────────────
