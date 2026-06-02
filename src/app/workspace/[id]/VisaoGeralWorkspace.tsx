@@ -3,9 +3,10 @@
 import { useState, useEffect, useMemo, useRef, useCallback } from 'react'
 import type { Project, Section } from '@/types/database'
 import type { SectionDef } from '@/lib/workspace-sections'
+import type { CollageItem } from '@/lib/collages-content'
 import { createClient } from '@/lib/supabase/client'
 import SectionWorkspace from './SectionWorkspace'
-import { Sparkles, Map, List, MoreHorizontal, X, BookOpen, ChevronRight } from 'lucide-react'
+import { Sparkles, Map, List, MoreHorizontal, X, BookOpen } from 'lucide-react'
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -76,12 +77,13 @@ interface Props {
   onUpdate: (s: Section) => void
   onAskAI: (prompt: string) => void
   onOpenBible?: () => void
+  onNavigate?: (slug: string) => void
 }
 
 // ── Component ─────────────────────────────────────────────────────────────────
 
 export default function VisaoGeralWorkspace({
-  sectionDef, project, userId, existingSection, onUpdate, onAskAI, onOpenBible,
+  sectionDef, project, userId, existingSection, onUpdate, onAskAI, onOpenBible, onNavigate,
 }: Props) {
   const supabase    = useMemo(() => createClient(), [])
   const wrapRef     = useRef<HTMLDivElement>(null)
@@ -93,7 +95,10 @@ export default function VisaoGeralWorkspace({
   const [wrapW,        setWrapW]       = useState(CW)
   const [cardDraft,    setCardDraft]   = useState<Record<string, string>>({})
   const [savingCard,   setSavingCard]  = useState<string | null>(null)
-  const [itemMenu,     setItemMenu]    = useState<string | null>(null)
+  const [itemMenuState,setItemMenuState] = useState<{ id: string; x: number; y: number } | null>(null)
+  const [aiLoading,    setAiLoading]   = useState<string | null>(null)      // cls id
+  const [aiResults,    setAiResults]   = useState<Record<string, string>>({}) // cls id → text
+  const [toast,        setToast]       = useState<string | null>(null)
 
   // ── Data ───────────────────────────────────────────────────────────────────
   useEffect(() => {
@@ -111,11 +116,11 @@ export default function VisaoGeralWorkspace({
 
   // close item menu on outside click
   useEffect(() => {
-    if (!itemMenu) return
-    const h = () => setItemMenu(null)
+    if (!itemMenuState) return
+    const h = () => setItemMenuState(null)
     document.addEventListener('mousedown', h)
     return () => document.removeEventListener('mousedown', h)
-  }, [itemMenu])
+  }, [itemMenuState])
 
   const cards = useMemo(
     () => (existingSection?.content as { cards?: Record<string, string> } | null)?.cards ?? {},
@@ -159,11 +164,81 @@ export default function VisaoGeralWorkspace({
     finally { setSavingCard(null) }
   }, [supabase, project.id, userId, sectionDef, onUpdate])
 
+  // ── Toast helper ──────────────────────────────────────────────────────────
+  function showToast(msg: string) { setToast(msg); setTimeout(() => setToast(null), 3000) }
+
   // ── Remove cls item ────────────────────────────────────────────────────────
   const removeCls = (id: string) => {
     const next = cls.filter(c => c.id !== id)
     setCls(next); writeCls(project.id, next)
-    setItemMenu(null)
+    setItemMenuState(null)
+  }
+
+  // ── Open item menu at button position ──────────────────────────────────────
+  function openItemMenu(e: React.MouseEvent, id: string) {
+    e.stopPropagation()
+    const rect = e.currentTarget.getBoundingClientRect()
+    setItemMenuState({ id, x: rect.right, y: rect.top })
+  }
+
+  // ── Gerar explicação com IA (inline) ──────────────────────────────────────
+  async function generateExplanation(c: Classification) {
+    setItemMenuState(null)
+    setAiLoading(c.id)
+    try {
+      const res = await fetch('/api/claude/classify', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ term: c.selectedText, type: c.type, startVerse: c.startVerse, book: project.book, passageRef: project.passage_ref, kind: 'description' }),
+      })
+      const data = await res.json() as { result?: string }
+      if (data.result) setAiResults(prev => ({ ...prev, [c.id]: data.result! }))
+    } catch { /* noop */ }
+    finally { setAiLoading(null) }
+  }
+
+  // ── Send to section (text append) ─────────────────────────────────────────
+  async function sendToSection(c: Classification, slug: string, title: string, cardId?: string) {
+    setItemMenuState(null)
+    const line = `**${c.selectedText}** (v.${c.startVerse}) — ${c.type}`
+    try {
+      const { data } = await supabase.from('sections').select().eq('project_id', project.id).eq('slug', slug).maybeSingle()
+      const base = { project_id: project.id, user_id: userId, slug, module: 'inventio' as const, title, status: 'draft' as const }
+      if (cardId) {
+        const cards = ((data?.content as { cards?: Record<string, string> } | null)?.cards) ?? {}
+        const prev  = cards[cardId] ?? ''
+        const payload = { ...base, content: { cards: { ...cards, [cardId]: prev ? `${prev}\n${line}` : line } } }
+        if (data?.id) await supabase.from('sections').update(payload).eq('id', data.id)
+        else          await supabase.from('sections').insert(payload)
+      } else {
+        const prev = (data?.ai_output as string | null) ?? ''
+        const payload = { ...base, ai_output: prev ? `${prev}\n\n${line}` : line }
+        if (data?.id) await supabase.from('sections').update(payload).eq('id', data.id)
+        else          await supabase.from('sections').insert(payload)
+      }
+      showToast(`Enviado para ${title}`)
+    } catch { showToast('Erro ao enviar') }
+  }
+
+  // ── Transformar em Colagem ─────────────────────────────────────────────────
+  async function createCollage(c: Classification) {
+    setItemMenuState(null)
+    const TYPE_LABELS: Record<string, string> = { personagem: 'Personagem', lugar: 'Lugar', tema: 'Tema', termo_chave: 'Termo-Chave', conflito: 'Conflito', repeticao: 'Repetição', teologia: 'Teologia', cargo: 'Cargo' }
+    try {
+      const { data } = await supabase.from('sections').select().eq('project_id', project.id).eq('slug', 'colagens').maybeSingle()
+      const items: CollageItem[] = ((data?.content as { type?: string; items?: CollageItem[] } | null)?.items) ?? []
+      const newItem: CollageItem = {
+        id: Date.now().toString(36) + Math.random().toString(36).slice(2),
+        type: 'trecho', title: `${TYPE_LABELS[c.type] ?? c.type}: "${c.selectedText}"`,
+        content: `${c.selectedText}\n\n— ${project.book} ${project.passage_ref}, v.${c.startVerse}${aiResults[c.id] ? `\n\n${aiResults[c.id]}` : ''}`,
+        author: '', work: `${project.book} ${project.passage_ref}`, page: `v.${c.startVerse}`,
+        tags: [TYPE_LABELS[c.type] ?? c.type], category: 'Exegese', linkedTo: 'Perícope', x: 0, y: 0,
+      }
+      const payload = { project_id: project.id, user_id: userId, slug: 'colagens', module: 'inventio' as const, title: 'Colagens', status: 'draft' as const, content: { type: 'collages_workspace', items: [...items, newItem] } }
+      if (data?.id) await supabase.from('sections').update(payload).eq('id', data.id)
+      else          await supabase.from('sections').insert(payload)
+      showToast('Adicionado às Colagens')
+    } catch { showToast('Erro ao criar colagem') }
   }
 
   // ── Layout ─────────────────────────────────────────────────────────────────
@@ -463,45 +538,37 @@ export default function VisaoGeralWorkspace({
                     ) : (
                       <div style={{ display: 'flex', flexDirection: 'column', gap: '1px' }}>
                         {items.map(c => (
-                          <div key={c.id}
-                            style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '7px 8px', borderRadius: '8px', transition: 'background 0.1s' }}
-                            onMouseEnter={e => { e.currentTarget.style.background = activeNode.bg }}
-                            onMouseLeave={e => { e.currentTarget.style.background = 'transparent' }}
-                          >
-                            <div style={{ width: '5px', height: '5px', borderRadius: '50%', background: activeNode.color, flexShrink: 0, opacity: 0.65 }} />
-                            <div style={{ flex: 1, minWidth: 0 }}>
-                              <div style={{ fontSize: '0.83rem', fontFamily: "'EB Garamond', Georgia, serif", fontStyle: 'italic', color: '#1E293B', lineHeight: 1.35 }}>
-                                {c.selectedText}
+                          <div key={c.id} style={{ borderRadius: '8px', overflow: 'hidden' }}>
+                            <div
+                              style={{ display: 'flex', alignItems: 'flex-start', gap: '8px', padding: '7px 8px', borderRadius: '8px', transition: 'background 0.1s' }}
+                              onMouseEnter={e => { e.currentTarget.style.background = activeNode.bg }}
+                              onMouseLeave={e => { e.currentTarget.style.background = 'transparent' }}
+                            >
+                              <div style={{ width: '5px', height: '5px', borderRadius: '50%', background: activeNode.color, flexShrink: 0, marginTop: '6px', opacity: 0.65 }} />
+                              <div style={{ flex: 1, minWidth: 0 }}>
+                                <div style={{ fontSize: '0.83rem', fontFamily: "'EB Garamond', Georgia, serif", fontStyle: 'italic', color: '#1E293B', lineHeight: 1.35 }}>
+                                  {c.selectedText}
+                                </div>
+                                <div style={{ fontSize: '0.63rem', color: '#94A3B8', marginTop: '1px' }}>
+                                  v.{c.startVerse}{c.endVerse !== c.startVerse ? `–${c.endVerse}` : ''}{c.note ? ` · ${c.note}` : ''}
+                                </div>
+                                {/* AI explanation inline */}
+                                {aiLoading === c.id && (
+                                  <div style={{ fontSize: '0.68rem', color: '#8B5CF6', marginTop: '5px', fontStyle: 'italic' }}>Gerando explicação…</div>
+                                )}
+                                {aiResults[c.id] && (
+                                  <div style={{ marginTop: '5px', padding: '6px 8px', background: 'rgba(139,92,246,0.06)', border: '1px solid rgba(139,92,246,0.15)', borderRadius: '6px', fontSize: '0.76rem', color: '#475569', lineHeight: 1.5 }}>
+                                    {aiResults[c.id]}
+                                  </div>
+                                )}
                               </div>
-                              <div style={{ fontSize: '0.63rem', color: '#94A3B8', marginTop: '1px' }}>
-                                v.{c.startVerse}{c.endVerse !== c.startVerse ? `–${c.endVerse}` : ''}{c.note ? ` · ${c.note}` : ''}
-                              </div>
-                            </div>
-                            <div style={{ position: 'relative', flexShrink: 0 }}>
-                              <button onClick={e => { e.stopPropagation(); setItemMenu(itemMenu === c.id ? null : c.id) }}
-                                style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#CBD5E1', padding: '2px 3px', borderRadius: '4px', display: 'flex', transition: 'color 0.1s' }}
+                              <button onClick={e => openItemMenu(e, c.id)}
+                                style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#CBD5E1', padding: '2px 3px', borderRadius: '4px', display: 'flex', flexShrink: 0, transition: 'color 0.1s' }}
                                 onMouseEnter={e => e.currentTarget.style.color = '#64748B'}
                                 onMouseLeave={e => e.currentTarget.style.color = '#CBD5E1'}
                               >
                                 <MoreHorizontal size={13} strokeWidth={1.75} />
                               </button>
-                              {itemMenu === c.id && (
-                                <div style={{
-                                  position: 'absolute', right: 0, top: '100%', zIndex: 30,
-                                  background: '#FFFFFF', border: '1px solid #E2E8F0',
-                                  borderRadius: '8px', padding: '4px',
-                                  boxShadow: '0 4px 16px rgba(0,0,0,0.1)', minWidth: '150px',
-                                  animation: 'fadeIn 0.1s ease-out',
-                                }}>
-                                  <button onClick={() => removeCls(c.id)}
-                                    style={{ display: 'flex', width: '100%', background: 'none', border: 'none', borderRadius: '5px', padding: '6px 9px', fontSize: '0.75rem', color: '#EF4444', cursor: 'pointer', fontFamily: 'inherit', textAlign: 'left', transition: 'background 0.1s' }}
-                                    onMouseEnter={e => e.currentTarget.style.background = '#FEF2F2'}
-                                    onMouseLeave={e => e.currentTarget.style.background = 'none'}
-                                  >
-                                    Remover classificação
-                                  </button>
-                                </div>
-                              )}
                             </div>
                           </div>
                         ))}
@@ -624,6 +691,78 @@ export default function VisaoGeralWorkspace({
           </div>
         </>
       )}
+
+      {/* ── Toast ── */}
+      {toast && (
+        <div style={{ position: 'fixed', bottom: '1.5rem', right: '1.5rem', zIndex: 9998, background: '#18181B', color: '#FFF', padding: '0.65rem 1.1rem', borderRadius: '10px', fontSize: '0.82rem', fontWeight: 500, boxShadow: '0 8px 24px rgba(0,0,0,0.2)', animation: 'fadeIn 0.2s ease-out', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+          ✓ {toast}
+        </div>
+      )}
+
+      {/* ── Item context menu (fixed — escapa overflow do painel) ── */}
+      {itemMenuState && (() => {
+        const c = cls.find(x => x.id === itemMenuState.id)
+        if (!c) return null
+        const menuX = Math.min(itemMenuState.x - 224, window.innerWidth - 232)
+        const menuY = itemMenuState.y
+
+        function mi(label: string, icon: string, action: () => void, danger?: boolean) {
+          return (
+            <button onClick={e => { e.stopPropagation(); action() }}
+              style={{ display: 'flex', alignItems: 'center', gap: '7px', width: '100%', background: 'none', border: 'none', borderRadius: '5px', padding: '5px 9px', fontSize: '0.75rem', color: danger ? '#EF4444' : '#1E293B', cursor: 'pointer', fontFamily: 'inherit', textAlign: 'left', transition: 'background 0.1s', whiteSpace: 'nowrap' }}
+              onMouseEnter={e => { e.currentTarget.style.background = danger ? '#FEF2F2' : '#F1F5F9' }}
+              onMouseLeave={e => { e.currentTarget.style.background = 'none' }}
+            >
+              <span style={{ fontSize: '0.8rem', width: '16px', textAlign: 'center', flexShrink: 0 }}>{icon}</span>
+              {label}
+            </button>
+          )
+        }
+
+        function sep(label: string) {
+          return <div style={{ fontSize: '0.58rem', color: '#94A3B8', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', padding: '8px 9px 3px', marginTop: '2px' }}>{label}</div>
+        }
+
+        return (
+          <div
+            onMouseDown={e => e.stopPropagation()}
+            style={{
+              position: 'fixed', left: menuX, top: menuY, zIndex: 9999,
+              background: '#FFFFFF', border: '1px solid #E2E8F0',
+              borderRadius: '10px', padding: '5px',
+              boxShadow: '0 8px 32px rgba(0,0,0,0.12), 0 2px 8px rgba(0,0,0,0.06)',
+              width: '224px', animation: 'fadeIn 0.1s ease-out',
+            }}
+          >
+            {/* Preview */}
+            <div style={{ fontSize: '0.7rem', color: '#94A3B8', fontStyle: 'italic', padding: '3px 9px 6px', borderBottom: '1px solid #F1F5F9', marginBottom: '2px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+              "{c.selectedText}" — v.{c.startVerse}
+            </div>
+
+            {sep('Estudar')}
+            {mi('Gerar explicação com IA', '✦', () => generateExplanation(c))}
+            {mi('Gerar estudo lexical', '📚', () => { setItemMenuState(null); onAskAI(`Produza um estudo lexical completo de "${c.selectedText}" em ${project.book} ${project.passage_ref}: (1) termo original e transliteração, (2) significado e range semântico, (3) principais ocorrências no AT e NT, (4) teologia bíblica, (5) aplicações exegéticas.`) })}
+
+            {sep('Pesquisar')}
+            {mi('Dicionário', '📖', () => { setItemMenuState(null); onNavigate?.('ferramentas_dicionario'); onAskAI(`Pesquise o verbete "${c.selectedText}" em dicionários bíblicos reformados (BDAG, HALOT, TWOT, NIDOTTE, NIDNTTE). Apresente: definição, campo semântico, ocorrências, teologia e autores de referência.`) })}
+            {mi('Bíblia', '📖', () => { setItemMenuState(null); onNavigate?.('ferramentas_biblica'); onAskAI(`Pesquise "${c.selectedText}" na Bíblia: principais passagens onde aparece, contexto de cada ocorrência, padrões de uso no livro de ${project.book} e progressão canônica do termo.`) })}
+            {mi('Biblioteca', '📚', () => { setItemMenuState(null); onNavigate?.('ferramentas_livros'); onAskAI(`Indique as principais obras reformadas que tratam de "${c.selectedText}" em ${project.book} ${project.passage_ref}: comentários, monografias e artigos, com breve descrição da contribuição de cada obra.`) })}
+            {mi('Referências cruzadas', '🔗', () => { setItemMenuState(null); onNavigate?.('ferramentas_refs_cruzadas'); onAskAI(`Liste as principais referências cruzadas para "${c.selectedText}" em ${project.book} ${project.passage_ref}: paralelos verbais, ecos literários, tipologia e progressão redentivo-histórica.`) })}
+
+            {sep('Enviar para')}
+            {mi('Termos-Chave', '🔑', () => sendToSection(c, 'termos_chave', '2.4 Termos-Chave'))}
+            {mi('Estudo Teológico', '🧠', () => sendToSection(c, 'contexto_canonico', '3.1 Contexto Canônico'))}
+            {mi('Comentário', '📖', () => sendToSection(c, 'comentario_expositivo', 'Comentário Expositivo'))}
+            {mi('Colagem', '📌', () => createCollage(c))}
+
+            <div style={{ height: '1px', background: '#F1F5F9', margin: '4px 0' }} />
+
+            {sep('Gerenciar')}
+            {mi('Ver no Texto Bíblico', '📖', () => { setItemMenuState(null); onOpenBible?.() })}
+            {mi('Remover classificação', '🗑', () => removeCls(c.id), true)}
+          </div>
+        )
+      })()}
     </div>
   )
 }

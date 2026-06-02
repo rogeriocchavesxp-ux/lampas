@@ -1184,6 +1184,7 @@ export default function WorkspaceClient({ user, project, initialSections }: Prop
                 onUpdate={handleSectionUpdate}
                 onAskAI={prompt => { setAiPrompt(prompt); setAiOpen(true) }}
                 onOpenBible={() => setBibleOpen(true)}
+                onNavigate={navigate}
               />
             ) : activeDef ? (
               <SectionWorkspace
