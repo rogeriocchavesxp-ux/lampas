@@ -1,6 +1,7 @@
 import Anthropic from '@anthropic-ai/sdk'
 import { createClient } from '@/lib/supabase/server'
 import { checkAIUsage, incrementAIUsage } from '@/lib/billing'
+import { checkRateLimit, rateLimitHeaders } from '@/lib/rate-limit'
 import { EXEGESE_SYSTEM_PROMPT } from '@/lib/prompts/exegese-system'
 import { getSectionBySlug } from '@/lib/workspace-sections'
 import { getToolAreaBySlug } from '@/lib/tools-content'
@@ -61,6 +62,14 @@ export async function POST(req: Request) {
       plan: usage.plan,
       upgrade: true,
     }, { status: 429 })
+  }
+
+  const rl = await checkRateLimit(user.id, usage.plan)
+  if (!rl.allowed) {
+    return Response.json(
+      { error: 'Muitas requisições. Aguarde um momento.' },
+      { status: 429, headers: rateLimitHeaders(rl) }
+    )
   }
 
   const body = await req.json()

@@ -1,5 +1,7 @@
 import Anthropic from '@anthropic-ai/sdk'
 import { createClient } from '@/lib/supabase/server'
+import { checkAIUsage, incrementAIUsage } from '@/lib/billing'
+import { checkRateLimit, rateLimitHeaders } from '@/lib/rate-limit'
 import { EXEGESE_SYSTEM_PROMPT } from '@/lib/prompts/exegese-system'
 
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY! })
@@ -38,6 +40,21 @@ export async function POST(req: Request) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return Response.json({ error: 'Não autorizado' }, { status: 401 })
+
+  const usage = await checkAIUsage(user.id)
+  if (!usage.canUse) {
+    return Response.json({ error: 'Limite de consultas de IA atingido.', upgrade: true }, { status: 429 })
+  }
+
+  const rl = await checkRateLimit(user.id, usage.plan)
+  if (!rl.allowed) {
+    return Response.json(
+      { error: 'Muitas requisições. Aguarde um momento.' },
+      { status: 429, headers: rateLimitHeaders(rl) }
+    )
+  }
+
+  incrementAIUsage(user.id).catch(() => {})
 
   const { action, project, term } = await req.json() as {
     action: 'identify' | 'analyze'
