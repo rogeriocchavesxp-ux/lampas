@@ -114,12 +114,12 @@ export default function VisaoGeralWorkspace({
     return () => ro.disconnect()
   }, [])
 
-  // close item menu on outside click
+  // fechar menu ao clicar fora
   useEffect(() => {
     if (!itemMenuState) return
     const h = () => setItemMenuState(null)
-    document.addEventListener('mousedown', h)
-    return () => document.removeEventListener('mousedown', h)
+    document.addEventListener('click', h)
+    return () => document.removeEventListener('click', h)
   }, [itemMenuState])
 
   const cards = useMemo(
@@ -176,7 +176,8 @@ export default function VisaoGeralWorkspace({
 
   // ── Open item menu at button position ──────────────────────────────────────
   function openItemMenu(e: React.MouseEvent, id: string) {
-    e.stopPropagation()
+    e.stopPropagation() // evita que o click handler do document feche o menu recém-aberto
+    if (itemMenuState?.id === id) { setItemMenuState(null); return }
     const rect = e.currentTarget.getBoundingClientRect()
     setItemMenuState({ id, x: rect.right, y: rect.top })
   }
@@ -703,8 +704,9 @@ export default function VisaoGeralWorkspace({
       {itemMenuState && (() => {
         const c = cls.find(x => x.id === itemMenuState.id)
         if (!c) return null
-        const menuX = Math.min(itemMenuState.x - 224, window.innerWidth - 232)
-        const menuY = itemMenuState.y
+        const MENU_H  = 380
+        const menuX   = Math.min(Math.max(4, itemMenuState.x - 228), window.innerWidth - 232)
+        const menuY   = itemMenuState.y + MENU_H > window.innerHeight ? itemMenuState.y - MENU_H : itemMenuState.y
 
         function mi(label: string, icon: string, action: () => void, danger?: boolean) {
           return (
@@ -725,7 +727,7 @@ export default function VisaoGeralWorkspace({
 
         return (
           <div
-            onMouseDown={e => e.stopPropagation()}
+            onClick={e => e.stopPropagation()}
             style={{
               position: 'fixed', left: menuX, top: menuY, zIndex: 9999,
               background: '#FFFFFF', border: '1px solid #E2E8F0',
