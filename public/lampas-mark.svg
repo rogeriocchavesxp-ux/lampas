@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120">
+  <!-- Fundo -->
+  <rect width="120" height="120" fill="#0c1018" rx="20"/>
+
+  <!-- Chama exterior -->
+  <path d="M60 14
+    C68 22 76 36 72 52
+    C69 62 64 68 60 70
+    C56 68 51 62 48 52
+    C44 36 52 22 60 14 Z"
+    fill="#c9921a"/>
+
+  <!-- Chama interior (brilho) -->
+  <path d="M60 26
+    C64 32 66 42 64 52
+    C63 57 61 60 60 61
+    C59 60 57 57 56 52
+    C54 42 56 32 60 26 Z"
+    fill="#f2d06a" opacity="0.55"/>
+
+  <!-- Pavio -->
+  <rect x="57" y="70" width="6" height="10" rx="2" fill="#c9921a"/>
+
+  <!-- Base da tocha -->
+  <rect x="52" y="80" width="16" height="26" rx="4" fill="#c9921a" opacity="0.85"/>
+  <rect x="55" y="82" width="10" height="22" rx="2" fill="#0c1018" opacity="0.25"/>
+</svg>

@@ -133,7 +133,7 @@ export default function AIPanel({ project, activeSlug, activeTitle, context, onC
         flexShrink: 0,
       }}>
         <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: 'var(--ai)', display: 'inline-block' }} />
-        <span style={{ fontSize: '0.82rem', fontWeight: '600', color: 'var(--ai)' }}>Hokmá IA</span>
+        <span style={{ fontSize: '0.82rem', fontWeight: '600', color: 'var(--ai)' }}>Lampas IA</span>
         <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginLeft: 'auto' }}>
           {activeTitle.split(' ').slice(0, 3).join(' ')}
         </span>
@@ -194,7 +194,7 @@ export default function AIPanel({ project, activeSlug, activeTitle, context, onC
                   letterSpacing: '0.06em',
                   fontWeight: '600',
                 }}>
-                  {msg.role === 'user' ? 'Você' : 'Hokmá'}
+                  {msg.role === 'user' ? 'Você' : 'Lampas'}
                 </div>
                 {msg.role === 'assistant' ? (
                   isStreaming ? (

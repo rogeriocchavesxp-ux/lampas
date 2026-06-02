@@ -2,12 +2,12 @@ import type { Metadata } from 'next'
 import './globals.css'
 
 export const metadata: Metadata = {
-  title: 'Hokmá — Do texto ao púlpito',
+  title: 'Lampas — Do texto ao púlpito',
   description: 'Plataforma de estudo bíblico e produção homilética com IA reformada',
   icons: {
-    icon: '/mark.svg',
-    shortcut: '/mark.svg',
-    apple: '/mark.svg',
+    icon: '/lampas-mark.svg',
+    shortcut: '/lampas-mark.svg',
+    apple: '/lampas-mark.svg',
   },
 }
 

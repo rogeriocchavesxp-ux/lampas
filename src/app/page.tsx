@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { HokmaLogo, HokmaMarkIcon } from '@/components/HokmaLogo'
+import { LampasLogo, LampasMarkIcon } from '@/components/LampasLogo'
 
 export default function LandingPage() {
   return (
@@ -17,7 +17,7 @@ export default function LandingPage() {
         margin: '0 auto',
         width: '100%',
       }}>
-        <HokmaLogo height={38} />
+        <LampasLogo height={38} />
         <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem' }}>
           <a href="#metodologia" style={{ color: 'var(--text-secondary)', fontSize: '0.88rem', textDecoration: 'none' }}>
             Metodologia
@@ -43,7 +43,7 @@ export default function LandingPage() {
         textAlign: 'center',
       }}>
         <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '1.5rem' }}>
-          <HokmaMarkIcon size={72} />
+          <LampasMarkIcon size={72} />
         </div>
         <div style={{
           display: 'inline-block',
@@ -251,7 +251,7 @@ export default function LandingPage() {
         textAlign: 'center',
       }}>
         <div style={{ fontSize: '1rem', fontWeight: '700', color: 'var(--accent)', marginBottom: '0.4rem', letterSpacing: '-0.02em' }}>
-          Hokmá
+          Lampas
         </div>
         <p style={{ color: 'var(--text-muted)', fontSize: '0.78rem' }}>
           κῆρυξ — o arauto da Palavra · Sistema de exegese e homilética reformada

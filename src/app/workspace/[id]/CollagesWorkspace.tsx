@@ -109,7 +109,7 @@ export default function CollagesWorkspace({ project, userId, existingSection, on
   }
 
   function handlePrint() {
-    const toolbar = document.getElementById('hokma-reading-toolbar')
+    const toolbar = document.getElementById('lampas-reading-toolbar')
     if (toolbar) toolbar.style.display = 'none'
     window.print()
     requestAnimationFrame(() => { if (toolbar) toolbar.style.display = '' })
@@ -169,7 +169,7 @@ export default function CollagesWorkspace({ project, userId, existingSection, on
 
   function askAI(prompt: string, item?: CollageItem) {
     onAskAI([
-      'Você é assistente de pesquisa e organização das Colagens do Hokmá.',
+      'Você é assistente de pesquisa e organização das Colagens do Lampas.',
       `Projeto atual: ${projectRef} (${project.original_language}).`,
       item ? `Colagem selecionada: ${itemTypeLabel(item.type)} — ${item.title}\n${item.content}` : '',
       '',
@@ -380,7 +380,7 @@ export default function CollagesWorkspace({ project, userId, existingSection, on
 
             {/* ── Barra superior ── */}
             <div
-              id="hokma-reading-toolbar"
+              id="lampas-reading-toolbar"
               style={{
                 display: 'flex', alignItems: 'center', gap: '0.2rem',
                 padding: '0.5rem 0.9rem',

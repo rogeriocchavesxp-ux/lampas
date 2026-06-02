@@ -3,7 +3,7 @@
 import { useState, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
-import { HokmaMarkIcon } from '@/components/HokmaLogo'
+import { LampasMarkIcon } from '@/components/LampasLogo'
 import type { User } from '@supabase/supabase-js'
 import type { Project, Profile } from '@/types/database'
 
@@ -100,7 +100,7 @@ export default function DashboardClient({ user, projects, profile }: Props) {
         justifyContent: 'space-between',
         background: 'var(--surface)',
       }}>
-        <HokmaMarkIcon size={36} />
+        <LampasMarkIcon size={36} />
         <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
           <span style={{ color: 'var(--text-muted)', fontSize: '0.82rem' }}>{user.email}</span>
           <button

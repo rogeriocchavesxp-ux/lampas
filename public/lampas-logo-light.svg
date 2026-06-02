@@ -1,0 +1,46 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 560 120">
+  <!-- Fundo -->
+  <rect width="560" height="120" fill="#faf8f4" rx="12"/>
+
+  <!-- Chama exterior -->
+  <path d="M56 14
+    C64 22 72 36 68 52
+    C65 62 60 68 56 70
+    C52 68 47 62 44 52
+    C40 36 48 22 56 14 Z"
+    fill="#c9921a"/>
+
+  <!-- Chama interior -->
+  <path d="M56 26
+    C60 32 62 42 60 52
+    C59 57 57 60 56 61
+    C55 60 53 57 52 52
+    C50 42 52 32 56 26 Z"
+    fill="#f5e090" opacity="0.6"/>
+
+  <!-- Pavio -->
+  <rect x="53" y="70" width="6" height="8" rx="2" fill="#c9921a"/>
+
+  <!-- Corpo da tocha -->
+  <rect x="49" y="78" width="14" height="24" rx="4" fill="#c9921a" opacity="0.85"/>
+  <rect x="52" y="80" width="8" height="20" rx="2" fill="#faf8f4" opacity="0.25"/>
+
+  <!-- Wordmark -->
+  <text
+    x="90" y="79"
+    font-family="Georgia, 'Times New Roman', serif"
+    font-size="52"
+    font-weight="400"
+    letter-spacing="-0.5"
+    fill="#1a1208"
+  >Lamp<tspan fill="#c9921a">as</tspan></text>
+
+  <!-- Subtítulo grego -->
+  <text
+    x="91" y="100"
+    font-family="Georgia, 'Times New Roman', serif"
+    font-size="14"
+    fill="#9b9080"
+    letter-spacing="0.5"
+  >Λαμπάς</text>
+</svg>

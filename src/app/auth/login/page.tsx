@@ -2,7 +2,7 @@
 
 import { useState, useMemo } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import { HokmaLogo } from '@/components/HokmaLogo'
+import { LampasLogo } from '@/components/LampasLogo'
 
 export default function LoginPage() {
   const [email, setEmail] = useState('')
@@ -45,7 +45,7 @@ export default function LoginPage() {
         {/* Logo */}
         <div style={{ textAlign: 'center', marginBottom: '2.5rem' }}>
           <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '0.75rem' }}>
-            <HokmaLogo height={48} />
+            <LampasLogo height={48} />
           </div>
           <div style={{ color: 'var(--text-muted)', fontSize: '0.82rem', letterSpacing: '0.04em' }}>
             חָכְמָה — sabedoria para a Palavra
@@ -83,7 +83,7 @@ export default function LoginPage() {
             </div>
           ) : (
             <>
-              <h2 style={{ marginBottom: '0.25rem' }}>Entrar no Hokmá</h2>
+              <h2 style={{ marginBottom: '0.25rem' }}>Entrar no Lampas</h2>
               <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem', marginBottom: '1.5rem' }}>
                 Insira seu email para receber o link de acesso
               </p>

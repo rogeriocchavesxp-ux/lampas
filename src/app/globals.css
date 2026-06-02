@@ -2,7 +2,7 @@
 @import "tailwindcss";
 
 :root {
-  /* ── Hokmá — Acadêmico Dourado ── */
+  /* ── Lampas — Acadêmico Dourado ── */
   --background:    #0c1018;
   --surface:       #111620;
   --surface-2:     #171e2d;
@@ -14,10 +14,10 @@
   --text-secondary: #9b9080;
   --text-muted:     #5a5750;
 
-  --accent:        #b8922a;
-  --accent-hover:  #d4a83a;
+  --accent:        #c9921a;
+  --accent-hover:  #e0a820;
   --accent-subtle: rgba(184, 146, 42, 0.10);
-  --brand:         #c9a44e;
+  --brand:         #c9921a;
 
   --error:   #e57373;
   --success: #6db8a0;

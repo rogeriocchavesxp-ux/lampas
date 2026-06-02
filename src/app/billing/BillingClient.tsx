@@ -93,14 +93,14 @@ export default function BillingClient({
             fontSize: '0.9rem',
             fontWeight: 600,
           }}>
-            Assinatura ativada com sucesso. Bem-vindo ao Hokmá {PLANS[currentPlan as PlanId]?.name ?? ''}!
+            Assinatura ativada com sucesso. Bem-vindo ao Lampas {PLANS[currentPlan as PlanId]?.name ?? ''}!
           </div>
         )}
 
         {/* ── Header ── */}
         <div style={{ textAlign: 'center', marginBottom: '3rem' }}>
           <div style={{ fontSize: '0.68rem', color: GOLD, textTransform: 'uppercase', letterSpacing: '0.14em', fontWeight: 900, marginBottom: '0.6rem' }}>
-            Hokmá
+            Lampas
           </div>
           <h1 style={{ fontSize: '2rem', color: 'var(--text-primary)', fontFamily: 'var(--font-serif)', letterSpacing: '-0.01em', marginBottom: '0.6rem' }}>
             Escolha seu plano
