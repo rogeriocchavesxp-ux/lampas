@@ -26,14 +26,16 @@ export default function AIPanel({ project, activeSlug, activeTitle, context, onC
   const bottomRef = useRef<HTMLDivElement>(null)
   const streamBufferRef = useRef('')
 
+  const onClearContextRef = useRef(onClearContext)
+  onClearContextRef.current = onClearContext
+
   useEffect(() => {
-    if (context) {
-      queueMicrotask(() => {
-        setInput(context)
-        onClearContext()
-      })
-    }
-  }, [context, onClearContext])
+    if (!context) return
+    queueMicrotask(() => {
+      setInput(context)
+      onClearContextRef.current()
+    })
+  }, [context])
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' })

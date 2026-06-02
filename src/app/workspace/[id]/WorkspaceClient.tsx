@@ -419,6 +419,13 @@ export default function WorkspaceClient({ user, project, initialSections }: Prop
     })
   }, [])
 
+  const handleAskAI = useCallback((prompt: string) => {
+    setAiPrompt(prompt)
+    setAiOpen(true)
+  }, [])
+
+  const handleClearContext = useCallback(() => setAiPrompt(''), [])
+
   function togglePhase(id: string) {
     setExpandedPhases(prev => {
       const next = new Set(prev)
@@ -1099,7 +1106,7 @@ export default function WorkspaceClient({ user, project, initialSections }: Prop
                     <div style={{ flex: 1, overflow: 'hidden' }}>
                       <LiveReferencePanel
                         savedSections={sections}
-                        onAskAI={prompt => { setAiPrompt(prompt); setAiOpen(true) }}
+                        onAskAI={handleAskAI}
                       />
                     </div>
                   </div>
@@ -1118,14 +1125,14 @@ export default function WorkspaceClient({ user, project, initialSections }: Prop
                 userId={user.id}
                 existingSection={activeSection}
                 onUpdate={handleSectionUpdate}
-                onAskAI={prompt => { setAiPrompt(prompt); setAiOpen(true) }}
+                onAskAI={handleAskAI}
               />
             ) : activeSlug === 'ferramentas_dicionario' ? (
               <DicionarioWorkspace
                 key={activeSlug}
                 project={project}
                 userId={user.id}
-                onAskAI={prompt => { setAiPrompt(prompt); setAiOpen(true) }}
+                onAskAI={handleAskAI}
               />
             ) : isToolSlug(activeSlug) ? (
               <ToolsWorkspace
@@ -1133,7 +1140,7 @@ export default function WorkspaceClient({ user, project, initialSections }: Prop
                 project={project}
                 activeSlug={activeSlug}
                 onNavigate={navigate}
-                onAskAI={prompt => { setAiPrompt(prompt); setAiOpen(true) }}
+                onAskAI={handleAskAI}
               />
             ) : activeSlug === 'texto_original' ? (
               <OriginalTextWorkspace
@@ -1142,7 +1149,7 @@ export default function WorkspaceClient({ user, project, initialSections }: Prop
                 userId={user.id}
                 existingSection={activeSection}
                 onUpdate={handleSectionUpdate}
-                onAskAI={prompt => { setAiPrompt(prompt); setAiOpen(true) }}
+                onAskAI={handleAskAI}
               />
             ) : activeSlug === 'termos_chave' ? (
               <TermosChaveWorkspace
@@ -1151,7 +1158,7 @@ export default function WorkspaceClient({ user, project, initialSections }: Prop
                 userId={user.id}
                 existingSection={activeSection}
                 onUpdate={handleSectionUpdate}
-                onAskAI={prompt => { setAiPrompt(prompt); setAiOpen(true) }}
+                onAskAI={handleAskAI}
               />
             ) : activeSlug === 'estrutura_literaria' ? (
               <EstruturaLiterariaWorkspace
@@ -1162,7 +1169,7 @@ export default function WorkspaceClient({ user, project, initialSections }: Prop
                 existingSection={activeSection}
                 savedSections={sections}
                 onUpdate={handleSectionUpdate}
-                onAskAI={prompt => { setAiPrompt(prompt); setAiOpen(true) }}
+                onAskAI={handleAskAI}
               />
             ) : activeSlug === 'sermao_dispositio' ? (
               <SermonBuilderWorkspace
@@ -1171,7 +1178,7 @@ export default function WorkspaceClient({ user, project, initialSections }: Prop
                 userId={user.id}
                 existingSection={activeSection}
                 onUpdate={handleSectionUpdate}
-                onAskAI={prompt => { setAiPrompt(prompt); setAiOpen(true) }}
+                onAskAI={handleAskAI}
               />
             ) : activeSlug === 'comentario_expositivo' ? (
               <CommentaryWorkspace
@@ -1180,7 +1187,7 @@ export default function WorkspaceClient({ user, project, initialSections }: Prop
                 userId={user.id}
                 existingSection={activeSection}
                 onUpdate={handleSectionUpdate}
-                onAskAI={prompt => { setAiPrompt(prompt); setAiOpen(true) }}
+                onAskAI={handleAskAI}
               />
             ) : activeSlug === 'preparar_visao_geral' && activeDef ? (
               <VisaoGeralWorkspace
@@ -1190,7 +1197,7 @@ export default function WorkspaceClient({ user, project, initialSections }: Prop
                 userId={user.id}
                 existingSection={activeSection}
                 onUpdate={handleSectionUpdate}
-                onAskAI={prompt => { setAiPrompt(prompt); setAiOpen(true) }}
+                onAskAI={handleAskAI}
                 onOpenBible={() => setBibleOpen(true)}
                 onNavigate={navigate}
               />
@@ -1202,7 +1209,7 @@ export default function WorkspaceClient({ user, project, initialSections }: Prop
                 userId={user.id}
                 existingSection={activeSection}
                 onUpdate={handleSectionUpdate}
-                onAskAI={prompt => { setAiPrompt(prompt); setAiOpen(true) }}
+                onAskAI={handleAskAI}
               />
             ) : isSynthesisSlug(activeSlug) ? (
               <SynthesisView
@@ -1211,7 +1218,7 @@ export default function WorkspaceClient({ user, project, initialSections }: Prop
                 project={project}
                 savedSections={sections}
                 onNavigate={navigate}
-                onAskAI={prompt => { setAiPrompt(prompt); setAiOpen(true) }}
+                onAskAI={handleAskAI}
               />
             ) : (
               <div style={{
@@ -1239,7 +1246,7 @@ export default function WorkspaceClient({ user, project, initialSections }: Prop
                 activeSlug={activeSlug}
                 activeTitle={activeSlug === 'colagens' ? 'Colagens' : activeSlug === 'comentario_expositivo' ? 'Comentário Expositivo' : activeSlug === 'ferramentas_dicionario' ? 'Dicionário Lampas' : activeTool?.title ?? activeDef?.title ?? titleValue}
                 context={aiPrompt}
-                onClearContext={() => setAiPrompt('')}
+                onClearContext={handleClearContext}
               />
             </div>
           </aside>

@@ -126,16 +126,17 @@ export default function VisaoGeralWorkspace({
 
   // ── Data ───────────────────────────────────────────────────────────────────
   useEffect(() => {
+    let mounted = true
     setCls(readCls(project.id))
-    const id = setInterval(() => {
+    const id = window.setInterval(() => {
+      if (!mounted) return
       const fresh = readCls(project.id)
-      // Só atualiza o state se o conteúdo realmente mudou — evita re-render desnecessário
       setCls(prev => {
         if (prev.length === fresh.length && JSON.stringify(prev) === JSON.stringify(fresh)) return prev
         return fresh
       })
-    }, 1500)
-    return () => clearInterval(id)
+    }, 2000)
+    return () => { mounted = false; window.clearInterval(id) }
   }, [project.id])
 
   useEffect(() => {

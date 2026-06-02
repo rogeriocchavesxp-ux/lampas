@@ -24,7 +24,7 @@ export default function BillingClient({
   currentPlan, status, periodEnd, cancelAtEnd, usage, justUpgraded,
 }: Props) {
   const router = useRouter()
-  const [interval, setInterval] = useState<'monthly' | 'annual'>('monthly')
+  const [billingInterval, setBillingInterval] = useState<'monthly' | 'annual'>('monthly')
   const [loading, setLoading] = useState<string | null>(null)
 
   async function handleCheckout(planId: PlanId) {
@@ -33,7 +33,7 @@ export default function BillingClient({
       const res = await fetch('/api/billing/checkout', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ planId, interval }),
+        body: JSON.stringify({ planId, interval: billingInterval }),
       })
       const data = await res.json()
       if (data.url) window.location.href = data.url
@@ -196,16 +196,16 @@ export default function BillingClient({
             {(['monthly', 'annual'] as const).map(iv => (
               <button
                 key={iv}
-                onClick={() => setInterval(iv)}
+                onClick={() => setBillingInterval(iv)}
                 style={{
-                  background: interval === iv ? 'rgba(184,146,42,0.12)' : 'transparent',
+                  background: billingInterval === iv ? 'rgba(184,146,42,0.12)' : 'transparent',
                   border: 'none',
                   borderRight: iv === 'monthly' ? `1px solid ${BORDER}` : 'none',
-                  color: interval === iv ? GOLD : 'var(--text-secondary)',
+                  color: billingInterval === iv ? GOLD : 'var(--text-secondary)',
                   cursor: 'pointer',
                   fontFamily: 'inherit',
                   fontSize: '0.82rem',
-                  fontWeight: interval === iv ? 700 : 400,
+                  fontWeight: billingInterval === iv ? 700 : 400,
                   padding: '0.5rem 1.2rem',
                   display: 'flex',
                   alignItems: 'center',
@@ -241,8 +241,8 @@ export default function BillingClient({
             const plan   = PLANS[planId]
             const isCurrent = planId === currentPlan
             const isPopular = plan.badge === 'Popular'
-            const price  = interval === 'annual' ? plan.priceAnnual : plan.priceMonthly
-            const monthlyEquiv = interval === 'annual' && plan.priceAnnual > 0
+            const price  = billingInterval === 'annual' ? plan.priceAnnual : plan.priceMonthly
+            const monthlyEquiv = billingInterval === 'annual' && plan.priceAnnual > 0
               ? Math.round(plan.priceAnnual / 12)
               : plan.priceMonthly
 
@@ -308,7 +308,7 @@ export default function BillingClient({
                         </span>
                         <span style={{ fontSize: '0.78rem', color: MUTED }}>/mês</span>
                       </div>
-                      {interval === 'annual' && (
+                      {billingInterval === 'annual' && (
                         <div style={{ fontSize: '0.72rem', color: MUTED, marginTop: '0.2rem' }}>
                           {formatPrice(price)} cobrado anualmente
                         </div>
