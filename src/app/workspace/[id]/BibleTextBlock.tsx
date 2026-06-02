@@ -1,9 +1,9 @@
 'use client'
 
 import { useState, useEffect, useCallback, useRef, useMemo } from 'react'
-import type { ReactNode } from 'react'
-import { BookOpen, Copy, ChevronDown, ChevronUp, Check, RefreshCw, Layers, ChevronLeft } from 'lucide-react'
+import { BookOpen, Copy, ChevronDown, ChevronUp, Check, RefreshCw, Layers, ChevronLeft, MoreHorizontal, Loader2, Sparkles } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
+import type { CollageItem } from '@/lib/collages-content'
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -83,6 +83,20 @@ const HCOLOR_ORDER: HColor[] = ['yellow', 'blue', 'green', 'purple', 'orange', '
 const VERSIONS = ['ARA', 'NAA', 'ACF', 'NVI', 'NTLH'] as const
 type Version = typeof VERSIONS[number]
 
+// ── Send targets ──────────────────────────────────────────────────────────────
+
+interface SendTarget {
+  key: string; label: string; sectionSlug: string
+  cardId?: string; sectionTitle: string
+}
+
+const SEND_TARGETS: SendTarget[] = [
+  { key: 'visao_geral',  label: 'Visão Geral',      sectionSlug: 'preparar_visao_geral',          cardId: 'preparar_grande_ideia_inicial', sectionTitle: '4. Visão Geral da Passagem' },
+  { key: 'termos_chave', label: 'Termos-Chave',     sectionSlug: 'termos_chave',                   cardId: undefined,                       sectionTitle: '2.4 Termos-Chave' },
+  { key: 'teologico',    label: 'Estudo Teológico', sectionSlug: 'contexto_canonico',              cardId: undefined,                       sectionTitle: '3.1 Contexto Canônico' },
+  { key: 'comentario',   label: 'Comentário',       sectionSlug: 'preparar_primeiras_impressoes',  cardId: 'preparar_observacoes_livres',   sectionTitle: '3. Primeiras Impressões' },
+]
+
 // ── Storage ───────────────────────────────────────────────────────────────────
 
 const bibk = (b: string, r: string, v: string) => `lb_${b}_${r}_${v}`.replace(/\s/g, '_')
@@ -153,9 +167,10 @@ interface Props { book: string; passageRef: string; testament: string; projectId
 // ── Component ─────────────────────────────────────────────────────────────────
 
 export default function BibleTextBlock({ book, passageRef, testament, projectId, userId }: Props) {
-  const containerRef = useRef<HTMLDivElement>(null)
-  const menuRef      = useRef<HTMLDivElement>(null)
-  const supabase     = useMemo(() => createClient(), [])
+  const containerRef  = useRef<HTMLDivElement>(null)
+  const menuRef       = useRef<HTMLDivElement>(null)
+  const cardMenuRef   = useRef<HTMLDivElement>(null)
+  const supabase      = useMemo(() => createClient(), [])
 
   // Bible
   const [version, setVersion]     = useState<Version>('ARA')
@@ -175,12 +190,24 @@ export default function BibleTextBlock({ book, passageRef, testament, projectId,
   const [panelTab,   setPanelTab]   = useState<'cls' | 'hl'>('cls')
   const [clsFilter,  setClsFilter]  = useState<ClassType | 'all'>('all')
 
-  // Menu
+  // Floating menu (text selection)
   const [menuCtx,   setMenuCtx]   = useState<MenuCtx | null>(null)
   const [menuPos,   setMenuPos]   = useState<{ x: number; y: number } | null>(null)
   const [menuState, setMenuState] = useState<MenuState>('main')
   const [noteVal,   setNoteVal]   = useState('')
   const [saving,    setSaving]    = useState(false)
+
+  // Card context menu (⋯)
+  const [cardMenuId,  setCardMenuId]  = useState<string | null>(null)
+  const [cardMenuPos, setCardMenuPos] = useState<{ x: number; y: number } | null>(null)
+
+  // AI results per classification
+  const [aiResults,  setAiResults]  = useState<Record<string, { description?: string; analysis?: string }>>({})
+  const [aiLoading,  setAiLoading]  = useState<Record<string, 'description' | 'analysis' | null>>({})
+  const [sentSections, setSentSections] = useState<Record<string, string[]>>({})
+
+  // Inline note editing in panel
+  const [noteInline, setNoteInline] = useState<{ id: string; val: string } | null>(null)
 
   // Tooltip
   const [tooltip, setTooltip] = useState<{ id: string; rect: DOMRect } | null>(null)
@@ -207,16 +234,27 @@ export default function BibleTextBlock({ book, passageRef, testament, projectId,
 
   useEffect(() => { fetchText(version) }, [fetchText, version])
 
-  // ── Close menu on outside click ───────────────────────────────────────────
+  // ── Close floating menu on outside click ──────────────────────────────────
   useEffect(() => {
     if (!menuPos) return
     const h = (e: MouseEvent) => {
-      if (menuRef.current && !menuRef.current.contains(e.target as Node))
-        closeMenu()
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) closeMenu()
     }
     document.addEventListener('mousedown', h)
     return () => document.removeEventListener('mousedown', h)
   }, [menuPos])
+
+  // ── Close card menu on outside click ──────────────────────────────────────
+  useEffect(() => {
+    if (!cardMenuId) return
+    const h = (e: MouseEvent) => {
+      if (cardMenuRef.current && !cardMenuRef.current.contains(e.target as Node)) {
+        setCardMenuId(null); setCardMenuPos(null)
+      }
+    }
+    document.addEventListener('mousedown', h)
+    return () => document.removeEventListener('mousedown', h)
+  }, [cardMenuId])
 
   function closeMenu() {
     setMenuPos(null); setMenuCtx(null); setMenuState('main'); setNoteVal('')
@@ -258,6 +296,15 @@ export default function BibleTextBlock({ book, passageRef, testament, projectId,
     setMenuPos({ x: rect.left + rect.width / 2, y: rect.top - 8 })
   }
 
+  // ── Card menu (⋯) ─────────────────────────────────────────────────────────
+  function openCardMenu(id: string, e: React.MouseEvent) {
+    e.stopPropagation()
+    if (cardMenuId === id) { setCardMenuId(null); setCardMenuPos(null); return }
+    const rect = (e.currentTarget as Element).getBoundingClientRect()
+    setCardMenuId(id)
+    setCardMenuPos({ x: rect.right, y: rect.bottom + 4 })
+  }
+
   // ── Save to Supabase ──────────────────────────────────────────────────────
   async function saveToSection(def: ClassDef, text: string) {
     if (!def.sectionSlug || !def.cardId) return
@@ -270,6 +317,83 @@ export default function BibleTextBlock({ book, passageRef, testament, projectId,
       if (data?.id) await supabase.from('sections').update(payload).eq('id', data.id)
       else          await supabase.from('sections').insert(payload)
     } catch { /* silently fail */ }
+  }
+
+  async function sendToSectionGeneric(cls: Classification, target: SendTarget) {
+    const def = CLASS_DEF[cls.type]
+    const line = `${def.emoji} **${def.label}**: "${cls.selectedText}" (v.${cls.startVerse})`
+    try {
+      const { data } = await supabase.from('sections').select().eq('project_id', projectId).eq('slug', target.sectionSlug).maybeSingle()
+      const basePayload = { project_id: projectId, user_id: userId, slug: target.sectionSlug, module: 'inventio' as const, title: target.sectionTitle, status: 'draft' as const }
+      if (target.cardId) {
+        const cards = ((data?.content as { cards?: Record<string, string> } | null)?.cards) ?? {}
+        const prev  = cards[target.cardId] ?? ''
+        const next  = prev ? `${prev}\n${line}` : line
+        const payload = { ...basePayload, content: { cards: { ...cards, [target.cardId]: next } } }
+        if (data?.id) await supabase.from('sections').update(payload).eq('id', data.id)
+        else          await supabase.from('sections').insert(payload)
+      } else {
+        const prev = (data?.ai_output as string | null) ?? ''
+        const next = prev ? `${prev}\n\n${line}` : line
+        const payload = { ...basePayload, ai_output: next }
+        if (data?.id) await supabase.from('sections').update(payload).eq('id', data.id)
+        else          await supabase.from('sections').insert(payload)
+      }
+      setSentSections(prev => ({ ...prev, [cls.id]: [...(prev[cls.id] ?? []), target.key] }))
+      setSavedTo(target.sectionTitle)
+      setTimeout(() => setSavedTo(null), 3000)
+    } catch { /* silently fail */ }
+  }
+
+  async function transformToCollage(cls: Classification) {
+    const def = CLASS_DEF[cls.type]
+    try {
+      const { data } = await supabase.from('sections').select().eq('project_id', projectId).eq('slug', 'colagens').maybeSingle()
+      const existing = ((data?.content as { type?: string; items?: CollageItem[] } | null)?.items) ?? []
+      const newItem: CollageItem = {
+        id: Date.now().toString(36) + Math.random().toString(36).slice(2),
+        type: 'trecho',
+        title: `${def.label}: "${cls.selectedText}"`,
+        content: `${cls.selectedText}\n\n— ${book} ${passageRef}, v.${cls.startVerse}`,
+        author: '', work: `${book} ${passageRef}`, page: `v.${cls.startVerse}`,
+        tags: [def.label], category: 'Exegese', linkedTo: 'Perícope', x: 0, y: 0,
+      }
+      const payload = {
+        project_id: projectId, user_id: userId, slug: 'colagens',
+        module: 'inventio' as const, title: 'Colagens', status: 'draft' as const,
+        content: { type: 'collages_workspace', items: [...existing, newItem] },
+      }
+      if (data?.id) await supabase.from('sections').update(payload).eq('id', data.id)
+      else          await supabase.from('sections').insert(payload)
+      setSavedTo('Colagens')
+      setTimeout(() => setSavedTo(null), 3000)
+    } catch { /* silently fail */ }
+  }
+
+  // ── AI generation ─────────────────────────────────────────────────────────
+  async function generateAI(cls: Classification, kind: 'description' | 'analysis') {
+    setAiLoading(prev => ({ ...prev, [cls.id]: kind }))
+    try {
+      const res = await fetch('/api/claude/classify', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ term: cls.selectedText, type: cls.type, startVerse: cls.startVerse, book, passageRef, kind }),
+      })
+      const data = await res.json() as { result?: string; error?: string }
+      if (data.result) {
+        setAiResults(prev => ({ ...prev, [cls.id]: { ...prev[cls.id], [kind]: data.result } }))
+      }
+    } catch { /* ignore */ }
+    finally { setAiLoading(prev => ({ ...prev, [cls.id]: null })) }
+    setCardMenuId(null); setCardMenuPos(null)
+  }
+
+  // ── Scroll to verse ───────────────────────────────────────────────────────
+  function scrollToVerse(startVerse: number) {
+    const el = containerRef.current?.querySelector(`[data-verse="${startVerse}"]`)
+    el?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+    setCollapsed(false)
+    setCardMenuId(null); setCardMenuPos(null)
   }
 
   // ── Apply classification ──────────────────────────────────────────────────
@@ -318,12 +442,23 @@ export default function BibleTextBlock({ book, passageRef, testament, projectId,
     closeMenu()
   }
 
+  function saveNoteInline(id: string, val: string) {
+    const n = clsList.map(c => c.id === id ? { ...c, note: val } : c)
+    setClsList(n); wcl(projectId, n); setNoteInline(null)
+  }
+
   // ── Remove ────────────────────────────────────────────────────────────────
   function remove() {
     if (!menuCtx || menuCtx.kind === 'new') return
     if (menuCtx.kind === 'cls') { const n = clsList.filter(c => c.id !== menuCtx.id); setClsList(n); wcl(projectId, n) }
     if (menuCtx.kind === 'hl')  { const n = hlList.filter(h  => h.id  !== menuCtx.id); setHlList(n);  whl(projectId, n) }
     closeMenu()
+  }
+
+  function removeCls(id: string) {
+    const n = clsList.filter(c => c.id !== id); setClsList(n); wcl(projectId, n)
+    setCardMenuId(null); setCardMenuPos(null)
+    setAiResults(prev => { const r = { ...prev }; delete r[id]; return r })
   }
 
   // ── Helpers ───────────────────────────────────────────────────────────────
@@ -476,22 +611,102 @@ export default function BibleTextBlock({ book, passageRef, testament, projectId,
                 {filteredCls.length === 0 ? (
                   <p style={{ color: 'var(--text-muted)', fontSize: '0.82rem', fontStyle: 'italic' }}>Selecione trechos e classifique para extrair para o estudo.</p>
                 ) : (
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem', maxHeight: '320px', overflowY: 'auto' }}>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem', maxHeight: '420px', overflowY: 'auto' }}>
                     {[...filteredCls].sort((a, b) => a.startVerse - b.startVerse).map(c => {
-                      const def = CLASS_DEF[c.type]
+                      const def      = CLASS_DEF[c.type]
+                      const aiRes    = aiResults[c.id]
+                      const isAiLoad = aiLoading[c.id]
+                      const sent     = sentSections[c.id] ?? []
+                      const isEditing = noteInline?.id === c.id
+
                       return (
-                        <div key={c.id} style={{ display: 'flex', alignItems: 'flex-start', gap: '0.6rem', padding: '0.55rem 0.75rem', borderRadius: '8px', border: '1px solid var(--border)', background: '#FFFFFF' }}>
-                          <span style={{ fontSize: '0.9rem', flexShrink: 0, marginTop: '1px' }}>{def.emoji}</span>
-                          <div style={{ flex: 1, minWidth: 0 }}>
-                            <div style={{ fontSize: '0.67rem', fontWeight: 700, color: def.color, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.15rem' }}>
-                              {def.label} · v.{c.startVerse}{c.endVerse !== c.startVerse ? `–${c.endVerse}` : ''}
+                        <div key={c.id} style={{ borderRadius: '8px', border: '1px solid var(--border)', background: '#FFFFFF', overflow: 'hidden' }}>
+
+                          {/* Card row */}
+                          <div style={{ display: 'flex', alignItems: 'flex-start', gap: '0.6rem', padding: '0.55rem 0.6rem 0.55rem 0.75rem' }}>
+                            <span style={{ fontSize: '0.9rem', flexShrink: 0, marginTop: '1px' }}>{def.emoji}</span>
+                            <div style={{ flex: 1, minWidth: 0 }}>
+                              <div style={{ fontSize: '0.67rem', fontWeight: 700, color: def.color, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.15rem' }}>
+                                {def.label} · v.{c.startVerse}{c.endVerse !== c.startVerse ? `–${c.endVerse}` : ''}
+                              </div>
+                              <div style={{ fontSize: '0.84rem', fontStyle: 'italic', color: 'var(--text-secondary)', lineHeight: 1.5, fontFamily: "'EB Garamond', Georgia, serif", textDecoration: `underline ${def.color}`, textUnderlineOffset: '2px', textDecorationThickness: '1px' }}>
+                                {c.selectedText}
+                              </div>
+
+                              {/* Note area */}
+                              {isEditing ? (
+                                <div style={{ marginTop: '0.35rem', display: 'flex', gap: '4px' }}>
+                                  <input
+                                    autoFocus
+                                    type="text"
+                                    value={noteInline.val}
+                                    onChange={e => setNoteInline({ id: c.id, val: e.target.value })}
+                                    onKeyDown={e => { if (e.key === 'Enter') saveNoteInline(c.id, noteInline.val); if (e.key === 'Escape') setNoteInline(null) }}
+                                    placeholder="Adicionar nota..."
+                                    style={{ flex: 1, background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: '5px', color: 'var(--text-primary)', padding: '0.22rem 0.45rem', fontSize: '0.73rem', outline: 'none', fontFamily: 'inherit' }}
+                                  />
+                                  <button onClick={() => saveNoteInline(c.id, noteInline.val)} style={{ background: 'var(--accent)', border: 'none', borderRadius: '5px', color: '#FFF', padding: '0.22rem 0.5rem', fontSize: '0.67rem', cursor: 'pointer', fontFamily: 'inherit', fontWeight: 600 }}>OK</button>
+                                  <button onClick={() => setNoteInline(null)} style={{ background: 'transparent', border: '1px solid var(--border)', borderRadius: '5px', color: 'var(--text-muted)', padding: '0.22rem 0.4rem', fontSize: '0.67rem', cursor: 'pointer', fontFamily: 'inherit' }}>✕</button>
+                                </div>
+                              ) : c.note ? (
+                                <div style={{ fontSize: '0.74rem', color: 'var(--text-muted)', marginTop: '0.25rem' }}>{c.note}</div>
+                              ) : null}
+
+                              {/* AI loading indicator */}
+                              {isAiLoad && (
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', marginTop: '0.35rem', color: 'var(--text-muted)', fontSize: '0.72rem' }}>
+                                  <Loader2 size={11} strokeWidth={2} style={{ animation: 'spin 0.8s linear infinite' }} />
+                                  {isAiLoad === 'description' ? 'Gerando descrição…' : 'Gerando análise…'}
+                                </div>
+                              )}
+
+                              {/* AI results */}
+                              {(aiRes?.description || aiRes?.analysis) && (
+                                <div style={{ marginTop: '0.4rem', display: 'flex', flexDirection: 'column', gap: '0.3rem' }}>
+                                  {aiRes.description && (
+                                    <div style={{ background: 'rgba(139,92,246,0.06)', border: '1px solid rgba(139,92,246,0.15)', borderRadius: '6px', padding: '0.4rem 0.55rem' }}>
+                                      <div style={{ fontSize: '0.6rem', fontWeight: 700, color: '#8B5CF6', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '0.15rem', display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
+                                        <Sparkles size={9} strokeWidth={2} /> Descrição
+                                      </div>
+                                      <p style={{ fontSize: '0.78rem', color: 'var(--text-secondary)', lineHeight: 1.5, margin: 0 }}>{aiRes.description}</p>
+                                    </div>
+                                  )}
+                                  {aiRes.analysis && (
+                                    <div style={{ background: 'rgba(99,102,241,0.06)', border: '1px solid rgba(99,102,241,0.15)', borderRadius: '6px', padding: '0.4rem 0.55rem' }}>
+                                      <div style={{ fontSize: '0.6rem', fontWeight: 700, color: '#6366F1', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '0.15rem', display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
+                                        <Sparkles size={9} strokeWidth={2} /> Análise
+                                      </div>
+                                      <p style={{ fontSize: '0.78rem', color: 'var(--text-secondary)', lineHeight: 1.5, margin: 0 }}>{aiRes.analysis}</p>
+                                    </div>
+                                  )}
+                                </div>
+                              )}
+
+                              {/* Sent-to badges */}
+                              {sent.length > 0 && (
+                                <div style={{ display: 'flex', gap: '3px', flexWrap: 'wrap', marginTop: '0.3rem' }}>
+                                  {sent.map(k => {
+                                    const t = SEND_TARGETS.find(x => x.key === k)
+                                    return t ? (
+                                      <span key={k} style={{ fontSize: '0.6rem', background: 'rgba(16,185,129,0.08)', border: '1px solid rgba(16,185,129,0.2)', color: '#10B981', borderRadius: '4px', padding: '0.08rem 0.35rem', fontWeight: 500 }}>
+                                        ✓ {t.label}
+                                      </span>
+                                    ) : null
+                                  })}
+                                </div>
+                              )}
                             </div>
-                            <div style={{ fontSize: '0.84rem', fontStyle: 'italic', color: 'var(--text-secondary)', lineHeight: 1.5, fontFamily: "'EB Garamond', Georgia, serif", textDecoration: `underline ${def.color}`, textUnderlineOffset: '2px', textDecorationThickness: '1px' }}>
-                              {c.selectedText}
-                            </div>
-                            {c.note && <div style={{ fontSize: '0.74rem', color: 'var(--text-muted)', marginTop: '0.25rem' }}>{c.note}</div>}
+
+                            {/* ⋯ button */}
+                            <button
+                              onClick={e => openCardMenu(c.id, e)}
+                              style={{ background: cardMenuId === c.id ? 'var(--surface-2)' : 'transparent', border: `1px solid ${cardMenuId === c.id ? 'var(--border)' : 'transparent'}`, borderRadius: '5px', cursor: 'pointer', color: 'var(--text-muted)', padding: '0.2rem 0.25rem', display: 'flex', alignItems: 'center', flexShrink: 0, marginTop: '1px', transition: 'all 0.1s' }}
+                              onMouseEnter={e => { e.currentTarget.style.background = 'var(--surface-2)'; e.currentTarget.style.borderColor = 'var(--border)' }}
+                              onMouseLeave={e => { if (cardMenuId !== c.id) { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.borderColor = 'transparent' } }}
+                            >
+                              <MoreHorizontal size={13} strokeWidth={1.75} />
+                            </button>
                           </div>
-                          <button onClick={() => { const n = clsList.filter(x => x.id !== c.id); setClsList(n); wcl(projectId, n) }} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)', fontSize: '0.82rem', padding: 0, lineHeight: 1, flexShrink: 0 }} onMouseEnter={e => { e.currentTarget.style.color = 'var(--error)' }} onMouseLeave={e => { e.currentTarget.style.color = 'var(--text-muted)' }}>×</button>
                         </div>
                       )
                     })}
@@ -526,7 +741,127 @@ export default function BibleTextBlock({ book, passageRef, testament, projectId,
         )}
       </div>
 
-      {/* ── Floating menu ─────────────────────────────────────────────────── */}
+      {/* ── Card context menu (⋯) ─────────────────────────────────────────── */}
+      {cardMenuId && cardMenuPos && (() => {
+        const cls = clsById[cardMenuId]
+        if (!cls) return null
+        const def  = CLASS_DEF[cls.type]
+        const sent = sentSections[cardMenuId] ?? []
+
+        return (
+          <div
+            ref={cardMenuRef}
+            style={{
+              position: 'fixed',
+              left: cardMenuPos.x,
+              top: cardMenuPos.y,
+              transform: 'translateX(-100%)',
+              zIndex: 9990,
+              background: 'var(--surface, #FFFFFF)',
+              border: '1px solid var(--border)',
+              borderRadius: '10px',
+              padding: '0.3rem',
+              boxShadow: '0 8px 32px rgba(0,0,0,0.12), 0 2px 8px rgba(0,0,0,0.06)',
+              width: '210px',
+              animation: 'fadeIn 0.1s ease-out',
+            }}
+          >
+            {/* ─ Navigation ─ */}
+            <CardMenuItem
+              label="Ver no texto bíblico"
+              icon="↑"
+              onClick={() => scrollToVerse(cls.startVerse)}
+            />
+
+            <div style={{ height: '1px', background: 'var(--border-subtle)', margin: '0.2rem 0' }} />
+
+            {/* ─ Edit ─ */}
+            <CardMenuItem
+              label="Editar classificação"
+              icon={def.emoji}
+              onClick={() => {
+                setCardMenuId(null); setCardMenuPos(null)
+                const el = document.querySelector(`[data-verse="${cls.startVerse}"]`)
+                if (el) {
+                  const rect = el.getBoundingClientRect()
+                  setMenuCtx({ kind: 'cls', id: cls.id }); setMenuState('main')
+                  setNoteVal(cls.note ?? '')
+                  setMenuPos({ x: rect.left + rect.width / 2, y: rect.top - 8 })
+                }
+              }}
+            />
+            <CardMenuItem
+              label={cls.note ? 'Editar nota' : 'Adicionar nota'}
+              icon="📝"
+              onClick={() => {
+                setCardMenuId(null); setCardMenuPos(null)
+                setNoteInline({ id: cls.id, val: cls.note ?? '' })
+              }}
+            />
+
+            <div style={{ height: '1px', background: 'var(--border-subtle)', margin: '0.2rem 0' }} />
+
+            {/* ─ AI ─ */}
+            <CardMenuItem
+              label="Gerar descrição com IA"
+              icon="✦"
+              accent="#8B5CF6"
+              disabled={aiLoading[cardMenuId] !== null && aiLoading[cardMenuId] !== undefined}
+              onClick={() => generateAI(cls, 'description')}
+            />
+            <CardMenuItem
+              label="Gerar análise com IA"
+              icon="✦"
+              accent="#6366F1"
+              disabled={aiLoading[cardMenuId] !== null && aiLoading[cardMenuId] !== undefined}
+              onClick={() => generateAI(cls, 'analysis')}
+            />
+
+            <div style={{ height: '1px', background: 'var(--border-subtle)', margin: '0.2rem 0' }} />
+
+            {/* ─ Send to ─ */}
+            {SEND_TARGETS.map(target => {
+              const isSent = sent.includes(target.key)
+              return (
+                <CardMenuItem
+                  key={target.key}
+                  label={isSent ? `Atualizar em ${target.label}` : `Enviar para ${target.label}`}
+                  icon={isSent ? '✓' : '→'}
+                  accent={isSent ? '#10B981' : undefined}
+                  onClick={async () => {
+                    setCardMenuId(null); setCardMenuPos(null)
+                    await sendToSectionGeneric(cls, target)
+                  }}
+                />
+              )
+            })}
+
+            <div style={{ height: '1px', background: 'var(--border-subtle)', margin: '0.2rem 0' }} />
+
+            {/* ─ Transform ─ */}
+            <CardMenuItem
+              label="Transformar em Colagem"
+              icon="🗂️"
+              onClick={async () => {
+                setCardMenuId(null); setCardMenuPos(null)
+                await transformToCollage(cls)
+              }}
+            />
+
+            <div style={{ height: '1px', background: 'var(--border-subtle)', margin: '0.2rem 0' }} />
+
+            {/* ─ Delete ─ */}
+            <CardMenuItem
+              label="Remover classificação"
+              icon="✕"
+              danger
+              onClick={() => removeCls(cls.id)}
+            />
+          </div>
+        )
+      })()}
+
+      {/* ── Floating menu (text selection) ────────────────────────────────── */}
       {menuPos && menuCtx && (
         <div ref={menuRef} style={{ position: 'fixed', left: menuPos.x, top: menuPos.y, transform: 'translate(-50%, calc(-100% - 6px))', zIndex: 9999, background: '#18181B', borderRadius: '12px', padding: '0.5rem', boxShadow: '0 12px 40px rgba(0,0,0,0.25), 0 2px 8px rgba(0,0,0,0.15)', width: '208px', animation: 'fadeIn 0.12s ease-out' }}>
 
@@ -657,5 +992,37 @@ export default function BibleTextBlock({ book, passageRef, testament, projectId,
         </div>
       )}
     </div>
+  )
+}
+
+// ── CardMenuItem helper ───────────────────────────────────────────────────────
+
+function CardMenuItem({
+  label, icon, accent, danger, disabled, onClick,
+}: {
+  label: string; icon: string; accent?: string; danger?: boolean; disabled?: boolean
+  onClick: () => void
+}) {
+  const [hovered, setHovered] = useState(false)
+  const color = danger ? 'var(--error)' : accent ?? 'var(--text-primary)'
+  const bg    = hovered ? (danger ? 'rgba(239,68,68,0.06)' : 'var(--surface-2)') : 'transparent'
+
+  return (
+    <button
+      onClick={onClick}
+      disabled={disabled}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+      style={{
+        display: 'flex', alignItems: 'center', gap: '0.55rem',
+        width: '100%', background: bg, border: 'none', borderRadius: '6px',
+        padding: '0.32rem 0.5rem', cursor: disabled ? 'not-allowed' : 'pointer',
+        fontFamily: 'inherit', textAlign: 'left', transition: 'background 0.08s',
+        opacity: disabled ? 0.5 : 1,
+      }}
+    >
+      <span style={{ fontSize: '0.75rem', lineHeight: 1, color, width: '14px', textAlign: 'center', flexShrink: 0 }}>{icon}</span>
+      <span style={{ fontSize: '0.77rem', color, lineHeight: 1.3 }}>{label}</span>
+    </button>
   )
 }
