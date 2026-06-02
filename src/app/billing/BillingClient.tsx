@@ -16,7 +16,7 @@ interface Props {
 
 const PLAN_ORDER: PlanId[] = ['free', 'iniciante', 'intermediario', 'avancado']
 
-const GOLD   = '#b8922a'
+const GOLD   = 'var(--accent)'
 const MUTED  = 'var(--text-muted)'
 const BORDER = 'var(--border)'
 

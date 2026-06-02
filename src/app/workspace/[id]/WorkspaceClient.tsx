@@ -25,6 +25,13 @@ import SermonBuilderWorkspace from './SermonBuilderWorkspace'
 import CommentaryWorkspace from './CommentaryWorkspace'
 import LiveReferencePanel from './LiveReferencePanel'
 import AIPanel from './AIPanel'
+import {
+  Heart, BookOpen, FileText, Crosshair, Landmark, Languages, GraduationCap,
+  Sparkles, BookMarked, Flame, MessageSquareText, Layers, Book, Library,
+  BookCopy, Link2, Paperclip, ChevronDown, ChevronRight, ChevronUp,
+  type LucideIcon,
+} from 'lucide-react'
+import { LampasMarkIcon } from '@/components/LampasLogo'
 
 interface Props {
   user: User
@@ -43,14 +50,14 @@ interface NavPhase { id: PhaseId; roman: string; label: string; color: string; b
 const NAV_PHASES: NavPhase[] = [
   {
     id: 'preparar', roman: 'I', label: 'Preparar',
-    color: '#c9a66b', bgActive: 'rgba(201,166,107,0.08)',
+    color: '#D97706', bgActive: 'rgba(217,119,6,0.08)',
     modes: [
       {
         id: 'preparar_imersao',
         label: 'Imersão',
         subtitle: 'Piedade e assimilação',
-        color: '#c9a66b',
-        bgActive: 'rgba(201,166,107,0.08)',
+        color: '#D97706',
+        bgActive: 'rgba(217,119,6,0.08)',
         groups: [
           { id: 'preparar_espiritual', label: 'Preparação Espiritual' },
           { id: 'preparar_assimilacao', label: 'Leia e Assimile' },
@@ -62,14 +69,14 @@ const NAV_PHASES: NavPhase[] = [
   },
   {
     id: 'investigar', roman: 'II', label: 'Investigar',
-    color: 'var(--accent)', bgActive: 'rgba(184,146,42,0.08)',
+    color: 'var(--accent)', bgActive: 'rgba(59,130,246,0.08)',
     modes: [
       {
         id: 'interpretar_inventio',
         label: 'Exegese',
         subtitle: 'Descobrir o significado',
         color: 'var(--accent)',
-        bgActive: 'rgba(184,146,42,0.08)',
+        bgActive: 'rgba(59,130,246,0.08)',
         groups: [
           { id: 'contextual', label: 'Estudo Contextual' },
           { id: 'textual',    label: 'Estudo Textual' },
@@ -80,14 +87,14 @@ const NAV_PHASES: NavPhase[] = [
   },
   {
     id: 'comunicar', roman: 'III', label: 'Produzir',
-    color: 'var(--ai)', bgActive: 'rgba(124,156,191,0.08)',
+    color: 'var(--ai)', bgActive: 'rgba(139,92,246,0.08)',
     modes: [
       {
         id: 'sermao',
         label: 'Sermão',
         subtitle: 'Proclamação pública',
         color: 'var(--ai)',
-        bgActive: 'rgba(124,156,191,0.08)',
+        bgActive: 'rgba(139,92,246,0.08)',
         groups: [
           { id: 'sermao_dispositio',   label: 'Estrutura' },
           { id: 'sermao_elocutio',     label: 'Linguagem' },
@@ -99,8 +106,8 @@ const NAV_PHASES: NavPhase[] = [
         id: 'estudo_biblico',
         label: 'Estudo Bíblico',
         subtitle: 'Ensino participativo',
-        color: '#6db8a0',
-        bgActive: 'rgba(109,184,160,0.09)',
+        color: '#10B981',
+        bgActive: 'rgba(16,185,129,0.09)',
         groups: [
           { id: 'estudo_dispositio',   label: 'Estrutura' },
           { id: 'estudo_elocutio',     label: 'Linguagem' },
@@ -112,8 +119,8 @@ const NAV_PHASES: NavPhase[] = [
         id: 'devocional',
         label: 'Devocional',
         subtitle: 'Fluxo meditativo e pastoral',
-        color: '#c9a66b',
-        bgActive: 'rgba(201,166,107,0.09)',
+        color: '#D97706',
+        bgActive: 'rgba(217,119,6,0.09)',
         groups: [
           { id: 'devocional_dispositio',   label: 'Estrutura' },
           { id: 'devocional_elocutio',     label: 'Linguagem' },
@@ -125,8 +132,8 @@ const NAV_PHASES: NavPhase[] = [
         id: 'comentario',
         label: 'Comentário',
         subtitle: 'Exegese versículo a versículo',
-        color: '#c4916b',
-        bgActive: 'rgba(196,145,107,0.09)',
+        color: '#F97316',
+        bgActive: 'rgba(249,115,22,0.09)',
         groups: [
           { id: 'comentario_expositivo', label: 'Expositivo' },
         ],
@@ -135,14 +142,14 @@ const NAV_PHASES: NavPhase[] = [
   },
   {
     id: 'ferramentas', roman: 'IV', label: 'Ferramentas',
-    color: '#9b9488', bgActive: 'rgba(155,148,136,0.08)',
+    color: '#64748B', bgActive: 'rgba(100,116,139,0.08)',
     modes: [
       {
         id: 'ferramentas_biblioteca',
         label: 'Pesquisa',
         subtitle: 'Biblioteca e assistente',
-        color: '#9b9488',
-        bgActive: 'rgba(155,148,136,0.08)',
+        color: '#64748B',
+        bgActive: 'rgba(100,116,139,0.08)',
         groups: [
           ...TOOL_AREAS.map(area => ({ id: area.slug, label: area.shortTitle })),
           { id: 'colagens', label: 'Colagens' },
@@ -154,11 +161,11 @@ const NAV_PHASES: NavPhase[] = [
 
 const NAV_GROUP_IDS = new Set(NAV_PHASES.flatMap(phase => phase.modes.flatMap(mode => mode.groups.map(group => group.id))))
 
-const PHASE_ICONS: Record<PhaseId, string> = {
-  preparar:    '✦',
-  investigar:  '◎',
-  comunicar:   '▷',
-  ferramentas: '▤',
+const PHASE_DESCRIPTIONS: Record<PhaseId, string> = {
+  preparar:    'Preparação espiritual e contato inicial com o texto',
+  investigar:  'Análise contextual, textual e teológica',
+  comunicar:   'Transformação da exegese em comunicação',
+  ferramentas: 'Biblioteca e recursos de pesquisa',
 }
 
 const GROUP_SUBTITLES: Record<string, string> = {
@@ -192,11 +199,32 @@ const GROUP_SUBTITLES: Record<string, string> = {
   comentario_expositivo: 'Análise versículo a versículo',
 }
 
-const MODE_ICONS: Record<string, string> = {
-  sermao:         '✦',
-  estudo_biblico: '◈',
-  devocional:     '◌',
-  comentario:     '≡',
+const GROUP_ICONS: Record<string, LucideIcon> = {
+  // Preparar
+  preparar_espiritual:       Heart,
+  preparar_assimilacao:      BookOpen,
+  preparar_impressoes:       FileText,
+  preparar_visao_geral:      Crosshair,
+  // Investigar
+  contextual:                Landmark,
+  textual:                   Languages,
+  teologico:                 GraduationCap,
+  // Produzir — Comentário
+  comentario_expositivo:     MessageSquareText,
+  // Ferramentas
+  ferramentas_sistematica:   Layers,
+  ferramentas_biblica:       Book,
+  ferramentas_dicionario:    Library,
+  ferramentas_livros:        BookCopy,
+  ferramentas_refs_cruzadas: Link2,
+  colagens:                  Paperclip,
+}
+
+const MODE_ICONS_LUCIDE: Record<string, LucideIcon> = {
+  sermao:         Sparkles,
+  estudo_biblico: BookMarked,
+  devocional:     Flame,
+  comentario:     MessageSquareText,
 }
 
 // ── Helpers de navegação ───────────────────────────────────────────────────
@@ -306,7 +334,7 @@ export default function WorkspaceClient({ user, project, initialSections }: Prop
   const [aiPrompt, setAiPrompt] = useState('')
 
   // Panel layout
-  const [sidebarWidth, setSidebarWidth] = useState(210)
+  const [sidebarWidth, setSidebarWidth] = useState(264)
   const [referenceWidth, setReferenceWidth] = useState(280)
   const [aiWidth, setAiWidth] = useState(308)
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
@@ -314,7 +342,7 @@ export default function WorkspaceClient({ user, project, initialSections }: Prop
   const [focusMode, setFocusMode] = useState(false)
   const [sideBySide, setSideBySide] = useState(false)
 
-  const sidebarWidthRef = useRef(210)
+  const sidebarWidthRef = useRef(264)
   const referenceWidthRef = useRef(280)
   const aiWidthRef = useRef(308)
   sidebarWidthRef.current = sidebarWidth
@@ -511,7 +539,7 @@ export default function WorkspaceClient({ user, project, initialSections }: Prop
                 fontFamily: 'inherit',
               }}
               onMouseEnter={e => {
-                e.currentTarget.style.background = 'rgba(255,255,255,0.05)'
+                e.currentTarget.style.background = 'rgba(0,0,0,0.05)'
                 const icon = e.currentTarget.querySelector('.edit-icon') as HTMLElement
                 if (icon) icon.style.opacity = '1'
               }}
@@ -562,7 +590,7 @@ export default function WorkspaceClient({ user, project, initialSections }: Prop
           title="Mostrar exegese e trabalho lado a lado"
           style={{
             marginLeft: '0.5rem', flexShrink: 0,
-            background: sideBySide ? 'rgba(255,255,255,0.06)' : 'transparent',
+            background: sideBySide ? 'rgba(0,0,0,0.05)' : 'transparent',
             border: `1px solid ${sideBySide ? 'var(--border)' : 'var(--border-subtle)'}`,
             color: sideBySide ? 'var(--text-secondary)' : 'var(--text-muted)',
             borderRadius: '5px', padding: '0.2rem 0.55rem',
@@ -579,7 +607,7 @@ export default function WorkspaceClient({ user, project, initialSections }: Prop
           onClick={() => setFocusMode(o => !o)}
           style={{
             marginLeft: '0.5rem', flexShrink: 0,
-            background: focusMode ? 'rgba(255,255,255,0.06)' : 'transparent',
+            background: focusMode ? 'rgba(0,0,0,0.05)' : 'transparent',
             border: `1px solid ${focusMode ? 'var(--border)' : 'var(--border-subtle)'}`,
             color: focusMode ? 'var(--text-secondary)' : 'var(--text-muted)',
             borderRadius: '5px', padding: '0.2rem 0.55rem',
@@ -642,14 +670,27 @@ export default function WorkspaceClient({ user, project, initialSections }: Prop
           ) : (
             /* ── Sidebar expanded ────────────────────────────────── */
             <>
-              <div style={{ display: 'flex', justifyContent: 'flex-end', padding: '0.3rem 0.4rem 0', flexShrink: 0 }}>
+              <div style={{
+                padding: '0.85rem 0.75rem 0.7rem',
+                borderBottom: '1px solid var(--border-subtle)',
+                display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                flexShrink: 0,
+              }}>
+                <LampasMarkIcon size={28} />
                 <button
                   onClick={() => { setSidebarCollapsed(true); localStorage.setItem('lampas_sidebar_c', '1') }}
                   title="Recolher menu"
-                  style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: 'var(--text-muted)', fontSize: '0.82rem', padding: '0.1rem 0.3rem', borderRadius: '3px', fontFamily: 'inherit' }}
+                  style={{
+                    background: 'transparent', border: 'none', cursor: 'pointer',
+                    color: 'var(--text-muted)', padding: '0.2rem',
+                    borderRadius: '5px', fontFamily: 'inherit',
+                    display: 'flex', alignItems: 'center',
+                  }}
                   onMouseEnter={e => e.currentTarget.style.color = 'var(--text-secondary)'}
                   onMouseLeave={e => e.currentTarget.style.color = 'var(--text-muted)'}
-                >‹</button>
+                >
+                  <ChevronRight size={14} />
+                </button>
               </div>
 
               {NAV_PHASES.map((phase, phaseIdx) => {
@@ -657,7 +698,17 @@ export default function WorkspaceClient({ user, project, initialSections }: Prop
                 const singleMode = phase.modes.length === 1
 
                 return (
-                  <div key={phase.id} style={{ marginBottom: phaseOpen ? '0.2rem' : 0 }}>
+                  <div key={phase.id}>
+
+                    {/* ── Connector line between phases ──────────── */}
+                    {phaseIdx > 0 && (
+                      <div style={{
+                        width: '2px', height: '14px',
+                        background: 'var(--border)',
+                        marginLeft: '16px',
+                        borderRadius: '1px',
+                      }} />
+                    )}
 
                     {/* ── Phase header ──────────────────────────── */}
                     <button
@@ -665,31 +716,66 @@ export default function WorkspaceClient({ user, project, initialSections }: Prop
                       style={{
                         width: '100%', border: 'none', cursor: 'pointer',
                         background: 'transparent', textAlign: 'left', fontFamily: 'inherit',
-                        padding: phaseIdx === 0 ? '1rem 0.75rem 0.45rem' : '0.75rem 0.75rem 0.45rem',
-                        borderTop: phaseIdx > 0 ? '1px solid var(--border-subtle)' : 'none',
+                        padding: '12px 12px 12px 10px',
+                        display: 'flex', alignItems: 'flex-start', gap: '10px',
+                        transition: 'background 0.15s',
+                        borderRadius: '8px',
                       }}
+                      onMouseEnter={e => { if (!phaseOpen) e.currentTarget.style.background = 'rgba(0,0,0,0.03)' }}
+                      onMouseLeave={e => { if (!phaseOpen) e.currentTarget.style.background = 'transparent' }}
                     >
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.38rem' }}>
-                        <span style={{ fontSize: '0.65rem', color: phase.color, opacity: phaseOpen ? 0.75 : 0.4, flexShrink: 0, lineHeight: 1 }}>
-                          {PHASE_ICONS[phase.id]}
-                        </span>
+                      {/* Colored dot — journey node */}
+                      <div style={{
+                        width: '10px', height: '10px', borderRadius: '50%',
+                        background: phaseOpen ? phase.color : `${phase.color}55`,
+                        flexShrink: 0, marginTop: '5px',
+                        boxShadow: phaseOpen ? `0 0 0 3px ${phase.color}18` : 'none',
+                        transition: 'background 0.2s, box-shadow 0.2s',
+                      }} />
+
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        {/* Small roman numeral */}
                         <span style={{
-                          flex: 1,
-                          fontSize: '0.72rem', fontWeight: 900,
-                          color: phaseOpen ? phase.color : `${phase.color}99`,
-                          letterSpacing: '0.06em', textTransform: 'uppercase', lineHeight: 1,
+                          display: 'block',
+                          fontSize: '0.55rem', fontWeight: 800,
+                          letterSpacing: '0.12em', textTransform: 'uppercase',
+                          color: `${phase.color}70`, marginBottom: '2px',
+                          lineHeight: 1,
                         }}>
-                          {phase.roman}. {phase.label}
+                          {phase.roman}
                         </span>
-                        <span style={{ fontSize: '0.42rem', color: 'var(--text-muted)', opacity: 0.5, flexShrink: 0 }}>
-                          {phaseOpen ? '▾' : '▸'}
-                        </span>
+                        {/* Main title — large and prominent */}
+                        <div style={{
+                          fontSize: '1.0rem', fontWeight: 700,
+                          letterSpacing: '-0.01em', lineHeight: 1.15,
+                          color: phaseOpen ? phase.color : 'var(--text-primary)',
+                          transition: 'color 0.15s',
+                        }}>
+                          {phase.label.toUpperCase()}
+                        </div>
+                        {/* Description */}
+                        <div style={{
+                          fontSize: '0.68rem', color: 'var(--text-muted)',
+                          marginTop: '3px', lineHeight: 1.4, fontWeight: 400,
+                        }}>
+                          {PHASE_DESCRIPTIONS[phase.id]}
+                        </div>
                       </div>
+
+                      {/* Chevron */}
+                      {phaseOpen
+                        ? <ChevronUp size={13} strokeWidth={1.75} style={{ flexShrink: 0, color: 'var(--text-muted)', opacity: 0.5, marginTop: '5px' }} />
+                        : <ChevronDown size={13} strokeWidth={1.75} style={{ flexShrink: 0, color: 'var(--text-muted)', opacity: 0.4, marginTop: '5px' }} />
+                      }
                     </button>
 
-                    {/* ── Phase body ────────────────────────────── */}
+                    {/* ── Phase body — left border = journey line ── */}
                     {phaseOpen && (
-                      <div style={{ paddingBottom: '0.5rem' }}>
+                      <div style={{
+                        marginLeft: '15px',
+                        borderLeft: `2px solid ${phase.color}22`,
+                        paddingBottom: '6px',
+                      }}>
                         {phase.modes.map((mode, modeIdx) => {
                           const modeOpen = singleMode || expandedCanons.has(mode.id)
 
@@ -697,36 +783,44 @@ export default function WorkspaceClient({ user, project, initialSections }: Prop
                             <div key={mode.id}>
 
                               {/* Mode header — only for multi-mode phases (Produzir) */}
-                              {!singleMode && (
-                                <button
-                                  onClick={() => toggleCanon(mode.id)}
-                                  style={{
-                                    width: '100%', border: 'none', cursor: 'pointer',
-                                    background: modeOpen ? `${mode.bgActive}` : 'transparent',
-                                    textAlign: 'left', fontFamily: 'inherit',
-                                    padding: '0.42rem 0.65rem 0.38rem 0.75rem',
-                                    borderTop: modeIdx > 0 ? '1px solid var(--border-subtle)' : 'none',
-                                    display: 'flex', alignItems: 'center', gap: '0.35rem',
-                                  }}
-                                >
-                                  <span style={{ fontSize: '0.56rem', color: mode.color, opacity: 0.7, flexShrink: 0, lineHeight: 1 }}>
-                                    {MODE_ICONS[mode.id] ?? '◈'}
-                                  </span>
-                                  <div style={{ flex: 1, minWidth: 0 }}>
-                                    <div style={{ fontSize: '0.72rem', fontWeight: 700, color: mode.color, lineHeight: 1.2 }}>
-                                      {mode.label}
-                                    </div>
-                                    {!modeOpen && (
-                                      <div style={{ fontSize: '0.58rem', color: 'var(--text-muted)', fontStyle: 'italic', lineHeight: 1.2, marginTop: '0.05rem' }}>
+                              {!singleMode && (() => {
+                                const ModeIconEl = MODE_ICONS_LUCIDE[mode.id]
+                                return (
+                                  <button
+                                    onClick={() => toggleCanon(mode.id)}
+                                    style={{
+                                      width: 'calc(100% - 12px)', marginLeft: '6px', marginRight: '6px',
+                                      border: modeOpen ? `1px solid ${mode.color}25` : '1px solid transparent',
+                                      cursor: 'pointer',
+                                      background: modeOpen ? mode.bgActive : 'transparent',
+                                      borderRadius: '9px',
+                                      textAlign: 'left', fontFamily: 'inherit',
+                                      padding: '0.5rem 0.6rem',
+                                      marginTop: modeIdx > 0 ? '0.25rem' : '0',
+                                      display: 'flex', alignItems: 'center', gap: '0.5rem',
+                                      transition: 'background 0.12s, border-color 0.12s',
+                                    }}
+                                    onMouseEnter={e => { if (!modeOpen) e.currentTarget.style.background = 'rgba(0,0,0,0.04)' }}
+                                    onMouseLeave={e => { if (!modeOpen) e.currentTarget.style.background = 'transparent' }}
+                                  >
+                                    {ModeIconEl && (
+                                      <ModeIconEl size={14} strokeWidth={1.8} style={{ flexShrink: 0, color: mode.color, opacity: modeOpen ? 1 : 0.65 }} />
+                                    )}
+                                    <div style={{ flex: 1, minWidth: 0 }}>
+                                      <div style={{ fontSize: '0.78rem', fontWeight: 600, color: modeOpen ? mode.color : 'var(--text-secondary)', lineHeight: 1.25 }}>
+                                        {mode.label}
+                                      </div>
+                                      <div style={{ fontSize: '0.66rem', color: 'var(--text-muted)', lineHeight: 1.2, marginTop: '0.08rem' }}>
                                         {mode.subtitle}
                                       </div>
-                                    )}
-                                  </div>
-                                  <span style={{ fontSize: '0.42rem', color: 'var(--text-muted)', opacity: 0.5, flexShrink: 0 }}>
-                                    {modeOpen ? '▾' : '▸'}
-                                  </span>
-                                </button>
-                              )}
+                                    </div>
+                                    {modeOpen
+                                      ? <ChevronDown size={11} style={{ flexShrink: 0, color: 'var(--text-muted)', opacity: 0.6 }} />
+                                      : <ChevronRight size={11} style={{ flexShrink: 0, color: 'var(--text-muted)', opacity: 0.4 }} />
+                                    }
+                                  </button>
+                                )
+                              })()}
 
                               {/* Groups */}
                               {modeOpen && (
@@ -754,69 +848,94 @@ export default function WorkspaceClient({ user, project, initialSections }: Prop
                                     return (
                                       <div key={group.id} style={{ marginBottom: groupOpen ? '0.45rem' : 0 }}>
 
-                                        {/* ── Group header — padrão único para todas as fases ── */}
-                                        <button
-                                          onClick={() => isDirect ? navigate(directSlug) : toggleGroup(group.id)}
-                                          style={{
-                                            width: '100%', border: 'none', cursor: 'pointer',
-                                            background: isActive ? mode.bgActive : 'transparent',
-                                            borderLeft: `2px solid ${isActive ? mode.color : 'transparent'}`,
-                                            textAlign: 'left', fontFamily: 'inherit',
-                                            padding: '0.48rem 0.6rem 0.4rem 0.65rem',
-                                            display: 'flex', alignItems: 'flex-start', gap: '0.45rem',
-                                            transition: 'background 0.12s',
-                                          }}
-                                          onMouseEnter={e => { if (!isActive) e.currentTarget.style.background = 'rgba(255,255,255,0.02)' }}
-                                          onMouseLeave={e => { if (!isActive) e.currentTarget.style.background = 'transparent' }}
-                                        >
-                                          {/* Circled number */}
-                                          <span style={{
-                                            width: '18px', height: '18px', borderRadius: '50%', flexShrink: 0,
-                                            border: `1.5px solid ${highlight ? mode.color : 'var(--border)'}`,
-                                            display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                            fontSize: '0.6rem', fontWeight: 900, lineHeight: 1,
-                                            color: highlight ? mode.color : 'var(--text-muted)',
-                                            marginTop: '0.08rem',
-                                            transition: 'border-color 0.15s, color 0.15s',
-                                          }}>
-                                            {groupIdx + 1}
-                                          </span>
+                                        {/* ── Group header ── */}
+                                        {(() => {
+                                          const GroupIcon = GROUP_ICONS[group.id]
+                                          return (
+                                            <button
+                                              onClick={() => isDirect ? navigate(directSlug) : toggleGroup(group.id)}
+                                              style={{
+                                                width: 'calc(100% - 12px)',
+                                                marginLeft: '6px', marginRight: '6px',
+                                                border: isActive ? `1px solid ${mode.color}28` : '1px solid transparent',
+                                                cursor: 'pointer',
+                                                background: isActive ? mode.bgActive : 'transparent',
+                                                borderRadius: '10px',
+                                                textAlign: 'left', fontFamily: 'inherit',
+                                                padding: '0.52rem 0.65rem',
+                                                display: 'flex', alignItems: 'center', gap: '0.55rem',
+                                                transition: 'background 0.12s, border-color 0.12s, box-shadow 0.12s',
+                                                boxShadow: isActive ? '0 1px 3px rgba(0,0,0,0.06)' : 'none',
+                                              }}
+                                              onMouseEnter={e => {
+                                                if (!isActive) {
+                                                  e.currentTarget.style.background = 'rgba(0,0,0,0.04)'
+                                                  e.currentTarget.style.borderColor = 'var(--border)'
+                                                }
+                                              }}
+                                              onMouseLeave={e => {
+                                                if (!isActive) {
+                                                  e.currentTarget.style.background = 'transparent'
+                                                  e.currentTarget.style.borderColor = 'transparent'
+                                                }
+                                              }}
+                                            >
+                                              {/* Lucide icon */}
+                                              {GroupIcon && (
+                                                <GroupIcon
+                                                  size={15} strokeWidth={1.75}
+                                                  style={{
+                                                    flexShrink: 0,
+                                                    color: highlight ? mode.color : 'var(--text-muted)',
+                                                    transition: 'color 0.15s',
+                                                  }}
+                                                />
+                                              )}
 
-                                          <div style={{ flex: 1, minWidth: 0 }}>
-                                            <div style={{
-                                              fontSize: '0.64rem', fontWeight: 800, letterSpacing: '0.05em',
-                                              textTransform: 'uppercase', lineHeight: 1.25,
-                                              color: highlight ? mode.color : 'var(--text-secondary)',
-                                              transition: 'color 0.15s',
-                                              overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
-                                            }}>
-                                              {groupTitle}
-                                            </div>
-                                            {groupSub && (
-                                              <div style={{ fontSize: '0.56rem', color: 'var(--text-muted)', fontStyle: 'italic', marginTop: '0.08rem', lineHeight: 1.25 }}>
-                                                {groupSub}
+                                              <div style={{ flex: 1, minWidth: 0 }}>
+                                                <div style={{
+                                                  fontSize: '0.8rem', fontWeight: 600, lineHeight: 1.3,
+                                                  color: highlight ? mode.color : 'var(--text-primary)',
+                                                  transition: 'color 0.15s',
+                                                  overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+                                                  letterSpacing: '-0.01em',
+                                                }}>
+                                                  {groupTitle}
+                                                </div>
+                                                {groupSub && (
+                                                  <div style={{
+                                                    fontSize: '0.67rem', color: 'var(--text-muted)',
+                                                    marginTop: '0.1rem', lineHeight: 1.3,
+                                                    overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+                                                  }}>
+                                                    {groupSub}
+                                                  </div>
+                                                )}
                                               </div>
-                                            )}
-                                          </div>
 
-                                          {/* Indicador direito */}
-                                          {isActive && (
-                                            <span style={{ width: '5px', height: '5px', borderRadius: '50%', background: mode.color, flexShrink: 0, marginTop: '0.3rem' }} />
-                                          )}
-                                          {!isDirect && done > 0 && (
-                                            <span style={{
-                                              fontSize: '0.58rem', flexShrink: 0, fontWeight: 700, marginTop: '0.1rem',
-                                              color: done === total ? 'var(--success)' : 'var(--accent)',
-                                            }}>
-                                              {done === total ? '✓' : `${done}/${total}`}
-                                            </span>
-                                          )}
-                                          {!isDirect && (
-                                            <span style={{ fontSize: '0.42rem', color: 'var(--text-muted)', opacity: 0.5, flexShrink: 0, marginTop: '0.15rem' }}>
-                                              {groupOpen ? '▾' : '▸'}
-                                            </span>
-                                          )}
-                                        </button>
+                                              {/* Right indicators */}
+                                              {isActive && (
+                                                <span style={{
+                                                  width: '6px', height: '6px', borderRadius: '50%',
+                                                  background: mode.color, flexShrink: 0,
+                                                }} />
+                                              )}
+                                              {!isDirect && done > 0 && !isActive && (
+                                                <span style={{
+                                                  fontSize: '0.6rem', flexShrink: 0, fontWeight: 600,
+                                                  color: done === total ? 'var(--success)' : mode.color,
+                                                }}>
+                                                  {done === total ? '✓' : `${done}/${total}`}
+                                                </span>
+                                              )}
+                                              {!isDirect && (
+                                                groupOpen
+                                                  ? <ChevronDown size={12} style={{ flexShrink: 0, color: 'var(--text-muted)', opacity: 0.55 }} />
+                                                  : <ChevronRight size={12} style={{ flexShrink: 0, color: 'var(--text-muted)', opacity: 0.4 }} />
+                                              )}
+                                            </button>
+                                          )
+                                        })()}
 
                                         {/* ── Section list (with vertical line) ── */}
                                         {!isDirect && groupOpen && (
@@ -835,26 +954,23 @@ export default function WorkspaceClient({ user, project, initialSections }: Prop
                                                   onClick={() => navigate(sd.slug)}
                                                   style={{
                                                     width: '100%', border: 'none', fontFamily: 'inherit',
-                                                    background: isActive ? mode.bgActive : 'transparent',
-                                                    borderLeft: `2px solid ${isActive ? mode.color : 'transparent'}`,
-                                                    padding: '0.25rem 0.4rem 0.25rem 0.52rem',
-                                                    display: 'flex', alignItems: 'center', gap: '0.32rem',
+                                                    background: isActive ? `${mode.color}10` : 'transparent',
+                                                    padding: '0.28rem 0.65rem 0.28rem 0.55rem',
+                                                    display: 'flex', alignItems: 'center', gap: '0.45rem',
                                                     cursor: 'pointer', textAlign: 'left',
-                                                    marginLeft: '-1px',
+                                                    borderRadius: '7px',
                                                     transition: 'background 0.1s',
                                                   }}
-                                                  onMouseEnter={e => { if (!isActive) e.currentTarget.style.background = 'rgba(255,255,255,0.025)' }}
+                                                  onMouseEnter={e => { if (!isActive) e.currentTarget.style.background = 'rgba(0,0,0,0.04)' }}
                                                   onMouseLeave={e => { if (!isActive) e.currentTarget.style.background = 'transparent' }}
                                                 >
                                                   <span style={{
-                                                    fontSize: '0.6rem', color: 'var(--text-muted)',
-                                                    flexShrink: 0, width: '14px', textAlign: 'right', lineHeight: 1,
-                                                    fontWeight: isActive ? 700 : 400,
-                                                  }}>
-                                                    {secIdx + 1}.
-                                                  </span>
+                                                    width: '4px', height: '4px', borderRadius: '50%',
+                                                    background: isActive ? mode.color : 'var(--border)',
+                                                    flexShrink: 0, transition: 'background 0.15s',
+                                                  }} />
                                                   <span style={{
-                                                    flex: 1, fontSize: '0.7rem', lineHeight: 1.35,
+                                                    flex: 1, fontSize: '0.74rem', lineHeight: 1.35,
                                                     color: isActive ? mode.color : 'var(--text-secondary)',
                                                     fontWeight: isActive ? 600 : 400,
                                                     overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
@@ -864,7 +980,7 @@ export default function WorkspaceClient({ user, project, initialSections }: Prop
                                                   <span style={{
                                                     width: '5px', height: '5px', borderRadius: '50%',
                                                     background: dot, flexShrink: 0,
-                                                    opacity: isActive ? 1 : 0.6,
+                                                    opacity: isActive ? 1 : 0.5,
                                                   }} />
                                                 </button>
                                               )
@@ -887,7 +1003,7 @@ export default function WorkspaceClient({ user, project, initialSections }: Prop
                                                     borderTop: '1px solid var(--border-subtle)',
                                                     transition: 'background 0.1s',
                                                   }}
-                                                  onMouseEnter={e => { if (!isSynActive) e.currentTarget.style.background = 'rgba(255,255,255,0.025)' }}
+                                                  onMouseEnter={e => { if (!isSynActive) e.currentTarget.style.background = 'rgba(0,0,0,0.04)' }}
                                                   onMouseLeave={e => { if (!isSynActive) e.currentTarget.style.background = 'transparent' }}
                                                 >
                                                   <span style={{ fontSize: '0.62rem', color: isSynActive ? mode.color : 'var(--text-muted)', flexShrink: 0, lineHeight: 1 }}>→</span>

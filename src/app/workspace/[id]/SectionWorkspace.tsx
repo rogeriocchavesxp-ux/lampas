@@ -4,15 +4,8 @@ import { useState, useEffect, useRef, useCallback } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import type { Project, Section } from '@/types/database'
 import type { SectionDef } from '@/lib/workspace-sections'
-import HelpIcon from '@/components/help/HelpIcon'
 import MarkdownRenderer from '@/components/MarkdownRenderer'
-
-const CARD_COLORS: Record<string, string> = {
-  verbos_principais:    '#c9955a',
-  substantivos_casos:   'var(--ai)',
-  estrutura_sintatica:  '#9b7ec8',
-  particulas_conectivos: 'var(--success)',
-}
+import { ChevronDown, ChevronUp, MoreHorizontal } from 'lucide-react'
 
 type CardState = 'idle' | 'generating' | 'saving' | 'saved'
 
@@ -40,21 +33,21 @@ function fieldStatus(text: string): 'empty' | 'draft' | 'reviewed' {
 const MODULE_COLORS: Record<string, string> = {
   inventio:     'var(--accent)',
   dispositio:   'var(--ai)',
-  elocutio:     '#9b7ec8',
-  memoria:      '#6db8a0',
-  pronuntiatio: '#c47c5a',
+  elocutio:     '#6366F1',
+  memoria:      '#10B981',
+  pronuntiatio: '#F97316',
 }
 
 function modeTheme(mode: SectionDef['communicationMode']): { color: string; bg: string; label: string } {
-  if (mode === 'sermao') return { color: 'var(--ai)', bg: 'rgba(124,156,191,0.08)', label: 'Sermão' }
-  if (mode === 'estudo_biblico') return { color: '#6db8a0', bg: 'rgba(109,184,160,0.08)', label: 'Estudo Bíblico' }
-  if (mode === 'devocional') return { color: '#c9a66b', bg: 'rgba(201,166,107,0.08)', label: 'Devocional' }
+  if (mode === 'sermao') return { color: 'var(--ai)', bg: 'rgba(139,92,246,0.08)', label: 'Sermão' }
+  if (mode === 'estudo_biblico') return { color: '#10B981', bg: 'rgba(16,185,129,0.08)', label: 'Estudo Bíblico' }
+  if (mode === 'devocional') return { color: '#D97706', bg: 'rgba(217,119,6,0.08)', label: 'Devocional' }
   return { color: 'var(--accent)', bg: 'var(--accent-subtle)', label: 'Exegese' }
 }
 
 function sectionTheme(sectionDef: SectionDef): { color: string; bg: string; label: string } {
   if (sectionDef.phase === 'preparar') {
-    return { color: '#c9a66b', bg: 'rgba(201,166,107,0.08)', label: 'Preparar' }
+    return { color: '#D97706', bg: 'rgba(217,119,6,0.08)', label: 'Preparar' }
   }
   return modeTheme(sectionDef.communicationMode)
 }
@@ -72,19 +65,29 @@ export default function SectionWorkspace({
     return {}
   }, [existingSection])
 
-  const [cardContent, setCardContent] = useState<Record<string, string>>(loadCards)
+  const [cardContent, setCardContent]   = useState<Record<string, string>>(loadCards)
   const [expandedCards, setExpandedCards] = useState<Set<string>>(() => new Set([sectionDef.cards[0]?.id]))
-  const [editingCards, setEditingCards] = useState<Set<string>>(() => new Set())
+  const [editingCards, setEditingCards]   = useState<Set<string>>(() => new Set())
   const [questionsOpen, setQuestionsOpen] = useState(false)
-  const [saving, setSaving] = useState(false)
-  const [savedAt, setSavedAt] = useState<Date | null>(null)
-  const [cardStates, setCardStates] = useState<Record<string, CardState>>({})
+  const [saving, setSaving]               = useState(false)
+  const [savedAt, setSavedAt]             = useState<Date | null>(null)
+  const [cardStates, setCardStates]       = useState<Record<string, CardState>>({})
   const [generatingAll, setGeneratingAll] = useState(false)
+  const [hoveredCard, setHoveredCard]     = useState<string | null>(null)
+  const [openMenu, setOpenMenu]           = useState<string | null>(null)
 
-  const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const saveTimer    = useRef<ReturnType<typeof setTimeout> | null>(null)
   const latestContent = useRef(cardContent)
 
   useEffect(() => { latestContent.current = cardContent }, [cardContent])
+
+  // Close menu on outside click
+  useEffect(() => {
+    if (!openMenu) return
+    function handler() { setOpenMenu(null) }
+    document.addEventListener('mousedown', handler)
+    return () => document.removeEventListener('mousedown', handler)
+  }, [openMenu])
 
   function scheduleAutosave(cardId: string, value: string) {
     const next = { ...latestContent.current, [cardId]: value }
@@ -154,7 +157,7 @@ export default function SectionWorkspace({
       setCardStates(prev => ({ ...prev, [cardId]: 'saving' }))
       await performSave(next)
       setCardStates(prev => ({ ...prev, [cardId]: 'saved' }))
-      setEditingCards(prev => { const next = new Set(prev); next.delete(cardId); return next })
+      setEditingCards(prev => { const n = new Set(prev); n.delete(cardId); return n })
       setTimeout(() => setCardStates(prev => ({ ...prev, [cardId]: 'idle' })), 2000)
     } catch {
       setCardStates(prev => ({ ...prev, [cardId]: 'idle' }))
@@ -195,52 +198,49 @@ export default function SectionWorkspace({
     }
   }
 
-  const moduleColor = MODULE_COLORS[sectionDef.module] ?? 'var(--accent)'
-  const theme = sectionTheme(sectionDef)
+  const moduleColor  = MODULE_COLORS[sectionDef.module] ?? 'var(--accent)'
+  const theme        = sectionTheme(sectionDef)
   const hasAnyContent = Object.values(cardContent).some(v => v.trim().length > 0)
-  const savedLabel = saving
+  const savedLabel   = saving
     ? 'salvando…'
     : savedAt
     ? `salvo ${savedAt.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}`
     : ''
 
   return (
-    <div style={{ maxWidth: '900px', margin: '0 auto', padding: '2.5rem clamp(1.5rem, 4vw, 2.5rem) 5rem', fontFamily: 'var(--font-sans)' }}>
+    <div style={{ maxWidth: '820px', margin: '0 auto', padding: '2.5rem clamp(1.5rem, 4vw, 2.5rem) 6rem', fontFamily: 'var(--font-sans)' }}>
 
       {/* Breadcrumb */}
       <div style={{
         display: 'flex', alignItems: 'center', gap: '0.4rem',
         fontSize: '0.68rem', color: 'var(--text-muted)',
         textTransform: 'uppercase', letterSpacing: '0.07em',
-        marginBottom: '0.75rem',
+        marginBottom: '1.25rem',
       }}>
         {(sectionDef.phase === 'comunicar' || sectionDef.phase === 'preparar') && (
           <>
             <span style={{
               color: theme.color,
               background: theme.bg,
-              border: `1px solid ${theme.color}`,
-              borderRadius: '4px',
-              padding: '0.08rem 0.4rem',
-              fontWeight: '800',
+              border: `1px solid ${theme.color}35`,
+              borderRadius: '5px',
+              padding: '0.1rem 0.5rem',
+              fontWeight: '700',
             }}>
               {theme.label}
             </span>
             <span style={{ color: 'var(--border)' }}>·</span>
           </>
         )}
-        <span style={{ color: moduleColor, fontWeight: '700' }}>
+        <span style={{ color: moduleColor, fontWeight: '600' }}>
           {sectionDef.module.charAt(0).toUpperCase() + sectionDef.module.slice(1)}
         </span>
         <span style={{ color: 'var(--border)' }}>·</span>
         <span>{sectionDef.groupLabel}</span>
         <span style={{
           marginLeft: 'auto',
-          fontSize: '0.7rem',
+          fontSize: '0.7rem', letterSpacing: 0, textTransform: 'none',
           color: saving ? 'var(--ai)' : savedAt ? 'var(--success)' : 'transparent',
-          fontStyle: 'normal',
-          textTransform: 'none',
-          letterSpacing: 0,
           transition: 'color 0.3s',
         }}>
           {savedLabel || '·'}
@@ -249,35 +249,30 @@ export default function SectionWorkspace({
 
       {/* Section title */}
       <h1 style={{
-        fontSize: '1.6rem', fontWeight: '700',
-        letterSpacing: '-0.025em', lineHeight: 1.2,
-        color: 'var(--text-primary)', marginBottom: '0.85rem',
+        fontSize: '1.75rem', fontWeight: '700',
+        letterSpacing: '-0.03em', lineHeight: 1.15,
+        color: 'var(--text-primary)', marginBottom: '0.5rem',
       }}>
         {sectionDef.title}
       </h1>
 
       {/* Reference */}
-      <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginBottom: '1.25rem' }}>
+      <p style={{ fontSize: '0.82rem', color: 'var(--text-muted)', marginBottom: '1.5rem', letterSpacing: '0.01em' }}>
         {project.book} {project.passage_ref} · {project.original_language}
       </p>
 
-      {/* Objective — borderLeft quote style */}
+      {/* Objective */}
       <p style={{
-        fontSize: '0.87rem', color: 'var(--text-secondary)',
-        lineHeight: '1.8', fontStyle: 'italic',
-        borderLeft: `2px solid ${sectionDef.phase === 'comunicar' ? theme.color : moduleColor}`,
-        background: sectionDef.phase === 'comunicar' || sectionDef.phase === 'preparar' ? theme.bg : 'transparent',
-        borderRadius: sectionDef.phase === 'comunicar' || sectionDef.phase === 'preparar' ? '0 6px 6px 0' : 0,
-        paddingTop: sectionDef.phase === 'comunicar' || sectionDef.phase === 'preparar' ? '0.75rem' : 0,
-        paddingBottom: sectionDef.phase === 'comunicar' || sectionDef.phase === 'preparar' ? '0.75rem' : 0,
-        paddingRight: sectionDef.phase === 'comunicar' || sectionDef.phase === 'preparar' ? '0.85rem' : 0,
-        paddingLeft: '1rem', marginBottom: '1.5rem',
+        fontSize: '0.9rem', color: 'var(--text-secondary)',
+        lineHeight: '1.75', fontStyle: 'italic',
+        borderLeft: `2px solid ${theme.color}50`,
+        paddingLeft: '1rem', marginBottom: '2rem',
       }}>
         {sectionDef.objective}
       </p>
 
-      {/* Key questions — collapsible hermeneutic callout */}
-      <div style={{ marginBottom: '2rem' }}>
+      {/* Key questions — collapsible */}
+      <div style={{ marginBottom: '2.5rem' }}>
         <button
           onClick={() => setQuestionsOpen(o => !o)}
           style={{
@@ -286,14 +281,10 @@ export default function SectionWorkspace({
             display: 'flex', alignItems: 'center', gap: '0.4rem',
           }}
         >
-          <span style={{
-            fontSize: '0.52rem',
-            color: 'var(--text-muted)',
-            opacity: 0.55,
-            transition: 'opacity 0.15s',
-          }}>
-            {questionsOpen ? '▾' : '▸'}
-          </span>
+          {questionsOpen
+            ? <ChevronDown size={12} style={{ color: 'var(--text-muted)', opacity: 0.55 }} />
+            : <ChevronDown size={12} style={{ color: 'var(--text-muted)', opacity: 0.4, transform: 'rotate(-90deg)' }} />
+          }
           <span style={{
             fontSize: '0.67rem', fontWeight: '600',
             letterSpacing: '0.07em', textTransform: 'uppercase',
@@ -313,9 +304,9 @@ export default function SectionWorkspace({
 
         {questionsOpen && (
           <div style={{
-            marginTop: '0.7rem',
-            paddingLeft: '0.85rem',
-            borderLeft: `1px solid ${moduleColor}35`,
+            marginTop: '0.75rem',
+            paddingLeft: '0.9rem',
+            borderLeft: `1px solid ${moduleColor}30`,
           }}>
             {sectionDef.keyQuestions.map((q, i) => (
               <button
@@ -327,7 +318,7 @@ export default function SectionWorkspace({
                   cursor: 'pointer', fontFamily: 'inherit',
                   textAlign: 'left', padding: '0.2rem 0',
                   color: 'var(--text-muted)',
-                  fontSize: '0.81rem', fontStyle: 'italic',
+                  fontSize: '0.82rem', fontStyle: 'italic',
                   lineHeight: '1.6', transition: 'color 0.12s',
                 }}
                 onMouseEnter={e => { e.currentTarget.style.color = 'var(--text-secondary)' }}
@@ -339,8 +330,7 @@ export default function SectionWorkspace({
 
             {sectionDef.relevantAuthors.length > 0 && (
               <div style={{
-                marginTop: '0.6rem',
-                paddingTop: '0.45rem',
+                marginTop: '0.6rem', paddingTop: '0.45rem',
                 borderTop: '1px solid var(--border-subtle)',
                 fontSize: '0.69rem', color: 'var(--text-muted)',
                 fontStyle: 'italic', opacity: 0.65,
@@ -352,100 +342,209 @@ export default function SectionWorkspace({
         )}
       </div>
 
-      {/* ── Fields ──────────────────────────────────────────────────────────── */}
-      <div style={{ borderTop: '1px solid var(--border-subtle)' }}>
+      {/* ── Cards ─────────────────────────────────────────────────────────── */}
+      <div>
         {sectionDef.cards.map((card, idx) => {
-          const content = cardContent[card.id] ?? ''
-          const expanded = expandedCards.has(card.id)
-          const dc = dotColor(content)
-          const state = cardStates[card.id] ?? 'idle'
+          const content   = cardContent[card.id] ?? ''
+          const expanded  = expandedCards.has(card.id)
+          const dc        = dotColor(content)
+          const state     = cardStates[card.id] ?? 'idle'
           const isWorking = state === 'generating' || state === 'saving'
           const hasContent = content.trim().length > 0
           const isEditing = editingCards.has(card.id) || !hasContent
-          const preview = !expanded && hasContent
-            ? content.trim().slice(0, 130) + (content.trim().length > 130 ? '…' : '')
+          const preview   = !expanded && hasContent
+            ? content.trim().slice(0, 160) + (content.trim().length > 160 ? '…' : '')
             : ''
-          const cardColor = CARD_COLORS[card.id] ?? moduleColor
-          const isLast = idx === sectionDef.cards.length - 1
+          const isLast    = idx === sectionDef.cards.length - 1
+          const showDots  = hoveredCard === card.id || openMenu === card.id
+
+          const menuActions = [
+            {
+              label: isWorking ? (state === 'generating' ? 'Gerando…' : 'Salvando…') : state === 'saved' ? 'Gerado ✓' : 'Gerar com IA',
+              action: () => { setOpenMenu(null); generateCard(card.id) },
+              disabled: isWorking || generatingAll,
+            },
+            {
+              label: 'Melhorar resposta',
+              action: () => {
+                setOpenMenu(null)
+                onAskAI(`Melhore e aprofunde esta análise de "${card.title}" para ${project.book} ${project.passage_ref}:\n\n${content.slice(0, 800)}`)
+              },
+              disabled: !hasContent,
+            },
+            {
+              label: 'Expandir análise',
+              action: () => {
+                setOpenMenu(null)
+                onAskAI(card.aiTrigger + ' — Expanda com mais profundidade, exemplos exegéticos e referências de peso.')
+              },
+            },
+            { separator: true },
+            {
+              label: 'Adicionar observação',
+              action: () => {
+                setOpenMenu(null)
+                setExpandedCards(prev => new Set([...prev, card.id]))
+                setEditingCards(prev => new Set([...prev, card.id]))
+              },
+            },
+            {
+              label: 'Duplicar conteúdo',
+              action: () => {
+                setOpenMenu(null)
+                navigator.clipboard.writeText(content).catch(() => {})
+              },
+              disabled: !hasContent,
+            },
+            { separator: true },
+            {
+              label: 'Limpar conteúdo',
+              action: () => { setOpenMenu(null); scheduleAutosave(card.id, '') },
+              disabled: !hasContent,
+              danger: true,
+            },
+          ]
 
           return (
             <div
               key={card.id}
               style={{
                 borderBottom: isLast ? 'none' : '1px solid var(--border-subtle)',
-                paddingTop: '1rem',
-                paddingBottom: expanded ? '1.25rem' : preview ? '0.85rem' : '0.85rem',
               }}
+              onMouseEnter={() => setHoveredCard(card.id)}
+              onMouseLeave={() => { setHoveredCard(null) }}
             >
-              {/* Field header row */}
+              {/* Card header */}
               <div
                 style={{
-                  display: 'flex', alignItems: 'center', gap: '0.5rem',
+                  display: 'flex', alignItems: 'center', gap: '0.6rem',
                   cursor: 'pointer', userSelect: 'none',
-                  marginBottom: expanded ? '0.8rem' : '0',
+                  padding: '1rem 0',
+                  marginBottom: expanded ? '0' : '0',
                 }}
                 onClick={() => toggleCard(card.id)}
               >
+                {/* Status dot */}
                 <span style={{
-                  width: '5px', height: '5px', borderRadius: '50%', flexShrink: 0,
-                  background: dc === 'var(--border)' ? 'var(--border)' : cardColor,
-                  boxShadow: dc !== 'var(--border)' ? `0 0 4px ${cardColor}55` : 'none',
+                  width: '6px', height: '6px', borderRadius: '50%', flexShrink: 0,
+                  background: dc,
+                  transition: 'background 0.2s',
                 }} />
 
+                {/* Title */}
                 <span style={{
-                  fontSize: '0.72rem', fontWeight: '700',
-                  letterSpacing: '0.06em', textTransform: 'uppercase',
-                  color: expanded ? cardColor : 'var(--text-secondary)',
-                  flex: 1,
+                  fontSize: '0.92rem', fontWeight: '500',
+                  color: expanded ? 'var(--text-primary)' : 'var(--text-secondary)',
+                  flex: 1, letterSpacing: '-0.01em',
                   transition: 'color 0.15s',
                 }}>
                   {card.title}
                 </span>
 
-                <HelpIcon cardId={card.id} onAskAI={onAskAI} />
+                {/* State label (generating/saved) */}
+                {state !== 'idle' && (
+                  <span style={{
+                    fontSize: '0.7rem', color: state === 'saved' ? 'var(--success)' : 'var(--text-muted)',
+                    fontStyle: 'italic', whiteSpace: 'nowrap',
+                  }}>
+                    {state === 'generating' ? 'gerando…'
+                      : state === 'saving' ? 'salvando…'
+                      : 'salvo ✓'}
+                  </span>
+                )}
 
-                <button
-                  onClick={e => { e.stopPropagation(); if (!isWorking) generateCard(card.id) }}
-                  disabled={isWorking || generatingAll}
-                  style={{
-                    background: 'transparent', border: 'none',
-                    color: state === 'saved' ? 'var(--success)' : isWorking ? 'var(--text-muted)' : cardColor,
-                    cursor: isWorking || generatingAll ? 'wait' : 'pointer',
-                    fontFamily: 'inherit', fontSize: '0.71rem', fontWeight: '600',
-                    padding: '0', letterSpacing: '0.01em', whiteSpace: 'nowrap',
-                    transition: 'color 0.15s',
-                  }}
-                  onMouseEnter={e => { if (!isWorking && state !== 'saved') e.currentTarget.style.color = 'var(--text-primary)' }}
-                  onMouseLeave={e => { if (!isWorking && state !== 'saved') e.currentTarget.style.color = cardColor }}
+                {/* Three-dot menu — appears on hover */}
+                <div
+                  style={{ position: 'relative', flexShrink: 0 }}
+                  onClick={e => e.stopPropagation()}
                 >
-                  {state === 'generating' ? 'Gerando…'
-                    : state === 'saving' ? 'Salvando…'
-                    : state === 'saved' ? 'Salvo ✓'
-                    : 'Gerar ↑'}
-                </button>
+                  <button
+                    onClick={() => setOpenMenu(openMenu === card.id ? null : card.id)}
+                    title="Opções"
+                    style={{
+                      background: openMenu === card.id ? 'var(--surface-2)' : 'transparent',
+                      border: 'none', cursor: 'pointer',
+                      color: 'var(--text-muted)',
+                      opacity: showDots ? 1 : 0,
+                      transition: 'opacity 0.15s, background 0.12s',
+                      padding: '0.2rem 0.25rem',
+                      borderRadius: '5px',
+                      display: 'flex', alignItems: 'center',
+                    }}
+                    onMouseEnter={e => { e.currentTarget.style.background = 'var(--surface-2)' }}
+                    onMouseLeave={e => { if (openMenu !== card.id) e.currentTarget.style.background = 'transparent' }}
+                  >
+                    <MoreHorizontal size={14} strokeWidth={1.75} />
+                  </button>
 
-                <span style={{
-                  fontSize: '0.6rem', color: 'var(--text-muted)',
-                  marginLeft: '0.25rem', userSelect: 'none',
-                }}>
-                  {expanded ? '▲' : '▼'}
-                </span>
+                  {/* Dropdown */}
+                  {openMenu === card.id && (
+                    <div
+                      style={{
+                        position: 'absolute', right: 0, top: 'calc(100% + 4px)',
+                        zIndex: 100,
+                        background: '#FFFFFF',
+                        border: '1px solid var(--border)',
+                        borderRadius: '12px',
+                        boxShadow: '0 4px 24px rgba(0,0,0,0.08), 0 1px 4px rgba(0,0,0,0.05)',
+                        padding: '0.3rem',
+                        minWidth: '186px',
+                        animation: 'fadeIn 0.12s ease-out',
+                      }}
+                      onClick={e => e.stopPropagation()}
+                    >
+                      {menuActions.map((item, i) => (
+                        'separator' in item ? (
+                          <div key={i} style={{ height: '1px', background: 'var(--border-subtle)', margin: '0.2rem 0' }} />
+                        ) : (
+                          <button
+                            key={item.label}
+                            onClick={item.action}
+                            disabled={item.disabled}
+                            style={{
+                              display: 'block', width: '100%', textAlign: 'left',
+                              background: 'transparent', border: 'none',
+                              cursor: item.disabled ? 'not-allowed' : 'pointer',
+                              fontFamily: 'inherit', fontSize: '0.83rem',
+                              color: item.danger ? 'var(--error)' : 'var(--text-secondary)',
+                              padding: '0.42rem 0.65rem',
+                              borderRadius: '8px',
+                              opacity: item.disabled ? 0.4 : 1,
+                              transition: 'background 0.1s',
+                              letterSpacing: '-0.005em',
+                            }}
+                            onMouseEnter={e => { if (!item.disabled) e.currentTarget.style.background = 'var(--surface)' }}
+                            onMouseLeave={e => { e.currentTarget.style.background = 'transparent' }}
+                          >
+                            {item.label}
+                          </button>
+                        )
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                {/* Expand chevron */}
+                {expanded
+                  ? <ChevronUp size={13} strokeWidth={1.75} style={{ flexShrink: 0, color: 'var(--text-muted)', opacity: 0.5 }} />
+                  : <ChevronDown size={13} strokeWidth={1.75} style={{ flexShrink: 0, color: 'var(--text-muted)', opacity: 0.35 }} />
+                }
               </div>
 
               {/* Preview (collapsed + has content) */}
               {!expanded && preview && (
                 <p style={{
-                  fontSize: '0.83rem', color: 'var(--text-muted)',
-                  lineHeight: '1.55', fontStyle: 'italic',
-                  marginLeft: '0.9rem', marginTop: '0.25rem',
+                  fontSize: '0.84rem', color: 'var(--text-muted)',
+                  lineHeight: '1.6', fontStyle: 'italic',
+                  marginLeft: '1rem', marginTop: '-0.5rem', marginBottom: '1rem',
                 }}>
                   {preview}
                 </p>
               )}
 
-              {/* Expanded content — view or edit */}
+              {/* Expanded content */}
               {expanded && (
-                <>
+                <div style={{ paddingBottom: '1.25rem' }}>
                   {isEditing ? (
                     <textarea
                       value={content}
@@ -455,36 +554,43 @@ export default function SectionWorkspace({
                       style={{
                         width: '100%',
                         background: 'var(--surface)',
-                        border: '1px solid var(--border-subtle)',
-                        borderRadius: '6px',
-                        padding: '0.9rem 1rem',
+                        border: '1px solid var(--border)',
+                        borderRadius: '8px',
+                        padding: '1rem 1.1rem',
                         color: 'var(--text-primary)',
                         fontSize: '0.9rem', lineHeight: '1.78',
                         resize: 'vertical', outline: 'none',
                         fontFamily: 'var(--font-serif)',
                         boxSizing: 'border-box',
-                        caretColor: cardColor,
+                        caretColor: moduleColor,
+                        transition: 'border-color 0.15s, box-shadow 0.15s',
                       }}
-                      onFocus={e => e.target.style.borderColor = cardColor + '60'}
-                      onBlur={e => e.target.style.borderColor = 'var(--border-subtle)'}
+                      onFocus={e => {
+                        e.target.style.borderColor = `${moduleColor}60`
+                        e.target.style.boxShadow = `0 0 0 3px ${moduleColor}12`
+                      }}
+                      onBlur={e => {
+                        e.target.style.borderColor = 'var(--border)'
+                        e.target.style.boxShadow = 'none'
+                      }}
                     />
                   ) : (
                     <div style={{
                       width: '100%',
                       background: 'var(--surface)',
-                      border: '1px solid var(--border-subtle)',
-                      borderRadius: '6px',
+                      border: '1px solid var(--border)',
+                      borderRadius: '8px',
                       padding: '1rem 1.1rem',
                       boxSizing: 'border-box',
                       minHeight: '5rem',
                     }}>
-                      <MarkdownRenderer content={content} moduleColor={cardColor} />
+                      <MarkdownRenderer content={content} moduleColor={moduleColor} />
                     </div>
                   )}
 
                   <div style={{
                     display: 'flex', justifyContent: 'space-between',
-                    alignItems: 'center', marginTop: '0.4rem',
+                    alignItems: 'center', marginTop: '0.5rem',
                   }}>
                     {hasContent && (
                       <button
@@ -492,9 +598,8 @@ export default function SectionWorkspace({
                         style={{
                           background: 'transparent', border: 'none',
                           cursor: 'pointer', fontFamily: 'inherit',
-                          fontSize: '0.69rem', color: 'var(--text-muted)',
-                          padding: 0,
-                          transition: 'color 0.12s',
+                          fontSize: '0.71rem', color: 'var(--text-muted)',
+                          padding: 0, transition: 'color 0.12s',
                         }}
                         onMouseEnter={e => { e.currentTarget.style.color = 'var(--text-secondary)' }}
                         onMouseLeave={e => { e.currentTarget.style.color = 'var(--text-muted)' }}
@@ -504,41 +609,44 @@ export default function SectionWorkspace({
                     )}
                     <span style={{
                       fontSize: '0.67rem', marginLeft: 'auto',
-                      color: fieldStatus(content) === 'empty' ? 'transparent' : fieldStatus(content) === 'draft' ? 'var(--accent)' : 'var(--success)',
-                      opacity: 0.75,
+                      color: fieldStatus(content) === 'empty' ? 'transparent'
+                        : fieldStatus(content) === 'draft' ? 'var(--accent)'
+                        : 'var(--success)',
+                      opacity: 0.7,
                     }}>
-                      {fieldStatus(content) === 'draft' ? 'rascunho' : fieldStatus(content) === 'reviewed' ? 'revisado' : ''}
+                      {fieldStatus(content) === 'draft' ? 'rascunho'
+                        : fieldStatus(content) === 'reviewed' ? 'revisado' : ''}
                     </span>
                   </div>
-                </>
+                </div>
               )}
             </div>
           )
         })}
       </div>
 
-      {/* Footer actions */}
+      {/* ── Footer CTA ────────────────────────────────────────────────────── */}
       <div style={{
-        display: 'flex', alignItems: 'center', gap: '0.65rem',
-        marginTop: '2rem', paddingTop: '1.25rem',
+        marginTop: '3rem', paddingTop: '2rem',
         borderTop: '1px solid var(--border-subtle)',
+        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
       }}>
         <button
           onClick={generateAll}
           disabled={generatingAll}
           style={{
-            background: 'transparent',
-            border: `1px solid ${generatingAll ? 'var(--border)' : 'var(--ai)'}`,
-            color: generatingAll ? 'var(--text-muted)' : 'var(--ai)',
-            borderRadius: '6px', padding: '0.45rem 0.9rem',
-            fontSize: '0.79rem', cursor: generatingAll ? 'wait' : 'pointer',
-            fontFamily: 'inherit', fontWeight: '600',
-            transition: 'all 0.15s',
+            background: generatingAll ? 'var(--surface-2)' : 'var(--accent)',
+            color: generatingAll ? 'var(--text-muted)' : '#FFFFFF',
+            border: 'none', borderRadius: '10px',
+            padding: '0.7rem 1.75rem',
+            fontSize: '0.88rem', fontWeight: '600',
+            cursor: generatingAll ? 'wait' : 'pointer',
+            fontFamily: 'inherit', letterSpacing: '-0.01em',
+            transition: 'background 0.15s',
+            boxShadow: generatingAll ? 'none' : '0 1px 2px rgba(59,130,246,0.25), 0 2px 8px rgba(59,130,246,0.15)',
           }}
-          onMouseEnter={e => { if (!generatingAll) { e.currentTarget.style.background = 'var(--ai-subtle)' } }}
-          onMouseLeave={e => { e.currentTarget.style.background = 'transparent' }}
         >
-          {generatingAll ? 'Gerando…' : 'Gerar seção completa com IA'}
+          {generatingAll ? 'Gerando seção completa…' : 'Gerar seção completa com IA'}
         </button>
 
         {hasAnyContent && (
@@ -546,13 +654,14 @@ export default function SectionWorkspace({
             onClick={manualSave}
             disabled={saving}
             style={{
-              background: 'transparent',
-              border: '1px solid var(--border-subtle)',
-              color: 'var(--text-secondary)',
-              borderRadius: '6px', padding: '0.45rem 0.9rem',
-              fontSize: '0.79rem', cursor: saving ? 'wait' : 'pointer',
-              fontFamily: 'inherit',
+              background: 'transparent', border: '1px solid var(--border)',
+              color: 'var(--text-muted)', borderRadius: '8px',
+              padding: '0.6rem 1rem', fontSize: '0.8rem',
+              cursor: saving ? 'wait' : 'pointer',
+              fontFamily: 'inherit', transition: 'all 0.15s',
             }}
+            onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--text-muted)'; e.currentTarget.style.color = 'var(--text-secondary)' }}
+            onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.color = 'var(--text-muted)' }}
           >
             {saving ? 'Salvando…' : 'Salvar'}
           </button>

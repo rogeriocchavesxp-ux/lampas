@@ -111,7 +111,7 @@ export default function DashboardClient({ user, projects, profile }: Props) {
               borderRadius: '6px', cursor: 'pointer', fontSize: '0.82rem',
               fontFamily: 'inherit',
             }}
-            onMouseEnter={e => { e.currentTarget.style.borderColor = '#b8922a'; e.currentTarget.style.color = '#b8922a' }}
+            onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--accent)'; e.currentTarget.style.color = 'var(--accent)' }}
             onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.color = 'var(--text-secondary)' }}
           >
             Planos
@@ -138,7 +138,7 @@ export default function DashboardClient({ user, projects, profile }: Props) {
             </p>
           </div>
           <button onClick={() => setShowNew(true)} style={{
-            background: 'var(--accent)', color: '#1a1208',
+            background: 'var(--accent)', color: '#FFFFFF',
             border: 'none', borderRadius: '8px',
             padding: '0.6rem 1.25rem', fontWeight: '600',
             cursor: 'pointer', fontSize: '0.9rem',
@@ -155,7 +155,11 @@ export default function DashboardClient({ user, projects, profile }: Props) {
             background: 'var(--surface)', borderRadius: '12px',
             border: '1px solid var(--border-subtle)',
           }}>
-            <div style={{ fontSize: '2.5rem', marginBottom: '1rem', opacity: 0.4 }}>📖</div>
+            <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '1rem' }}>
+              <svg width="40" height="40" fill="none" viewBox="0 0 24 24" stroke="var(--border)" strokeWidth="1.5">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25" />
+              </svg>
+            </div>
             <h3 style={{ marginBottom: '0.5rem', color: 'var(--text-secondary)' }}>
               Nenhuma exegese ainda
             </h3>
@@ -163,7 +167,7 @@ export default function DashboardClient({ user, projects, profile }: Props) {
               Comece selecionando um texto bíblico
             </p>
             <button onClick={() => setShowNew(true)} style={{
-              background: 'var(--accent)', color: '#1a1208',
+              background: 'var(--accent)', color: '#FFFFFF',
               border: 'none', borderRadius: '8px',
               padding: '0.6rem 1.25rem', fontWeight: '600',
               cursor: 'pointer', fontSize: '0.9rem', fontFamily: 'inherit',
@@ -221,7 +225,7 @@ export default function DashboardClient({ user, projects, profile }: Props) {
       {showNew && (
         <div style={{
           position: 'fixed', inset: 0,
-          background: 'rgba(0,0,0,0.7)',
+          background: 'rgba(15,23,42,0.35)',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
           zIndex: 50, padding: '1rem',
         }} onClick={e => { if (e.target === e.currentTarget) setShowNew(false) }}>
@@ -300,7 +304,7 @@ export default function DashboardClient({ user, projects, profile }: Props) {
                 </button>
                 <button type="submit" disabled={creating} style={{
                   flex: 2, padding: '0.65rem',
-                  background: 'var(--accent)', color: '#1a1208',
+                  background: 'var(--accent)', color: '#FFFFFF',
                   border: 'none', borderRadius: '8px',
                   fontWeight: '600', cursor: creating ? 'wait' : 'pointer',
                   fontFamily: 'inherit', fontSize: '0.9rem',
