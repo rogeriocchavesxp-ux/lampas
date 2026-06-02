@@ -1,3 +1,5 @@
+import { getRedis } from '@/lib/redis'
+
 export interface OriginalTextRequest {
   book: string
   passageRef: string
@@ -248,18 +250,28 @@ export async function fetchOriginalText(request: OriginalTextRequest): Promise<O
     (_, index) => parsed.chapterStart + index,
   )
 
+  const redis = getRedis()
+  const TTL = 60 * 60 * 24 * 365 // 1 ano — texto original não muda
+
   const chapterResults = await Promise.all(chapters.map(async chapter => {
+    const cacheKey = `origins:${translation}:${parsed.bookCode}:${chapter}`
+
+    if (redis) {
+      const cached = await redis.get<OriginsChapter>(cacheKey)
+      if (cached) return cached.verses.map(verse => ({ ...verse, chapter: cached.chapter }))
+    }
+
     const url = `https://bible-${translation}.originsapi.com/${parsed.bookCode}.${chapter}.json`
-    const response = await fetch(url, {
-      headers: { Accept: 'application/json' },
-      next: { revalidate: 86400 },
-    })
+    const response = await fetch(url, { headers: { Accept: 'application/json' } })
 
     if (!response.ok) {
       throw new Error(`Não foi possível buscar ${parsed.bookCode}.${chapter} (${translation})`)
     }
 
     const data = await response.json() as OriginsChapter
+
+    if (redis) redis.set(cacheKey, data, { ex: TTL }).catch(() => {})
+
     return data.verses.map(verse => ({ ...verse, chapter: data.chapter }))
   }))
 

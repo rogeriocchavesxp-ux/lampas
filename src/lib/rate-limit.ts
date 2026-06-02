@@ -1,5 +1,6 @@
 import { Ratelimit } from '@upstash/ratelimit'
 import { Redis } from '@upstash/redis'
+import { getRedis } from '@/lib/redis'
 import type { PlanId } from '@/lib/plans'
 
 // Requests por minuto por plano — proteção contra burst, não substitui quota mensal
@@ -10,24 +11,15 @@ const LIMITS: Record<PlanId, number> = {
   avancado:      30,
 }
 
-let ratelimit: Ratelimit | null = null
-
 function getRatelimit(): Ratelimit | null {
-  if (ratelimit) return ratelimit
+  const redis = getRedis()
+  if (!redis) return null
 
-  const url   = process.env.UPSTASH_REDIS_REST_URL
-  const token = process.env.UPSTASH_REDIS_REST_TOKEN
-
-  // Se não configurado, falha aberta (não bloqueia) — sem Upstash em dev
-  if (!url || !token) return null
-
-  ratelimit = new Ratelimit({
-    redis: new Redis({ url, token }),
-    limiter: Ratelimit.slidingWindow(30, '1 m'), // default — sobrescrito por plano
+  return new Ratelimit({
+    redis,
+    limiter: Ratelimit.slidingWindow(30, '1 m'),
     prefix: 'lampas:rl',
   })
-
-  return ratelimit
 }
 
 export interface RateLimitResult {
@@ -47,7 +39,7 @@ export async function checkRateLimit(userId: string, plan: PlanId): Promise<Rate
 
   // Instância por plano para ter janelas independentes
   const planRl = new Ratelimit({
-    redis: (rl as unknown as { redis: Redis }).redis,
+    redis: getRedis() as Redis,
     limiter: Ratelimit.slidingWindow(rpm, '1 m'),
     prefix: `lampas:rl:${plan}`,
   })

@@ -4,6 +4,7 @@ import { checkAIUsage, incrementAIUsage } from '@/lib/billing'
 import { checkRateLimit, rateLimitHeaders } from '@/lib/rate-limit'
 import { EXEGESE_SYSTEM_PROMPT } from '@/lib/prompts/exegese-system'
 import { getSectionBySlug } from '@/lib/workspace-sections'
+import { loadOriginalTextContext } from '@/lib/workspace-context'
 
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY! })
 
@@ -15,43 +16,8 @@ interface ProjectContext {
   original_language: string
 }
 
-interface OriginalVerseContent {
-  ref?: string
-  texto?: string
-  transliteracao?: string
-  traducao_literal?: string
-  traducao_ajustada?: string
-  observacoes?: string
-}
-
 function shouldUseOriginalText(sectionSlug: string, sectionGroup: string): boolean {
   return sectionGroup === 'textual' || ['sintese', 'contexto_canonico'].includes(sectionSlug)
-}
-
-async function loadOriginalTextContext(
-  supabase: Awaited<ReturnType<typeof createClient>>,
-  projectId: string | undefined,
-): Promise<string> {
-  if (!projectId) return ''
-
-  const { data } = await supabase
-    .from('sections')
-    .select('content')
-    .eq('project_id', projectId)
-    .eq('slug', 'texto_original')
-    .maybeSingle()
-
-  const content = data?.content as { versos?: OriginalVerseContent[]; passagem?: string } | null
-  if (!content) return ''
-
-  if (Array.isArray(content.versos) && content.versos.length > 0) {
-    return content.versos
-      .filter(verse => verse.texto?.trim())
-      .map(verse => `${verse.ref ?? ''} ${verse.texto}`.trim())
-      .join('\n')
-  }
-
-  return content.passagem?.trim() ?? ''
 }
 
 export async function POST(req: Request) {
