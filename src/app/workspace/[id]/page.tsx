@@ -1,5 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
-import { redirect, notFound } from 'next/navigation'
+import { createServiceClient } from '@/lib/supabase/service'
+import { notFound } from 'next/navigation'
 import WorkspaceClient from './WorkspaceClient'
 
 interface Props {
@@ -8,10 +9,11 @@ interface Props {
 
 export default async function WorkspacePage({ params }: Props) {
   const { id } = await params
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
+  const authClient    = await createClient()
+  const serviceClient = createServiceClient()
+  const { data: { user } } = await authClient.auth.getUser()
 
-  const { data: project } = await supabase
+  const { data: project } = await serviceClient
     .from('projects')
     .select('*')
     .eq('id', id)
@@ -19,7 +21,7 @@ export default async function WorkspacePage({ params }: Props) {
 
   if (!project) notFound()
 
-  const { data: sections } = await supabase
+  const { data: sections } = await serviceClient
     .from('sections')
     .select('*')
     .eq('project_id', id)
