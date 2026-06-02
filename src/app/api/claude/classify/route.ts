@@ -3,6 +3,7 @@ import { createClient } from '@/lib/supabase/server'
 import { checkAIUsage, incrementAIUsage } from '@/lib/billing'
 import { checkRateLimit, rateLimitHeaders } from '@/lib/rate-limit'
 import { EXEGESE_SYSTEM_PROMPT } from '@/lib/prompts/exegese-system'
+import { cacheKey, getAICache, setAICache } from '@/lib/ai-cache'
 
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY! })
 
@@ -61,14 +62,19 @@ export async function POST(req: Request) {
   const prompt = PROMPTS[kind] ?? PROMPTS.description
   const maxTokens = ['lexical', 'theological_biblical', 'applications'].includes(kind) ? 450 : 300
 
+  const ck = cacheKey(term, type, String(startVerse), book, passageRef, kind)
+  const cached = await getAICache<{ result: string }>(ck)
+  if (cached) return Response.json(cached)
+
   try {
     const response = await anthropic.messages.create({
       model: 'claude-sonnet-4-6',
       max_tokens: maxTokens,
-      system: EXEGESE_SYSTEM_PROMPT,
+      system: [{ type: 'text', text: EXEGESE_SYSTEM_PROMPT, cache_control: { type: 'ephemeral' } }],
       messages: [{ role: 'user', content: prompt }],
     })
     const result = response.content[0].type === 'text' ? response.content[0].text.trim() : ''
+    setAICache(ck, { result }).catch(() => {})
     return Response.json({ result })
   } catch {
     return Response.json({ error: 'Erro ao chamar a IA' }, { status: 500 })

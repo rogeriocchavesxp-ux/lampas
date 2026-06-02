@@ -4,6 +4,7 @@ import { checkAIUsage, incrementAIUsage } from '@/lib/billing'
 import { checkRateLimit, rateLimitHeaders } from '@/lib/rate-limit'
 import { EXEGESE_SYSTEM_PROMPT } from '@/lib/prompts/exegese-system'
 import { loadOriginalTextContext } from '@/lib/workspace-context'
+import { cacheKey, getAICache, setAICache } from '@/lib/ai-cache'
 
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY! })
 
@@ -64,16 +65,23 @@ Retorne APENAS JSON válido com a estrutura:
 
 Identifique entre 4 e 10 termos, ordenados por importância teológica. Inclua apenas termos que exigem análise lexical profunda — evite palavras comuns sem peso teológico.`
 
+    const identifySystem = EXEGESE_SYSTEM_PROMPT + '\n\nIMPORTANTE: Retorne SOMENTE JSON válido, sem markdown, sem texto fora do JSON.'
+    const ckIdentify = cacheKey('identify', project.book, project.passage_ref, textBlock)
+    const cachedIdentify = await getAICache(ckIdentify)
+    if (cachedIdentify) return Response.json(cachedIdentify)
+
     try {
       const response = await anthropic.messages.create({
         model: 'claude-sonnet-4-6',
         max_tokens: 2000,
-        system: EXEGESE_SYSTEM_PROMPT + '\n\nIMPORTANTE: Retorne SOMENTE JSON válido, sem markdown, sem texto fora do JSON.',
+        system: [{ type: 'text', text: identifySystem, cache_control: { type: 'ephemeral' } }],
         messages: [{ role: 'user', content: prompt }],
       })
       const raw = response.content[0].type === 'text' ? response.content[0].text : ''
       const cleaned = raw.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim()
-      return Response.json(JSON.parse(cleaned))
+      const result = JSON.parse(cleaned)
+      setAICache(ckIdentify, result).catch(() => {})
+      return Response.json(result)
     } catch (err) {
       console.error('generate-terms identify error:', err)
       return Response.json({ error: 'Erro ao identificar termos' }, { status: 500 })
@@ -109,16 +117,21 @@ Contribuição decisiva para a mensagem teológica desta perícope. Como ilumina
 ## Referências
 Liste as obras citadas nesta análise (dicionários, comentaristas reformados).`
 
+    const ckAnalyze = cacheKey('analyze', term.word, project.book, project.passage_ref)
+    const cachedAnalyze = await getAICache<{ analysis: string; dictionaries: string[] }>(ckAnalyze)
+    if (cachedAnalyze) return Response.json(cachedAnalyze)
+
     try {
       const response = await anthropic.messages.create({
         model: 'claude-sonnet-4-6',
         max_tokens: 3000,
-        system: EXEGESE_SYSTEM_PROMPT,
+        system: [{ type: 'text', text: EXEGESE_SYSTEM_PROMPT, cache_control: { type: 'ephemeral' } }],
         messages: [{ role: 'user', content: prompt }],
       })
       const analysis = response.content[0].type === 'text' ? response.content[0].text : ''
       const knownDicts = ['BDAG', 'HALOT', 'TWOT', 'NIDOTTE', 'NIDNTTE', 'TDNT', 'BDB', 'TDOT', 'Louw-Nida', 'NDBT']
       const dictionaries = knownDicts.filter(d => analysis.includes(d))
+      setAICache(ckAnalyze, { analysis, dictionaries }).catch(() => {})
       return Response.json({ analysis, dictionaries })
     } catch (err) {
       console.error('generate-terms analyze error:', err)

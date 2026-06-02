@@ -5,6 +5,7 @@ import { checkRateLimit, rateLimitHeaders } from '@/lib/rate-limit'
 import { EXEGESE_SYSTEM_PROMPT } from '@/lib/prompts/exegese-system'
 import { getSectionBySlug } from '@/lib/workspace-sections'
 import { loadOriginalTextContext } from '@/lib/workspace-context'
+import { cacheKey, getAICache, setAICache } from '@/lib/ai-cache'
 
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY! })
 
@@ -113,19 +114,22 @@ INSTRUÇÕES CRÍTICAS:
 ${jsonKeys}
 }`
 
+  const systemText = EXEGESE_SYSTEM_PROMPT + '\n\nIMPORTANTE: Quando solicitado a gerar JSON estruturado, retorne SOMENTE o JSON válido, sem blocos de código markdown envolvendo o JSON, sem texto fora do JSON. Os valores dentro do JSON podem e devem conter markdown (### títulos, **negrito**, tabelas, listas) para estruturar o conteúdo exegeticamente.'
+
+  const ck = cacheKey(sectionSlug, (cardIds ?? (cardId ? [cardId] : [])).join(','), project.book, project.passage_ref, originalTextContext)
+  const cached = await getAICache<Record<string, string>>(ck)
+  if (cached) return Response.json(cached)
+
   try {
     const response = await anthropic.messages.create({
       model: 'claude-sonnet-4-6',
       max_tokens: 4000,
-      system: EXEGESE_SYSTEM_PROMPT + '\n\nIMPORTANTE: Quando solicitado a gerar JSON estruturado, retorne SOMENTE o JSON válido, sem blocos de código markdown envolvendo o JSON, sem texto fora do JSON. Os valores dentro do JSON podem e devem conter markdown (### títulos, **negrito**, tabelas, listas) para estruturar o conteúdo exegeticamente.',
+      system: [{ type: 'text', text: systemText, cache_control: { type: 'ephemeral' } }],
       messages: [{ role: 'user', content: userPrompt }],
     })
 
     const raw = response.content[0].type === 'text' ? response.content[0].text : ''
-    const cleaned = raw
-      .replace(/```json\n?/g, '')
-      .replace(/```\n?/g, '')
-      .trim()
+    const cleaned = raw.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim()
 
     let parsed: Record<string, string>
     try {
@@ -134,6 +138,7 @@ ${jsonKeys}
       return Response.json({ error: 'Resposta inválida da IA', raw: cleaned }, { status: 500 })
     }
 
+    setAICache(ck, parsed).catch(() => {})
     return Response.json(parsed)
   } catch (err) {
     console.error('Claude generate error:', err)
