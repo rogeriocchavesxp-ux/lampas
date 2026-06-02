@@ -189,6 +189,8 @@ export default function BibleTextBlock({ book, passageRef, testament, projectId,
   const [panelOpen,  setPanelOpen]  = useState(false)
   const [panelTab,   setPanelTab]   = useState<'cls' | 'hl'>('cls')
   const [clsFilter,  setClsFilter]  = useState<ClassType | 'all'>('all')
+  const [viewMode,   setViewMode]   = useState<'comfortable' | 'compact'>('comfortable')
+  const [groupBy,    setGroupBy]    = useState<'none' | 'type' | 'verse'>('none')
 
   // Floating menu (text selection)
   const [menuCtx,   setMenuCtx]   = useState<MenuCtx | null>(null)
@@ -598,120 +600,190 @@ export default function BibleTextBlock({ book, passageRef, testament, projectId,
 
             {panelTab === 'cls' && (
               <>
-                {usedTypes.length > 0 && (
-                  <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap', marginBottom: '0.75rem' }}>
-                    <button onClick={() => setClsFilter('all')} style={{ background: clsFilter === 'all' ? 'var(--accent)' : 'transparent', color: clsFilter === 'all' ? '#FFF' : 'var(--text-muted)', border: `1px solid ${clsFilter === 'all' ? 'var(--accent)' : 'var(--border)'}`, borderRadius: '6px', padding: '0.12rem 0.45rem', fontSize: '0.62rem', fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit' }}>Todos</button>
-                    {usedTypes.map(t => (
-                      <button key={t} onClick={() => setClsFilter(t)} style={{ background: clsFilter === t ? CLASS_DEF[t].color : 'transparent', color: clsFilter === t ? '#FFF' : 'var(--text-muted)', border: `1px solid ${clsFilter === t ? CLASS_DEF[t].color : 'var(--border)'}`, borderRadius: '6px', padding: '0.12rem 0.45rem', fontSize: '0.62rem', fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit' }}>
-                        {CLASS_DEF[t].emoji} {CLASS_DEF[t].label}
+                {/* ── Controls ── */}
+                <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '10px', flexWrap: 'wrap' }}>
+                  {/* Filter chips */}
+                  {usedTypes.length > 0 && (
+                    <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap', flex: 1, minWidth: 0 }}>
+                      <button onClick={() => setClsFilter('all')} style={{ background: clsFilter === 'all' ? 'var(--accent)' : 'transparent', color: clsFilter === 'all' ? '#FFF' : 'var(--text-muted)', border: `1px solid ${clsFilter === 'all' ? 'var(--accent)' : 'var(--border)'}`, borderRadius: '6px', padding: '0.12rem 0.45rem', fontSize: '0.62rem', fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit' }}>Todos</button>
+                      {usedTypes.map(t => (
+                        <button key={t} onClick={() => setClsFilter(t)} style={{ background: clsFilter === t ? CLASS_DEF[t].color : 'transparent', color: clsFilter === t ? '#FFF' : 'var(--text-muted)', border: `1px solid ${clsFilter === t ? CLASS_DEF[t].color : 'var(--border)'}`, borderRadius: '6px', padding: '0.12rem 0.45rem', fontSize: '0.62rem', fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit' }}>
+                          {CLASS_DEF[t].emoji} {CLASS_DEF[t].label}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                  {/* View mode toggle */}
+                  <div style={{ display: 'flex', gap: '2px', flexShrink: 0, marginLeft: usedTypes.length === 0 ? 'auto' : undefined }}>
+                    {(['comfortable', 'compact'] as const).map(m => (
+                      <button key={m} onClick={() => setViewMode(m)} style={{ background: viewMode === m ? 'var(--text-primary)' : 'transparent', color: viewMode === m ? '#FFF' : 'var(--text-muted)', border: `1px solid ${viewMode === m ? 'var(--text-primary)' : 'var(--border)'}`, borderRadius: '6px', padding: '0.12rem 0.45rem', fontSize: '0.6rem', fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit' }}>
+                        {m === 'comfortable' ? 'Confortável' : 'Compacto'}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* ── Grouping (shown when ≥4 items) ── */}
+                {clsList.length >= 4 && (
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '5px', marginBottom: '10px' }}>
+                    <span style={{ fontSize: '0.6rem', color: 'var(--text-muted)', fontWeight: 500 }}>Agrupar:</span>
+                    {(['none', 'type', 'verse'] as const).map(g => (
+                      <button key={g} onClick={() => setGroupBy(g)} style={{ background: groupBy === g ? 'var(--surface-2)' : 'transparent', color: groupBy === g ? 'var(--text-primary)' : 'var(--text-muted)', border: `1px solid ${groupBy === g ? 'var(--border)' : 'transparent'}`, borderRadius: '5px', padding: '0.1rem 0.4rem', fontSize: '0.6rem', fontWeight: groupBy === g ? 600 : 400, cursor: 'pointer', fontFamily: 'inherit' }}>
+                        {g === 'none' ? 'Nenhum' : g === 'type' ? 'Categoria' : 'Versículo'}
                       </button>
                     ))}
                   </div>
                 )}
+
+                {/* ── List ── */}
                 {filteredCls.length === 0 ? (
                   <p style={{ color: 'var(--text-muted)', fontSize: '0.82rem', fontStyle: 'italic' }}>Selecione trechos e classifique para extrair para o estudo.</p>
-                ) : (
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem', maxHeight: '420px', overflowY: 'auto' }}>
-                    {[...filteredCls].sort((a, b) => a.startVerse - b.startVerse).map(c => {
-                      const def      = CLASS_DEF[c.type]
-                      const aiRes    = aiResults[c.id]
-                      const isAiLoad = aiLoading[c.id]
-                      const sent     = sentSections[c.id] ?? []
-                      const isEditing = noteInline?.id === c.id
+                ) : (() => {
+                  const sorted = [...filteredCls].sort((a, b) => a.startVerse - b.startVerse)
 
-                      return (
-                        <div key={c.id} style={{ borderRadius: '8px', border: '1px solid var(--border)', background: '#FFFFFF', overflow: 'hidden' }}>
+                  // build groups
+                  let groups: Array<{ key: string; label: string; items: Classification[] }>
+                  if (groupBy === 'type') {
+                    const map: Record<string, Classification[]> = {}
+                    for (const c of sorted) { if (!map[c.type]) map[c.type] = []; map[c.type].push(c) }
+                    groups = Object.entries(map).map(([type, items]) => ({ key: type, label: `${CLASS_DEF[type as ClassType].emoji} ${CLASS_DEF[type as ClassType].label}`, items }))
+                  } else if (groupBy === 'verse') {
+                    const map: Record<number, Classification[]> = {}
+                    for (const c of sorted) { if (!map[c.startVerse]) map[c.startVerse] = []; map[c.startVerse].push(c) }
+                    groups = Object.entries(map).sort(([a], [b]) => Number(a) - Number(b)).map(([v, items]) => ({ key: `v${v}`, label: `v.${v}`, items }))
+                  } else {
+                    groups = [{ key: 'all', label: '', items: sorted }]
+                  }
 
-                          {/* Card row */}
-                          <div style={{ display: 'flex', alignItems: 'flex-start', gap: '0.6rem', padding: '0.55rem 0.6rem 0.55rem 0.75rem' }}>
-                            <span style={{ fontSize: '0.9rem', flexShrink: 0, marginTop: '1px' }}>{def.emoji}</span>
-                            <div style={{ flex: 1, minWidth: 0 }}>
-                              <div style={{ fontSize: '0.67rem', fontWeight: 700, color: def.color, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.15rem' }}>
-                                {def.label} · v.{c.startVerse}{c.endVerse !== c.startVerse ? `–${c.endVerse}` : ''}
-                              </div>
-                              <div style={{ fontSize: '0.84rem', fontStyle: 'italic', color: 'var(--text-secondary)', lineHeight: 1.5, fontFamily: "'EB Garamond', Georgia, serif", textDecoration: `underline ${def.color}`, textUnderlineOffset: '2px', textDecorationThickness: '1px' }}>
-                                {c.selectedText}
-                              </div>
+                  const compact = viewMode === 'compact'
+                  const cardPad = compact ? '8px 10px 8px 14px' : '12px 10px 12px 16px'
+                  const textSize = compact ? '0.8rem' : '0.88rem'
+                  const emojiSize = compact ? '0.85rem' : '1rem'
 
-                              {/* Note area */}
-                              {isEditing ? (
-                                <div style={{ marginTop: '0.35rem', display: 'flex', gap: '4px' }}>
-                                  <input
-                                    autoFocus
-                                    type="text"
-                                    value={noteInline.val}
-                                    onChange={e => setNoteInline({ id: c.id, val: e.target.value })}
-                                    onKeyDown={e => { if (e.key === 'Enter') saveNoteInline(c.id, noteInline.val); if (e.key === 'Escape') setNoteInline(null) }}
-                                    placeholder="Adicionar nota..."
-                                    style={{ flex: 1, background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: '5px', color: 'var(--text-primary)', padding: '0.22rem 0.45rem', fontSize: '0.73rem', outline: 'none', fontFamily: 'inherit' }}
-                                  />
-                                  <button onClick={() => saveNoteInline(c.id, noteInline.val)} style={{ background: 'var(--accent)', border: 'none', borderRadius: '5px', color: '#FFF', padding: '0.22rem 0.5rem', fontSize: '0.67rem', cursor: 'pointer', fontFamily: 'inherit', fontWeight: 600 }}>OK</button>
-                                  <button onClick={() => setNoteInline(null)} style={{ background: 'transparent', border: '1px solid var(--border)', borderRadius: '5px', color: 'var(--text-muted)', padding: '0.22rem 0.4rem', fontSize: '0.67rem', cursor: 'pointer', fontFamily: 'inherit' }}>✕</button>
-                                </div>
-                              ) : c.note ? (
-                                <div style={{ fontSize: '0.74rem', color: 'var(--text-muted)', marginTop: '0.25rem' }}>{c.note}</div>
-                              ) : null}
-
-                              {/* AI loading indicator */}
-                              {isAiLoad && (
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', marginTop: '0.35rem', color: 'var(--text-muted)', fontSize: '0.72rem' }}>
-                                  <Loader2 size={11} strokeWidth={2} style={{ animation: 'spin 0.8s linear infinite' }} />
-                                  {isAiLoad === 'description' ? 'Gerando descrição…' : 'Gerando análise…'}
-                                </div>
-                              )}
-
-                              {/* AI results */}
-                              {(aiRes?.description || aiRes?.analysis) && (
-                                <div style={{ marginTop: '0.4rem', display: 'flex', flexDirection: 'column', gap: '0.3rem' }}>
-                                  {aiRes.description && (
-                                    <div style={{ background: 'rgba(139,92,246,0.06)', border: '1px solid rgba(139,92,246,0.15)', borderRadius: '6px', padding: '0.4rem 0.55rem' }}>
-                                      <div style={{ fontSize: '0.6rem', fontWeight: 700, color: '#8B5CF6', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '0.15rem', display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
-                                        <Sparkles size={9} strokeWidth={2} /> Descrição
-                                      </div>
-                                      <p style={{ fontSize: '0.78rem', color: 'var(--text-secondary)', lineHeight: 1.5, margin: 0 }}>{aiRes.description}</p>
-                                    </div>
-                                  )}
-                                  {aiRes.analysis && (
-                                    <div style={{ background: 'rgba(99,102,241,0.06)', border: '1px solid rgba(99,102,241,0.15)', borderRadius: '6px', padding: '0.4rem 0.55rem' }}>
-                                      <div style={{ fontSize: '0.6rem', fontWeight: 700, color: '#6366F1', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '0.15rem', display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
-                                        <Sparkles size={9} strokeWidth={2} /> Análise
-                                      </div>
-                                      <p style={{ fontSize: '0.78rem', color: 'var(--text-secondary)', lineHeight: 1.5, margin: 0 }}>{aiRes.analysis}</p>
-                                    </div>
-                                  )}
-                                </div>
-                              )}
-
-                              {/* Sent-to badges */}
-                              {sent.length > 0 && (
-                                <div style={{ display: 'flex', gap: '3px', flexWrap: 'wrap', marginTop: '0.3rem' }}>
-                                  {sent.map(k => {
-                                    const t = SEND_TARGETS.find(x => x.key === k)
-                                    return t ? (
-                                      <span key={k} style={{ fontSize: '0.6rem', background: 'rgba(16,185,129,0.08)', border: '1px solid rgba(16,185,129,0.2)', color: '#10B981', borderRadius: '4px', padding: '0.08rem 0.35rem', fontWeight: 500 }}>
-                                        ✓ {t.label}
-                                      </span>
-                                    ) : null
-                                  })}
-                                </div>
-                              )}
+                  return (
+                    <div style={{ maxHeight: '420px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '6px', paddingRight: '2px' }}>
+                      {groups.map(group => (
+                        <div key={group.key}>
+                          {/* Group header */}
+                          {group.label && (
+                            <div style={{ fontSize: '0.65rem', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.06em', padding: '0 2px', marginBottom: '4px', marginTop: '4px' }}>
+                              {group.label} <span style={{ fontWeight: 400, opacity: 0.7 }}>({group.items.length})</span>
                             </div>
+                          )}
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
+                            {group.items.map(c => {
+                              const def       = CLASS_DEF[c.type]
+                              const aiRes     = aiResults[c.id]
+                              const isAiLoad  = aiLoading[c.id]
+                              const sent      = sentSections[c.id] ?? []
+                              const isEditing = noteInline?.id === c.id
 
-                            {/* ⋯ button */}
-                            <button
-                              onClick={e => openCardMenu(c.id, e)}
-                              style={{ background: cardMenuId === c.id ? 'var(--surface-2)' : 'transparent', border: `1px solid ${cardMenuId === c.id ? 'var(--border)' : 'transparent'}`, borderRadius: '5px', cursor: 'pointer', color: 'var(--text-muted)', padding: '0.2rem 0.25rem', display: 'flex', alignItems: 'center', flexShrink: 0, marginTop: '1px', transition: 'all 0.1s' }}
-                              onMouseEnter={e => { e.currentTarget.style.background = 'var(--surface-2)'; e.currentTarget.style.borderColor = 'var(--border)' }}
-                              onMouseLeave={e => { if (cardMenuId !== c.id) { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.borderColor = 'transparent' } }}
-                            >
-                              <MoreHorizontal size={13} strokeWidth={1.75} />
-                            </button>
+                              return (
+                                <div
+                                  key={c.id}
+                                  style={{ borderRadius: '10px', border: '1px solid var(--border)', background: '#FFFFFF', minHeight: '64px' }}
+                                >
+                                  <div style={{ display: 'flex', alignItems: 'flex-start', gap: '10px', padding: cardPad }}>
+
+                                    {/* Emoji */}
+                                    <span style={{ fontSize: emojiSize, flexShrink: 0, lineHeight: 1, marginTop: '2px' }}>{def.emoji}</span>
+
+                                    {/* Content */}
+                                    <div style={{ flex: 1, minWidth: 0 }}>
+
+                                      {/* Header: label + verse */}
+                                      <div style={{ fontSize: '0.67rem', fontWeight: 700, color: def.color, textTransform: 'uppercase', letterSpacing: '0.05em', lineHeight: 1.3 }}>
+                                        {def.label} · v.{c.startVerse}{c.endVerse !== c.startVerse ? `–${c.endVerse}` : ''}
+                                      </div>
+
+                                      {/* Selected text */}
+                                      <div style={{ fontSize: textSize, fontStyle: 'italic', color: 'var(--text-secondary)', lineHeight: 1.55, fontFamily: "'EB Garamond', Georgia, serif", marginTop: compact ? '3px' : '5px', wordBreak: 'break-word', overflowWrap: 'break-word', textDecoration: `underline ${def.color}`, textUnderlineOffset: '2px', textDecorationThickness: '1px' }}>
+                                        {c.selectedText}
+                                      </div>
+
+                                      {/* Note */}
+                                      {isEditing ? (
+                                        <div style={{ marginTop: '6px', display: 'flex', gap: '4px' }}>
+                                          <input
+                                            autoFocus
+                                            type="text"
+                                            value={noteInline.val}
+                                            onChange={e => setNoteInline({ id: c.id, val: e.target.value })}
+                                            onKeyDown={e => { if (e.key === 'Enter') saveNoteInline(c.id, noteInline.val); if (e.key === 'Escape') setNoteInline(null) }}
+                                            placeholder="Adicionar nota..."
+                                            style={{ flex: 1, background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: '5px', color: 'var(--text-primary)', padding: '0.22rem 0.45rem', fontSize: '0.73rem', outline: 'none', fontFamily: 'inherit' }}
+                                          />
+                                          <button onClick={() => saveNoteInline(c.id, noteInline.val)} style={{ background: 'var(--accent)', border: 'none', borderRadius: '5px', color: '#FFF', padding: '0.22rem 0.5rem', fontSize: '0.67rem', cursor: 'pointer', fontFamily: 'inherit', fontWeight: 600 }}>OK</button>
+                                          <button onClick={() => setNoteInline(null)} style={{ background: 'transparent', border: '1px solid var(--border)', borderRadius: '5px', color: 'var(--text-muted)', padding: '0.22rem 0.4rem', fontSize: '0.67rem', cursor: 'pointer', fontFamily: 'inherit' }}>✕</button>
+                                        </div>
+                                      ) : c.note ? (
+                                        <div style={{ fontSize: '0.73rem', color: 'var(--text-muted)', marginTop: '5px', lineHeight: 1.4 }}>{c.note}</div>
+                                      ) : null}
+
+                                      {/* AI loading */}
+                                      {isAiLoad && (
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '5px', marginTop: '6px', color: 'var(--text-muted)', fontSize: '0.72rem' }}>
+                                          <Loader2 size={11} strokeWidth={2} style={{ animation: 'spin 0.8s linear infinite' }} />
+                                          {isAiLoad === 'description' ? 'Gerando descrição…' : 'Gerando análise…'}
+                                        </div>
+                                      )}
+
+                                      {/* AI results */}
+                                      {(aiRes?.description || aiRes?.analysis) && (
+                                        <div style={{ marginTop: '6px', display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                                          {aiRes.description && (
+                                            <div style={{ background: 'rgba(139,92,246,0.06)', border: '1px solid rgba(139,92,246,0.15)', borderRadius: '7px', padding: '7px 10px' }}>
+                                              <div style={{ fontSize: '0.58rem', fontWeight: 700, color: '#8B5CF6', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '3px', display: 'flex', alignItems: 'center', gap: '3px' }}>
+                                                <Sparkles size={9} strokeWidth={2} /> Descrição
+                                              </div>
+                                              <p style={{ fontSize: '0.78rem', color: 'var(--text-secondary)', lineHeight: 1.5, margin: 0 }}>{aiRes.description}</p>
+                                            </div>
+                                          )}
+                                          {aiRes.analysis && (
+                                            <div style={{ background: 'rgba(99,102,241,0.06)', border: '1px solid rgba(99,102,241,0.15)', borderRadius: '7px', padding: '7px 10px' }}>
+                                              <div style={{ fontSize: '0.58rem', fontWeight: 700, color: '#6366F1', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '3px', display: 'flex', alignItems: 'center', gap: '3px' }}>
+                                                <Sparkles size={9} strokeWidth={2} /> Análise
+                                              </div>
+                                              <p style={{ fontSize: '0.78rem', color: 'var(--text-secondary)', lineHeight: 1.5, margin: 0 }}>{aiRes.analysis}</p>
+                                            </div>
+                                          )}
+                                        </div>
+                                      )}
+
+                                      {/* Sent-to badges */}
+                                      {sent.length > 0 && (
+                                        <div style={{ display: 'flex', gap: '3px', flexWrap: 'wrap', marginTop: '6px' }}>
+                                          {sent.map(k => {
+                                            const t = SEND_TARGETS.find(x => x.key === k)
+                                            return t ? (
+                                              <span key={k} style={{ fontSize: '0.6rem', background: 'rgba(16,185,129,0.08)', border: '1px solid rgba(16,185,129,0.2)', color: '#10B981', borderRadius: '4px', padding: '2px 6px', fontWeight: 500 }}>
+                                                ✓ {t.label}
+                                              </span>
+                                            ) : null
+                                          })}
+                                        </div>
+                                      )}
+                                    </div>
+
+                                    {/* ⋯ menu button — always visible, right-aligned */}
+                                    <button
+                                      onClick={e => openCardMenu(c.id, e)}
+                                      style={{ background: cardMenuId === c.id ? 'var(--surface-2)' : 'transparent', border: `1px solid ${cardMenuId === c.id ? 'var(--border)' : 'transparent'}`, borderRadius: '5px', cursor: 'pointer', color: cardMenuId === c.id ? 'var(--text-primary)' : 'var(--text-muted)', padding: '4px 5px', display: 'flex', alignItems: 'center', flexShrink: 0, transition: 'all 0.1s', alignSelf: 'flex-start' }}
+                                      onMouseEnter={e => { e.currentTarget.style.background = 'var(--surface-2)'; e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.color = 'var(--text-primary)' }}
+                                      onMouseLeave={e => { if (cardMenuId !== c.id) { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.borderColor = 'transparent'; e.currentTarget.style.color = 'var(--text-muted)' } }}
+                                    >
+                                      <MoreHorizontal size={13} strokeWidth={1.75} />
+                                    </button>
+                                  </div>
+                                </div>
+                              )
+                            })}
                           </div>
                         </div>
-                      )
-                    })}
-                  </div>
-                )}
+                      ))}
+                    </div>
+                  )
+                })()}
               </>
             )}
 
