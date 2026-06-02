@@ -27,6 +27,7 @@ import LiveReferencePanel from './LiveReferencePanel'
 import AIPanel from './AIPanel'
 import BibleFloatingWindow from './BibleFloatingWindow'
 import VisaoGeralWorkspace from './VisaoGeralWorkspace'
+import DicionarioWorkspace from './DicionarioWorkspace'
 import {
   Heart, BookOpen, FileText, Crosshair, Landmark, Languages, GraduationCap,
   Sparkles, BookMarked, Flame, MessageSquareText, Layers, Book, Library,
@@ -1119,6 +1120,13 @@ export default function WorkspaceClient({ user, project, initialSections }: Prop
                 onUpdate={handleSectionUpdate}
                 onAskAI={prompt => { setAiPrompt(prompt); setAiOpen(true) }}
               />
+            ) : activeSlug === 'ferramentas_dicionario' ? (
+              <DicionarioWorkspace
+                key={activeSlug}
+                project={project}
+                userId={user.id}
+                onAskAI={prompt => { setAiPrompt(prompt); setAiOpen(true) }}
+              />
             ) : isToolSlug(activeSlug) ? (
               <ToolsWorkspace
                 key={activeSlug}
@@ -1229,7 +1237,7 @@ export default function WorkspaceClient({ user, project, initialSections }: Prop
               <AIPanel
                 project={project}
                 activeSlug={activeSlug}
-                activeTitle={activeSlug === 'colagens' ? 'Colagens' : activeSlug === 'comentario_expositivo' ? 'Comentário Expositivo' : activeTool?.title ?? activeDef?.title ?? titleValue}
+                activeTitle={activeSlug === 'colagens' ? 'Colagens' : activeSlug === 'comentario_expositivo' ? 'Comentário Expositivo' : activeSlug === 'ferramentas_dicionario' ? 'Dicionário Lampas' : activeTool?.title ?? activeDef?.title ?? titleValue}
                 context={aiPrompt}
                 onClearContext={() => setAiPrompt('')}
               />
