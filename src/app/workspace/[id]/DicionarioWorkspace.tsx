@@ -8,8 +8,8 @@ import { Search, Plus, BookOpen, Sparkles, ChevronRight, X, Check, Edit2, Trash2
 // ── Types ──────────────────────────────────────────────────────────────────────
 
 type Category =
-  | 'termo_biblico' | 'personagem' | 'lugar' | 'doutrina'
-  | 'tema' | 'conceito_historico' | 'lingua_original'
+  | 'personagem' | 'lugar' | 'termo_biblico' | 'doutrina'
+  | 'instituicao' | 'evento' | 'livro_biblico'
 
 type TrustLevel = 1 | 2 | 3 | 4
 
@@ -17,10 +17,13 @@ interface DictionaryEntry {
   id: string
   user_id: string
   title: string
+  slug: string | null
   category: Category
   trust_level: TrustLevel
+  is_shared: boolean
   definition: string | null
   etymology: string | null
+  notes: string | null
   lang_hebrew: string | null
   lang_aramaic: string | null
   lang_greek: string | null
@@ -42,18 +45,26 @@ interface DictionaryEntry {
   updated_at: string
 }
 
-type PanelState = 'list' | 'detail' | 'create' | 'ai-result'
+interface DictionaryVersion {
+  id: string
+  entry_id: string
+  edited_by: string | null
+  snapshot: DictionaryEntry
+  edited_at: string
+}
+
+type PanelState = 'list' | 'detail' | 'create' | 'ai-result' | 'history'
 
 // ── Constants ─────────────────────────────────────────────────────────────────
 
 const CATEGORIES: { key: Category; label: string; icon: string }[] = [
-  { key: 'termo_biblico',     label: 'Termo Bíblico',      icon: '🔑' },
-  { key: 'personagem',        label: 'Personagem',          icon: '👤' },
-  { key: 'lugar',             label: 'Lugar',               icon: '📍' },
-  { key: 'doutrina',          label: 'Doutrina',            icon: '✦' },
-  { key: 'tema',              label: 'Tema',                icon: '📖' },
-  { key: 'conceito_historico',label: 'Histórico',           icon: '🏛️' },
-  { key: 'lingua_original',   label: 'Língua Original',     icon: '𝛼' },
+  { key: 'personagem',    label: 'Pessoas',         icon: '👤' },
+  { key: 'lugar',         label: 'Lugares',         icon: '📍' },
+  { key: 'termo_biblico', label: 'Termos',          icon: '🔑' },
+  { key: 'doutrina',      label: 'Doutrinas',       icon: '✦'  },
+  { key: 'instituicao',   label: 'Instituições',    icon: '🏛' },
+  { key: 'evento',        label: 'Eventos',         icon: '⚡' },
+  { key: 'livro_biblico', label: 'Livros Bíblicos', icon: '📖' },
 ]
 
 const TRUST: Record<TrustLevel, { label: string; color: string; bg: string; dot: string }> = {
@@ -64,8 +75,8 @@ const TRUST: Record<TrustLevel, { label: string; color: string; bg: string; dot:
 }
 
 const EMPTY_DRAFT: Omit<DictionaryEntry, 'id' | 'user_id' | 'query_count' | 'citation_count' | 'created_at' | 'updated_at'> = {
-  title: '', category: 'termo_biblico', trust_level: 1,
-  definition: '', etymology: '',
+  title: '', slug: null, category: 'termo_biblico', trust_level: 1, is_shared: true,
+  definition: '', etymology: '', notes: '',
   lang_hebrew: '', lang_aramaic: '', lang_greek: '', transliteration: '', pronunciation: '',
   occurrences: '', main_texts: '',
   theological_biblical: '', theological_systematic: '', applications: '',
@@ -275,6 +286,8 @@ export default function DicionarioWorkspace({ project, userId, onAskAI }: Props)
   const [savedToast,   setSavedToast]   = useState(false)
   const [deleteConfirm,setDeleteConfirm]= useState(false)
   const [expandModal,  setExpandModal]  = useState<{ label: string; content: string; onSave: (v: string) => void } | null>(null)
+  const [versions,     setVersions]     = useState<DictionaryVersion[]>([])
+  const [versionsLoading, setVersionsLoading] = useState(false)
 
   // ── Load entries ────────────────────────────────────────────────────────────
   const loadEntries = useCallback(async () => {
@@ -317,6 +330,69 @@ export default function DicionarioWorkspace({ project, userId, onAskAI }: Props)
     [filtered, query],
   )
 
+  // ── Load version history ────────────────────────────────────────────────────
+  async function loadVersions(entryId: string) {
+    setVersionsLoading(true)
+    const { data } = await supabase
+      .from('lampas_dictionary_versions')
+      .select('*')
+      .eq('entry_id', entryId)
+      .order('edited_at', { ascending: false })
+      .limit(20)
+    setVersions((data ?? []) as DictionaryVersion[])
+    setVersionsLoading(false)
+  }
+
+  // ── Parse AI verbete into structured fields ──────────────────────────────────
+  function parseAIVerbete(text: string, termTitle: string): Partial<Omit<DictionaryEntry, 'id' | 'user_id' | 'created_at' | 'updated_at'>> {
+    const sections: Record<string, string> = {}
+    const parts = text.split(/\n(?=## )/)
+    for (const part of parts) {
+      const headerMatch = part.match(/^##\s+([^\n]+)/)
+      if (!headerMatch) continue
+      const rawHeader = headerMatch[1].replace(/\s*\([^)]*\)/g, '').trim().toLowerCase()
+      const content = part.slice(headerMatch[0].length).trim()
+      sections[rawHeader] = content
+    }
+
+    const langText = sections['línguas originais'] ?? sections['linguas originais'] ?? ''
+    const hebrewMatch     = langText.match(/[Hh]ebraico[:\s*]+([^\n]+)/)
+    const greekMatch      = langText.match(/[Gg]rego[:\s*]+([^\n]+)/)
+    const aramMatch       = langText.match(/[Aa]ramaico[:\s*]+([^\n]+)/)
+    const translitMatch   = langText.match(/[Tt]ranslit[^:]*:\s*([^\n]+)/)
+    const pronuncMatch    = langText.match(/[Pp]ronúncia[:\s*]+([^\n]+)/)
+
+    const refText = sections['referências cruzadas'] ?? sections['referencias cruzadas'] ?? ''
+    const refMatches = refText.match(/\b(?:[A-ZÁÉÍÓÚÀÃÕ][a-záéíóúàãõ]+\.?\s+\d+[:.]\d+(?:[–\-]\d+)?)/g) ?? []
+    const uniqueRefs = [...new Set(refMatches.map(r => r.trim()))]
+
+    const cat = exactMatch?.category ?? detectCategory(termTitle)
+
+    return {
+      title:      termTitle.trim(),
+      category:   cat,
+      trust_level: 1 as TrustLevel,
+      is_shared:  true,
+      definition:             sections['definição'] ?? sections['definicao'] ?? '',
+      etymology:              sections['etimologia'] ?? '',
+      lang_hebrew:            hebrewMatch?.[1]?.trim() ?? '',
+      lang_greek:             greekMatch?.[1]?.trim()  ?? '',
+      lang_aramaic:           aramMatch?.[1]?.trim()   ?? '',
+      transliteration:        translitMatch?.[1]?.trim() ?? '',
+      pronunciation:          pronuncMatch?.[1]?.trim()  ?? '',
+      main_texts:             sections['uso bíblico'] ?? sections['uso biblico'] ?? '',
+      theological_biblical:   sections['teologia bíblica'] ?? sections['teologia biblica'] ?? '',
+      theological_systematic: sections['teologia sistemática'] ?? sections['teologia sistematica'] ?? '',
+      applications:           sections['aplicações pastorais'] ?? sections['aplicacoes pastorais'] ?? '',
+      bibliography:           sections['bibliografia'] ?? '',
+      cross_references:       uniqueRefs,
+      sources:                ['IA'],
+      tags:                   [termTitle.trim().toLowerCase()],
+      related_terms:          [],
+      notes:                  '',
+    }
+  }
+
   // ── AI search ───────────────────────────────────────────────────────────────
   async function searchWithAI() {
     if (!query.trim()) return
@@ -326,21 +402,27 @@ export default function DicionarioWorkspace({ project, userId, onAskAI }: Props)
     aiBufferRef.current = ''
 
     const prompt = [
-      `Pesquisa lexical: "${query.trim()}"`,
-      `Livro atual: ${project.book} ${project.passage_ref}`,
+      `Pesquisa lexical reformada: "${query.trim()}"`,
+      `Contexto: ${project.book} ${project.passage_ref}`,
       '',
       'Produza um verbete completo com estas seções (use os títulos exatamente):',
       '## Definição',
       '## Etimologia',
-      '## Línguas Originais (hebraico, aramaico ou grego + transliteração + pronúncia)',
-      '## Uso Bíblico (ocorrências, principais textos)',
-      '## Teologia Bíblica (desenvolvimento progressivo)',
-      '## Teologia Sistemática (relação doutrinária)',
+      '## Línguas Originais',
+      '(inclua: hebraico, aramaico ou grego conforme o caso; transliteração; pronúncia)',
+      '## Uso Bíblico',
+      '(ocorrências no cânon; principais textos)',
+      '## Teologia Bíblica',
+      '(desenvolvimento progressivo na história da redenção)',
+      '## Teologia Sistemática',
+      '(relação com loci da teologia sistemática reformada)',
       '## Aplicações Pastorais',
-      '## Referências Cruzadas (liste versículos)',
-      '## Bibliografia (BDAG, HALOT, TWOT, NIDOTTE, comentários)',
+      '## Referências Cruzadas',
+      '(liste versículos em formato: Livro Cap:Vers)',
+      '## Bibliografia',
+      '(cite: BDAG, HALOT, TWOT, NIDOTTE, TDNT, Bavinck, Berkhof, Murray quando aplicável)',
       '',
-      'Seja rigoroso, reformado e claro. Português do Brasil.',
+      'Rigor reformado. Português do Brasil. Fontes primárias, sem Wikipedia.',
     ].join('\n')
 
     try {
@@ -349,7 +431,10 @@ export default function DicionarioWorkspace({ project, userId, onAskAI }: Props)
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           messages: [{ role: 'user', content: prompt }],
-          project: { id: project.id, book: project.book, passage_ref: project.passage_ref, testament: project.testament, original_language: project.original_language },
+          project: {
+            id: project.id, book: project.book, passage_ref: project.passage_ref,
+            testament: project.testament, original_language: project.original_language,
+          },
           activeSlug: 'ferramentas_dicionario',
           activeTitle: 'Dicionário Lampas',
         }),
@@ -357,7 +442,7 @@ export default function DicionarioWorkspace({ project, userId, onAskAI }: Props)
 
       if (!res.ok || !res.body) throw new Error('Erro na API')
 
-      const reader = res.body.getReader()
+      const reader  = res.body.getReader()
       const decoder = new TextDecoder()
 
       while (true) {
@@ -365,15 +450,16 @@ export default function DicionarioWorkspace({ project, userId, onAskAI }: Props)
         if (done) break
         const chunk = decoder.decode(value, { stream: true })
         for (const line of chunk.split('\n')) {
-          if (line.startsWith('data: ')) {
-            try {
-              const json = JSON.parse(line.slice(6))
-              if (json.type === 'content_block_delta' && json.delta?.text) {
-                aiBufferRef.current += json.delta.text
-                setAiResult(aiBufferRef.current)
-              }
-            } catch { /* skip */ }
-          }
+          if (!line.startsWith('data: ')) continue
+          const raw = line.slice(6)
+          if (raw === '[DONE]') break
+          try {
+            const json = JSON.parse(raw)
+            if (json.delta?.text) {
+              aiBufferRef.current += json.delta.text
+              setAiResult(aiBufferRef.current)
+            }
+          } catch { /* skip malformed */ }
         }
       }
     } catch {
@@ -382,21 +468,16 @@ export default function DicionarioWorkspace({ project, userId, onAskAI }: Props)
     setAiLoading(false)
   }
 
-  // ── Save AI result to dictionary ────────────────────────────────────────────
+  // ── Save AI result to dictionary (structured) ────────────────────────────────
   async function saveAiResult() {
     if (!aiResult.trim() || !query.trim()) return
     setSaving(true)
-    const cat = exactMatch?.category ?? detectCategory(query)
-    const entry = {
-      user_id:    userId,
-      title:      query.trim(),
-      category:   cat,
-      trust_level: 1,
-      definition: aiResult,
-      sources:    ['IA'],
-      tags:       [query.trim().toLowerCase()],
-    }
-    const { data } = await supabase.from('lampas_dictionary').insert(entry).select().single()
+    const parsed = parseAIVerbete(aiResult, query.trim())
+    const { data } = await supabase
+      .from('lampas_dictionary')
+      .insert({ ...parsed, user_id: userId })
+      .select()
+      .single()
     if (data) {
       setEntries(prev => [data as DictionaryEntry, ...prev])
       setSelected(data as DictionaryEntry)
@@ -450,11 +531,31 @@ export default function DicionarioWorkspace({ project, userId, onAskAI }: Props)
     void supabase.from('lampas_dictionary').update({ [key]: value }).eq('id', selected.id)
   }
 
-  // ── Increment query count ───────────────────────────────────────────────────
+  // ── Open entry detail ───────────────────────────────────────────────────────
   async function openEntry(entry: DictionaryEntry) {
     setSelected(entry)
     setPanel('detail')
     void supabase.rpc('increment_dictionary_query_count', { p_id: entry.id })
+  }
+
+  // ── Open history panel ──────────────────────────────────────────────────────
+  async function openHistory(entry: DictionaryEntry) {
+    setSelected(entry)
+    setPanel('history')
+    await loadVersions(entry.id)
+  }
+
+  // ── Restore a version ───────────────────────────────────────────────────────
+  async function restoreVersion(v: DictionaryVersion) {
+    if (!selected) return
+    const { definition, etymology, theological_biblical, theological_systematic, applications, notes } = v.snapshot
+    const updated = { ...selected, definition, etymology, theological_biblical, theological_systematic, applications, notes }
+    setSelected(updated)
+    setEntries(prev => prev.map(e => e.id === updated.id ? updated : e))
+    await supabase.from('lampas_dictionary').update({
+      definition, etymology, theological_biblical, theological_systematic, applications, notes,
+    }).eq('id', selected.id)
+    setPanel('detail')
   }
 
   // ── Category detect ─────────────────────────────────────────────────────────
@@ -780,7 +881,11 @@ export default function DicionarioWorkspace({ project, userId, onAskAI }: Props)
                 )}
               </div>
               <div style={{ display: 'flex', gap: '5px', flexShrink: 0 }}>
-                <button onClick={() => { setDraft({ title: selected.title, category: selected.category, trust_level: selected.trust_level, definition: selected.definition ?? '', etymology: selected.etymology ?? '', lang_hebrew: selected.lang_hebrew ?? '', lang_aramaic: selected.lang_aramaic ?? '', lang_greek: selected.lang_greek ?? '', transliteration: selected.transliteration ?? '', pronunciation: selected.pronunciation ?? '', occurrences: selected.occurrences ?? '', main_texts: selected.main_texts ?? '', theological_biblical: selected.theological_biblical ?? '', theological_systematic: selected.theological_systematic ?? '', applications: selected.applications ?? '', cross_references: selected.cross_references, bibliography: selected.bibliography ?? '', related_terms: selected.related_terms, tags: selected.tags, sources: selected.sources }); setPanel('create') }}
+                <button onClick={() => openHistory(selected)}
+                  style={{ display: 'flex', alignItems: 'center', gap: '4px', background: 'none', border: '1px solid #E2E8F0', borderRadius: '7px', padding: '5px 10px', fontSize: '0.71rem', color: '#64748B', cursor: 'pointer', fontFamily: 'inherit' }}>
+                  <Clock size={11} /> Histórico
+                </button>
+                <button onClick={() => { setDraft({ title: selected.title, slug: selected.slug, category: selected.category, trust_level: selected.trust_level, is_shared: selected.is_shared, definition: selected.definition ?? '', etymology: selected.etymology ?? '', notes: selected.notes ?? '', lang_hebrew: selected.lang_hebrew ?? '', lang_aramaic: selected.lang_aramaic ?? '', lang_greek: selected.lang_greek ?? '', transliteration: selected.transliteration ?? '', pronunciation: selected.pronunciation ?? '', occurrences: selected.occurrences ?? '', main_texts: selected.main_texts ?? '', theological_biblical: selected.theological_biblical ?? '', theological_systematic: selected.theological_systematic ?? '', applications: selected.applications ?? '', cross_references: selected.cross_references, bibliography: selected.bibliography ?? '', related_terms: selected.related_terms, tags: selected.tags, sources: selected.sources }); setPanel('create') }}
                   style={{ display: 'flex', alignItems: 'center', gap: '4px', background: 'none', border: '1px solid #E2E8F0', borderRadius: '7px', padding: '5px 10px', fontSize: '0.71rem', color: '#64748B', cursor: 'pointer', fontFamily: 'inherit' }}>
                   <Edit2 size={11} /> Editar
                 </button>
@@ -866,6 +971,12 @@ export default function DicionarioWorkspace({ project, userId, onAskAI }: Props)
                   onSave: (v) => { updateFieldDirectly('bibliography', v); setExpandModal(null) },
                 })}
               />
+              <Field label="Notas Pessoais" value={selected.notes}
+                onExpand={() => setExpandModal({
+                  label: 'Notas Pessoais', content: selected.notes ?? '',
+                  onSave: (v) => { updateFieldDirectly('notes', v); setExpandModal(null) },
+                })}
+              />
 
               {/* Metadata footer */}
               <div style={{ marginTop: '24px', paddingTop: '16px', borderTop: '1px solid #F1F5F9', display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
@@ -884,6 +995,57 @@ export default function DicionarioWorkspace({ project, userId, onAskAI }: Props)
                   <Sparkles size={11} strokeWidth={1.75} /> Aprofundar com IA
                 </button>
               </div>
+            </div>
+          </div>
+        )}
+
+        {/* ── HISTORY state ── */}
+        {panel === 'history' && selected && (
+          <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+            <div style={{ padding: '14px 24px', borderBottom: '1px solid #F1F5F9', display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: '#FFFFFF' }}>
+              <div>
+                <div style={{ fontSize: '0.62rem', fontWeight: 700, color: '#94A3B8', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '2px' }}>Histórico de versões</div>
+                <div style={{ fontSize: '0.92rem', fontWeight: 700, color: '#1E293B' }}>{selected.title}</div>
+              </div>
+              <button onClick={() => setPanel('detail')} style={{ background: 'none', border: '1px solid #E2E8F0', borderRadius: '7px', padding: '5px 10px', cursor: 'pointer', color: '#64748B', fontSize: '0.72rem', fontFamily: 'inherit' }}>
+                Voltar
+              </button>
+            </div>
+            <div style={{ flex: 1, overflowY: 'auto', padding: '20px 24px', background: '#FFFFFF' }}>
+              {versionsLoading ? (
+                <div style={{ color: '#94A3B8', fontSize: '0.82rem' }}>Carregando histórico…</div>
+              ) : versions.length === 0 ? (
+                <div style={{ color: '#94A3B8', fontSize: '0.82rem', fontStyle: 'italic' }}>Nenhuma versão anterior registrada.</div>
+              ) : (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                  {versions.map((v, i) => (
+                    <div key={v.id} style={{ border: '1px solid #E2E8F0', borderRadius: '10px', overflow: 'hidden' }}>
+                      <div style={{ padding: '10px 14px', background: '#F8FAFC', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                        <div>
+                          <span style={{ fontSize: '0.75rem', fontWeight: 600, color: '#1E293B' }}>
+                            Versão {versions.length - i}
+                          </span>
+                          <span style={{ fontSize: '0.68rem', color: '#94A3B8', marginLeft: '8px' }}>
+                            {new Date(v.edited_at).toLocaleString('pt-BR')}
+                          </span>
+                        </div>
+                        <button onClick={() => restoreVersion(v)}
+                          style={{ background: '#1E293B', border: 'none', borderRadius: '6px', padding: '4px 10px', fontSize: '0.67rem', fontWeight: 600, color: '#FFF', cursor: 'pointer', fontFamily: 'inherit' }}>
+                          Restaurar
+                        </button>
+                      </div>
+                      {v.snapshot.definition && (
+                        <div style={{ padding: '10px 14px' }}>
+                          <div style={{ fontSize: '0.62rem', fontWeight: 700, color: '#94A3B8', textTransform: 'uppercase', marginBottom: '4px' }}>Definição</div>
+                          <div style={{ fontSize: '0.82rem', color: '#475569', lineHeight: 1.6, maxHeight: '80px', overflow: 'hidden', WebkitMaskImage: 'linear-gradient(to bottom, black 60%, transparent)' }}>
+                            {v.snapshot.definition}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
         )}
@@ -938,6 +1100,7 @@ export default function DicionarioWorkspace({ project, userId, onAskAI }: Props)
               {df('theological_systematic', 'Teologia Sistemática', 3)}
               {df('applications', 'Aplicações Pastorais', 3)}
               {df('bibliography', 'Bibliografia', 2)}
+              {df('notes', 'Notas Pessoais', 2)}
               <div>
                 <label style={{ display: 'block', fontSize: '0.66rem', fontWeight: 700, color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '4px' }}>Tags (separadas por vírgula)</label>
                 <input value={draft.tags.join(', ')} onChange={e => setDraft(p => ({ ...p, tags: e.target.value.split(',').map(t => t.trim()).filter(Boolean) }))}
