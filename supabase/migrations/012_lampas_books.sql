@@ -63,9 +63,11 @@ CREATE INDEX IF NOT EXISTS lampas_books_tags_idx      ON lampas_books USING gin(
 
 -- Full-text search
 CREATE INDEX IF NOT EXISTS lampas_books_fts_idx ON lampas_books USING gin(
-  setweight(to_tsvector('portuguese', coalesce(title, '')),       'A') ||
-  setweight(to_tsvector('simple',     coalesce(author, '')),      'A') ||
-  setweight(to_tsvector('portuguese', coalesce(description, '')), 'B')
+  (
+    setweight(to_tsvector('portuguese', coalesce(title, '')),       'A') ||
+    setweight(to_tsvector('simple',     coalesce(author, '')),      'A') ||
+    setweight(to_tsvector('portuguese', coalesce(description, '')), 'B')
+  )
 );
 
 -- Trigger updated_at
@@ -96,8 +98,10 @@ CREATE TABLE IF NOT EXISTS lampas_book_passages (
 CREATE INDEX IF NOT EXISTS book_passages_book_idx     ON lampas_book_passages (book_id, passage_index);
 CREATE INDEX IF NOT EXISTS book_passages_ref_idx      ON lampas_book_passages (bible_ref);
 CREATE INDEX IF NOT EXISTS book_passages_fts_idx ON lampas_book_passages USING gin(
-  setweight(to_tsvector('portuguese', coalesce(content, '')), 'A') ||
-  setweight(to_tsvector('simple',     coalesce(bible_ref, '')), 'B')
+  (
+    setweight(to_tsvector('portuguese', coalesce(content, '')), 'A') ||
+    setweight(to_tsvector('simple',     coalesce(bible_ref, '')), 'B')
+  )
 );
 
 -- ── 3. Notas pessoais do usuário sobre obras ──────────────────────────────────
