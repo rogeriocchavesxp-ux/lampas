@@ -35,7 +35,7 @@ export default function HomePage() {
         <nav className="lp-nav" aria-label="Navegação principal">
           <Link href="#processo">Método</Link>
           <Link href="#recursos">Recursos</Link>
-          <Link href="/billing">Planos</Link>
+          <Link href="#planos">Planos</Link>
         </nav>
         <div className="lp-header-actions">
           <Link href="/auth/login" className="lp-link-muted">Entrar</Link>
@@ -117,6 +117,89 @@ export default function HomePage() {
         </div>
       </section>
 
+      {/* ── Planos ── */}
+      <section className="lp-section lp-plans-section" id="planos">
+        <div className="lp-inner">
+          <p className="lp-kicker">Planos</p>
+          <h2 className="lp-h2">Comece grátis. Cresça no seu ritmo.</h2>
+          <div className="lp-plans-grid">
+
+            <article className="lp-plan-card">
+              <div className="lp-plan-header">
+                <h3>Gratuito</h3>
+                <div className="lp-plan-price"><span className="lp-price-val">Grátis</span></div>
+              </div>
+              <ul className="lp-plan-features">
+                <li>1 projeto</li>
+                <li>5 consultas de IA por mês</li>
+                <li>Fase Preparar</li>
+                <li>Devocional</li>
+              </ul>
+              <Link href="/auth/login" className="lp-plan-btn lp-plan-btn-ghost">Começar grátis</Link>
+            </article>
+
+            <article className="lp-plan-card">
+              <div className="lp-plan-header">
+                <h3>Iniciante</h3>
+                <div className="lp-plan-price">
+                  <span className="lp-price-val">R$ 19</span>
+                  <span className="lp-price-period">/mês</span>
+                </div>
+              </div>
+              <ul className="lp-plan-features">
+                <li>3 projetos</li>
+                <li>40 consultas de IA por mês</li>
+                <li>Preparar + Investigar</li>
+                <li>Devocional</li>
+                <li>Colagens (20)</li>
+              </ul>
+              <Link href="/auth/login" className="lp-plan-btn lp-plan-btn-ghost">Assinar</Link>
+            </article>
+
+            <article className="lp-plan-card lp-plan-card-featured">
+              <div className="lp-plan-badge">Popular</div>
+              <div className="lp-plan-header">
+                <h3>Intermediário</h3>
+                <div className="lp-plan-price">
+                  <span className="lp-price-val">R$ 49</span>
+                  <span className="lp-price-period">/mês</span>
+                </div>
+              </div>
+              <ul className="lp-plan-features">
+                <li>10 projetos</li>
+                <li>120 consultas de IA por mês</li>
+                <li>Todas as fases</li>
+                <li>Todos os modos de estudo</li>
+                <li>Ferramentas de pesquisa</li>
+                <li>Colagens (100)</li>
+              </ul>
+              <Link href="/auth/login" className="lp-plan-btn lp-plan-btn-dark">Assinar</Link>
+            </article>
+
+            <article className="lp-plan-card">
+              <div className="lp-plan-header">
+                <h3>Avançado</h3>
+                <div className="lp-plan-price">
+                  <span className="lp-price-val">R$ 89</span>
+                  <span className="lp-price-period">/mês</span>
+                </div>
+              </div>
+              <ul className="lp-plan-features">
+                <li>Projetos ilimitados</li>
+                <li>400 consultas de IA por mês</li>
+                <li>Tudo incluído</li>
+                <li>Texto original (heb/grego)</li>
+                <li>Comentário expositivo</li>
+                <li>Colagens ilimitadas</li>
+              </ul>
+              <Link href="/auth/login" className="lp-plan-btn lp-plan-btn-ghost">Assinar</Link>
+            </article>
+
+          </div>
+          <p className="lp-plans-note">Planos anuais com 20% de desconto. Cancele a qualquer momento.</p>
+        </div>
+      </section>
+
       {/* ── CTA final ── */}
       <section className="lp-cta">
         <LampasMarkIcon size={36} />
@@ -137,7 +220,7 @@ export default function HomePage() {
           <Link href="#recursos">Exegese</Link>
           <Link href="#recursos">Sermões</Link>
           <Link href="#recursos">Estudos</Link>
-          <Link href="/billing">Planos</Link>
+          <Link href="#planos">Planos</Link>
           <Link href="mailto:contato@lampas.com.br">Contato</Link>
         </nav>
       </footer>
@@ -633,6 +716,153 @@ export default function HomePage() {
           margin: 0;
         }
 
+        /* ── Plans section ───────────────────────────────── */
+        .lp-plans-section {
+          padding: 6rem 0 7rem;
+          background: #fff;
+          border-top: 1px solid #e8edf4;
+        }
+
+        .lp-plans-grid {
+          display: grid;
+          grid-template-columns: repeat(4, 1fr);
+          gap: 1.25rem;
+          margin-bottom: 1.75rem;
+        }
+
+        .lp-plan-card {
+          position: relative;
+          background: #fff;
+          border: 1px solid #e2e8f0;
+          border-radius: 12px;
+          padding: 1.75rem 1.5rem;
+          display: flex;
+          flex-direction: column;
+          gap: 1.25rem;
+          transition: border-color 0.15s, box-shadow 0.15s;
+        }
+
+        .lp-plan-card:hover {
+          border-color: #b0bfcc;
+          box-shadow: 0 4px 20px rgba(15,23,42,0.06);
+        }
+
+        .lp-plan-card-featured {
+          border-color: #c9921a;
+          box-shadow: 0 4px 24px rgba(201,146,26,0.12);
+        }
+
+        .lp-plan-card-featured:hover {
+          border-color: #c9921a;
+          box-shadow: 0 6px 32px rgba(201,146,26,0.18);
+        }
+
+        .lp-plan-badge {
+          position: absolute;
+          top: -12px;
+          left: 50%;
+          transform: translateX(-50%);
+          background: #c9921a;
+          color: #fff;
+          font-size: 0.7rem;
+          font-weight: 750;
+          letter-spacing: 0.06em;
+          text-transform: uppercase;
+          padding: 0.22rem 0.65rem;
+          border-radius: 999px;
+          white-space: nowrap;
+        }
+
+        .lp-plan-header h3 {
+          font-size: 1rem;
+          font-weight: 700;
+          color: #0f172a;
+          margin: 0 0 0.6rem;
+        }
+
+        .lp-plan-price {
+          display: flex;
+          align-items: baseline;
+          gap: 0.2rem;
+        }
+
+        .lp-price-val {
+          font-size: 1.9rem;
+          font-weight: 750;
+          color: #0f172a;
+          line-height: 1;
+        }
+
+        .lp-price-period {
+          font-size: 0.84rem;
+          color: #64748b;
+        }
+
+        .lp-plan-features {
+          list-style: none;
+          padding: 0;
+          margin: 0;
+          flex: 1;
+          display: flex;
+          flex-direction: column;
+          gap: 0.55rem;
+        }
+
+        .lp-plan-features li {
+          font-size: 0.87rem;
+          color: #475569;
+          padding-left: 1.1rem;
+          position: relative;
+          line-height: 1.45;
+        }
+
+        .lp-plan-features li::before {
+          content: '✓';
+          position: absolute;
+          left: 0;
+          color: #c9921a;
+          font-size: 0.75rem;
+          font-weight: 700;
+        }
+
+        .lp-plan-btn {
+          display: block;
+          text-align: center;
+          padding: 0.65rem 1rem;
+          border-radius: 8px;
+          font-size: 0.88rem;
+          font-weight: 650;
+          transition: all 0.14s;
+        }
+
+        .lp-plan-btn-ghost {
+          background: transparent;
+          border: 1px solid #dbe3ee;
+          color: #0f172a;
+        }
+
+        .lp-plan-btn-ghost:hover {
+          border-color: #b0bfcc;
+          color: #0f172a;
+        }
+
+        .lp-plan-btn-dark {
+          background: #0f172a;
+          border: 1px solid #0f172a;
+          color: #fff;
+        }
+
+        .lp-plan-btn-dark:hover {
+          background: #1e293b;
+          color: #fff;
+        }
+
+        .lp-plans-note {
+          text-align: center;
+          color: #94a3b8;
+          font-size: 0.84rem;
+        }
+
         /* ── Final CTA ───────────────────────────────────── */
         .lp-cta {
           text-align: center;
@@ -716,7 +946,8 @@ export default function HomePage() {
           }
 
           .lp-audience-grid,
-          .lp-resource-grid {
+          .lp-resource-grid,
+          .lp-plans-grid {
             grid-template-columns: repeat(2, 1fr);
           }
         }
@@ -737,7 +968,8 @@ export default function HomePage() {
 
           .lp-steps,
           .lp-audience-grid,
-          .lp-resource-grid {
+          .lp-resource-grid,
+          .lp-plans-grid {
             grid-template-columns: 1fr;
           }
 
