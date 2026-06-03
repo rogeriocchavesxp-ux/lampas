@@ -46,7 +46,14 @@ export interface StudyModeConfig {
   name: string
   tagline: string
   color: string
+  // Seleção no dashboard
+  audience: string            // "Pastores · Seminaristas"
+  titlePlaceholder: string    // placeholder do campo Título no formulário
+  // Formulário de entrada
   passageBased: boolean       // false → entrada por tema/doutrina (sem livro/perícope)
+  passageLabel: string        // label do campo de perícope (quando passageBased = true)
+  topicLabel: string          // label do campo de tema (quando passageBased = false)
+  // Workspace
   defaultSection: string      // slug da seção aberta ao entrar no workspace
   defaultExpandedPhases: string[]
   defaultExpandedCanons: string[]
@@ -87,7 +94,11 @@ const EXEGESE_BIBLICA: StudyModeConfig = {
   name: 'Exegese Bíblica',
   tagline: 'O que o texto diz, quer dizer e significa',
   color: '#B8922A',
+  audience: 'Pastores · Seminaristas · Pesquisadores',
+  titlePlaceholder: 'Ex: A soberania de Deus em Romanos 9',
   passageBased: true,
+  passageLabel: 'Perícope',
+  topicLabel: 'Tema',
   defaultSection: 'preparacao_espiritual',
   defaultExpandedPhases: ['preparar', 'investigar', 'ferramentas'],
   defaultExpandedCanons: ['preparar_imersao', 'interpretar_inventio', 'ferramentas_biblioteca'],
@@ -175,7 +186,11 @@ const SERMAO: StudyModeConfig = {
   name: 'Sermão',
   tagline: 'Do texto ao púlpito',
   color: '#7C3AED',
+  audience: 'Pastores · Pregadores',
+  titlePlaceholder: 'Ex: O Senhor é meu pastor — Salmos 23',
   passageBased: true,
+  passageLabel: 'Texto-base',
+  topicLabel: 'Tema',
   defaultSection: 'preparacao_espiritual',
   defaultExpandedPhases: ['preparar', 'investigar', 'comunicar'],
   defaultExpandedCanons: ['preparar_imersao', 'interpretar_inventio', 'sermao'],
@@ -236,7 +251,11 @@ const DEVOCIONAL: StudyModeConfig = {
   name: 'Devocional',
   tagline: 'Deixar o texto falar à alma',
   color: '#9A3412',
+  audience: 'Cristãos · Líderes · Grupos familiares',
+  titlePlaceholder: 'Ex: Confiança em tempos de aflição — Sl 46',
   passageBased: true,
+  passageLabel: 'Passagem',
+  topicLabel: 'Tema',
   defaultSection: 'preparacao_espiritual',
   defaultExpandedPhases: ['preparar', 'comunicar'],
   defaultExpandedCanons: ['preparar_imersao', 'devocional'],
@@ -295,7 +314,11 @@ const ESTUDO_BIBLICO: StudyModeConfig = {
   name: 'Estudo Bíblico',
   tagline: 'Do texto à vida do grupo',
   color: '#0369A1',
+  audience: 'Professores de EBD · Líderes de grupos',
+  titlePlaceholder: 'Ex: A parábola do filho pródigo — Lc 15',
   passageBased: true,
+  passageLabel: 'Passagem principal',
+  topicLabel: 'Tema',
   defaultSection: 'eb_preparacao',
   defaultExpandedPhases: ['preparar', 'investigar', 'comunicar'],
   defaultExpandedCanons: ['eb_preparar_mode', 'eb_compreender_mode', 'eb_ensinar_mode'],
@@ -350,7 +373,11 @@ const ESTUDO_DOUTRINARIO: StudyModeConfig = {
   name: 'Estudo Doutrinário',
   tagline: 'A fé que buscou entender',
   color: '#1E40AF',
+  audience: 'Teólogos · Estudantes · Pastores',
+  titlePlaceholder: 'Ex: A doutrina da justificação por fé',
   passageBased: false,
+  passageLabel: 'Texto âncora',
+  topicLabel: 'Doutrina',
   defaultSection: 'edt_definicao',
   defaultExpandedPhases: ['preparar', 'investigar'],
   defaultExpandedCanons: ['edt_definir_mode', 'edt_investigar_mode'],
@@ -408,7 +435,11 @@ const ESTUDO_TEMATICO: StudyModeConfig = {
   name: 'Estudo Temático',
   tagline: 'Como o cânone trata este tema',
   color: '#065F46',
+  audience: 'Pastores · Professores · Estudantes',
+  titlePlaceholder: 'Ex: A aliança na progressão canônica',
   passageBased: false,
+  passageLabel: 'Texto âncora',
+  topicLabel: 'Tema',
   defaultSection: 'et_definicao',
   defaultExpandedPhases: ['preparar', 'investigar'],
   defaultExpandedCanons: ['et_definir_mode', 'et_canonico_mode'],
@@ -464,7 +495,11 @@ const ESTUDO_DE_CARTA: StudyModeConfig = {
   name: 'Estudo de Carta',
   tagline: 'A lógica da argumentação apostólica',
   color: '#6D28D9',
+  audience: 'Pastores · Seminaristas · Pregadores',
+  titlePlaceholder: 'Ex: O argumento central de Gálatas',
   passageBased: true,
+  passageLabel: 'Carta / Perícope',
+  topicLabel: 'Tema',
   defaultSection: 'preparacao_espiritual',
   defaultExpandedPhases: ['preparar', 'investigar'],
   defaultExpandedCanons: ['preparar_imersao', 'ec_carta_mode'],
@@ -525,7 +560,11 @@ const COMENTARIO_EXEGETICO: StudyModeConfig = {
   name: 'Comentário Exegético',
   tagline: 'Exegese versículo a versículo para publicação',
   color: '#F97316',
+  audience: 'Seminaristas · Professores · Pesquisadores',
+  titlePlaceholder: 'Ex: Comentário de Romanos 3.21-26',
   passageBased: true,
+  passageLabel: 'Perícope',
+  topicLabel: 'Tema',
   defaultSection: 'preparacao_espiritual',
   defaultExpandedPhases: ['preparar', 'investigar', 'comunicar'],
   defaultExpandedCanons: ['preparar_imersao', 'interpretar_inventio', 'comentario'],
