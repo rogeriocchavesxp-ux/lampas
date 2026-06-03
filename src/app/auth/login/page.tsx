@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useMemo } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { LampasLogo } from '@/components/LampasLogo'
 
@@ -10,8 +10,9 @@ export default function LoginPage() {
   const [password, setPassword] = useState('')
   const [loading,  setLoading]  = useState(false)
   const [error,    setError]    = useState('')
-  const supabase = useMemo(() => createClient(), [])
-  const router   = useRouter()
+  const supabase     = useMemo(() => createClient(), [])
+  const router       = useRouter()
+  const searchParams = useSearchParams()
 
   async function handleLogin(e: React.FormEvent) {
     e.preventDefault()
@@ -26,7 +27,8 @@ export default function LoginPage() {
       return
     }
 
-    router.push('/dashboard')
+    const next = searchParams.get('next') ?? '/dashboard'
+    router.push(next)
     router.refresh()
   }
 

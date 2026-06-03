@@ -122,19 +122,21 @@ export default function HomePage() {
       <section className="lp-section lp-plans-section" id="planos">
         <div className="lp-inner">
           <p className="lp-kicker">Planos</p>
-          <h2 className="lp-h2">Comece grátis. Cresça no seu ritmo.</h2>
+          <h2 className="lp-h2">Uma ferramenta para cada jornada de estudo.</h2>
           <div className="lp-plans-grid">
 
             <article className="lp-plan-card">
               <div className="lp-plan-header">
                 <h3>Gratuito</h3>
                 <div className="lp-plan-price"><span className="lp-price-val">Grátis</span></div>
+                <p className="lp-plan-tagline">Experimente o Lampas de verdade.</p>
               </div>
               <ul className="lp-plan-features">
-                <li>1 projeto</li>
-                <li>5 consultas de IA por mês</li>
-                <li>Fase Preparar</li>
+                <li>1 projeto ativo</li>
+                <li>Exegese Bíblica</li>
+                <li>Estudo Bíblico</li>
                 <li>Devocional</li>
+                <li>IA assistida (limitada)</li>
               </ul>
               <Link href="/auth/login" className="lp-plan-btn lp-plan-btn-ghost">Começar grátis</Link>
             </article>
@@ -146,58 +148,60 @@ export default function HomePage() {
                   <span className="lp-price-val">R$ 19</span>
                   <span className="lp-price-period">/mês</span>
                 </div>
+                <p className="lp-plan-tagline">Para líderes, professores e grupos.</p>
               </div>
               <ul className="lp-plan-features">
-                <li>3 projetos</li>
-                <li>40 consultas de IA por mês</li>
-                <li>Preparar + Investigar</li>
-                <li>Devocional</li>
-                <li>Colagens (20)</li>
+                <li>5 projetos ativos</li>
+                <li>Exegese · Estudo Bíblico · Devocional</li>
+                <li>Sermão</li>
+                <li>Colagens</li>
+                <li>IA assistida</li>
               </ul>
-              <Link href="/auth/login" className="lp-plan-btn lp-plan-btn-ghost">Assinar</Link>
+              <Link href="/auth/login?next=/billing" className="lp-plan-btn lp-plan-btn-ghost">Assinar</Link>
             </article>
 
             <article className="lp-plan-card lp-plan-card-featured">
-              <div className="lp-plan-badge">Popular</div>
+              <div className="lp-plan-badge">Principal</div>
               <div className="lp-plan-header">
                 <h3>Intermediário</h3>
                 <div className="lp-plan-price">
                   <span className="lp-price-val">R$ 49</span>
                   <span className="lp-price-period">/mês</span>
                 </div>
+                <p className="lp-plan-tagline">Para pregadores e seminaristas.</p>
               </div>
               <ul className="lp-plan-features">
-                <li>10 projetos</li>
-                <li>120 consultas de IA por mês</li>
-                <li>Todas as fases</li>
+                <li>Projetos ilimitados</li>
                 <li>Todos os modos de estudo</li>
+                <li>Dicionário Lampas completo</li>
+                <li>Biblioteca integrada</li>
                 <li>Ferramentas de pesquisa</li>
-                <li>Colagens (100)</li>
+                <li>IA avançada</li>
               </ul>
               <Link href="/auth/login" className="lp-plan-btn lp-plan-btn-dark">Assinar</Link>
             </article>
 
             <article className="lp-plan-card">
               <div className="lp-plan-header">
-                <h3>Avançado</h3>
+                <h3>Premium</h3>
                 <div className="lp-plan-price">
                   <span className="lp-price-val">R$ 89</span>
                   <span className="lp-price-period">/mês</span>
                 </div>
+                <p className="lp-plan-tagline">Para pesquisa profunda e produção teológica.</p>
               </div>
               <ul className="lp-plan-features">
                 <li>Projetos ilimitados</li>
-                <li>400 consultas de IA por mês</li>
-                <li>Tudo incluído</li>
-                <li>Texto original (heb/grego)</li>
+                <li>Texto original (hebraico/grego)</li>
                 <li>Comentário expositivo</li>
-                <li>Colagens ilimitadas</li>
+                <li>IA sem limite de uso</li>
+                <li>Tudo do plano Intermediário</li>
               </ul>
               <Link href="/auth/login" className="lp-plan-btn lp-plan-btn-ghost">Assinar</Link>
             </article>
 
           </div>
-          <p className="lp-plans-note">Planos anuais com 20% de desconto. Cancele a qualquer momento.</p>
+          <p className="lp-plans-note">Planos anuais com 20% de desconto · Cancele a qualquer momento</p>
         </div>
       </section>
 
@@ -856,6 +860,13 @@ export default function HomePage() {
         .lp-plan-btn-dark:hover {
           background: #1e293b;
           color: #fff;
+        }
+
+        .lp-plan-tagline {
+          margin: 0.5rem 0 0;
+          font-size: 0.82rem;
+          color: #64748b;
+          line-height: 1.45;
         }
 
         .lp-plans-note {
