@@ -13,6 +13,7 @@ export interface Plan {
   features: string[]
   stripePriceMonthly: string
   stripePriceAnnual: string
+  mercadoPagoReason: string
 }
 
 export const PLANS: Record<PlanId, Plan> = {
@@ -32,6 +33,7 @@ export const PLANS: Record<PlanId, Plan> = {
     ],
     stripePriceMonthly: '',
     stripePriceAnnual: '',
+    mercadoPagoReason: 'Lampas Gratuito',
   },
   iniciante: {
     id: 'iniciante',
@@ -50,6 +52,7 @@ export const PLANS: Record<PlanId, Plan> = {
     ],
     stripePriceMonthly: process.env.STRIPE_PRICE_INICIANTE_MONTHLY ?? '',
     stripePriceAnnual:  process.env.STRIPE_PRICE_INICIANTE_ANNUAL  ?? '',
+    mercadoPagoReason: 'Lampas Iniciante',
   },
   intermediario: {
     id: 'intermediario',
@@ -68,6 +71,7 @@ export const PLANS: Record<PlanId, Plan> = {
     ],
     stripePriceMonthly: process.env.STRIPE_PRICE_INTERMEDIARIO_MONTHLY ?? '',
     stripePriceAnnual:  process.env.STRIPE_PRICE_INTERMEDIARIO_ANNUAL  ?? '',
+    mercadoPagoReason: 'Lampas Intermediário',
   },
   avancado: {
     id: 'avancado',
@@ -77,13 +81,14 @@ export const PLANS: Record<PlanId, Plan> = {
     limits: { aiPerMonth: -1, projects: -1 },
     features: [
       'Projetos ilimitados',
-      'Tudo do plano Pastor',
+      'Tudo do plano Intermediário',
       'Texto original (hebraico/grego)',
       'Comentário expositivo',
       'IA sem limite de uso',
     ],
     stripePriceMonthly: process.env.STRIPE_PRICE_AVANCADO_MONTHLY ?? '',
     stripePriceAnnual:  process.env.STRIPE_PRICE_AVANCADO_ANNUAL  ?? '',
+    mercadoPagoReason: 'Lampas Premium',
   },
 }
 

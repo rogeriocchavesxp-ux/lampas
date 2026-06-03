@@ -195,7 +195,7 @@ export default function HomePage() {
                 <li>Texto original (hebraico/grego)</li>
                 <li>Comentário expositivo</li>
                 <li>IA sem limite de uso</li>
-                <li>Tudo do plano Intermediário</li>
+                <li>Tudo do Intermediário</li>
               </ul>
               <Link href="/auth/login" className="lp-plan-btn lp-plan-btn-ghost">Assinar</Link>
             </article>
