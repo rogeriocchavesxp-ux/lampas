@@ -39,6 +39,11 @@ import {
   type LucideIcon,
 } from 'lucide-react'
 import { LampasMarkIcon } from '@/components/LampasLogo'
+import {
+  getModeConfig,
+  STUDY_MODE_REGISTRY,
+  type NavPhase,
+} from '@/lib/study-modes'
 
 interface Props {
   user: User
@@ -50,130 +55,13 @@ interface Props {
 
 type PhaseId = 'preparar' | 'investigar' | 'comunicar' | 'ferramentas'
 
-interface NavGroup { id: string; label: string }
-interface NavMode { id: string; label: string; subtitle: string; color: string; bgActive: string; groups: NavGroup[] }
-interface NavPhase { id: PhaseId; roman: string; label: string; color: string; bgActive: string; modes: NavMode[] }
+// NAV_PHASES deriva do registry — WorkspaceClient é um renderer genérico
+const NAV_PHASES: NavPhase[] = STUDY_MODE_REGISTRY.exegese_biblica.phases
 
-const NAV_PHASES: NavPhase[] = [
-  {
-    id: 'preparar', roman: 'I', label: 'Preparar',
-    color: '#D97706', bgActive: 'rgba(217,119,6,0.08)',
-    modes: [
-      {
-        id: 'preparar_imersao',
-        label: 'Imersão',
-        subtitle: 'Piedade e assimilação',
-        color: '#D97706',
-        bgActive: 'rgba(217,119,6,0.08)',
-        groups: [
-          { id: 'preparar_espiritual', label: 'Preparação Espiritual' },
-          { id: 'preparar_assimilacao', label: 'Leia e Assimile' },
-          { id: 'preparar_impressoes', label: 'Primeiras Impressões' },
-          { id: 'preparar_visao_geral', label: 'Visão Geral' },
-        ],
-      },
-    ],
-  },
-  {
-    id: 'investigar', roman: 'II', label: 'Investigar',
-    color: 'var(--accent)', bgActive: 'rgba(59,130,246,0.08)',
-    modes: [
-      {
-        id: 'interpretar_inventio',
-        label: 'Exegese',
-        subtitle: 'Descobrir o significado',
-        color: 'var(--accent)',
-        bgActive: 'rgba(59,130,246,0.08)',
-        groups: [
-          { id: 'contextual', label: 'Estudo Contextual' },
-          { id: 'textual',    label: 'Estudo Textual' },
-          { id: 'teologico',  label: 'Estudo Teológico' },
-        ],
-      },
-    ],
-  },
-  {
-    id: 'comunicar', roman: 'III', label: 'Produzir',
-    color: 'var(--ai)', bgActive: 'rgba(139,92,246,0.08)',
-    modes: [
-      {
-        id: 'sermao',
-        label: 'Sermão',
-        subtitle: 'Proclamação pública',
-        color: 'var(--ai)',
-        bgActive: 'rgba(139,92,246,0.08)',
-        groups: [
-          { id: 'sermao_dispositio',   label: 'Estrutura' },
-          { id: 'sermao_elocutio',     label: 'Linguagem' },
-          { id: 'sermao_memoria',      label: 'Internalização' },
-          { id: 'sermao_pronuntiatio', label: 'Execução da Pregação' },
-        ],
-      },
-      {
-        id: 'estudo_biblico',
-        label: 'Estudo Bíblico',
-        subtitle: 'Ensino participativo',
-        color: '#10B981',
-        bgActive: 'rgba(16,185,129,0.09)',
-        groups: [
-          { id: 'estudo_dispositio',   label: 'Estrutura' },
-          { id: 'estudo_elocutio',     label: 'Linguagem' },
-          { id: 'estudo_memoria',      label: 'Internalização' },
-          { id: 'estudo_pronuntiatio', label: 'Execução da Pregação' },
-        ],
-      },
-      {
-        id: 'devocional',
-        label: 'Devocional',
-        subtitle: 'Fluxo meditativo e pastoral',
-        color: '#D97706',
-        bgActive: 'rgba(217,119,6,0.09)',
-        groups: [
-          { id: 'devocional_dispositio',   label: 'Estrutura' },
-          { id: 'devocional_elocutio',     label: 'Linguagem' },
-          { id: 'devocional_memoria',      label: 'Internalização' },
-          { id: 'devocional_pronuntiatio', label: 'Execução da Pregação' },
-        ],
-      },
-      {
-        id: 'comentario',
-        label: 'Comentário',
-        subtitle: 'Exegese versículo a versículo',
-        color: '#F97316',
-        bgActive: 'rgba(249,115,22,0.09)',
-        groups: [
-          { id: 'comentario_expositivo', label: 'Expositivo' },
-        ],
-      },
-    ],
-  },
-  {
-    id: 'ferramentas', roman: 'IV', label: 'Ferramentas',
-    color: '#64748B', bgActive: 'rgba(100,116,139,0.08)',
-    modes: [
-      {
-        id: 'ferramentas_biblioteca',
-        label: 'Pesquisa',
-        subtitle: 'Biblioteca e assistente',
-        color: '#64748B',
-        bgActive: 'rgba(100,116,139,0.08)',
-        groups: [
-          ...TOOL_AREAS.map(area => ({ id: area.slug, label: area.shortTitle })),
-          { id: 'colagens', label: 'Colagens' },
-        ],
-      },
-    ],
-  },
-]
+// NAV_GROUP_IDS para o modo padrão (usado como fallback em getCanonFor)
+const NAV_GROUP_IDS = new Set(NAV_PHASES.flatMap(ph => ph.modes.flatMap(m => m.groups.map(g => g.id))))
 
-const NAV_GROUP_IDS = new Set(NAV_PHASES.flatMap(phase => phase.modes.flatMap(mode => mode.groups.map(group => group.id))))
-
-const PHASE_DESCRIPTIONS: Record<PhaseId, string> = {
-  preparar:    'Preparação espiritual e contato inicial com o texto',
-  investigar:  'Análise contextual, textual e teológica',
-  comunicar:   'Transformação da exegese em comunicação',
-  ferramentas: 'Biblioteca e recursos de pesquisa',
-}
+// PHASE_DESCRIPTIONS removido — descrição agora vive em NavPhase.description
 
 const GROUP_SUBTITLES: Record<string, string> = {
   // Investigar
@@ -261,10 +149,10 @@ function getGroupFor(slug: string): string | undefined {
   return getSectionNavBySlug(slug)?.group
 }
 
-function getCanonFor(slug: string): string | undefined {
+function getCanonFor(slug: string, phases: NavPhase[] = NAV_PHASES): string | undefined {
   const groupId = getGroupFor(slug)
   if (!groupId) return undefined
-  for (const phase of NAV_PHASES) {
+  for (const phase of phases) {
     for (const mode of phase.modes) {
       if (mode.groups.some(g => g.id === groupId)) return mode.id
     }
@@ -332,11 +220,23 @@ export default function WorkspaceClient({ user, project, initialSections }: Prop
     setEditingTitle(false)
   }
 
+  // ── Mode config — fonte de verdade para navegação ─────────────────────
+  const modeConfig = useMemo(
+    () => getModeConfig((project as { study_mode?: string }).study_mode ?? project.project_type),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [project.id]
+  )
+  const navPhases   = modeConfig.phases
+  const navGroupIds = useMemo(
+    () => new Set(navPhases.flatMap(ph => ph.modes.flatMap(m => m.groups.map(g => g.id)))),
+    [navPhases]
+  )
+
   const [sections, setSections] = useState<Section[]>(initialSections)
-  const [activeSlug, setActiveSlug] = useState('preparacao_espiritual')
-  const [expandedPhases, setExpandedPhases] = useState<Set<string>>(() => new Set(['preparar', 'investigar', 'ferramentas']))
-  const [expandedCanons, setExpandedCanons] = useState<Set<string>>(() => new Set(['preparar_imersao', 'interpretar_inventio', 'ferramentas_biblioteca']))
-  const [expandedGroups, setExpandedGroups] = useState<Set<string>>(() => new Set(['preparar_espiritual']))
+  const [activeSlug, setActiveSlug] = useState(() => modeConfig.defaultSection)
+  const [expandedPhases, setExpandedPhases] = useState<Set<string>>(() => new Set(modeConfig.defaultExpandedPhases))
+  const [expandedCanons, setExpandedCanons] = useState<Set<string>>(() => new Set(modeConfig.defaultExpandedCanons))
+  const [expandedGroups, setExpandedGroups] = useState<Set<string>>(() => new Set(modeConfig.defaultExpandedGroups))
   const [aiOpen, setAiOpen] = useState(false)
   const [aiPrompt, setAiPrompt] = useState('')
 
@@ -413,7 +313,7 @@ export default function WorkspaceClient({ user, project, initialSections }: Prop
   const activeDef = useSectionDef(activeSlug)
   const activeTool = getToolAreaBySlug(activeSlug)
   const activeSection = sections.find(s => s.slug === activeSlug)
-  const activePhase = NAV_PHASES.find(p => p.id === getPhaseFor(activeSlug))
+  const activePhase = navPhases.find(p => p.id === getPhaseFor(activeSlug))
 
   const handleSectionUpdate = useCallback((updated: Section) => {
     setSections(prev => {
@@ -459,7 +359,7 @@ export default function WorkspaceClient({ user, project, initialSections }: Prop
 
   function navigate(slug: string) {
     setExpandedPhases(prev => new Set([...prev, getPhaseFor(slug)]))
-    const c = getCanonFor(slug)
+    const c = getCanonFor(slug, navPhases)
     if (c) setExpandedCanons(prev => new Set([...prev, c]))
     const g = getGroupFor(slug)
     if (g) setExpandedGroups(prev => new Set([...prev, g]))
@@ -480,7 +380,7 @@ export default function WorkspaceClient({ user, project, initialSections }: Prop
     }
   }
 
-  const navigableSections = WORKSPACE_SECTIONS_NAV.filter(sd => sd.group && NAV_GROUP_IDS.has(sd.group))
+  const navigableSections = WORKSPACE_SECTIONS_NAV.filter(sd => sd.group && navGroupIds.has(sd.group))
   const totalSecs = navigableSections.length
   const doneSecs = navigableSections.filter(sd => {
     const s = sections.find(sec => sec.slug === sd.slug)
@@ -694,7 +594,7 @@ export default function WorkspaceClient({ user, project, initialSections }: Prop
                 onMouseEnter={e => e.currentTarget.style.color = 'var(--text-secondary)'}
                 onMouseLeave={e => e.currentTarget.style.color = 'var(--text-muted)'}
               >›</button>
-              {NAV_PHASES.map(ph => (
+              {navPhases.map(ph => (
                 <button key={ph.id} title={ph.label}
                   onClick={() => { setSidebarCollapsed(false); localStorage.setItem('lampas_sidebar_c', '0'); setExpandedPhases(prev => new Set([...prev, ph.id])) }}
                   style={{ width: '32px', height: '26px', background: 'transparent', border: 'none', cursor: 'pointer', color: ph.color, fontSize: '0.64rem', fontWeight: 900, borderRadius: '3px', fontFamily: 'inherit' }}
@@ -727,7 +627,7 @@ export default function WorkspaceClient({ user, project, initialSections }: Prop
                 </button>
               </div>
 
-              {NAV_PHASES.map((phase, phaseIdx) => {
+              {navPhases.map((phase, phaseIdx) => {
                 const phaseOpen  = expandedPhases.has(phase.id)
                 const singleMode = phase.modes.length === 1
 
@@ -792,7 +692,7 @@ export default function WorkspaceClient({ user, project, initialSections }: Prop
                           fontSize: '0.68rem', color: 'var(--text-muted)',
                           marginTop: '3px', lineHeight: 1.4, fontWeight: 400,
                         }}>
-                          {PHASE_DESCRIPTIONS[phase.id]}
+                          {phase.description}
                         </div>
                       </div>
 

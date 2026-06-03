@@ -32,6 +32,8 @@ export interface Project {
   bible_version: string
   status: ProjectStatus
   project_type: ProjectType
+  study_mode?: string           // novo: modo de estudo adaptativo
+  meta?: Record<string, unknown> // dados extras por modo (tema, doutrina, etc.)
   created_at: string
   updated_at: string
 }
