@@ -136,7 +136,9 @@ export default function HomePage() {
                 <li>Exegese Bíblica</li>
                 <li>Estudo Bíblico</li>
                 <li>Devocional</li>
-                <li>IA assistida (limitada)</li>
+                <li>Fluxo completo: Preparar · Investigar · Comunicar</li>
+                <li>Dicionário Lampas (acesso básico)</li>
+                <li>IA assistida — 10 consultas/mês</li>
               </ul>
               <Link href="/auth/login" className="lp-plan-btn lp-plan-btn-ghost">Começar grátis</Link>
             </article>
@@ -152,10 +154,14 @@ export default function HomePage() {
               </div>
               <ul className="lp-plan-features">
                 <li>5 projetos ativos</li>
-                <li>Exegese · Estudo Bíblico · Devocional</li>
+                <li>Exegese Bíblica</li>
+                <li>Estudo de Carta</li>
+                <li>Estudo Bíblico</li>
                 <li>Sermão</li>
-                <li>Colagens</li>
-                <li>IA assistida</li>
+                <li>Devocional</li>
+                <li>Colagens (50)</li>
+                <li>Dicionário Lampas</li>
+                <li>IA assistida — 60 consultas/mês</li>
               </ul>
               <Link href="/auth/login?next=/billing" className="lp-plan-btn lp-plan-btn-ghost">Assinar</Link>
             </article>
@@ -172,11 +178,14 @@ export default function HomePage() {
               </div>
               <ul className="lp-plan-features">
                 <li>Projetos ilimitados</li>
-                <li>Todos os modos de estudo</li>
+                <li>Todos os 8 modos de estudo</li>
+                <li>Exegese · Sermão · EBD · Devocional</li>
+                <li>Estudo Doutrinário · Temático · Comentário</li>
                 <li>Dicionário Lampas completo</li>
-                <li>Biblioteca integrada</li>
-                <li>Ferramentas de pesquisa</li>
-                <li>IA avançada</li>
+                <li>Biblioteca de fontes reformadas</li>
+                <li>Referências cruzadas e pesquisa integrada</li>
+                <li>Colagens ilimitadas</li>
+                <li>IA avançada — 200 consultas/mês</li>
               </ul>
               <Link href="/auth/login" className="lp-plan-btn lp-plan-btn-dark">Assinar</Link>
             </article>
@@ -191,11 +200,15 @@ export default function HomePage() {
                 <p className="lp-plan-tagline">Para pesquisa profunda e produção teológica.</p>
               </div>
               <ul className="lp-plan-features">
-                <li>Projetos ilimitados</li>
-                <li>Texto original (hebraico/grego)</li>
-                <li>Comentário expositivo</li>
+                <li>Tudo do plano Intermediário</li>
+                <li>Texto original — hebraico e grego</li>
+                <li>Análise morfossintática</li>
+                <li>Comentário expositivo versículo a versículo</li>
+                <li>Pesquisa Teológica aprofundada</li>
+                <li>Estudo de Carta avançado</li>
+                <li>Acesso a todos os recursos futuros</li>
                 <li>IA sem limite de uso</li>
-                <li>Tudo do Intermediário</li>
+                <li>Suporte prioritário</li>
               </ul>
               <Link href="/auth/login" className="lp-plan-btn lp-plan-btn-ghost">Assinar</Link>
             </article>
