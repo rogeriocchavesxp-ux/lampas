@@ -50,8 +50,9 @@ export default function HomePage() {
           <h1 className="lp-h1">Iluminando a sua jornada<br />de estudo bíblico.</h1>
           <p className="lp-hero-sub">Estude. Interprete. Comunique.</p>
           <p className="lp-hero-body">
-            Uma plataforma criada para pastores, professores, seminaristas e estudantes
-            da Bíblia desenvolverem estudos com profundidade, método e clareza.
+            Uma plataforma criada para todo aquele que tem desejo de conhecer a Palavra
+            com profundidade. Ideal para professores, seminaristas e estudantes da Bíblia
+            desenvolverem estudos com profundidade, método e clareza.
           </p>
           <div className="lp-hero-actions">
             <Link href="/auth/login" className="lp-btn-primary">
