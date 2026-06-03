@@ -26,9 +26,11 @@ export default function BillingClient({
   const router = useRouter()
   const [billingInterval, setBillingInterval] = useState<'monthly' | 'annual'>('monthly')
   const [loading, setLoading] = useState<string | null>(null)
+  const [message, setMessage] = useState<string | null>(null)
 
   async function handleCheckout(planId: PlanId) {
     setLoading(planId)
+    setMessage(null)
     try {
       const res = await fetch('/api/billing/checkout', {
         method: 'POST',
@@ -36,7 +38,14 @@ export default function BillingClient({
         body: JSON.stringify({ planId, interval: billingInterval }),
       })
       const data = await res.json()
+      if (!res.ok) {
+        setMessage(data.error ?? 'Não foi possível iniciar a compra. Tente novamente.')
+        return
+      }
       if (data.url) window.location.href = data.url
+      else setMessage('Mercado Pago não retornou o link de pagamento.')
+    } catch {
+      setMessage('Falha de conexão ao iniciar a compra. Tente novamente.')
     } finally {
       setLoading(null)
     }
@@ -44,10 +53,21 @@ export default function BillingClient({
 
   async function handlePortal() {
     setLoading('portal')
+    setMessage(null)
     try {
       const res = await fetch('/api/billing/portal', { method: 'POST' })
       const data = await res.json()
+      if (!res.ok) {
+        setMessage(data.error ?? 'Não foi possível gerenciar a assinatura.')
+        return
+      }
+      if (data.canceled) {
+        setMessage('Assinatura cancelada no Mercado Pago. Seu acesso foi atualizado.')
+        router.refresh()
+      }
       if (data.url) window.location.href = data.url
+    } catch {
+      setMessage('Falha de conexão ao gerenciar a assinatura. Tente novamente.')
     } finally {
       setLoading(null)
     }
@@ -94,6 +114,21 @@ export default function BillingClient({
             fontWeight: 600,
           }}>
             Assinatura ativada com sucesso. Bem-vindo ao Lampas {PLANS[currentPlan as PlanId]?.name ?? ''}!
+          </div>
+        )}
+
+        {message && (
+          <div style={{
+            background: 'rgba(59,130,246,0.08)',
+            border: '1px solid rgba(59,130,246,0.22)',
+            borderRadius: '8px',
+            padding: '0.85rem 1.2rem',
+            marginBottom: '2rem',
+            color: 'var(--text-secondary)',
+            fontSize: '0.9rem',
+            fontWeight: 600,
+          }}>
+            {message}
           </div>
         )}
 
@@ -180,7 +215,7 @@ export default function BillingClient({
                 opacity: loading === 'portal' ? 0.5 : 1,
               }}
             >
-              {loading === 'portal' ? 'Abrindo...' : 'Gerenciar assinatura'}
+              {loading === 'portal' ? 'Processando...' : 'Cancelar assinatura'}
             </button>
           )}
         </div>
@@ -196,7 +231,14 @@ export default function BillingClient({
             {(['monthly', 'annual'] as const).map(iv => (
               <button
                 key={iv}
-                onClick={() => setBillingInterval(iv)}
+                onClick={() => {
+                  if (iv === 'annual') {
+                    setMessage('Assinatura anual será habilitada em uma próxima etapa. A cobrança atual é mensal recorrente via Mercado Pago.')
+                    return
+                  }
+                  setMessage(null)
+                  setBillingInterval(iv)
+                }}
                 style={{
                   background: billingInterval === iv ? 'rgba(184,146,42,0.12)' : 'transparent',
                   border: 'none',
@@ -223,7 +265,7 @@ export default function BillingClient({
                     borderRadius: '3px',
                     letterSpacing: '0.04em',
                   }}>
-                    −20%
+                    Em breve
                   </span>
                 )}
               </button>
@@ -398,7 +440,7 @@ export default function BillingClient({
 
         {/* ── Rodapé ── */}
         <div style={{ textAlign: 'center', marginTop: '2.5rem', fontSize: '0.78rem', color: MUTED, lineHeight: 1.8 }}>
-          Pagamento seguro via Stripe · Cancele a qualquer momento · Suporte em português
+          Pagamento seguro via Mercado Pago · Cancele a qualquer momento · Suporte em português
         </div>
       </div>
     </div>

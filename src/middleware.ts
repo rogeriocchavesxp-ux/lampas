@@ -1,7 +1,7 @@
 import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 
-const PROTECTED_PATHS = ['/dashboard', '/workspace', '/billing']
+const PROTECTED_PATHS = ['/dashboard', '/workspace', '/billing', '/admin']
 
 export async function middleware(request: NextRequest) {
   let supabaseResponse = NextResponse.next({ request })

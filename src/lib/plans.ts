@@ -11,8 +11,6 @@ export interface Plan {
     projects: number    // -1 = ilimitado
   }
   features: string[]
-  stripePriceMonthly: string
-  stripePriceAnnual: string
   mercadoPagoReason: string
 }
 
@@ -33,8 +31,6 @@ export const PLANS: Record<PlanId, Plan> = {
       'IA assistida — 10 consultas/mês',
       'Exportação do estudo',
     ],
-    stripePriceMonthly: '',
-    stripePriceAnnual: '',
     mercadoPagoReason: 'Lampas Gratuito',
   },
   iniciante: {
@@ -56,8 +52,6 @@ export const PLANS: Record<PlanId, Plan> = {
       'IA assistida — 60 consultas/mês',
       'Exportação dos estudos',
     ],
-    stripePriceMonthly: process.env.STRIPE_PRICE_INICIANTE_MONTHLY ?? '',
-    stripePriceAnnual:  process.env.STRIPE_PRICE_INICIANTE_ANNUAL  ?? '',
     mercadoPagoReason: 'Lampas Iniciante',
   },
   intermediario: {
@@ -80,8 +74,6 @@ export const PLANS: Record<PlanId, Plan> = {
       'IA avançada — 200 consultas/mês',
       'Exportação completa dos estudos',
     ],
-    stripePriceMonthly: process.env.STRIPE_PRICE_INTERMEDIARIO_MONTHLY ?? '',
-    stripePriceAnnual:  process.env.STRIPE_PRICE_INTERMEDIARIO_ANNUAL  ?? '',
     mercadoPagoReason: 'Lampas Intermediário',
   },
   avancado: {
@@ -101,8 +93,6 @@ export const PLANS: Record<PlanId, Plan> = {
       'IA sem limite de uso',
       'Suporte prioritário',
     ],
-    stripePriceMonthly: process.env.STRIPE_PRICE_AVANCADO_MONTHLY ?? '',
-    stripePriceAnnual:  process.env.STRIPE_PRICE_AVANCADO_ANNUAL  ?? '',
     mercadoPagoReason: 'Lampas Premium',
   },
 }

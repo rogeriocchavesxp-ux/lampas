@@ -1,5 +1,6 @@
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
+import { syncMercadoPagoSubscriptionForUser } from '@/lib/billing-sync'
 import DashboardClient from './DashboardClient'
 
 export default async function DashboardPage() {
@@ -9,6 +10,7 @@ export default async function DashboardPage() {
   if (!user) redirect('/auth/login')
 
   const uid = user!.id
+  await syncMercadoPagoSubscriptionForUser(uid).catch(() => null)
 
   const [{ data: projects }, { data: profile }] = await Promise.all([
     supabase.from('projects').select('*').eq('user_id', uid).order('updated_at', { ascending: false }),

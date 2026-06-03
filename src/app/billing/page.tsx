@@ -1,6 +1,7 @@
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { checkAIUsage } from '@/lib/billing'
+import { syncMercadoPagoSubscriptionForUser } from '@/lib/billing-sync'
 import BillingClient from './BillingClient'
 
 export default async function BillingPage({
@@ -13,6 +14,7 @@ export default async function BillingPage({
   // auth desativado temporariamente — if (!user) redirect('/auth/login')
 
   const userId = user?.id ?? ''
+  if (userId) await syncMercadoPagoSubscriptionForUser(userId).catch(() => null)
 
   const { data: sub } = userId ? await supabase
     .from('subscriptions')

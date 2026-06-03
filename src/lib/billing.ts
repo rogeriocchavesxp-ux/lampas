@@ -47,7 +47,8 @@ export async function getUserPlan(userId: string): Promise<PlanId> {
     .eq('user_id', userId)
     .maybeSingle()
 
-  if (!data || data.status === 'canceled' || data.status === 'past_due') return 'free'
+  const inactiveStatuses = new Set(['canceled', 'cancelled', 'past_due', 'pending', 'paused', 'rejected'])
+  if (!data || inactiveStatuses.has(data.status)) return 'free'
   return (data.plan as PlanId) ?? 'free'
 }
 

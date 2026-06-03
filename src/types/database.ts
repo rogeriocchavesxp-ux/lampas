@@ -14,6 +14,7 @@ export interface Profile {
   id: string
   email: string
   full_name: string | null
+  role?: string | null
   plan: 'free' | 'student' | 'pastor' | 'ministry' | 'seminary'
   stripe_customer_id: string | null
   stripe_subscription_id: string | null

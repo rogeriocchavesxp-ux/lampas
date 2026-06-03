@@ -192,7 +192,7 @@ interface Props {
   profile: Profile | null
 }
 
-export default function DashboardClient({ user, projects }: Props) {
+export default function DashboardClient({ user, projects, profile }: Props) {
   const router = useRouter()
   const supabase = useMemo(() => createClient(), [])
 
@@ -389,6 +389,16 @@ export default function DashboardClient({ user, projects }: Props) {
             onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--accent)'; e.currentTarget.style.color = 'var(--accent)' }}
             onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.color = 'var(--text-secondary)' }}
           >Planos</button>
+          {profile?.role === 'admin' && (
+            <button onClick={() => router.push('/admin/billing')} style={{
+              background: 'transparent', border: '1px solid var(--border)',
+              color: 'var(--text-secondary)', padding: '0.3rem 0.75rem',
+              borderRadius: '6px', cursor: 'pointer', fontSize: '0.82rem', fontFamily: 'inherit',
+            }}
+              onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--accent)'; e.currentTarget.style.color = 'var(--accent)' }}
+              onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.color = 'var(--text-secondary)' }}
+            >Admin</button>
+          )}
           <button onClick={handleSignOut} style={{
             background: 'transparent', border: '1px solid var(--border)',
             color: 'var(--text-secondary)', padding: '0.3rem 0.75rem',

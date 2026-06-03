@@ -1,11 +1,11 @@
 'use client'
 
-import { useState, useMemo } from 'react'
+import { Suspense, useMemo, useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { LampasLogo } from '@/components/LampasLogo'
 
-export default function LoginPage() {
+function LoginContent() {
   const [mode,     setMode]     = useState<'login' | 'signup'>('login')
   const [email,    setEmail]    = useState('')
   const [password, setPassword] = useState('')
@@ -193,5 +193,13 @@ export default function LoginPage() {
         </div>
       </div>
     </div>
+  )
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={null}>
+      <LoginContent />
+    </Suspense>
   )
 }
