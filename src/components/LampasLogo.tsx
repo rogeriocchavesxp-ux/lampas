@@ -23,11 +23,12 @@ interface LogoProps { height?: number }
 interface MarkProps { size?: number }
 
 // Coordenadas master (viewBox 0 0 80 88)
+// Calibradas a partir do arquivo "Logo Lampas SF.png" (fundo branco)
 const M = {
-  TOP:  { x: 41, y:  8 },
-  LEFT: { x:  8, y: 77 },
-  RIGHT:{ x: 73, y: 73 },
-  JUNC: { x: 34, y: 52 },  // centro hermenêutico — ponto de convergência
+  TOP:  { x: 38, y:  4 },  // Deus / Revelação — topo central
+  LEFT: { x: 12, y: 81 },  // Autor Bíblico — inferior esquerdo
+  RIGHT:{ x: 62, y: 77 },  // Igreja / Intérprete — inferior direito
+  JUNC: { x: 30, y: 62 },  // Centro hermenêutico — junção das linhas (mais baixo, tendendo à esquerda)
 } as const
 
 // ── LampasSym — símbolo isolado (sem fundo) ───────────────────────────────
@@ -41,8 +42,8 @@ export function LampasSym({ width = 66, height = 72 }: { width?: number; height?
   const r = { x: scaleX(M.RIGHT.x), y: scaleY(M.RIGHT.y) }
   const j = { x: scaleX(M.JUNC.x),  y: scaleY(M.JUNC.y)  }
 
-  const sw = Math.max(1.4, width * 0.036)
-  const nr = Math.max(3,   width * 0.088)
+  const sw = Math.max(1.2, width * 0.028)
+  const nr = Math.max(3,   width * 0.10)
   const uid = `sym-${width}`
 
   return (
@@ -115,8 +116,8 @@ export function LampasMarkIcon({ size = 36 }: MarkProps) {
   const r = { x: sx(M.RIGHT.x), y: sy(M.RIGHT.y) }
   const j = { x: sx(M.JUNC.x),  y: sy(M.JUNC.y)  }
 
-  const sw = Math.max(1, size * 0.036)
-  const nr = Math.max(2, size * 0.085)
+  const sw = Math.max(1, size * 0.028)
+  const nr = Math.max(2, size * 0.10)
   const uid = `mk-${size}`
 
   return (
