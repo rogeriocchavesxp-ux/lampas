@@ -5,6 +5,7 @@ import { checkRateLimit, rateLimitHeaders } from '@/lib/rate-limit'
 import { EXEGESE_SYSTEM_PROMPT } from '@/lib/prompts/exegese-system'
 import { loadOriginalTextContext } from '@/lib/workspace-context'
 import { cacheKey, getAICache, setAICache } from '@/lib/ai-cache'
+import { captureError } from '@/lib/monitoring'
 
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY! })
 
@@ -83,7 +84,7 @@ Identifique entre 4 e 10 termos, ordenados por importância teológica. Inclua a
       setAICache(ckIdentify, result).catch(() => {})
       return Response.json(result)
     } catch (err) {
-      console.error('generate-terms identify error:', err)
+      captureError(err, { endpoint: 'generate-terms/identify', book: project.book, passage: project.passage_ref })
       return Response.json({ error: 'Erro ao identificar termos' }, { status: 500 })
     }
   }
@@ -134,7 +135,7 @@ Liste as obras citadas nesta análise (dicionários, comentaristas reformados).`
       setAICache(ckAnalyze, { analysis, dictionaries }).catch(() => {})
       return Response.json({ analysis, dictionaries })
     } catch (err) {
-      console.error('generate-terms analyze error:', err)
+      captureError(err, { endpoint: 'generate-terms/analyze', term: term.word })
       return Response.json({ error: 'Erro ao analisar termo' }, { status: 500 })
     }
   }

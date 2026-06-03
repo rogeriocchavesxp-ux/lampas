@@ -6,6 +6,7 @@ import { EXEGESE_SYSTEM_PROMPT } from '@/lib/prompts/exegese-system'
 import { getSectionBySlug } from '@/lib/workspace-sections'
 import { loadOriginalTextContext } from '@/lib/workspace-context'
 import { cacheKey, getAICache, setAICache } from '@/lib/ai-cache'
+import { captureError } from '@/lib/monitoring'
 
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY! })
 
@@ -141,7 +142,7 @@ ${jsonKeys}
     setAICache(ck, parsed).catch(() => {})
     return Response.json(parsed)
   } catch (err) {
-    console.error('Claude generate error:', err)
+    captureError(err, { endpoint: 'generate', sectionSlug, userId: user.id })
     return Response.json({ error: 'Erro ao chamar a IA' }, { status: 500 })
   }
 }
