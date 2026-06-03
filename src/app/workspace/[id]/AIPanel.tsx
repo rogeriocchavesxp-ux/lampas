@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect } from 'react'
 import type { Project } from '@/types/database'
-import { getSectionBySlug } from '@/lib/workspace-sections'
+import type { SectionDef } from '@/lib/workspace-sections'
 import { getToolAreaBySlug } from '@/lib/tools-content'
 import MarkdownRenderer from '@/components/MarkdownRenderer'
 
@@ -17,9 +17,10 @@ interface Props {
   activeTitle: string
   context: string
   onClearContext: () => void
+  sectionDef?: SectionDef | null
 }
 
-export default function AIPanel({ project, activeSlug, activeTitle, context, onClearContext }: Props) {
+export default function AIPanel({ project, activeSlug, activeTitle, context, onClearContext, sectionDef }: Props) {
   const [messages, setMessages] = useState<Message[]>([])
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
@@ -161,7 +162,7 @@ export default function AIPanel({ project, activeSlug, activeTitle, context, onC
           <div style={{ color: 'var(--text-muted)', fontSize: '0.83rem', lineHeight: '1.65', padding: '0.5rem 0' }}>
             <p style={{ marginBottom: '0.75rem' }}>Pergunte sobre <strong style={{ color: 'var(--text-secondary)' }}>{activeTitle}</strong> para {project.book} {project.passage_ref}.</p>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
-              {quickPrompts(activeSlug, project).map(p => (
+              {quickPrompts(activeSlug, project, sectionDef).map(p => (
                 <button
                   key={p}
                   onClick={() => send(p)}
@@ -287,7 +288,7 @@ export default function AIPanel({ project, activeSlug, activeTitle, context, onC
   )
 }
 
-function quickPrompts(slug: string, project: Project): string[] {
+function quickPrompts(slug: string, project: Project, sectionDef?: SectionDef | null): string[] {
   const ref = `${project.book} ${project.passage_ref}`
   if (slug === 'sermao_dispositio') {
     return [
@@ -312,9 +313,7 @@ function quickPrompts(slug: string, project: Project): string[] {
     return toolArea.actions.slice(0, 4).map(action => action.prompt)
   }
 
-  const sectionDef = getSectionBySlug(slug)
   if (sectionDef && sectionDef.keyQuestions.length > 0) {
-    // Return up to 4 key questions for the active section
     return sectionDef.keyQuestions.slice(0, 4)
   }
   return [

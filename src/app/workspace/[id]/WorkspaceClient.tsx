@@ -6,13 +6,17 @@ import type { User } from '@supabase/supabase-js'
 import type { Project, Section } from '@/types/database'
 import { createClient } from '@/lib/supabase/client'
 import {
-  WORKSPACE_SECTIONS,
+  WORKSPACE_SECTIONS_NAV,
+  getSectionsByGroupNav,
+  getSectionNavBySlug,
+} from '@/lib/workspace-sections-nav'
+import {
   SYNTHESIS_DEFS,
-  getSectionsByGroup,
-  getSectionBySlug,
   isSynthesisSlug,
   getSynthesisBySlug,
+  type SectionDef,
 } from '@/lib/workspace-sections'
+import { useSectionDef } from '@/hooks/useSectionDef'
 import { TOOL_AREAS, getToolAreaBySlug, isToolSlug } from '@/lib/tools-content'
 import SectionWorkspace from './SectionWorkspace'
 import SynthesisView from './SynthesisView'
@@ -237,7 +241,7 @@ function getPhaseFor(slug: string): PhaseId {
   if (slug === 'comentario_expositivo') return 'comunicar'
   if (isToolSlug(slug)) return 'ferramentas'
   if (isSynthesisSlug(slug)) return 'investigar'
-  const sec = getSectionBySlug(slug)
+  const sec = getSectionNavBySlug(slug)
   if (sec?.phase === 'preparar') return 'preparar'
   if (sec?.phase === 'comunicar') return 'comunicar'
   if (sec?.communicationMode) return 'comunicar'
@@ -254,7 +258,7 @@ function getGroupFor(slug: string): string | undefined {
   if (slug === 'comentario_expositivo') return 'comentario_expositivo'
   if (isToolSlug(slug)) return slug
   if (isSynthesisSlug(slug)) return getSynthesisBySlug(slug)?.groupId
-  return getSectionBySlug(slug)?.group
+  return getSectionNavBySlug(slug)?.group
 }
 
 function getCanonFor(slug: string): string | undefined {
@@ -406,7 +410,7 @@ export default function WorkspaceClient({ user, project, initialSections }: Prop
     window.addEventListener('mousemove', onMove); window.addEventListener('mouseup', onUp)
   }, [])
 
-  const activeDef = getSectionBySlug(activeSlug)
+  const activeDef = useSectionDef(activeSlug)
   const activeTool = getToolAreaBySlug(activeSlug)
   const activeSection = sections.find(s => s.slug === activeSlug)
   const activePhase = NAV_PHASES.find(p => p.id === getPhaseFor(activeSlug))
@@ -466,7 +470,7 @@ export default function WorkspaceClient({ user, project, initialSections }: Prop
     if (groupId === 'colagens') return toolProgress(groupId)
     if (groupId === 'comentario_expositivo') return toolProgress(groupId)
     if (isToolSlug(groupId)) return toolProgress(groupId)
-    const gs = getSectionsByGroup(groupId)
+    const gs = getSectionsByGroupNav(groupId)
     return {
       total: gs.length,
       done: gs.filter(sd => {
@@ -476,7 +480,7 @@ export default function WorkspaceClient({ user, project, initialSections }: Prop
     }
   }
 
-  const navigableSections = WORKSPACE_SECTIONS.filter(sd => NAV_GROUP_IDS.has(sd.group))
+  const navigableSections = WORKSPACE_SECTIONS_NAV.filter(sd => sd.group && NAV_GROUP_IDS.has(sd.group))
   const totalSecs = navigableSections.length
   const doneSecs = navigableSections.filter(sd => {
     const s = sections.find(sec => sec.slug === sd.slug)
@@ -858,7 +862,7 @@ export default function WorkspaceClient({ user, project, initialSections }: Prop
                                   {mode.groups.map((group, groupIdx) => {
                                     const groupOpen      = expandedGroups.has(group.id)
                                     const isUtilityGroup = isToolSlug(group.id) || group.id === 'colagens' || group.id === 'comentario_expositivo'
-                                    const secs           = isUtilityGroup ? [] : getSectionsByGroup(group.id)
+                                    const secs           = isUtilityGroup ? [] : getSectionsByGroupNav(group.id)
                                     if (secs.length === 0 && !isUtilityGroup) return null
                                     const isSingleSection = !isUtilityGroup && secs.length === 1 && !SYNTHESIS_DEFS[group.id]
                                     const isDirect        = isUtilityGroup || isSingleSection
@@ -1247,6 +1251,7 @@ export default function WorkspaceClient({ user, project, initialSections }: Prop
                 activeTitle={activeSlug === 'colagens' ? 'Colagens' : activeSlug === 'comentario_expositivo' ? 'Comentário Expositivo' : activeSlug === 'ferramentas_dicionario' ? 'Dicionário Lampas' : activeTool?.title ?? activeDef?.title ?? titleValue}
                 context={aiPrompt}
                 onClearContext={handleClearContext}
+                sectionDef={activeDef}
               />
             </div>
           </aside>

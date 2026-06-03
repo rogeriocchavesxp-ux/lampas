@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from 'react'
 import type { Section } from '@/types/database'
-import { getSectionBySlug } from '@/lib/workspace-sections'
+import { getSectionNavBySlug } from '@/lib/workspace-sections-nav'
 import type { CollageItem } from '@/lib/collages-content'
 
 interface Props {
@@ -57,12 +57,12 @@ function buildBlocks(savedSections: Section[]): ReferenceBlock[] {
         continue
       }
 
-      const def = getSectionBySlug(slug)
+      const def = getSectionNavBySlug(slug)
       const section = savedSections.find(saved => saved.slug === slug)
       const cards = getCards(section)
       if (!def) continue
 
-      def.cards.forEach(card => {
+      def.cards?.forEach(card => {
         const content = cards[card.id]?.trim()
         if (!content) return
         blocks.push({
