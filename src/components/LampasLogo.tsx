@@ -1,24 +1,86 @@
 // ── Geometria do símbolo ──────────────────────────────────────────────────
-// Três vértices representando os três mundos da hermenêutica reformada:
-//   TOP   = Deus / Revelação (origem)
-//   LEFT  = Autor Bíblico / Inspiração
-//   RIGHT = Igreja / Intérprete contemporâneo
-// As linhas formam um "L" discreto e se encontram em um centro hermenêutico.
-
-const TOP   = { x: 40, y:  8 } as const
-const LEFT  = { x:  8, y: 78 } as const
-const RIGHT = { x: 72, y: 74 } as const
+//
+// A logo é formada por QUATRO segmentos de linha que se encontram num
+// ponto de junção interior — NÃO é um triângulo simples.
+//
+// Vértices externos (nós com esfera):
+//   TOP   = Deus / Revelação     — origem de tudo, posicionado acima
+//   LEFT  = Autor Bíblico        — inspiração, regista a revelação
+//   RIGHT = Igreja / Intérprete  — leitor contemporâneo
+//
+// Ponto interior (apenas junção de linhas, sem esfera):
+//   JUNC  = Centro Hermenêutico  — onde os três mundos se conectam
+//
+// Segmentos:
+//   TOP  → JUNC  (quase vertical, desce do alto)
+//   JUNC → LEFT  (diagonal ↙, completa o traço vertical do "L")
+//   JUNC → RIGHT (diagonal →, o elemento interno sofisticado)
+//   LEFT → RIGHT (base horizontal do "L")
+//
+// O "L" emerge de: TOP→JUNC→LEFT + LEFT→RIGHT
 
 interface LogoProps { height?: number }
 interface MarkProps { size?: number }
 
+// Coordenadas master (viewBox 0 0 80 88)
+const M = {
+  TOP:  { x: 41, y:  8 },
+  LEFT: { x:  8, y: 77 },
+  RIGHT:{ x: 73, y: 73 },
+  JUNC: { x: 34, y: 52 },  // centro hermenêutico — ponto de convergência
+} as const
+
+// ── LampasSym — símbolo isolado (sem fundo) ───────────────────────────────
+
+export function LampasSym({ width = 66, height = 72 }: { width?: number; height?: number }) {
+  const scaleX = (x: number) => (x / 80) * width
+  const scaleY = (y: number) => (y / 88) * height
+
+  const t = { x: scaleX(M.TOP.x),   y: scaleY(M.TOP.y)   }
+  const l = { x: scaleX(M.LEFT.x),  y: scaleY(M.LEFT.y)  }
+  const r = { x: scaleX(M.RIGHT.x), y: scaleY(M.RIGHT.y) }
+  const j = { x: scaleX(M.JUNC.x),  y: scaleY(M.JUNC.y)  }
+
+  const sw = Math.max(1.4, width * 0.036)
+  const nr = Math.max(3,   width * 0.088)
+  const uid = `sym-${width}`
+
+  return (
+    <svg width={width} height={height} viewBox={`0 0 ${width} ${height}`} fill="none">
+      <defs>
+        <linearGradient id={`${uid}-line`} x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%"   stopColor="#f5d97a" />
+          <stop offset="50%"  stopColor="#c9921a" />
+          <stop offset="100%" stopColor="#8a5f0e" />
+        </linearGradient>
+        <radialGradient id={`${uid}-node`} cx="38%" cy="30%" r="65%">
+          <stop offset="0%"   stopColor="#faeea0" />
+          <stop offset="40%"  stopColor="#d4a832" />
+          <stop offset="100%" stopColor="#7a5010" />
+        </radialGradient>
+      </defs>
+
+      {/* Quatro segmentos que convergem no ponto interior */}
+      <line x1={t.x} y1={t.y} x2={j.x} y2={j.y} stroke={`url(#${uid}-line)`} strokeWidth={sw} strokeLinecap="round" />
+      <line x1={j.x} y1={j.y} x2={l.x} y2={l.y} stroke={`url(#${uid}-line)`} strokeWidth={sw} strokeLinecap="round" />
+      <line x1={j.x} y1={j.y} x2={r.x} y2={r.y} stroke={`url(#${uid}-line)`} strokeWidth={sw} strokeLinecap="round" />
+      <line x1={l.x} y1={l.y} x2={r.x} y2={r.y} stroke={`url(#${uid}-line)`} strokeWidth={sw} strokeLinecap="round" />
+
+      {/* Nós externos — esferas douradas */}
+      <circle cx={t.x} cy={t.y} r={nr}           fill={`url(#${uid}-node)`} />
+      <circle cx={l.x} cy={l.y} r={nr}           fill={`url(#${uid}-node)`} />
+      <circle cx={r.x} cy={r.y} r={nr * 0.95}   fill={`url(#${uid}-node)`} />
+    </svg>
+  )
+}
+
 // ── LampasLogo — wordmark completo ────────────────────────────────────────
 
 export function LampasLogo({ height = 40 }: LogoProps) {
-  const symW    = Math.round(height * 0.82)
-  const symH    = height
-  const gap     = Math.round(height * 0.22)
-  const fsize   = Math.round(height * 0.64)
+  const symW = Math.round(height * 0.80)
+  const symH = height
+  const gap  = Math.round(height * 0.22)
+  const fs   = Math.round(height * 0.64)
 
   return (
     <div style={{ display: 'inline-flex', alignItems: 'center', gap }}>
@@ -26,7 +88,7 @@ export function LampasLogo({ height = 40 }: LogoProps) {
       <span style={{
         fontFamily: "'EB Garamond', Georgia, 'Times New Roman', serif",
         fontWeight: 500,
-        fontSize: fsize,
+        fontSize: fs,
         color: '#0F172A',
         letterSpacing: '-0.01em',
         lineHeight: 1,
@@ -41,86 +103,46 @@ export function LampasLogo({ height = 40 }: LogoProps) {
 // ── LampasMarkIcon — ícone quadrado para header de app ────────────────────
 
 export function LampasMarkIcon({ size = 36 }: MarkProps) {
-  // Redimensiona os vértices para caber em (size × size) com padding interno
-  const pad = size * 0.12
-  const aw  = size - pad * 2   // área disponível
+  const pad = size * 0.13
+  const aw  = size - pad * 2
   const ah  = size - pad * 2
 
-  function sx(x: number) { return pad + (x / 80) * aw }
-  function sy(y: number) { return pad + (y / 88) * ah }
+  const sx = (x: number) => pad + (x / 80) * aw
+  const sy = (y: number) => pad + (y / 88) * ah
 
-  const t = { x: sx(TOP.x),   y: sy(TOP.y)   }
-  const l = { x: sx(LEFT.x),  y: sy(LEFT.y)  }
-  const r = { x: sx(RIGHT.x), y: sy(RIGHT.y) }
+  const t = { x: sx(M.TOP.x),   y: sy(M.TOP.y)   }
+  const l = { x: sx(M.LEFT.x),  y: sy(M.LEFT.y)  }
+  const r = { x: sx(M.RIGHT.x), y: sy(M.RIGHT.y) }
+  const j = { x: sx(M.JUNC.x),  y: sy(M.JUNC.y)  }
 
-  const id = `mk${size}`
+  const sw = Math.max(1, size * 0.036)
+  const nr = Math.max(2, size * 0.085)
+  const uid = `mk-${size}`
 
   return (
     <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} fill="none">
       <rect width={size} height={size} rx={Math.round(size * 0.22)} fill="#0F172A" />
       <defs>
-        <linearGradient id={`${id}line`} x1="0%" y1="0%" x2="100%" y2="100%">
+        <linearGradient id={`${uid}-line`} x1="0%" y1="0%" x2="100%" y2="100%">
           <stop offset="0%"   stopColor="#f5d97a" />
           <stop offset="50%"  stopColor="#c9921a" />
           <stop offset="100%" stopColor="#8a5f0e" />
         </linearGradient>
-        <radialGradient id={`${id}node`} cx="38%" cy="32%" r="62%">
-          <stop offset="0%"   stopColor="#f8e49a" />
-          <stop offset="45%"  stopColor="#d4a832" />
+        <radialGradient id={`${uid}-node`} cx="38%" cy="30%" r="65%">
+          <stop offset="0%"   stopColor="#faeea0" />
+          <stop offset="40%"  stopColor="#d4a832" />
           <stop offset="100%" stopColor="#7a5010" />
         </radialGradient>
       </defs>
 
-      {/* Linhas do triângulo */}
-      <line x1={t.x} y1={t.y} x2={l.x} y2={l.y} stroke={`url(#${id}line)`} strokeWidth={size * 0.038} strokeLinecap="round" />
-      <line x1={l.x} y1={l.y} x2={r.x} y2={r.y} stroke={`url(#${id}line)`} strokeWidth={size * 0.038} strokeLinecap="round" />
-      <line x1={t.x} y1={t.y} x2={r.x} y2={r.y} stroke={`url(#${id}line)`} strokeWidth={size * 0.038} strokeLinecap="round" />
+      <line x1={t.x} y1={t.y} x2={j.x} y2={j.y} stroke={`url(#${uid}-line)`} strokeWidth={sw} strokeLinecap="round" />
+      <line x1={j.x} y1={j.y} x2={l.x} y2={l.y} stroke={`url(#${uid}-line)`} strokeWidth={sw} strokeLinecap="round" />
+      <line x1={j.x} y1={j.y} x2={r.x} y2={r.y} stroke={`url(#${uid}-line)`} strokeWidth={sw} strokeLinecap="round" />
+      <line x1={l.x} y1={l.y} x2={r.x} y2={r.y} stroke={`url(#${uid}-line)`} strokeWidth={sw} strokeLinecap="round" />
 
-      {/* Nós */}
-      <circle cx={t.x} cy={t.y} r={size * 0.095} fill={`url(#${id}node)`} />
-      <circle cx={l.x} cy={l.y} r={size * 0.095} fill={`url(#${id}node)`} />
-      <circle cx={r.x} cy={r.y} r={size * 0.095} fill={`url(#${id}node)`} />
-    </svg>
-  )
-}
-
-// ── LampasSym — símbolo isolado (sem fundo) ───────────────────────────────
-
-export function LampasSym({ width = 66, height = 72 }: { width?: number; height?: number }) {
-  function sx(x: number) { return (x / 80) * width  }
-  function sy(y: number) { return (y / 88) * height }
-
-  const t = { x: sx(TOP.x),   y: sy(TOP.y)   }
-  const l = { x: sx(LEFT.x),  y: sy(LEFT.y)  }
-  const r = { x: sx(RIGHT.x), y: sy(RIGHT.y) }
-
-  const sw = Math.max(1.5, width * 0.038)
-  const nr = Math.max(3,   width * 0.09)
-
-  return (
-    <svg width={width} height={height} viewBox={`0 0 ${width} ${height}`} fill="none">
-      <defs>
-        <linearGradient id="sym-line" x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%"   stopColor="#f5d97a" />
-          <stop offset="50%"  stopColor="#c9921a" />
-          <stop offset="100%" stopColor="#8a5f0e" />
-        </linearGradient>
-        <radialGradient id="sym-node" cx="38%" cy="32%" r="62%">
-          <stop offset="0%"   stopColor="#f8e49a" />
-          <stop offset="45%"  stopColor="#d4a832" />
-          <stop offset="100%" stopColor="#7a5010" />
-        </radialGradient>
-      </defs>
-
-      {/* Linhas */}
-      <line x1={t.x} y1={t.y} x2={l.x} y2={l.y} stroke="url(#sym-line)" strokeWidth={sw} strokeLinecap="round" />
-      <line x1={l.x} y1={l.y} x2={r.x} y2={r.y} stroke="url(#sym-line)" strokeWidth={sw} strokeLinecap="round" />
-      <line x1={t.x} y1={t.y} x2={r.x} y2={r.y} stroke="url(#sym-line)" strokeWidth={sw} strokeLinecap="round" />
-
-      {/* Nós */}
-      <circle cx={t.x} cy={t.y} r={nr} fill="url(#sym-node)" />
-      <circle cx={l.x} cy={l.y} r={nr} fill="url(#sym-node)" />
-      <circle cx={r.x} cy={r.y} r={nr} fill="url(#sym-node)" />
+      <circle cx={t.x} cy={t.y} r={nr}          fill={`url(#${uid}-node)`} />
+      <circle cx={l.x} cy={l.y} r={nr}          fill={`url(#${uid}-node)`} />
+      <circle cx={r.x} cy={r.y} r={nr * 0.95}  fill={`url(#${uid}-node)`} />
     </svg>
   )
 }
