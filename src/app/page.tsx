@@ -47,7 +47,7 @@ export default function HomePage() {
       <section className="lp-hero" id="inicio">
         <div className="lp-hero-content">
           <p className="lp-eyebrow">Plataforma bíblica para estudo, interpretação e comunicação</p>
-          <h1 className="lp-h1">Do texto bíblico<br />ao púlpito.</h1>
+          <h1 className="lp-h1">Iluminando a sua jornada<br />de estudo bíblico.</h1>
           <p className="lp-hero-sub">Estude. Interprete. Comunique.</p>
           <p className="lp-hero-body">
             Uma plataforma criada para pastores, professores, seminaristas e estudantes
@@ -121,7 +121,7 @@ export default function HomePage() {
       <section className="lp-cta">
         <LampasMarkIcon size={36} />
         <h2>Comece seu próximo estudo hoje.</h2>
-        <p>Do texto bíblico à comunicação final — o Lampas acompanha cada etapa.</p>
+        <p>Do primeiro rascunho ao resultado final — o Lampas acompanha cada etapa do seu estudo.</p>
         <Link href="/auth/login" className="lp-btn-primary">
           Criar conta gratuita <ArrowRight size={16} />
         </Link>
