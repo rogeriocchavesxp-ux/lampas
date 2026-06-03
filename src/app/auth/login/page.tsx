@@ -33,7 +33,7 @@ export default function LoginPage() {
   return (
     <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', background: 'var(--surface)' }}>
       <div style={{ borderBottom: '1px solid var(--border-subtle)', background: '#FFFFFF', padding: '0 2rem', height: '56px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <LampasLogo height={30} />
+        <LampasLogo height={46} />
         <a href="/" style={{ color: '#64748b', fontSize: '0.85rem', fontWeight: 500, textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '0.3rem' }}
           onMouseEnter={e => (e.currentTarget.style.color = '#0f172a')}
           onMouseLeave={e => (e.currentTarget.style.color = '#64748b')}

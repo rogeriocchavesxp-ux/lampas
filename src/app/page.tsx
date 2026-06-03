@@ -30,7 +30,7 @@ export default function HomePage() {
       {/* ── Header ── */}
       <header className="lp-header">
         <Link href="/" className="lp-brand" aria-label="Lampas">
-          <LampasLogo height={30} />
+          <LampasLogo height={46} />
         </Link>
         <nav className="lp-nav" aria-label="Navegação principal">
           <Link href="#processo">Método</Link>
@@ -130,7 +130,7 @@ export default function HomePage() {
       {/* ── Footer ── */}
       <footer className="lp-footer">
         <div className="lp-footer-brand">
-          <LampasLogo height={28} />
+          <LampasLogo height={36} />
           <p>Estudo bíblico com profundidade, método e clareza.</p>
         </div>
         <nav className="lp-footer-nav" aria-label="Rodapé">
