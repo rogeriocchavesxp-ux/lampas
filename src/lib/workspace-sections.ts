@@ -1,5 +1,10 @@
 import { PREPARE_SECTIONS } from './prepare-sections'
 import { COMMUNICATION_SECTIONS } from './communication-sections'
+import { ESTUDO_BIBLICO_SECTIONS } from './estudo-biblico-sections'
+import { ESTUDO_DOUTRINARIO_SECTIONS } from './estudo-doutrinario-sections'
+import { ESTUDO_TEMATICO_SECTIONS } from './estudo-tematico-sections'
+import { ESTUDO_CARTA_SECTIONS } from './estudo-carta-sections'
+import { PESQUISA_TEOLOGICA_SECTIONS } from './pesquisa-teologica-sections'
 
 export interface CardDef {
   id: string
@@ -1363,6 +1368,11 @@ const PRONUNTIATIO_SECTIONS: SectionDef[] = [
 
 WORKSPACE_SECTIONS.push(...PRONUNTIATIO_SECTIONS)
 WORKSPACE_SECTIONS.push(...COMMUNICATION_SECTIONS)
+WORKSPACE_SECTIONS.push(...ESTUDO_BIBLICO_SECTIONS)
+WORKSPACE_SECTIONS.push(...ESTUDO_DOUTRINARIO_SECTIONS)
+WORKSPACE_SECTIONS.push(...ESTUDO_TEMATICO_SECTIONS)
+WORKSPACE_SECTIONS.push(...ESTUDO_CARTA_SECTIONS)
+WORKSPACE_SECTIONS.push(...PESQUISA_TEOLOGICA_SECTIONS)
 
 export const INVENTIO_GROUPS = [
   { id: 'contextual', label: 'Estudo Contextual' },
