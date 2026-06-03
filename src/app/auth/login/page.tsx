@@ -51,7 +51,7 @@ function LoginContent() {
       if (error) {
         setError(error.message.includes('already')
           ? 'Este email já está cadastrado. Faça login.'
-          : 'Não foi possível criar a conta. Tente novamente.')
+          : error.message)
         setLoading(false)
         return
       }
