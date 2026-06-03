@@ -43,7 +43,7 @@ export default function LoginPage() {
               Entrar no Lampas
             </h1>
             <p style={{ color: 'var(--text-secondary)', fontSize: '0.88rem' }}>
-              Exegese e homilética reformada com IA
+              Iluminando a sua jornada de estudo bíblico
             </p>
           </div>
 

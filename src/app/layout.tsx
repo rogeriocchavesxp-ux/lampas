@@ -9,8 +9,8 @@ const inter = Inter({
 })
 
 export const metadata: Metadata = {
-  title: 'Lampas — Do texto ao púlpito',
-  description: 'Plataforma de estudo bíblico e produção homilética com IA reformada',
+  title: 'Lampas — Iluminando a sua jornada de estudo bíblico',
+  description: 'Iluminando a sua jornada de estudo bíblico com IA reformada',
   icons: {
     icon: '/lampas-mark.svg',
     shortcut: '/lampas-mark.svg',

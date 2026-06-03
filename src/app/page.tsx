@@ -138,7 +138,7 @@ export default function HomePage() {
         </div>
         <div className="hero-content">
           <p className="eyebrow">Plataforma bíblica para estudo, interpretação e comunicação</p>
-          <h1>Do texto bíblico ao púlpito.</h1>
+          <h1>Iluminando a sua jornada de estudo bíblico.</h1>
           <p className="hero-line">Estude. Interprete. Comunique.</p>
           <p className="hero-copy">
             Uma plataforma criada para pastores, professores, seminaristas e estudantes da Bíblia
