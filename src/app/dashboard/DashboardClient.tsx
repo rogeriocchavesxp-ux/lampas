@@ -78,7 +78,7 @@ export default function DashboardClient({ user, projects, profile }: Props) {
   }
 
   const statusLabel = (s: string) => ({
-    draft: 'Rascunho', in_progress: 'Em andamento', completed: 'Concluído'
+    draft: 'Em andamento', in_progress: 'Em andamento', completed: 'Concluído'
   }[s] || s)
 
   const statusColor = (s: string) => ({
@@ -132,9 +132,9 @@ export default function DashboardClient({ user, projects, profile }: Props) {
 
         <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', marginBottom: '2rem' }}>
           <div>
-            <h1 style={{ marginBottom: '0.25rem' }}>Exegeses</h1>
+            <h1 style={{ marginBottom: '0.25rem' }}>Estudos</h1>
             <p style={{ color: 'var(--text-muted)', fontSize: '0.88rem' }}>
-              {projects.length} projeto{projects.length !== 1 ? 's' : ''}
+              Seus projetos bíblicos em andamento · {projects.length} {projects.length === 1 ? 'estudo' : 'estudos'}
             </p>
           </div>
           <button onClick={() => setShowNew(true)} style={{
@@ -144,7 +144,7 @@ export default function DashboardClient({ user, projects, profile }: Props) {
             cursor: 'pointer', fontSize: '0.9rem',
             fontFamily: 'inherit',
           }}>
-            + Nova exegese
+            + Novo Estudo
           </button>
         </div>
 
@@ -161,7 +161,7 @@ export default function DashboardClient({ user, projects, profile }: Props) {
               </svg>
             </div>
             <h3 style={{ marginBottom: '0.5rem', color: 'var(--text-secondary)' }}>
-              Nenhuma exegese ainda
+              Nenhum estudo ainda
             </h3>
             <p style={{ color: 'var(--text-muted)', fontSize: '0.88rem', marginBottom: '1.5rem' }}>
               Comece selecionando um texto bíblico
@@ -172,7 +172,7 @@ export default function DashboardClient({ user, projects, profile }: Props) {
               padding: '0.6rem 1.25rem', fontWeight: '600',
               cursor: 'pointer', fontSize: '0.9rem', fontFamily: 'inherit',
             }}>
-              Criar primeira exegese
+              Criar primeiro estudo
             </button>
           </div>
         ) : (
@@ -235,7 +235,7 @@ export default function DashboardClient({ user, projects, profile }: Props) {
             padding: '2rem', width: '100%', maxWidth: '480px',
             animation: 'fadeIn 0.15s ease-out',
           }}>
-            <h2 style={{ marginBottom: '0.25rem' }}>Nova exegese</h2>
+            <h2 style={{ marginBottom: '0.25rem' }}>Novo Estudo</h2>
             <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem', marginBottom: '1.5rem' }}>
               Selecione o texto que vai estudar
             </p>
@@ -309,7 +309,7 @@ export default function DashboardClient({ user, projects, profile }: Props) {
                   fontWeight: '600', cursor: creating ? 'wait' : 'pointer',
                   fontFamily: 'inherit', fontSize: '0.9rem',
                 }}>
-                  {creating ? 'Criando...' : 'Criar exegese'}
+                  {creating ? 'Criando...' : 'Criar estudo'}
                 </button>
               </div>
             </form>
