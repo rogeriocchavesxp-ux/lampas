@@ -56,6 +56,36 @@ CREATE TABLE IF NOT EXISTS lampas_dictionary (
   updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
+-- ── Colunas adicionais (para tabelas existentes sem esses campos) ─────────────
+
+ALTER TABLE lampas_dictionary ADD COLUMN IF NOT EXISTS slug            TEXT;
+ALTER TABLE lampas_dictionary ADD COLUMN IF NOT EXISTS is_shared       BOOLEAN NOT NULL DEFAULT true;
+ALTER TABLE lampas_dictionary ADD COLUMN IF NOT EXISTS notes           TEXT;
+ALTER TABLE lampas_dictionary ADD COLUMN IF NOT EXISTS lang_aramaic    TEXT;
+ALTER TABLE lampas_dictionary ADD COLUMN IF NOT EXISTS pronunciation   TEXT;
+ALTER TABLE lampas_dictionary ADD COLUMN IF NOT EXISTS occurrences     TEXT;
+ALTER TABLE lampas_dictionary ADD COLUMN IF NOT EXISTS related_terms   TEXT[] NOT NULL DEFAULT '{}';
+ALTER TABLE lampas_dictionary ADD COLUMN IF NOT EXISTS citation_count  INT    NOT NULL DEFAULT 0;
+
+-- Atualiza constraint de categoria se a tabela pré-existia com categorias antigas
+DO $$
+BEGIN
+  -- Remove constraint antiga se existir (nome pode variar)
+  ALTER TABLE lampas_dictionary DROP CONSTRAINT IF EXISTS lampas_dictionary_category_check;
+  ALTER TABLE lampas_dictionary DROP CONSTRAINT IF EXISTS category_check;
+EXCEPTION WHEN OTHERS THEN NULL;
+END $$;
+
+ALTER TABLE lampas_dictionary
+  ADD CONSTRAINT lampas_dictionary_category_check
+  CHECK (category IN (
+    'personagem', 'lugar', 'termo_biblico', 'doutrina',
+    'instituicao', 'evento', 'livro_biblico',
+    -- categorias legadas aceitas para compatibilidade
+    'tema', 'conceito_historico', 'lingua_original'
+  ))
+  NOT VALID; -- não valida linhas existentes
+
 -- ── Índices ───────────────────────────────────────────────────────────────────
 
 CREATE UNIQUE INDEX IF NOT EXISTS lampas_dictionary_slug_idx
