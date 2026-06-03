@@ -113,6 +113,182 @@ const KEY_QUESTIONS = [
   'O contexto imediato ilumina ou restringe o sentido do termo?',
 ]
 
+// ── Lexical Expand Modal ──────────────────────────────────────────────────
+
+function LexicalExpandModal({
+  term, project, onSave, onClose,
+}: {
+  term: LexicalTerm
+  project: Props['project']
+  onSave: (val: string) => void
+  onClose: () => void
+}) {
+  const [mode, setMode] = useState<'view' | 'edit'>(term.analysis.trim() ? 'view' : 'edit')
+  const [editValue, setEditValue] = useState(term.analysis)
+  const color = wordClassColor(term.wordClass)
+
+  return (
+    <div
+      onClick={e => { if (e.target === e.currentTarget) onClose() }}
+      style={{
+        position: 'fixed', inset: 0, zIndex: 1000,
+        background: 'rgba(0,0,0,0.65)',
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        padding: '1rem',
+      }}
+    >
+      <div style={{
+        background: 'var(--surface)',
+        border: '1px solid var(--border)',
+        borderRadius: '12px',
+        width: '100%', maxWidth: '880px', maxHeight: '85vh',
+        display: 'flex', flexDirection: 'column',
+        overflow: 'hidden',
+        boxShadow: '0 24px 64px rgba(0,0,0,0.45)',
+      }}>
+        {/* Header */}
+        <div style={{
+          padding: '1.1rem 1.5rem',
+          borderBottom: '1px solid var(--border-subtle)',
+          display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between',
+          flexShrink: 0,
+        }}>
+          <div>
+            <div style={{
+              fontSize: '0.6rem', fontWeight: 700, letterSpacing: '0.09em',
+              textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: '0.35rem',
+            }}>
+              Estudo Lexical
+            </div>
+            <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.7rem', flexWrap: 'wrap' }}>
+              <span style={{
+                fontSize: '1.5rem', fontWeight: 700, color,
+                fontFamily: 'var(--font-serif)', lineHeight: 1.2,
+              }}>
+                {term.word}
+              </span>
+              {term.transliteration && (
+                <span style={{ fontSize: '0.88rem', color: 'var(--text-muted)', fontStyle: 'italic' }}>
+                  {term.transliteration}
+                </span>
+              )}
+              {term.translation && (
+                <span style={{ fontSize: '0.95rem', color: 'var(--text-secondary)', fontWeight: 500 }}>
+                  &ldquo;{term.translation}&rdquo;
+                </span>
+              )}
+            </div>
+            <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '0.25rem' }}>
+              {project.book} {project.passage_ref}
+            </div>
+          </div>
+
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexShrink: 0 }}>
+            <div style={{
+              display: 'flex', background: 'var(--surface-2)',
+              borderRadius: '7px', padding: '2px',
+              border: '1px solid var(--border-subtle)',
+            }}>
+              {(['view', 'edit'] as const).map(m => (
+                <button key={m} onClick={() => setMode(m)} style={{
+                  background: mode === m ? 'var(--surface)' : 'transparent',
+                  border: `1px solid ${mode === m ? 'var(--border-subtle)' : 'transparent'}`,
+                  borderRadius: '5px', padding: '0.28rem 0.75rem',
+                  fontSize: '0.71rem', fontWeight: mode === m ? 600 : 400,
+                  color: mode === m ? 'var(--text-primary)' : 'var(--text-muted)',
+                  cursor: 'pointer', fontFamily: 'inherit', transition: 'all 0.12s',
+                }}>
+                  {m === 'view' ? 'Visualizar' : 'Editar'}
+                </button>
+              ))}
+            </div>
+            <button
+              onClick={onClose}
+              style={{
+                background: 'transparent', border: '1px solid var(--border-subtle)',
+                borderRadius: '6px', padding: '0.3rem 0.55rem',
+                color: 'var(--text-muted)', cursor: 'pointer',
+                fontSize: '0.9rem', lineHeight: 1,
+              }}
+            >
+              ✕
+            </button>
+          </div>
+        </div>
+
+        {/* Content */}
+        <div style={{ flex: 1, overflowY: 'auto', padding: '1.75rem 2rem' }}>
+          {mode === 'view' ? (
+            term.analysis.trim() ? (
+              <MarkdownRenderer content={term.analysis} moduleColor={color} />
+            ) : (
+              <p style={{ color: 'var(--text-muted)', fontStyle: 'italic', fontSize: '0.88rem' }}>
+                Nenhum estudo lexical ainda. Alterne para &ldquo;Editar&rdquo; para adicionar.
+              </p>
+            )
+          ) : (
+            <textarea
+              value={editValue}
+              onChange={e => setEditValue(e.target.value)}
+              autoFocus
+              placeholder={`## Definição\nBDAG/HALOT define...\n\n## Campo Semântico\n...\n\n## Uso na Perícope\n...\n\n## Implicação Teológica\n...`}
+              style={{
+                width: '100%', minHeight: '440px',
+                background: 'var(--surface-2)',
+                border: '1px solid var(--border-subtle)',
+                borderRadius: '8px',
+                padding: '1rem 1.15rem',
+                color: 'var(--text-primary)',
+                fontSize: '0.91rem', lineHeight: '1.82',
+                resize: 'none', outline: 'none',
+                fontFamily: 'var(--font-serif)',
+                boxSizing: 'border-box',
+                caretColor: color,
+              }}
+              onFocus={e => (e.target.style.borderColor = `${color}60`)}
+              onBlur={e => (e.target.style.borderColor = 'var(--border-subtle)')}
+            />
+          )}
+        </div>
+
+        {/* Footer */}
+        {mode === 'edit' && (
+          <div style={{
+            padding: '0.9rem 1.5rem',
+            borderTop: '1px solid var(--border-subtle)',
+            display: 'flex', alignItems: 'center', justifyContent: 'flex-end',
+            gap: '0.6rem', flexShrink: 0,
+          }}>
+            <button
+              onClick={onClose}
+              style={{
+                background: 'transparent',
+                border: '1px solid var(--border-subtle)',
+                borderRadius: '7px', padding: '0.48rem 1rem',
+                color: 'var(--text-muted)', fontSize: '0.81rem',
+                cursor: 'pointer', fontFamily: 'inherit',
+              }}
+            >
+              Fechar
+            </button>
+            <button
+              onClick={() => onSave(editValue)}
+              style={{
+                background: 'var(--accent)', border: 'none',
+                borderRadius: '7px', padding: '0.48rem 1.2rem',
+                color: '#fff', fontSize: '0.81rem', fontWeight: 600,
+                cursor: 'pointer', fontFamily: 'inherit',
+              }}
+            >
+              Salvar alterações
+            </button>
+          </div>
+        )}
+      </div>
+    </div>
+  )
+}
+
 // ── Main component ────────────────────────────────────────────────────────
 
 export default function TermosChaveWorkspace({
@@ -134,6 +310,7 @@ export default function TermosChaveWorkspace({
   const [saving, setSaving] = useState(false)
   const [savedAt, setSavedAt] = useState<Date | null>(null)
   const [questionsOpen, setQuestionsOpen] = useState(false)
+  const [expandModal, setExpandModal] = useState<string | null>(null)
 
   const latestTerms = useRef(terms)
   const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
@@ -696,6 +873,24 @@ export default function TermosChaveWorkspace({
                       )}
 
                       <button
+                        onClick={() => setExpandModal(term.id)}
+                        title="Abrir em tela cheia"
+                        style={{
+                          background: 'transparent', border: 'none', cursor: 'pointer',
+                          fontFamily: 'inherit', fontSize: '0.69rem',
+                          color: 'var(--text-muted)', padding: 0, transition: 'color 0.12s',
+                          display: 'flex', alignItems: 'center', gap: '0.25rem',
+                        }}
+                        onMouseEnter={e => { e.currentTarget.style.color = 'var(--text-secondary)' }}
+                        onMouseLeave={e => { e.currentTarget.style.color = 'var(--text-muted)' }}
+                      >
+                        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                          <path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/>
+                        </svg>
+                        Expandir
+                      </button>
+
+                      <button
                         onClick={() => onAskAI(
                           `Aprofunde a análise de "${term.word}"${term.transliteration ? ` (${term.transliteration})` : ''}: "${term.translation}" em ${project.book} ${project.passage_ref}. Consulte BDAG, HALOT ou TWOT e desenvolva as implicações teológicas e canônicas.`
                         )}
@@ -826,6 +1021,19 @@ export default function TermosChaveWorkspace({
           Nenhum termo para exibir.
         </p>
       )}
+
+      {expandModal && (() => {
+        const expandTerm = terms.find(t => t.id === expandModal)
+        if (!expandTerm) return null
+        return (
+          <LexicalExpandModal
+            term={expandTerm}
+            project={project}
+            onSave={(val) => { updateAnalysis(expandTerm.id, val); setExpandModal(null) }}
+            onClose={() => setExpandModal(null)}
+          />
+        )
+      })()}
 
     </div>
   )

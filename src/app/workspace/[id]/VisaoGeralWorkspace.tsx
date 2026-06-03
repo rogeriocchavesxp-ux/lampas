@@ -6,8 +6,9 @@ import type { SectionDef } from '@/lib/workspace-sections'
 import type { CollageItem } from '@/lib/collages-content'
 import { createClient } from '@/lib/supabase/client'
 import SectionWorkspace from './SectionWorkspace'
-import { Sparkles, Map, List, MoreHorizontal, X, BookOpen, ChevronLeft, Loader2, Check, BookMarked } from 'lucide-react'
+import { Sparkles, Map, List, MoreHorizontal, X, BookOpen, ChevronLeft, Loader2, Check, BookMarked, Maximize2 } from 'lucide-react'
 import { loadClassificationsFromDB, saveClassificationToDB, deleteClassificationFromDB, updateClassificationInDB } from '@/lib/classification-sync'
+import MarkdownRenderer from '@/components/MarkdownRenderer'
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -124,6 +125,10 @@ export default function VisaoGeralWorkspace({
   const [fieldLoading, setFieldLoading]= useState<Record<string, boolean>>({})
   const [dictSaving,   setDictSaving]  = useState(false)
   const [dictSaved,    setDictSaved]   = useState(false)
+  // Modal de expansão de campo
+  const [expandedField, setExpandedField] = useState<{ label: string; fieldKey: keyof Classification } | null>(null)
+  const [expandDraft,   setExpandDraft]   = useState('')
+  const [expandMode,    setExpandMode]    = useState<'view' | 'edit'>('view')
 
   // ── Data — carrega do banco (fonte de verdade) e sincroniza localStorage ───
   useEffect(() => {
@@ -710,13 +715,32 @@ export default function VisaoGeralWorkspace({
                       )
                     }
 
-                    function fieldRow(label: string, fieldKey: keyof Classification, kind: string, rows = 2) {
+                    function openExpand(label: string, fieldKey: keyof Classification, value: string) {
+                      setExpandDraft(value)
+                      setExpandMode(value.trim() ? 'view' : 'edit')
+                      setExpandedField({ label, fieldKey })
+                    }
+
+                    function fieldRow(label: string, fieldKey: keyof Classification, kind: string, rows = 2, expandable = false) {
                       const val = (c[fieldKey] as string | undefined) ?? ''
                       return (
                         <div style={{ marginBottom: '12px' }}>
                           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '5px' }}>
                             <label style={{ fontSize: '0.59rem', fontWeight: 700, color: '#94A3B8', textTransform: 'uppercase', letterSpacing: '0.07em' }}>{label}</label>
-                            {aiBtn(kind, fieldKey)}
+                            <div style={{ display: 'flex', gap: '4px', alignItems: 'center' }}>
+                              {expandable && (
+                                <button
+                                  onClick={() => openExpand(label, fieldKey, val)}
+                                  title="Expandir"
+                                  style={{ display: 'flex', alignItems: 'center', gap: '2px', background: 'none', border: `1px solid #E2E8F0`, borderRadius: '4px', padding: '2px 5px', fontSize: '0.57rem', color: '#94A3B8', cursor: 'pointer', fontFamily: 'inherit' }}
+                                  onMouseEnter={e => { e.currentTarget.style.borderColor = color; e.currentTarget.style.color = color }}
+                                  onMouseLeave={e => { e.currentTarget.style.borderColor = '#E2E8F0'; e.currentTarget.style.color = '#94A3B8' }}
+                                >
+                                  <Maximize2 size={8} strokeWidth={2} /> ↗
+                                </button>
+                              )}
+                              {aiBtn(kind, fieldKey)}
+                            </div>
                           </div>
                           <textarea
                             id={`field-${fieldKey}-${c.id}`}
@@ -805,9 +829,9 @@ export default function VisaoGeralWorkspace({
 
                         {/* Fields */}
                         <div style={{ padding: '14px' }}>
-                          {fieldRow('Definição', 'definition', 'description', 2)}
-                          {fieldRow('Explicação', 'explanation', 'analysis', 2)}
-                          {fieldRow('Estudo Lexical', 'lexical_study', 'lexical', 3)}
+                          {fieldRow('Definição',    'definition',   'description', 2, true)}
+                          {fieldRow('Explicação',   'explanation',  'analysis',    2, true)}
+                          {fieldRow('Estudo Lexical', 'lexical_study', 'lexical',  3, true)}
 
                           {/* Original languages — single IA button generates all three */}
                           <div style={{ marginBottom: '12px' }}>
@@ -820,14 +844,21 @@ export default function VisaoGeralWorkspace({
                             {inputRow('Significado', 'meaning')}
                           </div>
 
-                          {fieldRow('Uso Bíblico', 'occurrences_note', 'occurrences', 2)}
-                          {fieldRow('Teologia Bíblica', 'theological_biblical', 'theological_biblical', 3)}
-                          {fieldRow('Função Narrativa', 'narrative_function', 'narrative_function', 2)}
-                          {fieldRow('Aplicações', 'applications', 'applications', 3)}
+                          {fieldRow('Uso Bíblico',      'occurrences_note',    'occurrences',          2, false)}
+                          {fieldRow('Teologia Bíblica', 'theological_biblical', 'theological_biblical', 3, true)}
+                          {fieldRow('Função Narrativa', 'narrative_function',   'narrative_function',   2, false)}
+                          {fieldRow('Aplicações',       'applications',         'applications',         3, true)}
 
-                          {/* Personal notes — no AI */}
+                          {/* Personal notes — no AI, expandable */}
                           <div style={{ marginBottom: '12px' }}>
-                            <label style={{ display: 'block', fontSize: '0.59rem', fontWeight: 700, color: '#94A3B8', textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: '5px' }}>Notas Pessoais</label>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '5px' }}>
+                              <label style={{ fontSize: '0.59rem', fontWeight: 700, color: '#94A3B8', textTransform: 'uppercase', letterSpacing: '0.07em' }}>Notas Pessoais</label>
+                              <button onClick={() => openExpand('Notas Pessoais', 'personal_notes', c.personal_notes ?? '')}
+                                style={{ display: 'flex', alignItems: 'center', gap: '2px', background: 'none', border: '1px solid #E2E8F0', borderRadius: '4px', padding: '2px 5px', fontSize: '0.57rem', color: '#94A3B8', cursor: 'pointer', fontFamily: 'inherit' }}
+                                onMouseEnter={e => { e.currentTarget.style.borderColor = color; e.currentTarget.style.color = color }}
+                                onMouseLeave={e => { e.currentTarget.style.borderColor = '#E2E8F0'; e.currentTarget.style.color = '#94A3B8' }}
+                              ><Maximize2 size={8} strokeWidth={2} /> ↗</button>
+                            </div>
                             <textarea
                               value={c.personal_notes ?? ''}
                               rows={2}
@@ -1064,6 +1095,125 @@ export default function VisaoGeralWorkspace({
       {toast && (
         <div style={{ position: 'fixed', bottom: '1.5rem', right: '1.5rem', zIndex: 9998, background: '#18181B', color: '#FFF', padding: '0.65rem 1.1rem', borderRadius: '10px', fontSize: '0.82rem', fontWeight: 500, boxShadow: '0 8px 24px rgba(0,0,0,0.2)', animation: 'fadeIn 0.2s ease-out', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
           ✓ {toast}
+        </div>
+      )}
+
+      {/* ── Expand field modal ── */}
+      {expandedField && activeItem && (
+        <div
+          onClick={e => { if (e.target === e.currentTarget) setExpandedField(null) }}
+          style={{
+            position: 'fixed', inset: 0, zIndex: 1000,
+            background: 'rgba(0,0,0,0.5)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            padding: '1rem',
+          }}
+        >
+          <div style={{
+            background: '#FFFFFF', border: '1px solid #E2E8F0',
+            borderRadius: '14px', width: '100%', maxWidth: '860px', maxHeight: '85vh',
+            display: 'flex', flexDirection: 'column', overflow: 'hidden',
+            boxShadow: '0 24px 64px rgba(0,0,0,0.18)',
+          }}>
+            {/* Header */}
+            <div style={{
+              padding: '1rem 1.4rem', borderBottom: '1px solid #F1F5F9',
+              display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between',
+              flexShrink: 0,
+            }}>
+              <div>
+                <div style={{ fontSize: '0.6rem', fontWeight: 700, color: '#94A3B8', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '0.3rem' }}>
+                  {expandedField.label}
+                </div>
+                <div style={{ fontSize: '1.1rem', fontWeight: 700, color: '#0F172A', letterSpacing: '-0.02em' }}>
+                  {activeItem.selectedText}
+                </div>
+                <div style={{ fontSize: '0.75rem', color: '#94A3B8', marginTop: '2px' }}>
+                  {project.book} {project.passage_ref}
+                </div>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexShrink: 0 }}>
+                <div style={{ display: 'flex', background: '#F8FAFC', borderRadius: '7px', padding: '2px', border: '1px solid #E2E8F0' }}>
+                  {(['view', 'edit'] as const).map(m => (
+                    <button key={m} onClick={() => setExpandMode(m)} style={{
+                      background: expandMode === m ? '#FFFFFF' : 'transparent',
+                      border: `1px solid ${expandMode === m ? '#E2E8F0' : 'transparent'}`,
+                      borderRadius: '5px', padding: '0.27rem 0.7rem',
+                      fontSize: '0.72rem', fontWeight: expandMode === m ? 600 : 400,
+                      color: expandMode === m ? '#1E293B' : '#94A3B8',
+                      cursor: 'pointer', fontFamily: 'inherit', transition: 'all 0.12s',
+                    }}>
+                      {m === 'view' ? 'Visualizar' : 'Editar'}
+                    </button>
+                  ))}
+                </div>
+                <button onClick={() => setExpandedField(null)} style={{
+                  background: 'none', border: '1px solid #E2E8F0', borderRadius: '7px',
+                  padding: '0.3rem 0.55rem', cursor: 'pointer', color: '#94A3B8',
+                  fontSize: '0.9rem', lineHeight: 1,
+                }}>✕</button>
+              </div>
+            </div>
+
+            {/* Content */}
+            <div style={{ flex: 1, overflowY: 'auto', padding: '1.75rem 2rem' }}>
+              {expandMode === 'view' ? (
+                expandDraft.trim() ? (
+                  <MarkdownRenderer content={expandDraft} />
+                ) : (
+                  <p style={{ color: '#94A3B8', fontStyle: 'italic', fontSize: '0.88rem' }}>
+                    Campo vazio. Alterne para &ldquo;Editar&rdquo; para adicionar conteúdo.
+                  </p>
+                )
+              ) : (
+                <textarea
+                  value={expandDraft}
+                  onChange={e => setExpandDraft(e.target.value)}
+                  autoFocus
+                  style={{
+                    width: '100%', minHeight: '440px',
+                    background: '#F8FAFC', border: '1px solid #E2E8F0',
+                    borderRadius: '8px', padding: '0.95rem 1.1rem',
+                    color: '#1E293B', fontSize: '0.91rem', lineHeight: '1.82',
+                    resize: 'none', outline: 'none', fontFamily: 'inherit',
+                    boxSizing: 'border-box',
+                  }}
+                  onFocus={e => (e.target.style.borderColor = '#94A3B8')}
+                  onBlur={e => (e.target.style.borderColor = '#E2E8F0')}
+                />
+              )}
+            </div>
+
+            {/* Footer */}
+            {expandMode === 'edit' && (
+              <div style={{
+                padding: '0.85rem 1.4rem', borderTop: '1px solid #F1F5F9',
+                display: 'flex', alignItems: 'center', justifyContent: 'flex-end',
+                gap: '0.6rem', flexShrink: 0, background: '#FFFFFF',
+              }}>
+                <button onClick={() => setExpandedField(null)} style={{
+                  background: 'transparent', border: '1px solid #E2E8F0', borderRadius: '7px',
+                  padding: '0.46rem 1rem', color: '#64748B', fontSize: '0.81rem',
+                  cursor: 'pointer', fontFamily: 'inherit',
+                }}>
+                  Fechar
+                </button>
+                <button
+                  onClick={() => {
+                    updateClsField(activeItem.id, { [expandedField.fieldKey]: expandDraft })
+                    setExpandedField(null)
+                  }}
+                  style={{
+                    background: '#1E293B', border: 'none', borderRadius: '7px',
+                    padding: '0.46rem 1.15rem', color: '#FFF', fontSize: '0.81rem',
+                    fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit',
+                  }}
+                >
+                  Salvar alterações
+                </button>
+              </div>
+            )}
+          </div>
         </div>
       )}
 

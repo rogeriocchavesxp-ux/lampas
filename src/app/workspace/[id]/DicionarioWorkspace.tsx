@@ -92,12 +92,166 @@ function TrustBadge({ level }: { level: TrustLevel }) {
   )
 }
 
-function Field({ label, value }: { label: string; value: string | null | undefined }) {
+function Field({ label, value, onExpand }: { label: string; value: string | null | undefined; onExpand?: () => void }) {
   if (!value?.trim()) return null
   return (
     <div style={{ marginBottom: '1rem' }}>
-      <div style={{ fontSize: '0.64rem', fontWeight: 700, color: '#94A3B8', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '4px' }}>{label}</div>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '4px' }}>
+        <div style={{ fontSize: '0.64rem', fontWeight: 700, color: '#94A3B8', textTransform: 'uppercase', letterSpacing: '0.08em' }}>{label}</div>
+        {onExpand && (
+          <button
+            onClick={onExpand}
+            title={`Expandir ${label}`}
+            style={{
+              background: 'none', border: 'none', cursor: 'pointer',
+              color: '#CBD5E1', padding: '2px 4px', lineHeight: 1,
+              display: 'flex', alignItems: 'center', gap: '3px',
+              fontSize: '0.65rem', fontFamily: 'inherit', transition: 'color 0.12s',
+            }}
+            onMouseEnter={e => (e.currentTarget.style.color = '#64748B')}
+            onMouseLeave={e => (e.currentTarget.style.color = '#CBD5E1')}
+          >
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/>
+            </svg>
+            Expandir
+          </button>
+        )}
+      </div>
       <div style={{ fontSize: '0.88rem', color: '#1E293B', lineHeight: 1.65, whiteSpace: 'pre-wrap' }}>{value}</div>
+    </div>
+  )
+}
+
+// ── Dict Expand Modal ─────────────────────────────────────────────────────
+
+function DictExpandModal({
+  label, termTitle, content, onSave, onClose,
+}: {
+  label: string
+  termTitle: string
+  content: string
+  onSave: (val: string) => void
+  onClose: () => void
+}) {
+  const [mode, setMode] = useState<'view' | 'edit'>(content.trim() ? 'view' : 'edit')
+  const [editValue, setEditValue] = useState(content)
+
+  return (
+    <div
+      onClick={e => { if (e.target === e.currentTarget) onClose() }}
+      style={{
+        position: 'fixed', inset: 0, zIndex: 1000,
+        background: 'rgba(0,0,0,0.5)',
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        padding: '1rem',
+      }}
+    >
+      <div style={{
+        background: '#FFFFFF',
+        border: '1px solid #E2E8F0',
+        borderRadius: '14px',
+        width: '100%', maxWidth: '860px', maxHeight: '85vh',
+        display: 'flex', flexDirection: 'column',
+        overflow: 'hidden',
+        boxShadow: '0 24px 64px rgba(0,0,0,0.18)',
+      }}>
+        {/* Header */}
+        <div style={{
+          padding: '1rem 1.4rem',
+          borderBottom: '1px solid #F1F5F9',
+          display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between',
+          flexShrink: 0,
+        }}>
+          <div>
+            <div style={{ fontSize: '0.6rem', fontWeight: 700, color: '#94A3B8', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '0.3rem' }}>
+              {label}
+            </div>
+            <div style={{ fontSize: '1.15rem', fontWeight: 700, color: '#0F172A', letterSpacing: '-0.02em' }}>
+              {termTitle}
+            </div>
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexShrink: 0 }}>
+            <div style={{ display: 'flex', background: '#F8FAFC', borderRadius: '7px', padding: '2px', border: '1px solid #E2E8F0' }}>
+              {(['view', 'edit'] as const).map(m => (
+                <button key={m} onClick={() => setMode(m)} style={{
+                  background: mode === m ? '#FFFFFF' : 'transparent',
+                  border: `1px solid ${mode === m ? '#E2E8F0' : 'transparent'}`,
+                  borderRadius: '5px', padding: '0.27rem 0.7rem',
+                  fontSize: '0.72rem', fontWeight: mode === m ? 600 : 400,
+                  color: mode === m ? '#1E293B' : '#94A3B8',
+                  cursor: 'pointer', fontFamily: 'inherit', transition: 'all 0.12s',
+                }}>
+                  {m === 'view' ? 'Visualizar' : 'Editar'}
+                </button>
+              ))}
+            </div>
+            <button onClick={onClose} style={{
+              background: 'none', border: '1px solid #E2E8F0', borderRadius: '7px',
+              padding: '0.3rem 0.55rem', cursor: 'pointer', color: '#94A3B8',
+              fontSize: '0.9rem', lineHeight: 1,
+            }}>✕</button>
+          </div>
+        </div>
+
+        {/* Content */}
+        <div style={{ flex: 1, overflowY: 'auto', padding: '1.75rem 2rem' }}>
+          {mode === 'view' ? (
+            content.trim() ? (
+              <div style={{ fontSize: '0.91rem', color: '#334155', lineHeight: 1.82, whiteSpace: 'pre-wrap', fontFamily: 'inherit' }}>
+                {content}
+              </div>
+            ) : (
+              <p style={{ color: '#94A3B8', fontStyle: 'italic', fontSize: '0.88rem' }}>
+                Campo vazio. Alterne para &ldquo;Editar&rdquo; para adicionar conteúdo.
+              </p>
+            )
+          ) : (
+            <textarea
+              value={editValue}
+              onChange={e => setEditValue(e.target.value)}
+              autoFocus
+              style={{
+                width: '100%', minHeight: '440px',
+                background: '#F8FAFC', border: '1px solid #E2E8F0',
+                borderRadius: '8px', padding: '0.95rem 1.1rem',
+                color: '#1E293B', fontSize: '0.91rem', lineHeight: '1.82',
+                resize: 'none', outline: 'none', fontFamily: 'inherit',
+                boxSizing: 'border-box',
+              }}
+              onFocus={e => (e.target.style.borderColor = '#94A3B8')}
+              onBlur={e => (e.target.style.borderColor = '#E2E8F0')}
+            />
+          )}
+        </div>
+
+        {/* Footer */}
+        {mode === 'edit' && (
+          <div style={{
+            padding: '0.85rem 1.4rem',
+            borderTop: '1px solid #F1F5F9',
+            display: 'flex', alignItems: 'center', justifyContent: 'flex-end',
+            gap: '0.6rem', flexShrink: 0, background: '#FFFFFF',
+          }}>
+            <button onClick={onClose} style={{
+              background: 'transparent', border: '1px solid #E2E8F0',
+              borderRadius: '7px', padding: '0.46rem 1rem',
+              color: '#64748B', fontSize: '0.81rem',
+              cursor: 'pointer', fontFamily: 'inherit',
+            }}>
+              Fechar
+            </button>
+            <button onClick={() => onSave(editValue)} style={{
+              background: '#1E293B', border: 'none',
+              borderRadius: '7px', padding: '0.46rem 1.15rem',
+              color: '#FFF', fontSize: '0.81rem', fontWeight: 600,
+              cursor: 'pointer', fontFamily: 'inherit',
+            }}>
+              Salvar alterações
+            </button>
+          </div>
+        )}
+      </div>
     </div>
   )
 }
@@ -120,6 +274,7 @@ export default function DicionarioWorkspace({ project, userId, onAskAI }: Props)
   const [aiResult,     setAiResult]     = useState('')
   const [savedToast,   setSavedToast]   = useState(false)
   const [deleteConfirm,setDeleteConfirm]= useState(false)
+  const [expandModal,  setExpandModal]  = useState<{ label: string; content: string; onSave: (v: string) => void } | null>(null)
 
   // ── Load entries ────────────────────────────────────────────────────────────
   const loadEntries = useCallback(async () => {
@@ -286,6 +441,15 @@ export default function DicionarioWorkspace({ project, userId, onAskAI }: Props)
     setDeleteConfirm(false)
   }
 
+  // ── Update a single field directly (from expand modal in detail view) ──────
+  async function updateFieldDirectly(key: string, value: string) {
+    if (!selected) return
+    const updated = { ...selected, [key]: value } as DictionaryEntry
+    setSelected(updated)
+    setEntries(prev => prev.map(e => e.id === updated.id ? updated : e))
+    void supabase.from('lampas_dictionary').update({ [key]: value }).eq('id', selected.id)
+  }
+
   // ── Increment query count ───────────────────────────────────────────────────
   async function openEntry(entry: DictionaryEntry) {
     setSelected(entry)
@@ -304,9 +468,35 @@ export default function DicionarioWorkspace({ project, userId, onAskAI }: Props)
   // ── DField helper for create form ───────────────────────────────────────────
   function df(key: keyof typeof draft, label: string, rows = 3) {
     const val = (draft[key] as string) ?? ''
+    const canExpand = rows >= 2
     return (
       <div style={{ marginBottom: '12px' }}>
-        <label style={{ display: 'block', fontSize: '0.66rem', fontWeight: 700, color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '4px' }}>{label}</label>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '4px' }}>
+          <label style={{ fontSize: '0.66rem', fontWeight: 700, color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.06em' }}>{label}</label>
+          {canExpand && (
+            <button
+              type="button"
+              onClick={() => setExpandModal({
+                label,
+                content: val,
+                onSave: (newVal) => { setDraft(p => ({ ...p, [key]: newVal })); setExpandModal(null) },
+              })}
+              style={{
+                background: 'none', border: 'none', cursor: 'pointer',
+                color: '#CBD5E1', padding: '2px 4px', lineHeight: 1,
+                display: 'flex', alignItems: 'center', gap: '3px',
+                fontSize: '0.65rem', fontFamily: 'inherit', transition: 'color 0.12s',
+              }}
+              onMouseEnter={e => (e.currentTarget.style.color = '#64748B')}
+              onMouseLeave={e => (e.currentTarget.style.color = '#CBD5E1')}
+            >
+              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/>
+              </svg>
+              Expandir
+            </button>
+          )}
+        </div>
         {rows === 1 ? (
           <input value={val} onChange={e => setDraft(p => ({ ...p, [key]: e.target.value }))}
             style={{ width: '100%', boxSizing: 'border-box', background: '#FAFAFA', border: '1px solid #E2E8F0', borderRadius: '7px', padding: '7px 10px', fontSize: '0.84rem', fontFamily: 'inherit', outline: 'none', color: '#1E293B' }}
@@ -609,7 +799,12 @@ export default function DicionarioWorkspace({ project, userId, onAskAI }: Props)
 
             {/* Body */}
             <div style={{ flex: 1, overflowY: 'auto', padding: '24px', background: '#FFFFFF' }}>
-              <Field label="Definição" value={selected.definition} />
+              <Field label="Definição" value={selected.definition}
+                onExpand={() => setExpandModal({
+                  label: 'Definição', content: selected.definition ?? '',
+                  onSave: (v) => { updateFieldDirectly('definition', v); setExpandModal(null) },
+                })}
+              />
 
               {(selected.lang_hebrew || selected.lang_greek || selected.lang_aramaic) && (
                 <div style={{ marginBottom: '1rem', padding: '12px 14px', background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '10px' }}>
@@ -623,11 +818,36 @@ export default function DicionarioWorkspace({ project, userId, onAskAI }: Props)
                 </div>
               )}
 
-              <Field label="Etimologia" value={selected.etymology} />
-              <Field label="Uso Bíblico" value={[selected.occurrences, selected.main_texts].filter(Boolean).join('\n\n')} />
-              <Field label="Teologia Bíblica" value={selected.theological_biblical} />
-              <Field label="Teologia Sistemática" value={selected.theological_systematic} />
-              <Field label="Aplicações Pastorais" value={selected.applications} />
+              <Field label="Etimologia" value={selected.etymology}
+                onExpand={() => setExpandModal({
+                  label: 'Etimologia', content: selected.etymology ?? '',
+                  onSave: (v) => { updateFieldDirectly('etymology', v); setExpandModal(null) },
+                })}
+              />
+              <Field label="Uso Bíblico" value={[selected.occurrences, selected.main_texts].filter(Boolean).join('\n\n')}
+                onExpand={() => setExpandModal({
+                  label: 'Uso Bíblico', content: [selected.occurrences, selected.main_texts].filter(Boolean).join('\n\n'),
+                  onSave: (v) => { updateFieldDirectly('main_texts', v); setExpandModal(null) },
+                })}
+              />
+              <Field label="Teologia Bíblica" value={selected.theological_biblical}
+                onExpand={() => setExpandModal({
+                  label: 'Teologia Bíblica', content: selected.theological_biblical ?? '',
+                  onSave: (v) => { updateFieldDirectly('theological_biblical', v); setExpandModal(null) },
+                })}
+              />
+              <Field label="Teologia Sistemática" value={selected.theological_systematic}
+                onExpand={() => setExpandModal({
+                  label: 'Teologia Sistemática', content: selected.theological_systematic ?? '',
+                  onSave: (v) => { updateFieldDirectly('theological_systematic', v); setExpandModal(null) },
+                })}
+              />
+              <Field label="Aplicações Pastorais" value={selected.applications}
+                onExpand={() => setExpandModal({
+                  label: 'Aplicações Pastorais', content: selected.applications ?? '',
+                  onSave: (v) => { updateFieldDirectly('applications', v); setExpandModal(null) },
+                })}
+              />
 
               {selected.cross_references?.length > 0 && (
                 <div style={{ marginBottom: '1rem' }}>
@@ -640,7 +860,12 @@ export default function DicionarioWorkspace({ project, userId, onAskAI }: Props)
                 </div>
               )}
 
-              <Field label="Bibliografia" value={selected.bibliography} />
+              <Field label="Bibliografia" value={selected.bibliography}
+                onExpand={() => setExpandModal({
+                  label: 'Bibliografia', content: selected.bibliography ?? '',
+                  onSave: (v) => { updateFieldDirectly('bibliography', v); setExpandModal(null) },
+                })}
+              />
 
               {/* Metadata footer */}
               <div style={{ marginTop: '24px', paddingTop: '16px', borderTop: '1px solid #F1F5F9', display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
@@ -723,6 +948,16 @@ export default function DicionarioWorkspace({ project, userId, onAskAI }: Props)
           </div>
         )}
       </div>
+
+      {expandModal && (
+        <DictExpandModal
+          label={expandModal.label}
+          termTitle={selected?.title ?? draft.title ?? ''}
+          content={expandModal.content}
+          onSave={expandModal.onSave}
+          onClose={() => setExpandModal(null)}
+        />
+      )}
     </div>
   )
 }
