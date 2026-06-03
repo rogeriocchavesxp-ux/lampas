@@ -1,5 +1,12 @@
 export type Testament = 'AT' | 'NT'
 export type ProjectStatus = 'draft' | 'in_progress' | 'completed'
+export type ProjectType =
+  | 'exegese'
+  | 'sermao'
+  | 'estudo_biblico'
+  | 'estudo_doutrinario'
+  | 'devocional'
+  | 'pesquisa_teologica'
 export type SectionStatus = 'empty' | 'draft' | 'reviewed'
 export type AIMode = 'generate' | 'correct' | 'refine' | 'reference' | 'narrative' | 'synthesis'
 
@@ -24,6 +31,7 @@ export interface Project {
   original_language: string
   bible_version: string
   status: ProjectStatus
+  project_type: ProjectType
   created_at: string
   updated_at: string
 }
