@@ -58,11 +58,29 @@ export default function HomePage() {
             <Link href="/auth/login" className="lp-btn-primary">
               Começar gratuitamente <ArrowRight size={16} />
             </Link>
-            <Link href="#processo" className="lp-btn-ghost">Ver como funciona</Link>
+            <Link href="#demo" className="lp-btn-ghost">Ver como funciona</Link>
           </div>
         </div>
         <div className="lp-hero-mockup" aria-hidden="true">
           <WorkspaceMockup />
+        </div>
+      </section>
+
+      {/* ── Demo ── */}
+      <section className="lp-demo" id="demo">
+        <div className="lp-inner">
+          <p className="lp-kicker">Demonstração</p>
+          <h2 className="lp-h2">Veja o Lampas em ação</h2>
+          <div className="lp-video-wrap">
+            <iframe
+              src="https://www.youtube.com/embed/GeaGIJ72qcQ"
+              title="Lampas — Demonstração"
+              frameBorder="0"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+              allowFullScreen
+              className="lp-video"
+            />
+          </div>
         </div>
       </section>
 
@@ -581,6 +599,33 @@ export default function HomePage() {
         .ws-bar-w72  { width: 72%;  }
         .ws-bar-w88  { width: 88%;  }
         .ws-bar-w55  { width: 55%;  }
+
+        /* ── Demo / Video ───────────────────────────────── */
+        .lp-demo {
+          padding: 7rem 0 6rem;
+          background: #fff;
+          border-top: 1px solid #e8edf4;
+        }
+
+        .lp-video-wrap {
+          position: relative;
+          width: 100%;
+          max-width: 860px;
+          margin: 0 auto;
+          aspect-ratio: 16 / 9;
+          border-radius: 12px;
+          overflow: hidden;
+          box-shadow: 0 8px 48px rgba(15,23,42,0.14);
+          border: 1px solid rgba(15,23,42,0.08);
+        }
+
+        .lp-video {
+          position: absolute;
+          inset: 0;
+          width: 100%;
+          height: 100%;
+          border: none;
+        }
 
         /* ── Process section ─────────────────────────────── */
         .lp-process {
