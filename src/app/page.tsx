@@ -12,8 +12,8 @@ const steps = [
 const audiences = [
   { title: 'Pastores',              line: 'Preparação de sermões com método, acúmulo de pesquisa e comunicação fiel.' },
   { title: 'Professores de EBD',   line: 'Estruturação de aulas, perguntas progressivas e material para grupos.' },
-  { title: 'Seminaristas',          line: 'Pesquisa, exegese e organização acadêmica em um só ambiente.' },
-  { title: 'Estudantes da Bíblia', line: 'Crescimento pessoal com leitura atenta, interpretação e aplicação.' },
+  { title: 'Seminaristas',          line: 'Pesquisa, exegese e organização acadêmica em um só lugar.' },
+  { title: 'Estudantes da Bíblia', line: 'Leitura atenta, interpretação fiel e aplicação para a vida.' },
 ] as const
 
 const resources = [
@@ -89,7 +89,7 @@ export default function HomePage() {
       <section className="lp-section" id="para-quem">
         <div className="lp-inner">
           <p className="lp-kicker">Vocação</p>
-          <h2 className="lp-h2">Criado para quem ensina a Palavra</h2>
+          <h2 className="lp-h2">Criado para quem quer entender, viver e ensinar a Palavra.</h2>
           <div className="lp-audience-grid">
             {audiences.map(({ title, line }) => (
               <article key={title} className="lp-audience-card">
