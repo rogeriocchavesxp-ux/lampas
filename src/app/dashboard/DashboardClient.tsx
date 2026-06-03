@@ -137,6 +137,31 @@ function statusColor(s: string): string {
   return { draft: 'var(--accent)', in_progress: 'var(--accent)', completed: 'var(--success)', archived: 'var(--text-muted)' }[s] ?? 'var(--text-muted)'
 }
 
+function buildReferenceTitle(book: string, passageRef: string): string {
+  const normalizedBook = book.trim()
+  const normalizedRef = passageRef.trim()
+  if (!normalizedBook || !normalizedRef) return ''
+  return `${normalizedBook} ${normalizedRef}`
+}
+
+type ProjectForm = {
+  title: string
+  book: string
+  passage_ref: string
+  topic: string
+  testament: '' | 'AT' | 'NT'
+}
+
+function createInitialForm(modeId?: StudyModeId | null): ProjectForm {
+  return {
+    title: '',
+    book: '',
+    passage_ref: '',
+    topic: '',
+    testament: modeId && modeId !== 'exegese_biblica' ? 'NT' : '',
+  }
+}
+
 // ── Component ──────────────────────────────────────────────────────────────
 
 interface Props {
@@ -155,9 +180,8 @@ export default function DashboardClient({ user, projects }: Props) {
   const [selectedMode, setSelectedMode] = useState<StudyModeId | null>(null)
   const [creating,     setCreating]    = useState(false)
   const [createError,  setCreateError] = useState<string | null>(null)
-  const [form,         setForm]        = useState({
-    title: '', book: '', passage_ref: '', topic: '', testament: 'NT' as 'AT' | 'NT',
-  })
+  const [titleEdited,  setTitleEdited] = useState(false)
+  const [form,         setForm]        = useState<ProjectForm>(createInitialForm())
 
   // Dashboard filter & collapse state
   const [activeFilter,      setActiveFilter]      = useState<StudyModeId | 'all'>('all')
@@ -202,11 +226,34 @@ export default function DashboardClient({ user, projects }: Props) {
     setSelectedMode(null)
     setCreating(false)
     setCreateError(null)
-    setForm({ title: '', book: '', passage_ref: '', topic: '', testament: 'NT' })
+    setTitleEdited(false)
+    setForm(createInitialForm())
     setShowNew(true)
   }
 
   function closeModal() { setShowNew(false) }
+
+  function selectMode(modeId: StudyModeId) {
+    setSelectedMode(modeId)
+    setCreateError(null)
+    setTitleEdited(false)
+    setForm(createInitialForm(modeId))
+  }
+
+  function updatePassageForm(patch: Partial<typeof form>) {
+    setForm(current => {
+      const next = { ...current, ...patch }
+      if (selectedMode === 'exegese_biblica' && !titleEdited) {
+        next.title = buildReferenceTitle(next.book, next.passage_ref)
+      }
+      return next
+    })
+  }
+
+  function updateTitle(value: string) {
+    setTitleEdited(true)
+    setForm(current => ({ ...current, title: value }))
+  }
 
   async function handleSignOut() {
     await supabase.auth.signOut()
@@ -217,14 +264,16 @@ export default function DashboardClient({ user, projects }: Props) {
     e.preventDefault()
     setCreateError(null)
 
-    if (!form.title.trim()) {
-      setCreateError('O título é obrigatório.')
-      return
-    }
     if (!selectedMode || !modeConfig) return
 
     const isPassage = modeConfig.passageBased
+    const generatedTitle = isPassage ? buildReferenceTitle(form.book, form.passage_ref) : ''
+    const projectTitle = form.title.trim() || generatedTitle
 
+    if (isPassage && !form.testament) {
+      setCreateError('Escolha o testamento.')
+      return
+    }
     if (isPassage && !form.book) {
       setCreateError('Selecione o livro.')
       return
@@ -237,10 +286,14 @@ export default function DashboardClient({ user, projects }: Props) {
       setCreateError(`${modeConfig.topicLabel} é obrigatório.`)
       return
     }
+    if (!projectTitle) {
+      setCreateError('Informe os dados do estudo para gerar o título.')
+      return
+    }
 
     const payload = {
       user_id:           user.id,
-      title:             form.title.trim(),
+      title:             projectTitle,
       book:              isPassage ? form.book : '—',
       passage_ref:       isPassage ? form.passage_ref.trim() : form.topic.trim(),
       testament:         isPassage ? form.testament : 'AT',
@@ -280,6 +333,12 @@ export default function DashboardClient({ user, projects }: Props) {
       setCreating(false)
     }
   }
+
+  const isExegeseCreation = modeConfig?.id === 'exegese_biblica'
+  const generatedProjectTitle = modeConfig?.passageBased
+    ? buildReferenceTitle(form.book, form.passage_ref)
+    : ''
+  const canShowGeneratedTitle = !isExegeseCreation || Boolean(generatedProjectTitle)
 
   return (
     <div style={{ minHeight: '100vh', background: 'var(--background)' }}>
@@ -490,7 +549,7 @@ export default function DashboardClient({ user, projects }: Props) {
                     return (
                       <button
                         key={modeId}
-                        onClick={() => setSelectedMode(modeId)}
+                        onClick={() => selectMode(modeId)}
                         style={{
                           textAlign: 'left', padding: '0.9rem 1rem',
                           background: active ? `${mode.color}08` : 'var(--surface-2)',
@@ -579,22 +638,24 @@ export default function DashboardClient({ user, projects }: Props) {
                 </div>
 
                 <form onSubmit={handleCreate} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                  <FormField label="Título">
-                    <input
-                      value={form.title}
-                      onChange={e => setForm(f => ({ ...f, title: e.target.value }))}
-                      placeholder={modeConfig.titlePlaceholder}
-                      required autoFocus
-                    />
-                  </FormField>
+                  {!isExegeseCreation && (
+                    <FormField label="Título">
+                      <input
+                        value={form.title}
+                        onChange={e => updateTitle(e.target.value)}
+                        placeholder={modeConfig.titlePlaceholder}
+                        required autoFocus
+                      />
+                    </FormField>
+                  )}
 
                   {modeConfig.passageBased ? (
                     <>
                       <FormField label="Testamento">
                         <div style={{ display: 'flex', gap: '0.5rem' }}>
-                          {(['NT', 'AT'] as const).map(t => (
+                          {(['AT', 'NT'] as const).map(t => (
                             <button key={t} type="button"
-                              onClick={() => setForm(f => ({ ...f, testament: t, book: '' }))}
+                              onClick={() => updatePassageForm({ testament: t, book: '' })}
                               style={{
                                 flex: 1, padding: '0.55rem',
                                 background: form.testament === t ? 'var(--accent-subtle)' : 'var(--surface-2)',
@@ -613,11 +674,12 @@ export default function DashboardClient({ user, projects }: Props) {
                       <FormField label="Livro">
                         <select
                           value={form.book}
-                          onChange={e => setForm(f => ({ ...f, book: e.target.value }))}
+                          onChange={e => updatePassageForm({ book: e.target.value })}
+                          disabled={!form.testament}
                           required
                         >
-                          <option value="">Selecione o livro</option>
-                          {(form.testament === 'NT' ? BOOKS_NT : BOOKS_AT).map(b => (
+                          <option value="">{form.testament ? 'Selecione o livro' : 'Escolha o testamento primeiro'}</option>
+                          {(form.testament === 'NT' ? BOOKS_NT : form.testament === 'AT' ? BOOKS_AT : []).map(b => (
                             <option key={b} value={b}>{b}</option>
                           ))}
                         </select>
@@ -626,11 +688,30 @@ export default function DashboardClient({ user, projects }: Props) {
                       <FormField label={modeConfig.passageLabel}>
                         <input
                           value={form.passage_ref}
-                          onChange={e => setForm(f => ({ ...f, passage_ref: e.target.value }))}
-                          placeholder="Ex: 3.1-21"
+                          onChange={e => updatePassageForm({ passage_ref: e.target.value })}
+                          placeholder={isExegeseCreation ? 'Ex: 39.1-23' : 'Ex: 3.1-21'}
                           required
                         />
                       </FormField>
+
+                      {isExegeseCreation && canShowGeneratedTitle && (
+                        <FormField label="Título do Projeto">
+                          <input
+                            value={form.title}
+                            onChange={e => updateTitle(e.target.value)}
+                            placeholder={generatedProjectTitle}
+                          />
+                          <p style={{
+                            margin: '0.45rem 0 0',
+                            color: 'var(--text-muted)',
+                            fontSize: '0.76rem',
+                            lineHeight: 1.45,
+                          }}>
+                            O título inicial é gerado automaticamente a partir da referência bíblica.
+                            Você poderá alterá-lo a qualquer momento durante o estudo.
+                          </p>
+                        </FormField>
+                      )}
                     </>
                   ) : (
                     <FormField label={modeConfig.topicLabel}>
