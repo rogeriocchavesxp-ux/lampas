@@ -6,6 +6,14 @@ import { getSystemPromptForMode } from '@/lib/prompts/mode-personas'
 import { getSectionBySlug } from '@/lib/workspace-sections'
 import { getToolAreaBySlug } from '@/lib/tools-content'
 import { loadOriginalTextContext } from '@/lib/workspace-context'
+import {
+  queryKnowledgeBase,
+  saveToLibrary,
+  makeKnowledgeBaseStream,
+  academicModeInstruction,
+  extractDictionaryQuery,
+  type GenerationMode,
+} from '@/lib/generation-orchestrator'
 
 const anthropic = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY!,
@@ -43,11 +51,39 @@ export async function POST(req: Request) {
   }
 
   const body = await req.json()
-  const { messages, project, activeSlug, activeTitle } = body as {
+  const { messages, project, activeSlug, activeTitle, dictionaryQuery, generationMode } = body as {
     messages: ChatMessage[]
     project: { id?: string; book: string; passage_ref: string; testament: string; original_language: string; study_mode?: string }
     activeSlug: string
     activeTitle: string
+    dictionaryQuery?: string   // termo explícito quando activeSlug = ferramentas_dicionario
+    generationMode?: GenerationMode
+  }
+
+  // ── Orquestrador: consulta base de conhecimento antes da IA ──────────────────
+  if (activeSlug === 'ferramentas_dicionario') {
+    const term = dictionaryQuery
+      ?? extractDictionaryQuery(messages[messages.length - 1]?.content ?? '')
+
+    if (term) {
+      const kbResult = await queryKnowledgeBase(term, supabase, generationMode ?? 'economic')
+      if (kbResult) {
+        // Registra hit sem custo de IA
+        void supabase.from('ai_interactions').insert({
+          user_id:       user.id,
+          section_slug:  activeSlug,
+          mode:          'exegese',
+          input_tokens:  0,
+          output_tokens: 0,
+          cached_tokens: 0,
+          model:         'lampas-kb',
+          source:        kbResult.source,
+          cost_usd:      0,
+        }).then(() => {})
+
+        return makeKnowledgeBaseStream(kbResult)
+      }
+    }
   }
 
   if (!messages?.length) {
@@ -87,7 +123,8 @@ export async function POST(req: Request) {
   // Build context prefix for the current section
   const contextNote = `[Projeto atual: ${project.book} ${project.passage_ref} (${project.original_language}) | Seção ativa: ${activeTitle}]\n${modeInstruction}${originalTextContext ? `\n\nTexto original carregado no workspace:\n${originalTextContext}` : ''}`
 
-  const systemWithContext = `${getSystemPromptForMode(project.study_mode)}\n\n---\n${contextNote}`
+  const academicSuffix = generationMode === 'academic' ? academicModeInstruction() : ''
+  const systemWithContext = `${getSystemPromptForMode(project.study_mode)}\n\n---\n${contextNote}${academicSuffix}`
 
   // Convert messages to Anthropic format — inject context into first user message
   const anthropicMessages: Anthropic.MessageParam[] = messages.map((m, i) => ({
@@ -111,7 +148,7 @@ export async function POST(req: Request) {
   // Incrementar uso de IA (non-blocking)
   if (user) incrementAIUsage(user.id).catch(() => {})
 
-  // Log token usage (non-blocking)
+  // Log token usage + auto-save na biblioteca para consultas do dicionário
   stream.finalMessage().then(async (msg) => {
     const usage = msg.usage as {
       input_tokens: number
@@ -119,15 +156,40 @@ export async function POST(req: Request) {
       cache_read_input_tokens?: number
       cache_creation_input_tokens?: number
     }
+
+    // Custo estimado: claude-sonnet-4-6 $3/MTok input, $15/MTok output
+    const costUsd = (
+      (usage.input_tokens * 3) + (usage.output_tokens * 15)
+    ) / 1_000_000
+
     await supabase.from('ai_interactions').insert({
-      user_id: user.id,
+      user_id:      user.id,
       section_slug: activeSlug,
-      mode: 'exegese',
+      mode:         'exegese',
       input_tokens: usage.input_tokens,
       output_tokens: usage.output_tokens,
       cached_tokens: usage.cache_read_input_tokens ?? 0,
-      model: 'claude-sonnet-4-6',
+      model:         'claude-sonnet-4-6',
+      source:        'ai',
+      cost_usd:      costUsd,
     }).then(() => {})
+
+    // Auto-save na biblioteca quando é uma consulta ao dicionário
+    if (activeSlug === 'ferramentas_dicionario') {
+      const term = dictionaryQuery
+        ?? extractDictionaryQuery(messages[messages.length - 1]?.content ?? '')
+
+      const fullResponse = msg.content[0]?.type === 'text' ? msg.content[0].text : ''
+
+      if (term && fullResponse) {
+        void saveToLibrary(
+          term,
+          fullResponse,
+          { userId: user.id, sectionSlug: activeSlug, passageRef: project.passage_ref, studyMode: project.study_mode },
+          supabase,
+        )
+      }
+    }
   }).catch(() => {})
 
   // Stream SSE back to client

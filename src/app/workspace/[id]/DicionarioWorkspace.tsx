@@ -435,8 +435,10 @@ export default function DicionarioWorkspace({ project, userId, onAskAI }: Props)
             id: project.id, book: project.book, passage_ref: project.passage_ref,
             testament: project.testament, original_language: project.original_language,
           },
-          activeSlug: 'ferramentas_dicionario',
-          activeTitle: 'Dicionário Lampas',
+          activeSlug:      'ferramentas_dicionario',
+          activeTitle:     'Dicionário Lampas',
+          dictionaryQuery: query.trim(),
+          generationMode:  'economic',
         }),
       })
 
