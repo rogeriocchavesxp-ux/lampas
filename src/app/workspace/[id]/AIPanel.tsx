@@ -67,6 +67,7 @@ export default function AIPanel({ project, activeSlug, activeTitle, context, onC
             passage_ref: project.passage_ref,
             testament: project.testament,
             original_language: project.original_language,
+            study_mode: project.study_mode,
           },
           activeSlug,
           activeTitle,

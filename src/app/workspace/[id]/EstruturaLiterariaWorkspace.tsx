@@ -258,7 +258,7 @@ export default function EstruturaLiterariaWorkspace({
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           sectionSlug: sectionDef.slug, cardId,
-          project: { id: project.id, book: project.book, passage_ref: project.passage_ref, testament: project.testament, original_language: project.original_language },
+          project: { id: project.id, book: project.book, passage_ref: project.passage_ref, testament: project.testament, original_language: project.original_language, study_mode: project.study_mode },
         }),
       })
       const data = await res.json()
@@ -289,7 +289,7 @@ export default function EstruturaLiterariaWorkspace({
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           sectionSlug: sectionDef.slug, cardIds,
-          project: { id: project.id, book: project.book, passage_ref: project.passage_ref, testament: project.testament, original_language: project.original_language },
+          project: { id: project.id, book: project.book, passage_ref: project.passage_ref, testament: project.testament, original_language: project.original_language, study_mode: project.study_mode },
         }),
       })
       const data = await res.json()

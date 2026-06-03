@@ -407,6 +407,7 @@ export default function TermosChaveWorkspace({
           project: {
             id: project.id, book: project.book, passage_ref: project.passage_ref,
             testament: project.testament, original_language: project.original_language,
+            study_mode: project.study_mode,
           },
         }),
       })
@@ -442,6 +443,7 @@ export default function TermosChaveWorkspace({
           project: {
             id: project.id, book: project.book, passage_ref: project.passage_ref,
             testament: project.testament, original_language: project.original_language,
+            study_mode: project.study_mode,
           },
         }),
       })
