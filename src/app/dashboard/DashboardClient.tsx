@@ -152,13 +152,13 @@ type ProjectForm = {
   testament: '' | 'AT' | 'NT'
 }
 
-function createInitialForm(modeId?: StudyModeId | null): ProjectForm {
+function createInitialForm(): ProjectForm {
   return {
     title: '',
     book: '',
     passage_ref: '',
     topic: '',
-    testament: modeId && modeId !== 'exegese_biblica' ? 'NT' : '',
+    testament: '',
   }
 }
 
@@ -237,17 +237,25 @@ export default function DashboardClient({ user, projects }: Props) {
     setSelectedMode(modeId)
     setCreateError(null)
     setTitleEdited(false)
-    setForm(createInitialForm(modeId))
+    setForm(createInitialForm())
   }
 
   function updatePassageForm(patch: Partial<typeof form>) {
     setForm(current => {
       const next = { ...current, ...patch }
-      if (selectedMode === 'exegese_biblica' && !titleEdited) {
+      if (!titleEdited) {
         next.title = buildReferenceTitle(next.book, next.passage_ref)
       }
       return next
     })
+  }
+
+  function updateTopic(value: string) {
+    setForm(current => ({
+      ...current,
+      topic: value,
+      title: titleEdited ? current.title : value.trim(),
+    }))
   }
 
   function updateTitle(value: string) {
@@ -267,7 +275,7 @@ export default function DashboardClient({ user, projects }: Props) {
     if (!selectedMode || !modeConfig) return
 
     const isPassage = modeConfig.passageBased
-    const generatedTitle = isPassage ? buildReferenceTitle(form.book, form.passage_ref) : ''
+    const generatedTitle = isPassage ? buildReferenceTitle(form.book, form.passage_ref) : form.topic.trim()
     const projectTitle = form.title.trim() || generatedTitle
 
     if (isPassage && !form.testament) {
@@ -334,11 +342,10 @@ export default function DashboardClient({ user, projects }: Props) {
     }
   }
 
-  const isExegeseCreation = modeConfig?.id === 'exegese_biblica'
   const generatedProjectTitle = modeConfig?.passageBased
     ? buildReferenceTitle(form.book, form.passage_ref)
-    : ''
-  const canShowGeneratedTitle = !isExegeseCreation || Boolean(generatedProjectTitle)
+    : form.topic.trim()
+  const canShowGeneratedTitle = Boolean(generatedProjectTitle)
 
   return (
     <div style={{ minHeight: '100vh', background: 'var(--background)' }}>
@@ -638,17 +645,6 @@ export default function DashboardClient({ user, projects }: Props) {
                 </div>
 
                 <form onSubmit={handleCreate} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                  {!isExegeseCreation && (
-                    <FormField label="Título">
-                      <input
-                        value={form.title}
-                        onChange={e => updateTitle(e.target.value)}
-                        placeholder={modeConfig.titlePlaceholder}
-                        required autoFocus
-                      />
-                    </FormField>
-                  )}
-
                   {modeConfig.passageBased ? (
                     <>
                       <FormField label="Testamento">
@@ -689,38 +685,38 @@ export default function DashboardClient({ user, projects }: Props) {
                         <input
                           value={form.passage_ref}
                           onChange={e => updatePassageForm({ passage_ref: e.target.value })}
-                          placeholder={isExegeseCreation ? 'Ex: 39.1-23' : 'Ex: 3.1-21'}
+                          placeholder="Ex: 39.1-23"
                           required
                         />
                       </FormField>
-
-                      {isExegeseCreation && canShowGeneratedTitle && (
-                        <FormField label="Título do Projeto">
-                          <input
-                            value={form.title}
-                            onChange={e => updateTitle(e.target.value)}
-                            placeholder={generatedProjectTitle}
-                          />
-                          <p style={{
-                            margin: '0.45rem 0 0',
-                            color: 'var(--text-muted)',
-                            fontSize: '0.76rem',
-                            lineHeight: 1.45,
-                          }}>
-                            O título inicial é gerado automaticamente a partir da referência bíblica.
-                            Você poderá alterá-lo a qualquer momento durante o estudo.
-                          </p>
-                        </FormField>
-                      )}
                     </>
                   ) : (
                     <FormField label={modeConfig.topicLabel}>
                       <input
                         value={form.topic}
-                        onChange={e => setForm(f => ({ ...f, topic: e.target.value }))}
+                        onChange={e => updateTopic(e.target.value)}
                         placeholder={modeConfig.titlePlaceholder}
                         required
                       />
+                    </FormField>
+                  )}
+
+                  {canShowGeneratedTitle && (
+                    <FormField label="Título do Projeto">
+                      <input
+                        value={form.title}
+                        onChange={e => updateTitle(e.target.value)}
+                        placeholder={generatedProjectTitle}
+                      />
+                      <p style={{
+                        margin: '0.45rem 0 0',
+                        color: 'var(--text-muted)',
+                        fontSize: '0.76rem',
+                        lineHeight: 1.45,
+                      }}>
+                        O título inicial é gerado automaticamente a partir {modeConfig.passageBased ? 'da referência bíblica' : 'do tema informado'}.
+                        Você poderá alterá-lo a qualquer momento durante o estudo.
+                      </p>
                     </FormField>
                   )}
 
