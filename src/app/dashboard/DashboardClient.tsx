@@ -463,7 +463,7 @@ export default function DashboardClient({ user, projects }: Props) {
         {projects.length === 0 ? (
           <EmptyDashboard onNew={openModal} />
         ) : (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '2.25rem' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '3rem' }}>
             {visibleSections.map(modeId => {
               const mode = STUDY_MODE_REGISTRY[modeId]
               const visual = modeVisual(modeId)
@@ -471,69 +471,73 @@ export default function DashboardClient({ user, projects }: Props) {
               const isCollapsed = collapsedSections.has(modeId)
               return (
                 <section key={modeId}>
-                  {/* Section header */}
+                  {/* Etiqueta de prateleira — discreta, sem competir com o conteúdo */}
                   <div style={{
-                    display: 'grid', gridTemplateColumns: 'auto 1fr auto auto',
-                    alignItems: 'center', gap: '0.55rem',
-                    paddingBottom: '0.6rem',
-                    borderBottom: `1px solid rgba(148,163,184,0.18)`,
-                    marginBottom: isCollapsed ? 0 : '0.7rem',
+                    display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                    marginBottom: isCollapsed ? 0 : '0.875rem',
                   }}>
-                    <span style={{ color: visual.color, display: 'flex', flexShrink: 0 }}>
-                      {modeIcon(modeId, 16)}
-                    </span>
-                    <span style={{
-                      fontSize: '0.94rem', fontWeight: 750,
-                      color: 'var(--text-primary)',
-                      display: 'flex', alignItems: 'center', gap: '0.45rem',
-                    }}>
-                      {mode.name}
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                       <span style={{
-                        fontSize: '0.7rem', fontWeight: 650,
-                        color: visual.color, background: visual.bg,
-                        borderRadius: '999px', padding: '0.08rem 0.45rem',
-                        border: `1px solid ${visual.border}`,
+                        fontSize: '0.65rem', fontWeight: 800,
+                        letterSpacing: '0.1em', textTransform: 'uppercase',
+                        color: visual.color, opacity: 0.9,
                       }}>
-                        {modeProjects.length}
+                        {mode.name}
                       </span>
-                    </span>
-                    {activeFilter !== modeId && (
+                      <span style={{
+                        fontSize: '0.65rem', color: 'var(--text-muted)',
+                        fontWeight: 500, opacity: 0.7,
+                      }}>
+                        · {modeProjects.length}
+                      </span>
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+                      {activeFilter !== modeId && (
+                        <button
+                          onClick={() => setActiveFilter(modeId)}
+                          style={{
+                            background: 'transparent', border: 'none', cursor: 'pointer',
+                            color: 'var(--text-muted)', fontSize: '0.72rem', fontFamily: 'inherit',
+                            padding: '0.15rem 0.4rem', borderRadius: '4px',
+                          }}
+                          onMouseEnter={e => { e.currentTarget.style.color = visual.color }}
+                          onMouseLeave={e => { e.currentTarget.style.color = 'var(--text-muted)' }}
+                        >
+                          Ver todos
+                        </button>
+                      )}
                       <button
-                        onClick={() => setActiveFilter(modeId)}
+                        onClick={() => toggleSection(modeId)}
+                        title={isCollapsed ? 'Expandir' : 'Recolher'}
                         style={{
                           background: 'transparent', border: 'none', cursor: 'pointer',
-                          color: 'var(--text-muted)', fontSize: '0.76rem', fontFamily: 'inherit',
-                          padding: '0.2rem 0.45rem', borderRadius: '6px',
+                          color: 'var(--text-muted)', display: 'flex', alignItems: 'center',
+                          padding: '0.15rem', borderRadius: '4px', transition: 'color 0.13s',
                         }}
-                        onMouseEnter={e => { e.currentTarget.style.color = visual.color }}
+                        onMouseEnter={e => { e.currentTarget.style.color = 'var(--text-secondary)' }}
                         onMouseLeave={e => { e.currentTarget.style.color = 'var(--text-muted)' }}
                       >
-                        Ver todos
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"
+                          style={{ transform: isCollapsed ? 'rotate(-90deg)' : 'none', transition: 'transform 0.15s' }}>
+                          <path d="M6 9l6 6 6-6"/>
+                        </svg>
                       </button>
-                    )}
-                    <button
-                      onClick={() => toggleSection(modeId)}
-                      title={isCollapsed ? 'Expandir' : 'Recolher'}
-                      style={{
-                        background: 'transparent', border: 'none', cursor: 'pointer',
-                        color: 'var(--text-muted)', display: 'flex', alignItems: 'center',
-                        padding: '0.2rem', borderRadius: '6px', transition: 'color 0.13s',
-                      }}
-                      onMouseEnter={e => { e.currentTarget.style.color = 'var(--text-secondary)' }}
-                      onMouseLeave={e => { e.currentTarget.style.color = 'var(--text-muted)' }}
-                    >
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"
-                        style={{ transform: isCollapsed ? 'rotate(-90deg)' : 'none', transition: 'transform 0.15s' }}>
-                        <path d="M6 9l6 6 6-6"/>
-                      </svg>
-                    </button>
+                    </div>
                   </div>
+
+                  {/* Divisor fino abaixo da etiqueta */}
+                  {!isCollapsed && (
+                    <div style={{
+                      height: '1px', background: 'rgba(226,232,240,0.7)',
+                      marginBottom: '0.875rem',
+                    }} />
+                  )}
 
                   {/* Cards */}
                   {!isCollapsed && (
-                    <div style={{ display: 'grid', gap: '0.5rem' }}>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.45rem' }}>
                       {modeProjects.length === 0 ? (
-                        <p style={{ color: 'var(--text-muted)', fontSize: '0.84rem', padding: '0.75rem 0' }}>
+                        <p style={{ color: 'var(--text-muted)', fontSize: '0.84rem', padding: '0.5rem 0' }}>
                           Nenhum projeto neste modo ainda.
                         </p>
                       ) : (
@@ -848,80 +852,67 @@ function ProjectCard({
     <div
       onClick={onClick}
       style={{
-        background: 'var(--surface)',
-        border: '1px solid rgba(148,163,184,0.16)',
+        background: '#fff',
+        border: '1px solid rgba(226,232,240,0.9)',
         borderRadius: '8px',
-        padding: '0.86rem 1rem',
+        padding: '1rem 1.25rem 0.9rem',
         cursor: 'pointer',
-        transition: 'border-color 0.15s, background 0.15s, transform 0.15s',
+        transition: 'box-shadow 0.15s, border-color 0.15s',
         display: 'flex',
         alignItems: 'center',
-        gap: '0.85rem',
-        flexWrap: 'wrap',
+        gap: '1.1rem',
+        // Borda esquerda colorida via box-shadow inset — não afeta layout
+        boxShadow: `inset 3px 0 0 ${visual.color}14`,
       }}
       onMouseEnter={e => {
-        e.currentTarget.style.borderColor = visual.border
-        e.currentTarget.style.background = 'var(--surface-2)'
-        e.currentTarget.style.transform = 'translateY(-1px)'
+        e.currentTarget.style.boxShadow = `inset 3px 0 0 ${visual.color}, 0 2px 16px rgba(15,23,42,0.07)`
+        e.currentTarget.style.borderColor = 'rgba(203,213,225,0.9)'
       }}
       onMouseLeave={e => {
-        e.currentTarget.style.borderColor = 'rgba(148,163,184,0.16)'
-        e.currentTarget.style.background = 'var(--surface)'
-        e.currentTarget.style.transform = 'translateY(0)'
+        e.currentTarget.style.boxShadow = `inset 3px 0 0 ${visual.color}14`
+        e.currentTarget.style.borderColor = 'rgba(226,232,240,0.9)'
       }}
     >
-      {/* Mode icon badge */}
-      <div style={{
-        width: '40px', height: '40px', borderRadius: '8px', flexShrink: 0,
-        background: visual.bg, border: `1px solid ${visual.border}`,
-        display: 'flex', alignItems: 'center', justifyContent: 'center',
-        color: visual.color,
-      }}>
-        {modeIcon(mode.id as StudyModeId, 19)}
-      </div>
-
-      {/* Main content */}
-      <div style={{ flex: '1 1 260px', minWidth: 0 }}>
+      {/* Título como protagonista */}
+      <div style={{ flex: 1, minWidth: 0 }}>
         <div style={{
           fontWeight: 700,
-          fontSize: '1rem',
+          fontSize: '1.08rem',
           lineHeight: 1.25,
-          color: 'var(--text-primary)',
-          marginBottom: subtitle ? '0.24rem' : 0,
+          color: '#0f172a',
+          marginBottom: '0.3rem',
           overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
         }}>
           {project.title}
         </div>
-        {subtitle && (
-          <div style={{
-            fontSize: '0.79rem',
-            color: 'var(--text-muted)',
-            lineHeight: 1.3,
-            overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
-          }}>
-            {subtitle}
-          </div>
-        )}
+        {/* Metadados: referência + data */}
+        <div style={{
+          display: 'flex', alignItems: 'center', gap: '0.45rem',
+          fontSize: '0.78rem', color: 'var(--text-muted)',
+          overflow: 'hidden',
+        }}>
+          {subtitle && (
+            <span style={{
+              overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+              fontStyle: 'italic',
+            }}>
+              {subtitle}
+            </span>
+          )}
+          {subtitle && <span style={{ opacity: 0.35, flexShrink: 0 }}>·</span>}
+          <span style={{ flexShrink: 0 }}>{formatDate(project.updated_at)}</span>
+        </div>
       </div>
 
-      {/* Right side: status + date */}
-      <div style={{
-        display: 'flex', flexDirection: 'column', alignItems: 'flex-end',
-        gap: '0.24rem', flex: '0 0 auto', marginLeft: 'auto',
-      }}>
+      {/* Status — discreto, último na hierarquia */}
+      <div style={{ flexShrink: 0, textAlign: 'right' }}>
         <span style={{
-          fontSize: '0.68rem',
-          fontWeight: 650,
-          color: isCompleted ? '#15803D' : 'var(--text-muted)',
-          background: isCompleted ? 'rgba(34,197,94,0.08)' : 'rgba(148,163,184,0.08)',
-          borderRadius: '999px',
-          padding: '0.1rem 0.45rem',
-          border: `1px solid ${isCompleted ? 'rgba(34,197,94,0.18)' : 'rgba(148,163,184,0.14)'}`,
+          fontSize: '0.7rem',
+          fontWeight: isCompleted ? 600 : 400,
+          color: isCompleted ? '#16a34a' : 'var(--text-muted)',
+          opacity: isCompleted ? 1 : 0.75,
         }}>
           {statusLabel(project.status)}
-        </span>
-        <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>
-          {formatDate(project.updated_at)}
         </span>
       </div>
     </div>
