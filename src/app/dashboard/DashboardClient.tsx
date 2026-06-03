@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useMemo } from 'react'
+import { useState, useMemo, cloneElement, isValidElement } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { LampasMarkIcon } from '@/components/LampasLogo'
@@ -90,6 +90,17 @@ const MODE_ICONS: Record<StudyModeId, React.ReactNode> = {
   ),
 }
 
+const MODE_VISUALS: Record<StudyModeId, { color: string; bg: string; border: string }> = {
+  devocional:           { color: '#BE3455', bg: 'rgba(190,52,85,0.08)', border: 'rgba(190,52,85,0.18)' },
+  sermao:               { color: '#7C3AED', bg: 'rgba(124,58,237,0.08)', border: 'rgba(124,58,237,0.18)' },
+  estudo_biblico:       { color: '#2563EB', bg: 'rgba(37,99,235,0.08)', border: 'rgba(37,99,235,0.18)' },
+  estudo_doutrinario:   { color: '#4F46E5', bg: 'rgba(79,70,229,0.08)', border: 'rgba(79,70,229,0.18)' },
+  estudo_tematico:      { color: '#0F766E', bg: 'rgba(15,118,110,0.08)', border: 'rgba(15,118,110,0.18)' },
+  exegese_biblica:      { color: '#0F766E', bg: 'rgba(15,118,110,0.08)', border: 'rgba(15,118,110,0.18)' },
+  estudo_de_carta:      { color: '#475569', bg: 'rgba(71,85,105,0.08)', border: 'rgba(71,85,105,0.18)' },
+  comentario_exegetico: { color: '#B45309', bg: 'rgba(180,83,9,0.08)', border: 'rgba(180,83,9,0.18)' },
+}
+
 // Order sections appear in the dashboard
 const SECTION_ORDER: StudyModeId[] = [
   'devocional',
@@ -135,6 +146,17 @@ function statusLabel(s: string): string {
 
 function statusColor(s: string): string {
   return { draft: 'var(--accent)', in_progress: 'var(--accent)', completed: 'var(--success)', archived: 'var(--text-muted)' }[s] ?? 'var(--text-muted)'
+}
+
+function modeVisual(modeId: StudyModeId) {
+  return MODE_VISUALS[modeId]
+}
+
+function modeIcon(modeId: StudyModeId, size: number) {
+  const icon = MODE_ICONS[modeId]
+  return isValidElement<{ width?: number; height?: number }>(icon)
+    ? cloneElement(icon, { width: size, height: size })
+    : icon
 }
 
 function buildReferenceTitle(book: string, passageRef: string): string {
@@ -376,12 +398,21 @@ export default function DashboardClient({ user, projects }: Props) {
       </header>
 
       {/* ── Main ── */}
-      <main style={{ maxWidth: '960px', margin: '0 auto', padding: '2.5rem 2rem' }}>
+      <main style={{ maxWidth: '900px', margin: '0 auto', padding: '2.25rem 1.5rem 3rem' }}>
 
         {/* Title row + new project button */}
-        <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', marginBottom: '1.75rem' }}>
+        <div style={{
+          display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between',
+          gap: '1rem', marginBottom: '1.35rem', flexWrap: 'wrap',
+        }}>
           <div>
-            <h1 style={{ marginBottom: '0.25rem' }}>Estudos</h1>
+            <h1 style={{
+              margin: '0 0 0.25rem',
+              fontSize: '1.7rem',
+              lineHeight: 1.1,
+              color: 'var(--text-primary)',
+              fontWeight: 750,
+            }}>Estudos</h1>
             <p style={{ color: 'var(--text-muted)', fontSize: '0.88rem' }}>
               {projects.length === 0
                 ? 'Nenhum projeto ainda'
@@ -390,8 +421,9 @@ export default function DashboardClient({ user, projects }: Props) {
           </div>
           <button onClick={openModal} style={{
             background: 'var(--accent)', color: '#FFFFFF', border: 'none',
-            borderRadius: '8px', padding: '0.6rem 1.25rem', fontWeight: '600',
-            cursor: 'pointer', fontSize: '0.9rem', fontFamily: 'inherit',
+            borderRadius: '8px', padding: '0.58rem 1.05rem', fontWeight: '650',
+            cursor: 'pointer', fontSize: '0.88rem', fontFamily: 'inherit',
+            boxShadow: '0 6px 16px rgba(59,130,246,0.16)',
           }}>
             + Novo Projeto
           </button>
@@ -400,7 +432,7 @@ export default function DashboardClient({ user, projects }: Props) {
         {/* Filter bar — only when there are multiple section types */}
         {filterModes.length > 1 && (
           <div style={{
-            display: 'flex', gap: '0.4rem', marginBottom: '2rem',
+            display: 'flex', gap: '0.45rem', marginBottom: '2rem',
             flexWrap: 'wrap', alignItems: 'center',
           }}>
             <FilterPill
@@ -431,34 +463,36 @@ export default function DashboardClient({ user, projects }: Props) {
         {projects.length === 0 ? (
           <EmptyDashboard onNew={openModal} />
         ) : (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '2.5rem' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '2.25rem' }}>
             {visibleSections.map(modeId => {
               const mode = STUDY_MODE_REGISTRY[modeId]
+              const visual = modeVisual(modeId)
               const modeProjects = projectsByMode.get(modeId) ?? []
               const isCollapsed = collapsedSections.has(modeId)
               return (
                 <section key={modeId}>
                   {/* Section header */}
                   <div style={{
-                    display: 'flex', alignItems: 'center', gap: '0.6rem',
-                    paddingBottom: '0.625rem',
-                    borderBottom: `1px solid var(--border-subtle)`,
-                    marginBottom: isCollapsed ? 0 : '0.875rem',
+                    display: 'grid', gridTemplateColumns: 'auto 1fr auto auto',
+                    alignItems: 'center', gap: '0.55rem',
+                    paddingBottom: '0.6rem',
+                    borderBottom: `1px solid rgba(148,163,184,0.18)`,
+                    marginBottom: isCollapsed ? 0 : '0.7rem',
                   }}>
-                    <span style={{ color: mode.color, display: 'flex', flexShrink: 0 }}>
-                      {MODE_ICONS[modeId]}
+                    <span style={{ color: visual.color, display: 'flex', flexShrink: 0 }}>
+                      {modeIcon(modeId, 16)}
                     </span>
                     <span style={{
-                      fontSize: '0.88rem', fontWeight: 700,
-                      color: 'var(--text-primary)', flex: 1,
+                      fontSize: '0.94rem', fontWeight: 750,
+                      color: 'var(--text-primary)',
                       display: 'flex', alignItems: 'center', gap: '0.45rem',
                     }}>
                       {mode.name}
                       <span style={{
-                        fontSize: '0.72rem', fontWeight: 500,
-                        color: 'var(--text-muted)', background: 'var(--surface-2)',
-                        borderRadius: '10px', padding: '0.1rem 0.5rem',
-                        border: '1px solid var(--border-subtle)',
+                        fontSize: '0.7rem', fontWeight: 650,
+                        color: visual.color, background: visual.bg,
+                        borderRadius: '999px', padding: '0.08rem 0.45rem',
+                        border: `1px solid ${visual.border}`,
                       }}>
                         {modeProjects.length}
                       </span>
@@ -468,10 +502,10 @@ export default function DashboardClient({ user, projects }: Props) {
                         onClick={() => setActiveFilter(modeId)}
                         style={{
                           background: 'transparent', border: 'none', cursor: 'pointer',
-                          color: 'var(--text-muted)', fontSize: '0.78rem', fontFamily: 'inherit',
-                          padding: '0.2rem 0.5rem', borderRadius: '4px',
+                          color: 'var(--text-muted)', fontSize: '0.76rem', fontFamily: 'inherit',
+                          padding: '0.2rem 0.45rem', borderRadius: '6px',
                         }}
-                        onMouseEnter={e => { e.currentTarget.style.color = mode.color }}
+                        onMouseEnter={e => { e.currentTarget.style.color = visual.color }}
                         onMouseLeave={e => { e.currentTarget.style.color = 'var(--text-muted)' }}
                       >
                         Ver todos
@@ -483,7 +517,7 @@ export default function DashboardClient({ user, projects }: Props) {
                       style={{
                         background: 'transparent', border: 'none', cursor: 'pointer',
                         color: 'var(--text-muted)', display: 'flex', alignItems: 'center',
-                        padding: '0.2rem', borderRadius: '4px', transition: 'color 0.13s',
+                        padding: '0.2rem', borderRadius: '6px', transition: 'color 0.13s',
                       }}
                       onMouseEnter={e => { e.currentTarget.style.color = 'var(--text-secondary)' }}
                       onMouseLeave={e => { e.currentTarget.style.color = 'var(--text-muted)' }}
@@ -497,7 +531,7 @@ export default function DashboardClient({ user, projects }: Props) {
 
                   {/* Cards */}
                   {!isCollapsed && (
-                    <div style={{ display: 'grid', gap: '0.55rem' }}>
+                    <div style={{ display: 'grid', gap: '0.5rem' }}>
                       {modeProjects.length === 0 ? (
                         <p style={{ color: 'var(--text-muted)', fontSize: '0.84rem', padding: '0.75rem 0' }}>
                           Nenhum projeto neste modo ainda.
@@ -771,16 +805,20 @@ function FilterPill({
   onClick: () => void
   children: React.ReactNode
 }) {
+  const activeBorder = color.startsWith('#') ? `${color}55` : color
+  const activeBg = color.startsWith('#') ? `${color}10` : 'var(--accent-subtle)'
+
   return (
     <button
       onClick={onClick}
       style={{
-        padding: '0.35rem 0.85rem',
-        borderRadius: '20px',
-        border: `1px solid ${active ? color : 'var(--border)'}`,
-        background: active ? `${color}12` : 'transparent',
+        minHeight: '32px',
+        padding: '0.35rem 0.78rem',
+        borderRadius: '999px',
+        border: `1px solid ${active ? activeBorder : 'rgba(148,163,184,0.22)'}`,
+        background: active ? activeBg : 'rgba(255,255,255,0.02)',
         color: active ? color : 'var(--text-secondary)',
-        fontSize: '0.8rem', fontWeight: active ? 600 : 400,
+        fontSize: '0.78rem', fontWeight: active ? 650 : 500,
         cursor: 'pointer', fontFamily: 'inherit',
         transition: 'all 0.13s',
       }}
@@ -797,6 +835,8 @@ function ProjectCard({
   mode: StudyModeConfig
   onClick: () => void
 }) {
+  const visual = modeVisual(mode.id as StudyModeId)
+  const isCompleted = project.status === 'completed'
   const isPassage = mode.passageBased
   const subtitle = isPassage && project.book && project.book !== '—'
     ? `${project.book} ${project.passage_ref}`
@@ -808,36 +848,55 @@ function ProjectCard({
     <div
       onClick={onClick}
       style={{
-        background: 'var(--surface)', border: '1px solid var(--border-subtle)',
-        borderRadius: '10px', padding: '1rem 1.25rem',
-        cursor: 'pointer', transition: 'border-color 0.15s',
-        display: 'flex', alignItems: 'center', gap: '1rem',
+        background: 'var(--surface)',
+        border: '1px solid rgba(148,163,184,0.16)',
+        borderRadius: '8px',
+        padding: '0.86rem 1rem',
+        cursor: 'pointer',
+        transition: 'border-color 0.15s, background 0.15s, transform 0.15s',
+        display: 'flex',
+        alignItems: 'center',
+        gap: '0.85rem',
+        flexWrap: 'wrap',
       }}
-      onMouseEnter={e => (e.currentTarget.style.borderColor = 'var(--border)')}
-      onMouseLeave={e => (e.currentTarget.style.borderColor = 'var(--border-subtle)')}
+      onMouseEnter={e => {
+        e.currentTarget.style.borderColor = visual.border
+        e.currentTarget.style.background = 'var(--surface-2)'
+        e.currentTarget.style.transform = 'translateY(-1px)'
+      }}
+      onMouseLeave={e => {
+        e.currentTarget.style.borderColor = 'rgba(148,163,184,0.16)'
+        e.currentTarget.style.background = 'var(--surface)'
+        e.currentTarget.style.transform = 'translateY(0)'
+      }}
     >
       {/* Mode icon badge */}
       <div style={{
-        width: '38px', height: '38px', borderRadius: '8px', flexShrink: 0,
-        background: `${mode.color}12`, border: `1px solid ${mode.color}28`,
+        width: '40px', height: '40px', borderRadius: '8px', flexShrink: 0,
+        background: visual.bg, border: `1px solid ${visual.border}`,
         display: 'flex', alignItems: 'center', justifyContent: 'center',
-        color: mode.color,
+        color: visual.color,
       }}>
-        {MODE_ICONS[mode.id as StudyModeId]}
+        {modeIcon(mode.id as StudyModeId, 19)}
       </div>
 
       {/* Main content */}
-      <div style={{ flex: 1, minWidth: 0 }}>
+      <div style={{ flex: '1 1 260px', minWidth: 0 }}>
         <div style={{
-          fontWeight: 600, fontSize: '0.92rem',
-          color: 'var(--text-primary)', marginBottom: '0.2rem',
+          fontWeight: 700,
+          fontSize: '1rem',
+          lineHeight: 1.25,
+          color: 'var(--text-primary)',
+          marginBottom: subtitle ? '0.24rem' : 0,
           overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
         }}>
           {project.title}
         </div>
         {subtitle && (
           <div style={{
-            fontSize: '0.78rem', color: 'var(--text-muted)',
+            fontSize: '0.79rem',
+            color: 'var(--text-muted)',
+            lineHeight: 1.3,
             overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
           }}>
             {subtitle}
@@ -848,18 +907,20 @@ function ProjectCard({
       {/* Right side: status + date */}
       <div style={{
         display: 'flex', flexDirection: 'column', alignItems: 'flex-end',
-        gap: '0.3rem', flexShrink: 0,
+        gap: '0.24rem', flex: '0 0 auto', marginLeft: 'auto',
       }}>
         <span style={{
-          fontSize: '0.72rem', fontWeight: 600,
-          color: statusColor(project.status),
-          background: `${statusColor(project.status)}12`,
-          borderRadius: '4px', padding: '0.12rem 0.45rem',
-          border: `1px solid ${statusColor(project.status)}28`,
+          fontSize: '0.68rem',
+          fontWeight: 650,
+          color: isCompleted ? '#15803D' : 'var(--text-muted)',
+          background: isCompleted ? 'rgba(34,197,94,0.08)' : 'rgba(148,163,184,0.08)',
+          borderRadius: '999px',
+          padding: '0.1rem 0.45rem',
+          border: `1px solid ${isCompleted ? 'rgba(34,197,94,0.18)' : 'rgba(148,163,184,0.14)'}`,
         }}>
           {statusLabel(project.status)}
         </span>
-        <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>
+        <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>
           {formatDate(project.updated_at)}
         </span>
       </div>
