@@ -43,7 +43,7 @@ function LoginContent() {
       router.push(next)
       router.refresh()
     } else {
-      const { error } = await supabase.auth.signUp({
+      const { data: signUpData, error } = await supabase.auth.signUp({
         email,
         password,
         options: { data: { full_name: name } },
@@ -53,6 +53,11 @@ function LoginContent() {
           ? 'Este email já está cadastrado. Faça login.'
           : error.message)
         setLoading(false)
+        return
+      }
+      if (signUpData.session) {
+        router.push(next)
+        router.refresh()
         return
       }
       setSuccess('Conta criada! Verifique seu email para confirmar o cadastro.')
