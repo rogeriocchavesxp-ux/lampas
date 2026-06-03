@@ -476,18 +476,21 @@ export default function DashboardClient({ user, projects }: Props) {
                     display: 'flex', alignItems: 'center', justifyContent: 'space-between',
                     marginBottom: isCollapsed ? 0 : '0.875rem',
                   }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
+                      <span style={{ color: visual.color, display: 'flex', flexShrink: 0 }}>
+                        {modeIcon(modeId, 15)}
+                      </span>
                       <span style={{
                         fontSize: '1rem', fontWeight: 700,
-                        color: 'var(--text-primary)',
+                        color: visual.color,
                       }}>
                         {mode.name}
                       </span>
                       <span style={{
-                        fontSize: '0.75rem', color: 'var(--text-muted)',
-                        fontWeight: 500,
+                        fontSize: '0.72rem', color: visual.color,
+                        fontWeight: 500, opacity: 0.5,
                       }}>
-                        · {modeProjects.length}
+                        {modeProjects.length}
                       </span>
                     </div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
