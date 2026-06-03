@@ -14,7 +14,7 @@ AS $$
   FROM public.ai_interactions
   WHERE created_at >= p_since
   GROUP BY created_at::date
-  ORDER BY day DESC;
+  ORDER BY created_at::date DESC;
 $$;
 
 REVOKE ALL ON FUNCTION public.get_ai_usage_by_day FROM PUBLIC;
