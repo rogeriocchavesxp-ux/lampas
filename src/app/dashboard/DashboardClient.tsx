@@ -154,6 +154,7 @@ export default function DashboardClient({ user, projects }: Props) {
   const [modalStep,    setModalStep]   = useState<'mode' | 'form'>('mode')
   const [selectedMode, setSelectedMode] = useState<StudyModeId | null>(null)
   const [creating,     setCreating]    = useState(false)
+  const [createError,  setCreateError] = useState<string | null>(null)
   const [form,         setForm]        = useState({
     title: '', book: '', passage_ref: '', topic: '', testament: 'NT' as 'AT' | 'NT',
   })
@@ -199,6 +200,8 @@ export default function DashboardClient({ user, projects }: Props) {
   function openModal() {
     setModalStep('mode')
     setSelectedMode(null)
+    setCreating(false)
+    setCreateError(null)
     setForm({ title: '', book: '', passage_ref: '', topic: '', testament: 'NT' })
     setShowNew(true)
   }
@@ -212,30 +215,70 @@ export default function DashboardClient({ user, projects }: Props) {
 
   async function handleCreate(e: React.FormEvent) {
     e.preventDefault()
-    if (!form.title || !selectedMode || !modeConfig) return
+    setCreateError(null)
+
+    if (!form.title.trim()) {
+      setCreateError('O título é obrigatório.')
+      return
+    }
+    if (!selectedMode || !modeConfig) return
+
     const isPassage = modeConfig.passageBased
-    if (isPassage && (!form.book || !form.passage_ref)) return
-    if (!isPassage && !form.topic) return
+
+    if (isPassage && !form.book) {
+      setCreateError('Selecione o livro.')
+      return
+    }
+    if (isPassage && !form.passage_ref.trim()) {
+      setCreateError(`${modeConfig.passageLabel} é obrigatório.`)
+      return
+    }
+    if (!isPassage && !form.topic.trim()) {
+      setCreateError(`${modeConfig.topicLabel} é obrigatório.`)
+      return
+    }
+
+    const payload = {
+      user_id:           user.id,
+      title:             form.title.trim(),
+      book:              isPassage ? form.book : '—',
+      passage_ref:       isPassage ? form.passage_ref.trim() : form.topic.trim(),
+      testament:         isPassage ? form.testament : 'AT',
+      original_language: isPassage ? (form.testament === 'AT' ? 'hebraico' : 'grego') : '—',
+      bible_version:     'NAA',
+      status:            'draft',
+      study_mode:        selectedMode,
+      project_type:      LEGACY_TYPE[selectedMode] ?? 'exegese',
+      meta:              isPassage ? {} : { topic: form.topic.trim() },
+    }
+
+    console.log('[Lampas] Criando projeto', payload)
     setCreating(true)
-    const { data, error } = await supabase
-      .from('projects')
-      .insert({
-        user_id:           user.id,
-        title:             form.title,
-        book:              isPassage ? form.book : '—',
-        passage_ref:       isPassage ? form.passage_ref : form.topic,
-        testament:         isPassage ? form.testament : 'AT',
-        original_language: isPassage ? (form.testament === 'AT' ? 'hebraico' : 'grego') : '—',
-        bible_version:     'NAA',
-        status:            'draft',
-        study_mode:        selectedMode,
-        project_type:      LEGACY_TYPE[selectedMode] ?? 'exegese',
-        meta:              isPassage ? {} : { topic: form.topic },
-      })
-      .select()
-      .single()
-    if (!error && data) router.push(`/workspace/${data.id}`)
-    setCreating(false)
+
+    try {
+      const { data, error } = await supabase
+        .from('projects')
+        .insert(payload)
+        .select()
+        .single()
+
+      console.log('[Lampas] Resposta criação', { data, error })
+
+      if (error) {
+        console.error('[Lampas] Erro ao criar projeto', error)
+        setCreateError('Não foi possível criar o projeto. Tente novamente.')
+        return
+      }
+
+      if (data) {
+        router.push(`/workspace/${data.id}`)
+      }
+    } catch (err) {
+      console.error('[Lampas] Erro inesperado ao criar projeto', err)
+      setCreateError('Não foi possível criar o projeto. Tente novamente.')
+    } finally {
+      setCreating(false)
+    }
   }
 
   return (
@@ -524,7 +567,7 @@ export default function DashboardClient({ user, projects }: Props) {
               <div style={{ padding: '1.75rem 1.75rem 1.5rem' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1.4rem' }}>
                   <button
-                    onClick={() => setModalStep('mode')}
+                    onClick={() => { setModalStep('mode'); setCreateError(null) }}
                     style={{
                       background: 'none', border: 'none', cursor: 'pointer',
                       color: 'var(--text-muted)', padding: '0.2rem', fontSize: '0.9rem',
@@ -598,6 +641,18 @@ export default function DashboardClient({ user, projects }: Props) {
                         required
                       />
                     </FormField>
+                  )}
+
+                  {createError && (
+                    <div style={{
+                      color: '#DC2626',
+                      background: 'rgba(220,38,38,0.06)',
+                      border: '1px solid rgba(220,38,38,0.2)',
+                      borderRadius: '7px', padding: '0.6rem 0.85rem',
+                      fontSize: '0.84rem', lineHeight: 1.4,
+                    }}>
+                      {createError}
+                    </div>
                   )}
 
                   <div style={{ display: 'flex', gap: '0.75rem', marginTop: '0.5rem' }}>
