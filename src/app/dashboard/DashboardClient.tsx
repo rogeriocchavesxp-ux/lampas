@@ -478,15 +478,14 @@ export default function DashboardClient({ user, projects }: Props) {
                   }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                       <span style={{
-                        fontSize: '0.65rem', fontWeight: 800,
-                        letterSpacing: '0.1em', textTransform: 'uppercase',
-                        color: visual.color, opacity: 0.9,
+                        fontSize: '1rem', fontWeight: 700,
+                        color: 'var(--text-primary)',
                       }}>
                         {mode.name}
                       </span>
                       <span style={{
-                        fontSize: '0.65rem', color: 'var(--text-muted)',
-                        fontWeight: 500, opacity: 0.7,
+                        fontSize: '0.75rem', color: 'var(--text-muted)',
+                        fontWeight: 500,
                       }}>
                         · {modeProjects.length}
                       </span>
@@ -876,11 +875,11 @@ function ProjectCard({
       {/* Título como protagonista */}
       <div style={{ flex: 1, minWidth: 0 }}>
         <div style={{
-          fontWeight: 700,
-          fontSize: '1.08rem',
+          fontWeight: 500,
+          fontSize: '0.9rem',
           lineHeight: 1.25,
-          color: '#0f172a',
-          marginBottom: '0.3rem',
+          color: 'var(--text-primary)',
+          marginBottom: '0.25rem',
           overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
         }}>
           {project.title}
