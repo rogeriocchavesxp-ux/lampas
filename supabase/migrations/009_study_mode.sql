@@ -32,3 +32,7 @@ ALTER TABLE projects
     'devocional',
     'comentario_exegetico'
   ));
+
+-- Remove constraint de project_type (campo legado — study_mode é o canônico)
+-- Permite qualquer valor em project_type sem violar o schema
+ALTER TABLE projects DROP CONSTRAINT IF EXISTS projects_project_type_check;

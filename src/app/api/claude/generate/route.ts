@@ -2,7 +2,7 @@ import Anthropic from '@anthropic-ai/sdk'
 import { createClient } from '@/lib/supabase/server'
 import { checkAIUsage, incrementAIUsage } from '@/lib/billing'
 import { checkRateLimit, rateLimitHeaders } from '@/lib/rate-limit'
-import { EXEGESE_SYSTEM_PROMPT } from '@/lib/prompts/exegese-system'
+import { getSystemPromptForMode } from '@/lib/prompts/mode-personas'
 import { getSectionBySlug } from '@/lib/workspace-sections'
 import { loadOriginalTextContext } from '@/lib/workspace-context'
 import { cacheKey, getAICache, setAICache } from '@/lib/ai-cache'
@@ -16,6 +16,7 @@ interface ProjectContext {
   passage_ref: string
   testament: string
   original_language: string
+  study_mode?: string
 }
 
 function shouldUseOriginalText(sectionSlug: string, sectionGroup: string): boolean {
@@ -115,7 +116,8 @@ INSTRUÇÕES CRÍTICAS:
 ${jsonKeys}
 }`
 
-  const systemText = EXEGESE_SYSTEM_PROMPT + '\n\nIMPORTANTE: Quando solicitado a gerar JSON estruturado, retorne SOMENTE o JSON válido, sem blocos de código markdown envolvendo o JSON, sem texto fora do JSON. Os valores dentro do JSON podem e devem conter markdown (### títulos, **negrito**, tabelas, listas) para estruturar o conteúdo exegeticamente.'
+  const basePrompt = getSystemPromptForMode(project.study_mode)
+  const systemText = basePrompt + '\n\nIMPORTANTE: Quando solicitado a gerar JSON estruturado, retorne SOMENTE o JSON válido, sem blocos de código markdown envolvendo o JSON, sem texto fora do JSON. Os valores dentro do JSON podem e devem conter markdown (### títulos, **negrito**, tabelas, listas) para estruturar o conteúdo exegeticamente.'
 
   const ck = cacheKey(sectionSlug, (cardIds ?? (cardId ? [cardId] : [])).join(','), project.book, project.passage_ref, originalTextContext)
   const cached = await getAICache<Record<string, string>>(ck)

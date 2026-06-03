@@ -2,7 +2,7 @@ import Anthropic from '@anthropic-ai/sdk'
 import { createClient } from '@/lib/supabase/server'
 import { checkAIUsage, incrementAIUsage } from '@/lib/billing'
 import { checkRateLimit, rateLimitHeaders } from '@/lib/rate-limit'
-import { EXEGESE_SYSTEM_PROMPT } from '@/lib/prompts/exegese-system'
+import { getSystemPromptForMode } from '@/lib/prompts/mode-personas'
 import { loadOriginalTextContext } from '@/lib/workspace-context'
 import { cacheKey, getAICache, setAICache } from '@/lib/ai-cache'
 import { captureError } from '@/lib/monitoring'
@@ -15,6 +15,7 @@ interface ProjectContext {
   passage_ref: string
   testament: string
   original_language: string
+  study_mode?: string
 }
 
 export async function POST(req: Request) {
@@ -66,7 +67,7 @@ Retorne APENAS JSON válido com a estrutura:
 
 Identifique entre 4 e 10 termos, ordenados por importância teológica. Inclua apenas termos que exigem análise lexical profunda — evite palavras comuns sem peso teológico.`
 
-    const identifySystem = EXEGESE_SYSTEM_PROMPT + '\n\nIMPORTANTE: Retorne SOMENTE JSON válido, sem markdown, sem texto fora do JSON.'
+    const identifySystem = getSystemPromptForMode(project.study_mode) + '\n\nIMPORTANTE: Retorne SOMENTE JSON válido, sem markdown, sem texto fora do JSON.'
     const ckIdentify = cacheKey('identify', project.book, project.passage_ref, textBlock)
     const cachedIdentify = await getAICache(ckIdentify)
     if (cachedIdentify) return Response.json(cachedIdentify)
@@ -126,7 +127,7 @@ Liste as obras citadas nesta análise (dicionários, comentaristas reformados).`
       const response = await anthropic.messages.create({
         model: 'claude-sonnet-4-6',
         max_tokens: 3000,
-        system: [{ type: 'text', text: EXEGESE_SYSTEM_PROMPT, cache_control: { type: 'ephemeral' } }],
+        system: [{ type: 'text', text: getSystemPromptForMode(project.study_mode), cache_control: { type: 'ephemeral' } }],
         messages: [{ role: 'user', content: prompt }],
       })
       const analysis = response.content[0].type === 'text' ? response.content[0].text : ''

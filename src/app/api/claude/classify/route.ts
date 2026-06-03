@@ -2,7 +2,7 @@ import Anthropic from '@anthropic-ai/sdk'
 import { createClient } from '@/lib/supabase/server'
 import { checkAIUsage, incrementAIUsage } from '@/lib/billing'
 import { checkRateLimit, rateLimitHeaders } from '@/lib/rate-limit'
-import { EXEGESE_SYSTEM_PROMPT } from '@/lib/prompts/exegese-system'
+import { getSystemPromptForMode } from '@/lib/prompts/mode-personas'
 import { cacheKey, getAICache, setAICache } from '@/lib/ai-cache'
 
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY! })
@@ -70,7 +70,7 @@ export async function POST(req: Request) {
     const response = await anthropic.messages.create({
       model: 'claude-sonnet-4-6',
       max_tokens: maxTokens,
-      system: [{ type: 'text', text: EXEGESE_SYSTEM_PROMPT, cache_control: { type: 'ephemeral' } }],
+      system: [{ type: 'text', text: getSystemPromptForMode(), cache_control: { type: 'ephemeral' } }],
       messages: [{ role: 'user', content: prompt }],
     })
     const result = response.content[0].type === 'text' ? response.content[0].text.trim() : ''

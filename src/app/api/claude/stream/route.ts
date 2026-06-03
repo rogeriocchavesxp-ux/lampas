@@ -2,7 +2,7 @@ import Anthropic from '@anthropic-ai/sdk'
 import { createClient } from '@/lib/supabase/server'
 import { checkAIUsage, incrementAIUsage } from '@/lib/billing'
 import { checkRateLimit, rateLimitHeaders } from '@/lib/rate-limit'
-import { EXEGESE_SYSTEM_PROMPT } from '@/lib/prompts/exegese-system'
+import { getSystemPromptForMode } from '@/lib/prompts/mode-personas'
 import { getSectionBySlug } from '@/lib/workspace-sections'
 import { getToolAreaBySlug } from '@/lib/tools-content'
 import { loadOriginalTextContext } from '@/lib/workspace-context'
@@ -45,7 +45,7 @@ export async function POST(req: Request) {
   const body = await req.json()
   const { messages, project, activeSlug, activeTitle } = body as {
     messages: ChatMessage[]
-    project: { id?: string; book: string; passage_ref: string; testament: string; original_language: string }
+    project: { id?: string; book: string; passage_ref: string; testament: string; original_language: string; study_mode?: string }
     activeSlug: string
     activeTitle: string
   }
@@ -87,7 +87,7 @@ export async function POST(req: Request) {
   // Build context prefix for the current section
   const contextNote = `[Projeto atual: ${project.book} ${project.passage_ref} (${project.original_language}) | Seção ativa: ${activeTitle}]\n${modeInstruction}${originalTextContext ? `\n\nTexto original carregado no workspace:\n${originalTextContext}` : ''}`
 
-  const systemWithContext = `${EXEGESE_SYSTEM_PROMPT}\n\n---\n${contextNote}`
+  const systemWithContext = `${getSystemPromptForMode(project.study_mode)}\n\n---\n${contextNote}`
 
   // Convert messages to Anthropic format — inject context into first user message
   const anthropicMessages: Anthropic.MessageParam[] = messages.map((m, i) => ({

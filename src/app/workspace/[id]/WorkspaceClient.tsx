@@ -478,7 +478,9 @@ export default function WorkspaceClient({ user, project, initialSections }: Prop
           )}
           <span style={{ color: 'var(--border)', fontSize: '0.78rem', flexShrink: 0 }}>·</span>
           <span style={{ fontSize: '0.78rem', color: 'var(--text-muted)', flexShrink: 0, whiteSpace: 'nowrap' }}>
-            {project.book} {project.passage_ref}
+            {modeConfig.passageBased
+              ? `${project.book} ${project.passage_ref}`
+              : project.passage_ref}
           </span>
           <span style={{
             fontSize: '0.68rem', color: 'var(--text-muted)', flexShrink: 0,

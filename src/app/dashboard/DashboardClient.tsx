@@ -12,6 +12,18 @@ import {
   type StudyModeId,
 } from '@/lib/study-modes'
 
+// Mapeia study_mode para project_type legado (constraint do banco ainda existe)
+const LEGACY_TYPE: Record<StudyModeId, string> = {
+  exegese_biblica:      'exegese',
+  estudo_de_carta:      'exegese',
+  estudo_doutrinario:   'estudo_doutrinario',
+  estudo_tematico:      'estudo_doutrinario',
+  sermao:               'sermao',
+  estudo_biblico:       'estudo_biblico',
+  devocional:           'devocional',
+  comentario_exegetico: 'exegese',
+}
+
 const BOOKS_AT = [
   'Gênesis','Êxodo','Levítico','Números','Deuteronômio',
   'Josué','Juízes','Rute','1 Samuel','2 Samuel','1 Reis','2 Reis',
@@ -154,7 +166,7 @@ export default function DashboardClient({ user, projects, profile }: Props) {
         bible_version:     'NAA',
         status:            'draft',
         study_mode:        selectedMode,
-        project_type:      selectedMode,   // compatibilidade legada
+        project_type:      LEGACY_TYPE[selectedMode] ?? 'exegese',
         meta:              isPassage ? {} : { topic: form.topic },
       })
       .select()
@@ -241,7 +253,7 @@ export default function DashboardClient({ user, projects, profile }: Props) {
         ) : (
           <div style={{ display: 'grid', gap: '0.75rem' }}>
             {projects.map(p => {
-              const pMode = getModeConfig((p as { study_mode?: string }).study_mode ?? p.project_type)
+              const pMode = getModeConfig(p.study_mode ?? p.project_type)
               const isPassage = pMode.passageBased
               return (
                 <div key={p.id} onClick={() => router.push(`/workspace/${p.id}`)}
