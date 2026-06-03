@@ -222,7 +222,7 @@ export default function WorkspaceClient({ user, project, initialSections }: Prop
 
   // ── Mode config — fonte de verdade para navegação ─────────────────────
   const modeConfig = useMemo(
-    () => getModeConfig((project as { study_mode?: string }).study_mode ?? project.project_type),
+    () => getModeConfig(project.study_mode ?? project.project_type),
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [project.id]
   )
@@ -489,7 +489,19 @@ export default function WorkspaceClient({ user, project, initialSections }: Prop
           </span>
         </div>
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem', flexShrink: 0, marginLeft: '0.75rem' }}>
+        {/* Mode badge */}
+        <span style={{
+          fontSize: '0.64rem', fontWeight: 700, letterSpacing: '0.04em',
+          color: modeConfig.color,
+          background: `${modeConfig.color}12`,
+          border: `1px solid ${modeConfig.color}30`,
+          borderRadius: '4px', padding: '0.1rem 0.45rem',
+          flexShrink: 0, whiteSpace: 'nowrap',
+        }}>
+          {modeConfig.name}
+        </span>
+
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem', flexShrink: 0, marginLeft: '0.25rem' }}>
           <span style={{ fontSize: '0.68rem', color: 'var(--text-muted)' }}>{pct}%</span>
           <div style={{ width: '56px', height: '2px', background: 'var(--border)', borderRadius: '1px', overflow: 'hidden' }}>
             <div style={{
@@ -1126,10 +1138,28 @@ export default function WorkspaceClient({ user, project, initialSections }: Prop
               />
             ) : (
               <div style={{
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                height: '100%', color: 'var(--text-muted)', fontSize: '0.88rem',
+                display: 'flex', flexDirection: 'column', alignItems: 'center',
+                justifyContent: 'center', height: '100%', gap: '0.75rem',
+                padding: '3rem', textAlign: 'center',
               }}>
-                Selecione uma seção
+                <div style={{
+                  width: '48px', height: '48px', borderRadius: '12px',
+                  background: `${modeConfig.color}12`,
+                  border: `1px solid ${modeConfig.color}25`,
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  fontSize: '1.4rem', color: modeConfig.color,
+                }}>
+                  ◎
+                </div>
+                <div>
+                  <p style={{ fontWeight: 600, fontSize: '0.9rem', color: 'var(--text-secondary)', marginBottom: '0.3rem' }}>
+                    Seção em desenvolvimento
+                  </p>
+                  <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', lineHeight: 1.6 }}>
+                    O conteúdo desta seção para o modo <strong style={{ color: modeConfig.color }}>{modeConfig.name}</strong>
+                    <br />será implementado em breve.
+                  </p>
+                </div>
               </div>
             )}
           </main>

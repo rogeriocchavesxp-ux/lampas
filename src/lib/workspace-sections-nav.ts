@@ -1010,6 +1010,561 @@ export const WORKSPACE_SECTIONS_NAV: SectionNav[] = [
     "module": "inventio",
     "group": "preparar_visao_geral",
     "groupLabel": "Assimilação macro"
+  },
+  {
+    "slug": "eb_preparacao",
+    "title": "I.1 Preparação",
+    "shortTitle": "Preparação",
+    "phase": "preparar",
+    "module": "inventio",
+    "group": "eb_preparar",
+    "groupLabel": "I. Preparar",
+    "order": 100,
+    "cards": [
+      { "id": "oracao", "title": "Oração" },
+      { "id": "publico_alvo", "title": "Público-alvo" },
+      { "id": "faixa_etaria", "title": "Faixa etária" },
+      { "id": "tempo_disponivel", "title": "Tempo disponível" }
+    ]
+  },
+  {
+    "slug": "eb_objetivos",
+    "title": "I.2 Objetivos",
+    "shortTitle": "Objetivos",
+    "phase": "preparar",
+    "module": "inventio",
+    "group": "eb_preparar",
+    "groupLabel": "I. Preparar",
+    "order": 101,
+    "cards": [
+      { "id": "objetivos_aula", "title": "Objetivos da aula" },
+      { "id": "resultados_esperados", "title": "Resultados esperados" }
+    ]
+  },
+  {
+    "slug": "eb_texto_base",
+    "title": "II.1 Texto-Base",
+    "shortTitle": "Texto-Base",
+    "phase": "preparar",
+    "module": "inventio",
+    "group": "eb_compreender",
+    "groupLabel": "II. Compreender",
+    "order": 102,
+    "cards": [
+      { "id": "leitura_texto", "title": "Leitura do texto" },
+      { "id": "estrutura", "title": "Estrutura" },
+      { "id": "personagens", "title": "Personagens" },
+      { "id": "lugares", "title": "Lugares" }
+    ]
+  },
+  {
+    "slug": "eb_temas_termos",
+    "title": "II.2 Temas e Termos",
+    "shortTitle": "Temas e Termos",
+    "phase": "preparar",
+    "module": "inventio",
+    "group": "eb_compreender",
+    "groupLabel": "II. Compreender",
+    "order": 103,
+    "cards": [
+      { "id": "temas_principais", "title": "Temas principais" },
+      { "id": "termos_chave", "title": "Termos-chave" },
+      { "id": "grande_ideia", "title": "Grande Ideia" }
+    ]
+  },
+  {
+    "slug": "eb_introducao",
+    "title": "III.1 Introdução",
+    "shortTitle": "Introdução",
+    "phase": "comunicar",
+    "module": "dispositio",
+    "group": "eb_ensinar",
+    "groupLabel": "III. Ensinar",
+    "order": 104,
+    "cards": [
+      { "id": "gancho", "title": "Gancho" },
+      { "id": "quebra_gelo", "title": "Quebra-gelo" },
+      { "id": "conexao_vida", "title": "Conexão com a vida" }
+    ]
+  },
+  {
+    "slug": "eb_desenvolvimento",
+    "title": "III.2 Desenvolvimento",
+    "shortTitle": "Desenvolvimento",
+    "phase": "comunicar",
+    "module": "dispositio",
+    "group": "eb_ensinar",
+    "groupLabel": "III. Ensinar",
+    "order": 105,
+    "cards": [
+      { "id": "ponto_1", "title": "Ponto 1" },
+      { "id": "ponto_2", "title": "Ponto 2" },
+      { "id": "ponto_3", "title": "Ponto 3" },
+      { "id": "transicoes", "title": "Transições" }
+    ]
+  },
+  {
+    "slug": "eb_perguntas",
+    "title": "III.3 Perguntas",
+    "shortTitle": "Perguntas",
+    "phase": "comunicar",
+    "module": "dispositio",
+    "group": "eb_ensinar",
+    "groupLabel": "III. Ensinar",
+    "order": 106,
+    "cards": [
+      { "id": "perguntas_observacao", "title": "Perguntas de observação" },
+      { "id": "perguntas_interpretacao", "title": "Perguntas de interpretação" },
+      { "id": "perguntas_aplicacao", "title": "Perguntas de aplicação" }
+    ]
+  },
+  {
+    "slug": "eb_dinamicas",
+    "title": "III.4 Dinâmicas",
+    "shortTitle": "Dinâmicas",
+    "phase": "comunicar",
+    "module": "dispositio",
+    "group": "eb_ensinar",
+    "groupLabel": "III. Ensinar",
+    "order": 107,
+    "cards": [
+      { "id": "exercicios", "title": "Exercícios" },
+      { "id": "discussao_grupo", "title": "Discussão em grupo" },
+      { "id": "sintese", "title": "Síntese" }
+    ]
+  },
+  {
+    "slug": "eb_aplicacoes",
+    "title": "IV. Aplicações",
+    "shortTitle": "Aplicações",
+    "phase": "comunicar",
+    "module": "elocutio",
+    "group": "eb_aplicar",
+    "groupLabel": "IV. Aplicar",
+    "order": 108,
+    "cards": [
+      { "id": "aplicacoes_individuais", "title": "Aplicações individuais" },
+      { "id": "aplicacoes_familiares", "title": "Aplicações familiares" },
+      { "id": "aplicacoes_eclesiasticas", "title": "Aplicações eclesiásticas" },
+      { "id": "aplicacoes_missionais", "title": "Aplicações missionais" }
+    ]
+  },
+  {
+    "slug": "eb_material",
+    "title": "V. Material",
+    "shortTitle": "Material",
+    "phase": "comunicar",
+    "module": "memoria",
+    "group": "eb_recursos",
+    "groupLabel": "V. Recursos",
+    "order": 109,
+    "cards": [
+      { "id": "material_professor", "title": "Material do professor" },
+      { "id": "material_aluno", "title": "Material do aluno" },
+      { "id": "slides_handout", "title": "Slides / Handout" }
+    ]
+  },
+  {
+    "slug": "edt_definicao",
+    "title": "I. Definição",
+    "shortTitle": "Definição",
+    "phase": "preparar",
+    "module": "inventio",
+    "group": "edt_definicao_grp",
+    "groupLabel": "I. Definição",
+    "order": 200,
+    "cards": [
+      { "id": "nome_doutrina", "title": "Nome da doutrina" },
+      { "id": "definicao_resumida", "title": "Definição resumida" },
+      { "id": "definicao_expandida", "title": "Definição expandida" },
+      { "id": "questao_central", "title": "Questão central" }
+    ]
+  },
+  {
+    "slug": "edt_fundamentacao_biblica",
+    "title": "II. Fundamentação Bíblica",
+    "shortTitle": "Fundamentação Bíblica",
+    "phase": "interpretar",
+    "module": "inventio",
+    "group": "edt_fundamentacao_grp",
+    "groupLabel": "II. Fundamentação Bíblica",
+    "order": 201,
+    "cards": [
+      { "id": "passagens_principais", "title": "Passagens principais" },
+      { "id": "desenvolvimento_at", "title": "Desenvolvimento no AT" },
+      { "id": "desenvolvimento_nt", "title": "Desenvolvimento no NT" },
+      { "id": "progressao_revelacional", "title": "Progressão revelacional" }
+    ]
+  },
+  {
+    "slug": "edt_historia_doutrina",
+    "title": "III. História da Doutrina",
+    "shortTitle": "História",
+    "phase": "interpretar",
+    "module": "inventio",
+    "group": "edt_historia_grp",
+    "groupLabel": "III. História",
+    "order": 202,
+    "cards": [
+      { "id": "igreja_primitiva_patristica", "title": "Igreja Primitiva e Patrística" },
+      { "id": "medieval", "title": "Período Medieval" },
+      { "id": "reforma", "title": "Reforma" },
+      { "id": "pos_reforma_atualidade", "title": "Pós-Reforma e atualidade" }
+    ]
+  },
+  {
+    "slug": "edt_formulacao_sistematica",
+    "title": "IV. Formulação Sistemática",
+    "shortTitle": "Formulação Sistemática",
+    "phase": "interpretar",
+    "module": "inventio",
+    "group": "edt_formulacao_grp",
+    "groupLabel": "IV. Formulação Sistemática",
+    "order": 203,
+    "cards": [
+      { "id": "definicao_tecnica", "title": "Definição técnica" },
+      { "id": "relacoes_doutrinarias", "title": "Relações doutrinárias" },
+      { "id": "implicacoes_teologicas", "title": "Implicações teológicas" },
+      { "id": "distincoes_necessarias", "title": "Distinções necessárias" }
+    ]
+  },
+  {
+    "slug": "edt_controversias",
+    "title": "V. Controvérsias",
+    "shortTitle": "Controvérsias",
+    "phase": "interpretar",
+    "module": "inventio",
+    "group": "edt_controversias_grp",
+    "groupLabel": "V. Controvérsias",
+    "order": 204,
+    "cards": [
+      { "id": "erros_historicos", "title": "Erros históricos" },
+      { "id": "heresias_relacionadas", "title": "Heresias relacionadas" },
+      { "id": "visoes_concorrentes", "title": "Visões concorrentes" },
+      { "id": "respostas_reformadas", "title": "Respostas reformadas" }
+    ]
+  },
+  {
+    "slug": "edt_confissionalidade",
+    "title": "VI. Confissionalidade",
+    "shortTitle": "Confissionalidade",
+    "phase": "interpretar",
+    "module": "inventio",
+    "group": "edt_confissionalidade_grp",
+    "groupLabel": "VI. Confissionalidade",
+    "order": 205,
+    "cards": [
+      { "id": "confissao_westminster", "title": "Confissão de Westminster" },
+      { "id": "catecismo_maior", "title": "Catecismo Maior" },
+      { "id": "catecismo_menor", "title": "Catecismo Menor" },
+      { "id": "outros_simbolos", "title": "Outros símbolos" }
+    ]
+  },
+  {
+    "slug": "edt_aplicacoes",
+    "title": "VII. Aplicações",
+    "shortTitle": "Aplicações",
+    "phase": "interpretar",
+    "module": "inventio",
+    "group": "edt_aplicacoes_grp",
+    "groupLabel": "VII. Aplicações",
+    "order": 206,
+    "cards": [
+      { "id": "aplicacao_eclesial", "title": "Aplicação eclesial" },
+      { "id": "aplicacao_familiar", "title": "Aplicação familiar" },
+      { "id": "vida_crista", "title": "Vida cristã" },
+      { "id": "ministerio", "title": "Ministério" }
+    ]
+  },
+  {
+    "slug": "edt_bibliografia",
+    "title": "VIII. Bibliografia",
+    "shortTitle": "Bibliografia",
+    "phase": "interpretar",
+    "module": "inventio",
+    "group": "edt_bibliografia_grp",
+    "groupLabel": "VIII. Bibliografia",
+    "order": 207,
+    "cards": [
+      { "id": "livros_principais", "title": "Livros principais" },
+      { "id": "artigos", "title": "Artigos e capítulos" },
+      { "id": "fontes_primarias", "title": "Fontes primárias" }
+    ]
+  },
+  {
+    "slug": "pt_tema",
+    "title": "I. Tema e Problema",
+    "shortTitle": "Tema e Problema",
+    "phase": "preparar",
+    "module": "inventio",
+    "group": "pt_tema_grp",
+    "groupLabel": "I. Tema e Problema",
+    "order": 300,
+    "cards": [
+      { "id": "tema", "title": "Tema" },
+      { "id": "problema_pesquisa", "title": "Problema da pesquisa" },
+      { "id": "delimitacao", "title": "Delimitação" },
+      { "id": "justificativa", "title": "Justificativa" }
+    ]
+  },
+  {
+    "slug": "pt_hipotese",
+    "title": "II. Hipótese",
+    "shortTitle": "Hipótese",
+    "phase": "preparar",
+    "module": "inventio",
+    "group": "pt_hipotese_grp",
+    "groupLabel": "II. Hipótese",
+    "order": 301,
+    "cards": [
+      { "id": "questao_principal", "title": "Questão principal" },
+      { "id": "hipoteses", "title": "Hipóteses" },
+      { "id": "metodologia", "title": "Metodologia" }
+    ]
+  },
+  {
+    "slug": "pt_revisao_bibliografica",
+    "title": "III. Revisão Bibliográfica",
+    "shortTitle": "Revisão Bibliográfica",
+    "phase": "preparar",
+    "module": "inventio",
+    "group": "pt_revisao_grp",
+    "groupLabel": "III. Revisão Bibliográfica",
+    "order": 302,
+    "cards": [
+      { "id": "estado_da_arte", "title": "Estado da arte" },
+      { "id": "autores_principais", "title": "Autores principais" },
+      { "id": "obras_centrais", "title": "Obras centrais" },
+      { "id": "debates_academicos", "title": "Debates acadêmicos" }
+    ]
+  },
+  {
+    "slug": "pt_exegese",
+    "title": "IV. Exegese",
+    "shortTitle": "Exegese",
+    "phase": "preparar",
+    "module": "inventio",
+    "group": "pt_exegese_grp",
+    "groupLabel": "IV. Exegese",
+    "order": 303,
+    "cards": [
+      { "id": "passagens_relevantes", "title": "Passagens relevantes" },
+      { "id": "analise_textual", "title": "Análise textual" },
+      { "id": "analise_morfossintatica", "title": "Análise morfossintática" }
+    ]
+  },
+  {
+    "slug": "pt_teologia_biblica",
+    "title": "V. Teologia Bíblica",
+    "shortTitle": "Teologia Bíblica",
+    "phase": "preparar",
+    "module": "inventio",
+    "group": "pt_tb_grp",
+    "groupLabel": "V. Teologia Bíblica",
+    "order": 304,
+    "cards": [
+      { "id": "desenvolvimento_canonico", "title": "Desenvolvimento canônico" },
+      { "id": "historia_redencao", "title": "História da redenção" },
+      { "id": "tipologia", "title": "Tipologia" }
+    ]
+  },
+  {
+    "slug": "pt_teologia_sistematica",
+    "title": "VI. Teologia Sistemática",
+    "shortTitle": "Teologia Sistemática",
+    "phase": "comunicar",
+    "module": "dispositio",
+    "group": "pt_ts_grp",
+    "groupLabel": "VI. Teologia Sistemática",
+    "order": 305,
+    "cards": [
+      { "id": "formulacao_doutrinaria", "title": "Formulação doutrinária" },
+      { "id": "loci_classicos", "title": "Loci clássicos" },
+      { "id": "implicacoes", "title": "Implicações sistemáticas" }
+    ]
+  },
+  {
+    "slug": "pt_interacao_autores",
+    "title": "VII. Interação com Autores",
+    "shortTitle": "Interação com Autores",
+    "phase": "comunicar",
+    "module": "dispositio",
+    "group": "pt_interacao_grp",
+    "groupLabel": "VII. Interação com Autores",
+    "order": 306,
+    "cards": [
+      { "id": "concordancias", "title": "Concordâncias" },
+      { "id": "divergencias", "title": "Divergências" },
+      { "id": "avaliacao_critica", "title": "Avaliação crítica" }
+    ]
+  },
+  {
+    "slug": "pt_conclusoes",
+    "title": "VIII. Conclusões",
+    "shortTitle": "Conclusões",
+    "phase": "comunicar",
+    "module": "dispositio",
+    "group": "pt_conclusoes_grp",
+    "groupLabel": "VIII. Conclusões",
+    "order": 307,
+    "cards": [
+      { "id": "respostas_questao", "title": "Respostas à questão" },
+      { "id": "implicacoes_teologicas", "title": "Implicações teológicas" },
+      { "id": "contribuicao_original", "title": "Contribuição original" }
+    ]
+  },
+  {
+    "slug": "pt_referencias",
+    "title": "IX. Referências",
+    "shortTitle": "Referências",
+    "phase": "comunicar",
+    "module": "dispositio",
+    "group": "pt_referencias_grp",
+    "groupLabel": "IX. Referências",
+    "order": 308,
+    "cards": [
+      { "id": "abnt_chicago", "title": "ABNT / Chicago" },
+      { "id": "fontes_primarias", "title": "Fontes primárias" },
+      { "id": "fontes_secundarias", "title": "Fontes secundárias" }
+    ]
+  },
+
+  // ── Estudo de Carta ──────────────────────────────────────────────────────
+  {
+    "slug": "ec_ocasiao",
+    "title": "Ocasião e Propósito",
+    "shortTitle": "Ocasião",
+    "phase": "interpretar",
+    "module": "inventio",
+    "group": "ec_ocasiao_grp",
+    "groupLabel": "Ocasião e Propósito",
+    "order": 400,
+    "cards": [
+      { "id": "situacao", "title": "Situação dos destinatários" },
+      { "id": "proposito", "title": "Propósito da carta" },
+      { "id": "relacao_autor", "title": "Relação autor–destinatários" }
+    ]
+  },
+  {
+    "slug": "ec_estrutura",
+    "title": "Estrutura Retórica",
+    "shortTitle": "Estrutura Retórica",
+    "phase": "interpretar",
+    "module": "inventio",
+    "group": "ec_estrutura_grp",
+    "groupLabel": "Estrutura Retórica",
+    "order": 401,
+    "cards": [
+      { "id": "divisao_epistolar", "title": "Divisão epistolar" },
+      { "id": "tipo_retorico", "title": "Tipo retórico" },
+      { "id": "macroargumento", "title": "Macroargumento" }
+    ]
+  },
+  {
+    "slug": "ec_argumento",
+    "title": "Argumento Central",
+    "shortTitle": "Argumento",
+    "phase": "interpretar",
+    "module": "inventio",
+    "group": "ec_argumento_grp",
+    "groupLabel": "Argumento Central",
+    "order": 402,
+    "cards": [
+      { "id": "tese_central", "title": "Tese central da carta" },
+      { "id": "desenvolvimento", "title": "Desenvolvimento do argumento" },
+      { "id": "climax", "title": "Clímax e resolução" }
+    ]
+  },
+
+  // ── Estudo Temático ──────────────────────────────────────────────────────
+  {
+    "slug": "et_definicao",
+    "title": "I. Definição do Tema",
+    "shortTitle": "Definição",
+    "phase": "preparar",
+    "module": "inventio",
+    "group": "et_definicao_grp",
+    "groupLabel": "I. Definição do Tema",
+    "order": 500,
+    "cards": [
+      { "id": "nome_tema", "title": "Nome e campo semântico" },
+      { "id": "questao_orientadora", "title": "Questão orientadora" },
+      { "id": "delimitacao", "title": "Delimitação do tema" }
+    ]
+  },
+  {
+    "slug": "et_at",
+    "title": "II. Antigo Testamento",
+    "shortTitle": "AT",
+    "phase": "interpretar",
+    "module": "inventio",
+    "group": "et_at_grp",
+    "groupLabel": "II. Antigo Testamento",
+    "order": 501,
+    "cards": [
+      { "id": "patriarcal", "title": "Período patriarcal" },
+      { "id": "mosaico", "title": "Período mosaico" },
+      { "id": "profetico", "title": "Período profético" }
+    ]
+  },
+  {
+    "slug": "et_nt",
+    "title": "III. Novo Testamento",
+    "shortTitle": "NT",
+    "phase": "interpretar",
+    "module": "inventio",
+    "group": "et_nt_grp",
+    "groupLabel": "III. Novo Testamento",
+    "order": 502,
+    "cards": [
+      { "id": "evangelhos", "title": "Evangelhos" },
+      { "id": "cartas", "title": "Cartas apostólicas" },
+      { "id": "apocalipse", "title": "Apocalipse" }
+    ]
+  },
+  {
+    "slug": "et_sintese_canonica",
+    "title": "IV. Síntese Canônica",
+    "shortTitle": "Síntese",
+    "phase": "interpretar",
+    "module": "inventio",
+    "group": "et_sintese_grp",
+    "groupLabel": "IV. Síntese Canônica",
+    "order": 503,
+    "cards": [
+      { "id": "progressao", "title": "Progressão canônica" },
+      { "id": "cumprimento", "title": "Cumprimento e tipologia" },
+      { "id": "unidade", "title": "Unidade e diversidade" }
+    ]
+  },
+  {
+    "slug": "et_teologia_sistematica",
+    "title": "V. Teologia Sistemática",
+    "shortTitle": "Sistemática",
+    "phase": "comunicar",
+    "module": "dispositio",
+    "group": "et_sistematica_grp",
+    "groupLabel": "V. Teologia Sistemática",
+    "order": 504,
+    "cards": [
+      { "id": "formulacao", "title": "Formulação doutrinária" },
+      { "id": "implicacoes", "title": "Implicações práticas" }
+    ]
+  },
+  {
+    "slug": "et_aplicacoes",
+    "title": "VI. Aplicações",
+    "shortTitle": "Aplicações",
+    "phase": "comunicar",
+    "module": "dispositio",
+    "group": "et_aplicacoes_grp",
+    "groupLabel": "VI. Aplicações",
+    "order": 505,
+    "cards": [
+      { "id": "vida_crista", "title": "Vida cristã" },
+      { "id": "eclesial", "title": "Vida eclesial" },
+      { "id": "missional", "title": "Missão" }
+    ]
   }
 ]
 
