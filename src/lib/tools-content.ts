@@ -164,10 +164,10 @@ export const TOOL_AREAS: ToolArea[] = [
   {
     id: 'livros',
     slug: 'ferramentas_livros',
-    title: 'Livros Indicados',
-    shortTitle: 'Livros',
-    subtitle: 'Biblioteca inteligente',
-    objective: 'Recomendar bibliografia acadêmica e pastoral por livro bíblico, tema, doutrina, dificuldade e tradição teológica.',
+    title: 'Biblioteca Lampas',
+    shortTitle: 'Biblioteca',
+    subtitle: 'Fontes teológicas reformadas',
+    objective: 'Repositório de fontes reformadas consultáveis por passagem, tema e doutrina. Comentários, léxicos, teologia bíblica e sistemática integrados à plataforma.',
     color: '#c47c5a',
     bgActive: 'rgba(196,124,90,0.1)',
     sections: [

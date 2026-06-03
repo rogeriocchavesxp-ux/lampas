@@ -259,6 +259,53 @@ export function extractDictionaryQuery(message: string): string | null {
   return match?.[1]?.trim() ?? null
 }
 
+// ── Buscar obras relevantes na Biblioteca ─────────────────────────────────────
+// Retorna até 5 obras relevantes para injetar como contexto de fontes
+// nos prompts de geração de seções.
+
+export async function searchLibraryBooks(
+  topic: string,
+  supabase: SupabaseClient,
+  opts?: { passageRef?: string; limit?: number },
+): Promise<{ title: string; author: string; category: string; relevantPassages?: string[] }[]> {
+  const { data } = await supabase.rpc('search_library', {
+    p_query:    topic,
+    p_ref:      opts?.passageRef ?? null,
+    p_limit:    opts?.limit ?? 5,
+  })
+
+  if (!data || !Array.isArray(data)) return []
+
+  return (data as {
+    title: string
+    author: string
+    category: string
+    bible_references: string[]
+    rank: number
+  }[])
+    .filter(b => b.rank > 0 || opts?.passageRef)
+    .map(b => ({
+      title:            b.title,
+      author:           b.author,
+      category:         b.category,
+      relevantPassages: b.bible_references.filter(r => opts?.passageRef ? r.includes(opts.passageRef) : false),
+    }))
+}
+
+// ── Formatar livros da biblioteca como contexto para IA ───────────────────────
+
+export function formatLibraryBooksAsContext(
+  books: { title: string; author: string; category: string; relevantPassages?: string[] }[],
+): string {
+  if (books.length === 0) return ''
+  const lines = ['### Biblioteca Lampas — obras relevantes']
+  for (const b of books) {
+    lines.push(`- **${b.title}** (${b.author}) · ${b.category}${b.relevantPassages?.length ? ' — ' + b.relevantPassages.join(', ') : ''}`)
+  }
+  lines.push('\nConsulte estas obras ao elaborar sua resposta.')
+  return lines.join('\n')
+}
+
 // ── Formatar entrada do dicionário como texto legível ────────────────────────
 
 function formatDictEntry(entry: DictEntry): string {

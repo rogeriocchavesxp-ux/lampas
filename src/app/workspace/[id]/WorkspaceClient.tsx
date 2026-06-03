@@ -32,6 +32,7 @@ import AIPanel from './AIPanel'
 import BibleFloatingWindow from './BibleFloatingWindow'
 import VisaoGeralWorkspace from './VisaoGeralWorkspace'
 import DicionarioWorkspace from './DicionarioWorkspace'
+import BibliotecaWorkspace from './BibliotecaWorkspace'
 import {
   Heart, BookOpen, FileText, Crosshair, Landmark, Languages, GraduationCap,
   Sparkles, BookMarked, Flame, MessageSquareText, Layers, Book, Library,
@@ -1047,6 +1048,13 @@ export default function WorkspaceClient({ user, project, initialSections }: Prop
               />
             ) : activeSlug === 'ferramentas_dicionario' ? (
               <DicionarioWorkspace
+                key={activeSlug}
+                project={project}
+                userId={user.id}
+                onAskAI={handleAskAI}
+              />
+            ) : activeSlug === 'ferramentas_livros' ? (
+              <BibliotecaWorkspace
                 key={activeSlug}
                 project={project}
                 userId={user.id}
