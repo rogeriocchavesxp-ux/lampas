@@ -141,6 +141,14 @@ const SECTION_ORDER: StudyModeId[] = [
   'estudo_biblico',  // legado — mantido para projetos existentes
 ]
 
+const GENRE_LABEL: Partial<Record<StudyModeId, string>> = {
+  sermao: 'Sermão', exegese_biblica: 'Exegese',
+  estudo_de_carta: 'Cartas', estudo_de_salmos_sabedoria: 'Salmos e Sabedoria',
+  estudo_narrativas: 'Narrativas', estudo_de_profecias: 'Profecias',
+  estudo_doutrinario: 'Doutrina', estudo_tematico: 'Temático',
+  devocional: 'Devocional', comentario_exegetico: 'Comentário', estudo_biblico: 'Est. Bíblico',
+}
+
 // ── 4 modos da tela de criação ────────────────────────────────────────────
 
 type UiModeId = 'exegetico' | 'sermao' | 'devocional' | 'doutrinario' | 'conhecimento'
@@ -300,6 +308,34 @@ export default function DashboardClient({ user, projects: initialProjects, profi
 
   // Top 3 most recently updated — server already sorts by updated_at desc
   const recentProjects = useMemo(() => projects.slice(0, 3), [projects])
+
+  const recentProjects4  = useMemo(() => projects.slice(0, 4), [projects])
+  const activeCount      = useMemo(() => projects.filter(p => p.status !== 'completed').length, [projects])
+  const completedCount   = useMemo(() => projects.filter(p => p.status === 'completed').length, [projects])
+  const studiedBooks     = useMemo(() => new Set(projects.map(p => p.book).filter((b): b is string => !!b && b !== '—')), [projects])
+
+  const genreDistribution = useMemo(() => {
+    const counts = new Map<StudyModeId, number>()
+    for (const p of projects) {
+      const id = getModeConfig(p.study_mode ?? p.project_type).id
+      counts.set(id, (counts.get(id) ?? 0) + 1)
+    }
+    return [...counts.entries()]
+      .sort((a, b) => b[1] - a[1])
+      .map(([id, count]) => ({
+        id, count,
+        label: GENRE_LABEL[id] ?? id,
+        color: MODE_VISUALS[id]?.color ?? '#64748B',
+      }))
+  }, [projects])
+
+  const topBooks = useMemo(() => {
+    const counts = new Map<string, number>()
+    for (const p of projects) {
+      if (p.book && p.book !== '—') counts.set(p.book, (counts.get(p.book) ?? 0) + 1)
+    }
+    return [...counts.entries()].sort((a, b) => b[1] - a[1]).slice(0, 6)
+  }, [projects])
 
   async function handleDeleteConfirm() {
     if (!deleteTarget) return
@@ -501,27 +537,30 @@ export default function DashboardClient({ user, projects: initialProjects, profi
       </header>
 
       {/* ── Main ── */}
-      <main style={{ maxWidth: '860px', margin: '0 auto', padding: '2.5rem 1.5rem 4rem' }}>
+      <main style={{ maxWidth: '960px', margin: '0 auto', padding: '2rem 1.5rem 5rem' }}>
 
-        {/* Title row */}
-        <div style={{
-          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-          gap: '1rem', marginBottom: '2.5rem',
-        }}>
+        {/* ── Hero ── */}
+        <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', flexWrap: 'wrap', gap: '1rem', marginBottom: '2rem' }}>
           <div>
-            <h1 style={{
-              margin: '0 0 0.2rem', fontSize: '1.55rem', lineHeight: 1.1,
-              color: 'var(--text-primary)', fontWeight: 750, letterSpacing: '-0.02em',
-            }}>Biblioteca</h1>
-            <p style={{ color: 'var(--text-muted)', fontSize: '0.82rem', margin: 0 }}>
+            <p style={{ fontSize: '0.82rem', color: 'var(--text-muted)', fontWeight: 500, margin: '0 0 0.25rem' }}>
+              Bem-vindo de volta.
+            </p>
+            <h1 style={{ fontSize: '1.6rem', fontWeight: 800, letterSpacing: '-0.02em', color: 'var(--text-primary)', margin: '0 0 0.3rem' }}>
               {projects.length === 0
-                ? 'Nenhum estudo ainda'
-                : `${projects.length} ${projects.length === 1 ? 'estudo' : 'estudos'}`}
+                ? 'Comece seu primeiro estudo.'
+                : activeCount > 0
+                  ? `${activeCount} ${activeCount === 1 ? 'estudo em andamento' : 'estudos em andamento'}.`
+                  : 'Todos os estudos concluídos.'}
+            </h1>
+            <p style={{ fontSize: '0.82rem', color: 'var(--text-muted)', margin: 0 }}>
+              {completedCount > 0 ? `${completedCount} concluído${completedCount > 1 ? 's' : ''} · ` : ''}
+              {projects.length} no total
+              {studiedBooks.size > 0 ? ` · ${studiedBooks.size} ${studiedBooks.size === 1 ? 'livro bíblico' : 'livros bíblicos'}` : ''}
             </p>
           </div>
           <button onClick={openModal} style={{
             background: 'var(--accent)', color: '#FFFFFF', border: 'none',
-            borderRadius: '8px', padding: '0.58rem 1.05rem', fontWeight: '650',
+            borderRadius: '8px', padding: '0.62rem 1.15rem', fontWeight: 650,
             cursor: 'pointer', fontSize: '0.88rem', fontFamily: 'inherit',
             boxShadow: '0 4px 12px rgba(59,130,246,0.18)', flexShrink: 0,
           }}>
@@ -529,20 +568,18 @@ export default function DashboardClient({ user, projects: initialProjects, profi
           </button>
         </div>
 
-        {/* Content */}
         {projects.length === 0 ? (
           <EmptyDashboard onNew={openModal} />
         ) : (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '3rem' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '2.5rem' }}>
 
             {/* ── Continuar Estudando ── */}
             <section>
-              <ShelfLabel>Continuar Estudando</ShelfLabel>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', marginTop: '1rem' }}>
-                {recentProjects.map(p => (
-                  <RecentCard
-                    key={p.id}
-                    project={p}
+              <DashLabel>Continuar Estudando</DashLabel>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(270px, 1fr))', gap: '0.85rem', marginTop: '0.85rem' }}>
+                {recentProjects4.map(p => (
+                  <StudyCard
+                    key={p.id} project={p}
                     onClick={() => router.push(`/workspace/${p.id}`)}
                     onDelete={() => setDeleteTarget(p)}
                   />
@@ -550,96 +587,187 @@ export default function DashboardClient({ user, projects: initialProjects, profi
               </div>
             </section>
 
-            {/* ── Biblioteca ── */}
+            {/* ── Stats ── */}
             <section>
-              <ShelfLabel>Por Modalidade</ShelfLabel>
-              <div style={{
-                marginTop: '1rem',
-                border: '1px solid var(--border-subtle)',
-                borderRadius: '10px',
-                overflow: 'hidden',
-                background: 'var(--surface)',
-              }}>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '0.85rem' }}>
+                {([
+                  { label: 'Total',          value: projects.length,  color: 'var(--accent)', icon: '📚' },
+                  { label: 'Em andamento',   value: activeCount,      color: '#D97706',       icon: '⏳' },
+                  { label: 'Concluídos',     value: completedCount,   color: '#10B981',       icon: '✓'  },
+                  { label: 'Livros bíblicos', value: studiedBooks.size, color: '#7C3AED',      icon: '🗺' },
+                ] as const).map(stat => (
+                  <div key={stat.label} style={{
+                    background: 'var(--surface)', border: '1px solid var(--border-subtle)',
+                    borderRadius: '12px', padding: '1.1rem 1.2rem',
+                  }}>
+                    <div style={{ fontSize: '1.05rem', marginBottom: '0.4rem', lineHeight: 1 }}>{stat.icon}</div>
+                    <div style={{ fontSize: '1.85rem', fontWeight: 800, color: stat.color, lineHeight: 1, marginBottom: '0.2rem' }}>{stat.value}</div>
+                    <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', fontWeight: 500 }}>{stat.label}</div>
+                  </div>
+                ))}
+              </div>
+            </section>
+
+            {/* ── Distribuição + Livros ── */}
+            {projects.length >= 2 && (
+              <section>
+                <DashLabel>Distribuição</DashLabel>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginTop: '0.85rem' }}>
+
+                  <div style={{ background: 'var(--surface)', border: '1px solid var(--border-subtle)', borderRadius: '12px', padding: '1.25rem' }}>
+                    <p style={{ fontSize: '0.68rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.09em', color: 'var(--text-muted)', margin: '0 0 1rem' }}>Por Gênero</p>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '1.25rem' }}>
+                      <DonutChart data={genreDistribution.map(g => ({ label: g.label, value: g.count, color: g.color }))} />
+                      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '0.42rem' }}>
+                        {genreDistribution.slice(0, 6).map(g => (
+                          <div key={g.id} style={{ display: 'flex', alignItems: 'center', gap: '0.45rem' }}>
+                            <div style={{ width: 7, height: 7, borderRadius: '50%', background: g.color, flexShrink: 0 }} />
+                            <span style={{ flex: 1, fontSize: '0.7rem', color: 'var(--text-secondary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{g.label}</span>
+                            <span style={{ fontSize: '0.66rem', color: 'var(--text-muted)', fontWeight: 600, flexShrink: 0 }}>{Math.round(g.count / projects.length * 100)}%</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div style={{ background: 'var(--surface)', border: '1px solid var(--border-subtle)', borderRadius: '12px', padding: '1.25rem' }}>
+                    <p style={{ fontSize: '0.68rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.09em', color: 'var(--text-muted)', margin: '0 0 1rem' }}>Livros Mais Estudados</p>
+                    {topBooks.length === 0 ? (
+                      <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', margin: 0 }}>Nenhum livro registrado ainda.</p>
+                    ) : (
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.7rem' }}>
+                        {topBooks.map(([book, count], idx) => (
+                          <div key={book}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.2rem' }}>
+                              <span style={{ fontSize: '0.78rem', color: 'var(--text-primary)', fontWeight: 500 }}>{book}</span>
+                              <span style={{ fontSize: '0.68rem', color: 'var(--text-muted)' }}>{count}</span>
+                            </div>
+                            <div style={{ height: 4, background: 'var(--surface-2)', borderRadius: 2 }}>
+                              <div style={{ height: 4, width: `${(count / (topBooks[0]?.[1] ?? 1)) * 100}%`, background: 'var(--accent)', borderRadius: 2, opacity: 1 - idx * 0.12 }} />
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </section>
+            )}
+
+            {/* ── Por Gênero ── */}
+            {genreDistribution.length >= 2 && (
+              <section>
+                <DashLabel>Por Gênero</DashLabel>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '0.75rem', marginTop: '0.85rem' }}>
+                  {genreDistribution.map(g => {
+                    const max = genreDistribution[0]?.count ?? 1
+                    return (
+                      <div key={g.id} style={{ background: 'var(--surface)', border: '1px solid var(--border-subtle)', borderRadius: '10px', padding: '0.9rem 1rem' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '0.55rem' }}>
+                          <span style={{ fontSize: '0.8rem', fontWeight: 600, color: g.color }}>{g.label}</span>
+                          <span style={{ fontSize: '0.68rem', color: 'var(--text-muted)' }}>{g.count}</span>
+                        </div>
+                        <div style={{ height: 5, background: 'var(--surface-2)', borderRadius: 3 }}>
+                          <div style={{ height: 5, width: `${Math.round((g.count / max) * 100)}%`, background: g.color, borderRadius: 3, opacity: 0.75 }} />
+                        </div>
+                      </div>
+                    )
+                  })}
+                </div>
+              </section>
+            )}
+
+            {/* ── Atividade Recente ── */}
+            <section>
+              <DashLabel>Atividade Recente</DashLabel>
+              <div style={{ background: 'var(--surface)', border: '1px solid var(--border-subtle)', borderRadius: '12px', overflow: 'hidden', marginTop: '0.85rem' }}>
+                {projects.slice(0, 8).map((p, i) => {
+                  const mode   = getModeConfig(p.study_mode ?? p.project_type)
+                  const visual = MODE_VISUALS[mode.id as StudyModeId]
+                  const isPassage = mode.passageBased
+                  const ref = isPassage && p.book && p.book !== '—'
+                    ? `${p.book} ${p.passage_ref}`
+                    : p.passage_ref && p.passage_ref !== '—' ? p.passage_ref : null
+                  return (
+                    <div
+                      key={p.id}
+                      onClick={() => router.push(`/workspace/${p.id}`)}
+                      style={{
+                        display: 'flex', alignItems: 'center', gap: '0.85rem',
+                        padding: '0.8rem 1.1rem',
+                        borderBottom: i < Math.min(projects.length, 8) - 1 ? '1px solid var(--border-subtle)' : 'none',
+                        cursor: 'pointer', transition: 'background 0.1s',
+                      }}
+                      onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = 'rgba(0,0,0,0.02)' }}
+                      onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'transparent' }}
+                    >
+                      <div style={{ width: 28, height: 28, borderRadius: '50%', background: visual?.bg ?? 'var(--surface-2)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: visual?.color ?? 'var(--text-muted)', flexShrink: 0 }}>
+                        {isValidElement<{ width?: number; height?: number }>(MODE_ICONS[mode.id as StudyModeId])
+                          ? cloneElement(MODE_ICONS[mode.id as StudyModeId] as React.ReactElement<{ width?: number; height?: number }>, { width: 12, height: 12 })
+                          : MODE_ICONS[mode.id as StudyModeId]}
+                      </div>
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{ fontSize: '0.82rem', fontWeight: 600, color: 'var(--text-primary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{p.title}</div>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', marginTop: '0.1rem' }}>
+                          <span style={{ fontSize: '0.68rem', color: visual?.color ?? 'var(--text-muted)', fontWeight: 500 }}>{mode.name}</span>
+                          {ref && <><span style={{ fontSize: '0.6rem', color: 'var(--border)' }}>·</span><span style={{ fontSize: '0.68rem', color: 'var(--text-muted)', fontStyle: 'italic', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{ref}</span></>}
+                        </div>
+                      </div>
+                      <div style={{ textAlign: 'right', flexShrink: 0 }}>
+                        <div style={{ fontSize: '0.68rem', color: 'var(--text-muted)' }}>{formatDate(p.updated_at)}</div>
+                        {p.status === 'completed' && (
+                          <div style={{ fontSize: '0.58rem', fontWeight: 700, color: '#10B981', background: 'rgba(16,185,129,0.1)', padding: '0.08rem 0.4rem', borderRadius: '99px', marginTop: '0.15rem', display: 'inline-block' }}>Concluído</div>
+                        )}
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
+            </section>
+
+            {/* ── Mapa Bíblico ── */}
+            {studiedBooks.size > 0 && (
+              <section>
+                <DashLabel>Mapa Bíblico</DashLabel>
+                <BibleMap studiedBooks={studiedBooks} />
+              </section>
+            )}
+
+            {/* ── Todos os Estudos ── */}
+            <section>
+              <DashLabel>Todos os Estudos</DashLabel>
+              <div style={{ marginTop: '0.85rem', border: '1px solid var(--border-subtle)', borderRadius: '10px', overflow: 'hidden', background: 'var(--surface)' }}>
                 {libraryModes.map((modeId, idx) => {
-                  const mode      = STUDY_MODE_REGISTRY[modeId]
-                  const visual    = modeVisual(modeId)
+                  const mode         = STUDY_MODE_REGISTRY[modeId]
+                  const visual       = modeVisual(modeId)
                   const modeProjects = projectsByMode.get(modeId) ?? []
                   const isCollapsed  = collapsedSections.has(modeId)
                   const isLast       = idx === libraryModes.length - 1
-
                   return (
-                    <div
-                      key={modeId}
-                      style={{
-                        borderBottom: isLast ? 'none' : '1px solid var(--border-subtle)',
-                      }}
-                    >
-                      {/* Category row */}
+                    <div key={modeId} style={{ borderBottom: isLast ? 'none' : '1px solid var(--border-subtle)' }}>
                       <button
                         onClick={() => toggleSection(modeId)}
                         style={{
                           width: '100%', display: 'flex', alignItems: 'center',
                           gap: '0.7rem', padding: '0.85rem 1.1rem',
                           background: isCollapsed ? 'transparent' : `${visual.color}04`,
-                          border: 'none', cursor: 'pointer', fontFamily: 'inherit',
-                          transition: 'background 0.13s',
+                          border: 'none', cursor: 'pointer', fontFamily: 'inherit', transition: 'background 0.13s',
                         }}
                         onMouseEnter={e => { if (isCollapsed) e.currentTarget.style.background = 'rgba(15,23,42,0.025)' }}
                         onMouseLeave={e => { if (isCollapsed) e.currentTarget.style.background = 'transparent' }}
                       >
-                        {/* Chevron */}
-                        <svg
-                          width="10" height="10" viewBox="0 0 24 24" fill="none"
-                          stroke={visual.color} strokeWidth="2.5"
-                          strokeLinecap="round" strokeLinejoin="round"
-                          style={{
-                            transform: isCollapsed ? 'rotate(-90deg)' : 'rotate(0deg)',
-                            transition: 'transform 0.15s',
-                            flexShrink: 0, opacity: 0.75,
-                          }}
-                        >
+                        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke={visual.color} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ transform: isCollapsed ? 'rotate(-90deg)' : 'rotate(0deg)', transition: 'transform 0.15s', flexShrink: 0, opacity: 0.75 }}>
                           <path d="M6 9l6 6 6-6"/>
                         </svg>
-
-                        {/* Mode icon */}
-                        <span style={{ color: visual.color, display: 'flex', flexShrink: 0 }}>
-                          {modeIcon(modeId, 14)}
-                        </span>
-
-                        {/* Mode name */}
-                        <span style={{
-                          flex: 1, textAlign: 'left',
-                          fontSize: '0.88rem', fontWeight: 600,
-                          color: isCollapsed ? 'var(--text-secondary)' : visual.color,
-                          transition: 'color 0.13s',
-                        }}>
-                          {mode.name}
-                        </span>
-
-                        {/* Count badge */}
-                        <span style={{
-                          fontSize: '0.72rem', fontWeight: 500,
-                          color: 'var(--text-muted)',
-                          background: 'var(--surface-2)',
-                          padding: '0.1rem 0.45rem',
-                          borderRadius: '999px',
-                          border: '1px solid var(--border-subtle)',
-                        }}>
-                          {modeProjects.length}
-                        </span>
+                        <span style={{ color: visual.color, display: 'flex', flexShrink: 0 }}>{modeIcon(modeId, 14)}</span>
+                        <span style={{ flex: 1, textAlign: 'left', fontSize: '0.88rem', fontWeight: 600, color: isCollapsed ? 'var(--text-secondary)' : visual.color, transition: 'color 0.13s' }}>{mode.name}</span>
+                        <span style={{ fontSize: '0.72rem', fontWeight: 500, color: 'var(--text-muted)', background: 'var(--surface-2)', padding: '0.1rem 0.45rem', borderRadius: '999px', border: '1px solid var(--border-subtle)' }}>{modeProjects.length}</span>
                       </button>
-
-                      {/* Expanded cards */}
                       {!isCollapsed && (
-                        <div style={{
-                          display: 'flex', flexDirection: 'column', gap: '0.35rem',
-                          padding: '0 1.1rem 1rem 2.8rem',
-                        }}>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem', padding: '0 1.1rem 1rem 2.8rem' }}>
                           {modeProjects.map(p => (
                             <ProjectCard
-                              key={p.id}
-                              project={p}
-                              mode={mode}
+                              key={p.id} project={p} mode={mode}
                               onClick={() => router.push(`/workspace/${p.id}`)}
                               onDelete={() => setDeleteTarget(p)}
                             />
@@ -1243,6 +1371,154 @@ function ProjectCard({
             </button>
           </div>
         )}
+      </div>
+    </div>
+  )
+}
+
+function DashLabel({ children }: { children: React.ReactNode }) {
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+      <span style={{ fontSize: '0.68rem', fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--text-muted)', whiteSpace: 'nowrap' }}>
+        {children}
+      </span>
+      <div style={{ flex: 1, height: '1px', background: 'var(--border-subtle)' }} />
+    </div>
+  )
+}
+
+function StudyCard({ project, onClick, onDelete }: { project: Project; onClick: () => void; onDelete: () => void }) {
+  const mode      = getModeConfig(project.study_mode ?? project.project_type)
+  const visual    = MODE_VISUALS[mode.id as StudyModeId]
+  const isPassage = mode.passageBased
+  const ref = isPassage && project.book && project.book !== '—'
+    ? `${project.book} ${project.passage_ref}`
+    : project.passage_ref && project.passage_ref !== '—' ? project.passage_ref : null
+  const [menuOpen, setMenuOpen] = useState(false)
+  const isCompleted = project.status === 'completed'
+
+  return (
+    <div
+      onClick={onClick}
+      style={{
+        background: 'var(--surface)', border: `1px solid ${visual.border}`,
+        borderRadius: '12px', padding: '1.15rem 1.2rem',
+        cursor: 'pointer', display: 'flex', flexDirection: 'column', gap: '0.75rem',
+        transition: 'box-shadow 0.15s', position: 'relative',
+        borderTop: `3px solid ${visual.color}`,
+      }}
+      onMouseEnter={e => { (e.currentTarget as HTMLElement).style.boxShadow = '0 4px 18px rgba(15,23,42,0.09)' }}
+      onMouseLeave={e => { (e.currentTarget as HTMLElement).style.boxShadow = 'none' }}
+    >
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+          <div style={{ width: 22, height: 22, borderRadius: '6px', background: visual.bg, display: 'flex', alignItems: 'center', justifyContent: 'center', color: visual.color }}>
+            {isValidElement<{ width?: number; height?: number }>(MODE_ICONS[mode.id as StudyModeId])
+              ? cloneElement(MODE_ICONS[mode.id as StudyModeId] as React.ReactElement<{ width?: number; height?: number }>, { width: 11, height: 11 })
+              : MODE_ICONS[mode.id as StudyModeId]}
+          </div>
+          <span style={{ fontSize: '0.68rem', fontWeight: 600, color: visual.color }}>{mode.name}</span>
+        </div>
+        <div style={{ position: 'relative' }} onClick={e => e.stopPropagation()}>
+          <button
+            onClick={() => setMenuOpen(o => !o)}
+            style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: 'var(--text-muted)', padding: '0.15rem', borderRadius: '4px', display: 'flex', alignItems: 'center' }}
+          >
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <circle cx="12" cy="5" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="12" cy="19" r="1"/>
+            </svg>
+          </button>
+          {menuOpen && (
+            <div style={{ position: 'absolute', right: 0, top: 'calc(100% + 2px)', zIndex: 20, background: '#FFF', border: '1px solid var(--border)', borderRadius: '8px', boxShadow: '0 4px 16px rgba(0,0,0,0.08)', padding: '0.3rem', minWidth: '120px' }}>
+              <button
+                onClick={() => { setMenuOpen(false); onDelete() }}
+                style={{ display: 'block', width: '100%', textAlign: 'left', background: 'transparent', border: 'none', cursor: 'pointer', fontFamily: 'inherit', fontSize: '0.8rem', color: '#EF4444', padding: '0.38rem 0.6rem', borderRadius: '5px', transition: 'background 0.1s' }}
+                onMouseEnter={e => { e.currentTarget.style.background = '#FEF2F2' }}
+                onMouseLeave={e => { e.currentTarget.style.background = 'transparent' }}
+              >
+                Excluir
+              </button>
+            </div>
+          )}
+        </div>
+      </div>
+
+      <div>
+        <div style={{ fontSize: '0.9rem', fontWeight: 700, color: 'var(--text-primary)', lineHeight: 1.3, marginBottom: ref ? '0.2rem' : 0, overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' as const }}>
+          {project.title}
+        </div>
+        {ref && <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)', fontStyle: 'italic' }}>{ref}</div>}
+      </div>
+
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 'auto' }}>
+        <span style={{ fontSize: '0.65rem', color: isCompleted ? '#10B981' : 'var(--text-muted)', fontWeight: isCompleted ? 600 : 400 }}>
+          {isCompleted ? 'Concluído' : `Atualizado ${formatDate(project.updated_at)}`}
+        </span>
+        <span style={{ fontSize: '0.72rem', fontWeight: 600, color: visual.color }}>Continuar →</span>
+      </div>
+    </div>
+  )
+}
+
+function DonutChart({ data }: { data: { label: string; value: number; color: string }[] }) {
+  const total = data.reduce((s, d) => s + d.value, 0)
+  if (total === 0) return <div style={{ width: 100, height: 100, flexShrink: 0 }} />
+
+  let cumPct = 0
+  const stops = data.map(d => {
+    const pct = (d.value / total) * 100
+    const stop = `${d.color} ${cumPct.toFixed(1)}% ${(cumPct + pct).toFixed(1)}%`
+    cumPct += pct
+    return stop
+  }).join(', ')
+
+  return (
+    <div style={{ position: 'relative', width: 100, height: 100, flexShrink: 0 }}>
+      <div style={{ width: 100, height: 100, borderRadius: '50%', background: `conic-gradient(${stops})` }} />
+      <div style={{ position: 'absolute', inset: '22px', borderRadius: '50%', background: 'var(--surface)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <span style={{ fontSize: '0.9rem', fontWeight: 800, color: 'var(--text-primary)' }}>{total}</span>
+      </div>
+    </div>
+  )
+}
+
+function BibleMap({ studiedBooks }: { studiedBooks: Set<string> }) {
+  const studiedAT = BOOKS_AT.filter(b => studiedBooks.has(b)).length
+  const studiedNT = BOOKS_NT.filter(b => studiedBooks.has(b)).length
+
+  return (
+    <div style={{ background: 'var(--surface)', border: '1px solid var(--border-subtle)', borderRadius: '12px', padding: '1.25rem', marginTop: '0.85rem' }}>
+      <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1.1rem', flexWrap: 'wrap' }}>
+        <span style={{ fontSize: '0.72rem', color: '#D97706', padding: '0.18rem 0.55rem', background: 'rgba(217,119,6,0.08)', borderRadius: '99px', fontWeight: 600 }}>AT: {studiedAT}/{BOOKS_AT.length}</span>
+        <span style={{ fontSize: '0.72rem', color: '#7C3AED', padding: '0.18rem 0.55rem', background: 'rgba(124,58,237,0.08)', borderRadius: '99px', fontWeight: 600 }}>NT: {studiedNT}/{BOOKS_NT.length}</span>
+        <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)', padding: '0.18rem 0.55rem', background: 'var(--surface-2)', borderRadius: '99px', fontWeight: 600 }}>Total: {studiedAT + studiedNT}/66</span>
+      </div>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+        {[
+          { label: 'Antigo Testamento', books: BOOKS_AT, accentColor: '#D97706' },
+          { label: 'Novo Testamento',   books: BOOKS_NT, accentColor: '#7C3AED' },
+        ].map(section => (
+          <div key={section.label}>
+            <p style={{ fontSize: '0.65rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.09em', color: 'var(--text-muted)', margin: '0 0 0.5rem' }}>{section.label}</p>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.28rem' }}>
+              {section.books.map(book => {
+                const studied = studiedBooks.has(book)
+                return (
+                  <span key={book} title={studied ? `${book} — estudado` : book} style={{
+                    padding: '0.18rem 0.5rem', borderRadius: '4px', fontSize: '0.66rem',
+                    fontWeight: studied ? 600 : 400,
+                    background: studied ? section.accentColor : 'var(--surface-2)',
+                    color: studied ? '#FFFFFF' : 'var(--text-muted)',
+                    border: `1px solid ${studied ? section.accentColor : 'var(--border-subtle)'}`,
+                    cursor: 'default', whiteSpace: 'nowrap',
+                  }}>
+                    {book}
+                  </span>
+                )
+              })}
+            </div>
+          </div>
+        ))}
       </div>
     </div>
   )
