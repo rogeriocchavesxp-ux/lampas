@@ -18,6 +18,7 @@ const LEGACY_TYPE: Record<StudyModeId, string> = {
   estudo_de_carta:             'exegese',
   estudo_de_salmos_sabedoria:  'estudo_biblico',
   estudo_de_profecias:         'estudo_biblico',
+  estudo_narrativas:           'exegese',
   estudo_doutrinario:          'estudo_doutrinario',
   estudo_tematico:             'estudo_doutrinario',
   sermao:                      'sermao',
@@ -57,6 +58,11 @@ const MODE_ICONS: Record<StudyModeId, React.ReactNode> = {
       <path d="M12 2L2 7l10 5 10-5-10-5z"/>
       <path d="M2 17l10 5 10-5"/>
       <path d="M12 12v10"/>
+    </svg>
+  ),
+  estudo_narrativas: (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/>
     </svg>
   ),
   exegese_biblica: (
@@ -111,6 +117,7 @@ const MODE_VISUALS: Record<StudyModeId, { color: string; bg: string; border: str
   estudo_biblico:               { color: '#2563EB', bg: 'rgba(37,99,235,0.08)',  border: 'rgba(37,99,235,0.18)' },
   estudo_de_salmos_sabedoria:  { color: '#6D28D9', bg: 'rgba(109,40,217,0.08)', border: 'rgba(109,40,217,0.18)' },
   estudo_de_profecias:         { color: '#B45309', bg: 'rgba(180,83,9,0.08)',   border: 'rgba(180,83,9,0.18)' },
+  estudo_narrativas:           { color: '#92400E', bg: 'rgba(146,64,14,0.08)', border: 'rgba(146,64,14,0.18)' },
   estudo_doutrinario:          { color: '#4F46E5', bg: 'rgba(79,70,229,0.08)',  border: 'rgba(79,70,229,0.18)' },
   estudo_tematico:             { color: '#0F766E', bg: 'rgba(15,118,110,0.08)', border: 'rgba(15,118,110,0.18)' },
   exegese_biblica:             { color: '#0F766E', bg: 'rgba(15,118,110,0.08)', border: 'rgba(15,118,110,0.18)' },
@@ -124,6 +131,7 @@ const SECTION_ORDER: StudyModeId[] = [
   'sermao',
   'estudo_de_salmos_sabedoria',
   'estudo_de_profecias',
+  'estudo_narrativas',
   'estudo_doutrinario',
   'estudo_tematico',
   'exegese_biblica',
@@ -138,6 +146,7 @@ const MODE_ORDER: StudyModeId[] = [
   'estudo_de_carta',
   'estudo_de_salmos_sabedoria',
   'estudo_de_profecias',
+  'estudo_narrativas',
   'sermao',
   'estudo_doutrinario',
   'estudo_tematico',

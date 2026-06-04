@@ -10,6 +10,7 @@ export type StudyModeId =
   | 'estudo_de_carta'
   | 'estudo_de_salmos_sabedoria'
   | 'estudo_de_profecias'
+  | 'estudo_narrativas'
   | 'estudo_doutrinario'
   | 'estudo_tematico'
   | 'sermao'
@@ -716,7 +717,77 @@ const ESTUDO_DE_SALMOS_SABEDORIA: StudyModeConfig = {
   ],
 }
 
-// ── 10. Estudo de Profecias ──────────────────────────────────────────────
+// ── 10. Narrativas Bíblicas ──────────────────────────────────────────────
+
+const ESTUDO_NARRATIVAS: StudyModeConfig = {
+  id: 'estudo_narrativas',
+  name: 'Narrativas Bíblicas',
+  tagline: 'A arte do narrador a serviço da teologia',
+  color: '#92400E',
+  audience: 'Pastores · Professores · Seminaristas',
+  titlePlaceholder: 'Ex: José e seus irmãos — Gênesis 37–50',
+  passageBased: true,
+  passageLabel: 'Passagem / Narrativa',
+  topicLabel: 'Tema',
+  defaultSection: 'preparacao_espiritual',
+  defaultExpandedPhases: ['preparar', 'investigar'],
+  defaultExpandedCanons: ['preparar_imersao', 'nr_investigar_mode'],
+  defaultExpandedGroups: ['preparar_espiritual'],
+  phases: [
+    {
+      id: 'preparar', roman: 'I', label: 'Preparar',
+      description: 'Oração e imersão na narrativa',
+      color: '#D97706', bgActive: 'rgba(217,119,6,0.08)',
+      modes: [{
+        id: 'preparar_imersao', label: 'Imersão', subtitle: 'Oração e leitura',
+        color: '#D97706', bgActive: 'rgba(217,119,6,0.08)',
+        groups: [
+          { id: 'preparar_espiritual',  label: 'Preparação Espiritual' },
+          { id: 'preparar_assimilacao', label: 'Leia e Assimile' },
+          { id: 'preparar_impressoes',  label: 'Primeiras Impressões' },
+          { id: 'preparar_visao_geral', label: 'Visão Geral' },
+        ],
+      }],
+    },
+    {
+      id: 'investigar', roman: 'II', label: 'Investigar',
+      description: 'Análise narratológica da perícope',
+      color: '#92400E', bgActive: 'rgba(146,64,14,0.08)',
+      modes: [{
+        id: 'nr_investigar_mode', label: 'A Narrativa', subtitle: 'Análise narratológica',
+        color: '#92400E', bgActive: 'rgba(146,64,14,0.08)',
+        groups: [
+          { id: 'investigar_visao_geral', label: 'Visão Geral' },
+          { id: 'nr_personagens_grp',     label: 'Personagens' },
+          { id: 'nr_enredo_grp',          label: 'Enredo e Tensão' },
+          { id: 'nr_cenario_grp',         label: 'Cenário e Tempo' },
+          { id: 'nr_narrador_grp',        label: 'Narrador' },
+          { id: 'nr_dialogo_grp',         label: 'Diálogo' },
+          { id: 'nr_teologia_grp',        label: 'Teologia Narrativa' },
+        ],
+      }],
+    },
+    {
+      id: 'comunicar', roman: 'III', label: 'Comunicar',
+      description: 'Proclamação da narrativa bíblica',
+      color: 'var(--ai)', bgActive: 'rgba(139,92,246,0.08)',
+      modes: [{
+        id: 'sermao', label: 'Sermão', subtitle: 'Proclamação narrativa',
+        color: 'var(--ai)', bgActive: 'rgba(139,92,246,0.08)',
+        groups: [
+          { id: 'pregar_visao_geral',  label: 'Visão Geral' },
+          { id: 'sermao_dispositio',   label: 'Estrutura' },
+          { id: 'sermao_elocutio',     label: 'Linguagem' },
+          { id: 'sermao_memoria',      label: 'Internalização' },
+          { id: 'sermao_pronuntiatio', label: 'Execução' },
+        ],
+      }],
+    },
+    toolPhase(),
+  ],
+}
+
+// ── 11. Estudo de Profecias ──────────────────────────────────────────────
 
 const ESTUDO_DE_PROFECIAS: StudyModeConfig = {
   id: 'estudo_de_profecias',
@@ -792,6 +863,7 @@ export const STUDY_MODE_REGISTRY: Record<StudyModeId, StudyModeConfig> = {
   estudo_de_carta:             ESTUDO_DE_CARTA,
   estudo_de_salmos_sabedoria:  ESTUDO_DE_SALMOS_SABEDORIA,
   estudo_de_profecias:         ESTUDO_DE_PROFECIAS,
+  estudo_narrativas:           ESTUDO_NARRATIVAS,
   estudo_doutrinario:          ESTUDO_DOUTRINARIO,
   estudo_tematico:             ESTUDO_TEMATICO,
   sermao:                      SERMAO,
