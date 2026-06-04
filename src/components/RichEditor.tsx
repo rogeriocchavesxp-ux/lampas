@@ -29,6 +29,24 @@ const HL_COLORS = [
   { color: '#FCE7F3', label: 'Rosa'     },
 ]
 
+const HTML_ENTITIES: Record<string, string> = {
+  '&lt;': '<',
+  '&gt;': '>',
+  '&amp;': '&',
+  '&quot;': '"',
+  '&#39;': "'",
+  '&nbsp;': ' ',
+}
+
+function decodeHtmlEntities(value: string): string {
+  return value.replace(/&(lt|gt|amp|quot|#39|nbsp);/g, entity => HTML_ENTITIES[entity] ?? entity)
+}
+
+function normalizeEditorContent(value: string): string {
+  const decoded = decodeHtmlEntities(value)
+  return /<\/?[a-z][\s\S]*>/i.test(decoded.trim()) ? decoded : value
+}
+
 // ── Toolbar button ────────────────────────────────────────────────────────────
 
 function Btn({
@@ -94,6 +112,8 @@ export default function RichEditor({
     return () => document.removeEventListener('mousedown', h)
   }, [hlOpen])
 
+  const normalizedValue = normalizeEditorContent(value || '')
+
   const editor = useEditor({ // eslint-disable-line @typescript-eslint/no-use-before-define
     immediatelyRender: true,
     extensions: [
@@ -103,7 +123,7 @@ export default function RichEditor({
       Color,
       Highlight.configure({ multicolor: true }),
     ],
-    content: value || '',
+    content: normalizedValue,
     onUpdate: ({ editor }) => {
       onChange(editor.getHTML())
     },
@@ -143,14 +163,14 @@ export default function RichEditor({
   useEffect(() => {
     if (!editor) return
     const current = editor.getHTML()
-    if (value !== current) {
-      editor.commands.setContent(value || '')
+    if (normalizedValue !== current) {
+      editor.commands.setContent(normalizedValue)
     }
-  }, [value]) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [normalizedValue]) // eslint-disable-line react-hooks/exhaustive-deps
 
   if (!editor) return null
 
-  const isEmpty = !value || value === '<p></p>' || value.trim() === ''
+  const isEmpty = !normalizedValue || normalizedValue === '<p></p>' || normalizedValue.trim() === ''
 
   return (
     <div style={{ position: 'relative' }}>

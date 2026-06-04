@@ -35,6 +35,44 @@ function fieldStatus(text: string): 'empty' | 'draft' | 'reviewed' {
   return 'reviewed'
 }
 
+const HTML_ENTITIES: Record<string, string> = {
+  '&lt;': '<',
+  '&gt;': '>',
+  '&amp;': '&',
+  '&quot;': '"',
+  '&#39;': "'",
+  '&nbsp;': ' ',
+}
+
+function decodeHtmlEntities(value: string): string {
+  return value.replace(/&(lt|gt|amp|quot|#39|nbsp);/g, entity => HTML_ENTITIES[entity] ?? entity)
+}
+
+function normalizeStoredHtml(value: string): string {
+  const decoded = decodeHtmlEntities(value)
+  return /<\/?[a-z][\s\S]*>/i.test(decoded.trim()) ? decoded : value
+}
+
+function isHtmlContent(value: string): boolean {
+  return /<\/?[a-z][\s\S]*>/i.test(normalizeStoredHtml(value).trim())
+}
+
+function toDisplayText(value: string): string {
+  const normalized = normalizeStoredHtml(value)
+  if (!isHtmlContent(normalized)) return normalized
+
+  return decodeHtmlEntities(
+    normalized
+      .replace(/<(br|hr)\s*\/?>/gi, '\n')
+      .replace(/<\/(p|div|h[1-6]|li|blockquote)>/gi, '\n')
+      .replace(/<li[^>]*>/gi, '• ')
+      .replace(/<[^>]+>/g, '')
+  )
+    .replace(/[ \t]+\n/g, '\n')
+    .replace(/\n{3,}/g, '\n\n')
+    .trim()
+}
+
 const MODULE_COLORS: Record<string, string> = {
   inventio:     'var(--accent)',
   dispositio:   'var(--ai)',
@@ -360,14 +398,16 @@ export default function SectionWorkspace({
       <div>
         {sectionDef.cards.map((card, idx) => {
           const content   = cardContent[card.id] ?? ''
+          const displayContent = normalizeStoredHtml(content)
+          const displayText = toDisplayText(content)
           const expanded  = expandedCards.has(card.id)
-          const dc        = dotColor(content)
+          const dc        = dotColor(displayText)
           const state     = cardStates[card.id] ?? 'idle'
           const isWorking = state === 'generating' || state === 'saving'
-          const hasContent = content.trim().length > 0
+          const hasContent = displayText.trim().length > 0
           const isEditing = editingCards.has(card.id) || !hasContent
           const preview   = !expanded && hasContent
-            ? content.trim().slice(0, 160) + (content.trim().length > 160 ? '…' : '')
+            ? displayText.slice(0, 160) + (displayText.length > 160 ? '…' : '')
             : ''
           const isLast    = idx === sectionDef.cards.length - 1
           const showDots  = hoveredCard === card.id || openMenu === card.id
@@ -587,10 +627,10 @@ export default function SectionWorkspace({
                         minHeight: '5rem',
                       }}
                     >
-                      {content.trimStart().startsWith('<') ? (
+                      {isHtmlContent(displayContent) ? (
                         <div
                           className="rich-content-display"
-                          dangerouslySetInnerHTML={{ __html: content }}
+                          dangerouslySetInnerHTML={{ __html: displayContent }}
                           style={{
                             fontFamily: 'var(--font-serif), Georgia, serif',
                             fontSize: '0.9rem', lineHeight: '1.78',
@@ -598,7 +638,7 @@ export default function SectionWorkspace({
                           }}
                         />
                       ) : (
-                        <MarkdownRenderer content={content} moduleColor={moduleColor} />
+                        <MarkdownRenderer content={displayContent} moduleColor={moduleColor} />
                       )}
                     </div>
                   )}
@@ -624,13 +664,13 @@ export default function SectionWorkspace({
                     )}
                     <span style={{
                       fontSize: '0.67rem', marginLeft: 'auto',
-                      color: fieldStatus(content) === 'empty' ? 'transparent'
-                        : fieldStatus(content) === 'draft' ? 'var(--accent)'
+                      color: fieldStatus(displayText) === 'empty' ? 'transparent'
+                        : fieldStatus(displayText) === 'draft' ? 'var(--accent)'
                         : 'var(--success)',
                       opacity: 0.7,
                     }}>
-                      {fieldStatus(content) === 'draft' ? 'rascunho'
-                        : fieldStatus(content) === 'reviewed' ? 'revisado' : ''}
+                      {fieldStatus(displayText) === 'draft' ? 'rascunho'
+                        : fieldStatus(displayText) === 'reviewed' ? 'revisado' : ''}
                     </span>
                   </div>
                 </div>

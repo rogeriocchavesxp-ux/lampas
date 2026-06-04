@@ -51,6 +51,33 @@ function writeCls(pid: string, v: Classification[]) {
   try { localStorage.setItem(`lc_${pid}`, JSON.stringify(v)) } catch {}
 }
 
+const HTML_ENTITIES: Record<string, string> = {
+  '&lt;': '<',
+  '&gt;': '>',
+  '&amp;': '&',
+  '&quot;': '"',
+  '&#39;': "'",
+  '&nbsp;': ' ',
+}
+
+function decodeHtmlEntities(value: string): string {
+  return value.replace(/&(lt|gt|amp|quot|#39|nbsp);/g, entity => HTML_ENTITIES[entity] ?? entity)
+}
+
+function toPlainText(value: string): string {
+  const decoded = decodeHtmlEntities(value)
+  return decodeHtmlEntities(
+    decoded
+      .replace(/<(br|hr)\s*\/?>/gi, '\n')
+      .replace(/<\/(p|div|h[1-6]|li|blockquote)>/gi, '\n')
+      .replace(/<li[^>]*>/gi, '• ')
+      .replace(/<[^>]+>/g, '')
+  )
+    .replace(/[ \t]+\n/g, '\n')
+    .replace(/\n{3,}/g, '\n\n')
+    .trim()
+}
+
 // ── Canvas ────────────────────────────────────────────────────────────────────
 
 const CW      = 800
@@ -71,6 +98,7 @@ interface NodeDef {
   radius?: number
   layer?: OverviewLayerId
   sectionSlug?: string
+  sectionCardId?: string
   color: string; bg: string
   kind: NodeKind
   clsTypes?: ClassType[]
@@ -212,14 +240,14 @@ const VG_CARD_DEFS: Record<string, SectionDef['cards'][number]> = {
 // 8 nós → 45° · 7 nós → ~51.4° · 6 nós → 60°
 
 const CARTA_BASE_NODES: NodeDef[] = [
-  { key: 'vg_autor',         label: 'Autor',           icon: '✍',  angle: -90,  color: '#6D28D9', bg: '#F5F3FF', kind: 'card', cardIds: ['vg_autor'] },
-  { key: 'vg_destinatarios', label: 'Destinatários',   icon: '📬', angle: -45,  color: '#7C3AED', bg: '#EDE9FE', kind: 'card', cardIds: ['vg_destinatarios'] },
-  { key: 'vg_contexto',      label: 'Contexto Hist.',  icon: '📅', angle: 0,    color: '#4F46E5', bg: '#EEF2FF', kind: 'card', cardIds: ['vg_contexto'] },
-  { key: 'vg_proposito',     label: 'Propósito',       icon: '🎯', angle: 45,   color: '#2563EB', bg: '#EFF6FF', kind: 'card', cardIds: ['vg_proposito'] },
-  { key: 'vg_estrutura',     label: 'Estrutura Geral', icon: '⊞',  angle: 90,   color: '#0369A1', bg: '#EFF6FF', kind: 'card', cardIds: ['vg_estrutura'] },
-  { key: 'vg_temas',         label: 'Temas',           icon: '📖', angle: 135,  color: '#059669', bg: '#F0FDF4', kind: 'card', cardIds: ['vg_temas'] },
-  { key: 'vg_argumento',     label: 'Argumento',       icon: '⟶', angle: 180,  color: '#D97706', bg: '#FFFBEB', kind: 'card', cardIds: ['vg_argumento'] },
-  { key: 'vg_blocos',        label: 'Grandes Blocos',  icon: '▦',  angle: -135, color: '#475569', bg: '#F8FAFC', kind: 'card', cardIds: ['vg_blocos'] },
+  { key: 'vg_autor',         label: 'Autor',           icon: '✍',  angle: -90,  color: '#6D28D9', bg: '#F5F3FF', kind: 'card', sectionSlug: 'autor_destinatarios', sectionCardId: 'autor' },
+  { key: 'vg_destinatarios', label: 'Destinatários',   icon: '📬', angle: -45,  color: '#7C3AED', bg: '#EDE9FE', kind: 'card', sectionSlug: 'autor_destinatarios', sectionCardId: 'destinatarios' },
+  { key: 'vg_contexto',      label: 'Contexto Hist.',  icon: '📅', angle: 0,    color: '#4F46E5', bg: '#EEF2FF', kind: 'card', sectionSlug: 'contexto_historico' },
+  { key: 'vg_proposito',     label: 'Propósito',       icon: '🎯', angle: 45,   color: '#2563EB', bg: '#EFF6FF', kind: 'card', sectionSlug: 'ec_ocasiao', sectionCardId: 'proposito' },
+  { key: 'vg_estrutura',     label: 'Estrutura Geral', icon: '⊞',  angle: 90,   color: '#0369A1', bg: '#EFF6FF', kind: 'card', sectionSlug: 'ec_estrutura', sectionCardId: 'macroargumento' },
+  { key: 'vg_temas',         label: 'Temas',           icon: '📖', angle: 135,  color: '#059669', bg: '#F0FDF4', kind: 'card', sectionSlug: 'ec_estrutura' },
+  { key: 'vg_argumento',     label: 'Argumento',       icon: '⟶', angle: 180,  color: '#D97706', bg: '#FFFBEB', kind: 'card', sectionSlug: 'ec_argumento', sectionCardId: 'tese_central' },
+  { key: 'vg_blocos',        label: 'Grandes Blocos',  icon: '▦',  angle: -135, color: '#475569', bg: '#F8FAFC', kind: 'card', sectionSlug: 'estrutura_livro', sectionCardId: 'divisoes_principais' },
 ]
 
 const SERMAO_NODES: NodeDef[] = [
@@ -234,22 +262,22 @@ const SERMAO_NODES: NodeDef[] = [
 ]
 
 const SERMAO_EPISTOLAR_NODES: NodeDef[] = [
-  { key: 'sermao_vg_autor',         label: 'Autor',           icon: '✍', angle: -90, color: '#6D28D9', bg: '#F5F3FF', kind: 'card', layer: 'contexto_carta', cardIds: ['vg_autor'] },
-  { key: 'sermao_vg_destinatarios', label: 'Destinatários',   icon: '📬', angle: 0,   color: '#7C3AED', bg: '#EDE9FE', kind: 'card', layer: 'contexto_carta', cardIds: ['vg_destinatarios'] },
-  { key: 'sermao_vg_contexto',      label: 'Contexto Hist.',  icon: '📅', angle: 90,  color: '#4F46E5', bg: '#EEF2FF', kind: 'card', layer: 'contexto_carta', cardIds: ['vg_contexto'] },
-  { key: 'sermao_vg_proposito',     label: 'Propósito',       icon: '🎯', angle: 180, color: '#2563EB', bg: '#EFF6FF', kind: 'card', layer: 'contexto_carta', cardIds: ['vg_proposito'] },
+  { key: 'sermao_vg_autor',         label: 'Autor',           icon: '✍', angle: -90, color: '#6D28D9', bg: '#F5F3FF', kind: 'card', layer: 'contexto_carta', sectionSlug: 'autor_destinatarios', sectionCardId: 'autor' },
+  { key: 'sermao_vg_destinatarios', label: 'Destinatários',   icon: '📬', angle: 0,   color: '#7C3AED', bg: '#EDE9FE', kind: 'card', layer: 'contexto_carta', sectionSlug: 'autor_destinatarios', sectionCardId: 'destinatarios' },
+  { key: 'sermao_vg_contexto',      label: 'Contexto Hist.',  icon: '📅', angle: 90,  color: '#4F46E5', bg: '#EEF2FF', kind: 'card', layer: 'contexto_carta', sectionSlug: 'contexto_historico' },
+  { key: 'sermao_vg_proposito',     label: 'Propósito',       icon: '🎯', angle: 180, color: '#2563EB', bg: '#EFF6FF', kind: 'card', layer: 'contexto_carta', sectionSlug: 'ec_ocasiao', sectionCardId: 'proposito' },
 
-  { key: 'sermao_vg_estrutura', label: 'Estrutura Geral', icon: '⊞', angle: -90, color: '#0369A1', bg: '#EFF6FF', kind: 'card', layer: 'estrutura_texto', cardIds: ['vg_estrutura'] },
-  { key: 'sermao_vg_blocos',    label: 'Grandes Blocos',  icon: '▦', angle: -30, color: '#475569', bg: '#F8FAFC', kind: 'card', layer: 'estrutura_texto', cardIds: ['vg_blocos'] },
+  { key: 'sermao_vg_estrutura', label: 'Estrutura Geral', icon: '⊞', angle: -90, color: '#0369A1', bg: '#EFF6FF', kind: 'card', layer: 'estrutura_texto', sectionSlug: 'ec_estrutura', sectionCardId: 'macroargumento' },
+  { key: 'sermao_vg_blocos',    label: 'Grandes Blocos',  icon: '▦', angle: -30, color: '#475569', bg: '#F8FAFC', kind: 'card', layer: 'estrutura_texto', sectionSlug: 'estrutura_livro', sectionCardId: 'divisoes_principais' },
   { key: 'sermao_vg_divisoes',  label: 'Divisões',        icon: '⊞', angle: 30,  color: '#4338CA', bg: '#EEF2FF', kind: 'card', layer: 'estrutura_texto', cardIds: ['vg_divisoes'] },
   { key: 'sermao_vg_movimento', label: 'Movimento',       icon: '⟶', angle: 90,  color: '#4F46E5', bg: '#EEF2FF', kind: 'card', layer: 'estrutura_texto', cardIds: ['vg_movimento'] },
-  { key: 'sermao_vg_argumento', label: 'Argumento',       icon: '⟶', angle: 150, color: '#D97706', bg: '#FFFBEB', kind: 'card', layer: 'estrutura_texto', cardIds: ['vg_argumento'] },
-  { key: 'sermao_vg_temas',     label: 'Temas',           icon: '📖', angle: 210, color: '#059669', bg: '#F0FDF4', kind: 'card', layer: 'estrutura_texto', cardIds: ['vg_temas'] },
+  { key: 'sermao_vg_argumento', label: 'Argumento',       icon: '⟶', angle: 150, color: '#D97706', bg: '#FFFBEB', kind: 'card', layer: 'estrutura_texto', sectionSlug: 'ec_argumento', sectionCardId: 'tese_central' },
+  { key: 'sermao_vg_temas',     label: 'Temas',           icon: '📖', angle: 210, color: '#059669', bg: '#F0FDF4', kind: 'card', layer: 'estrutura_texto', sectionSlug: 'ec_estrutura' },
 
-  { key: 'sermao_vg_assunto', label: 'Assunto', icon: '📌', angle: -90, color: '#7C3AED', bg: '#F5F3FF', kind: 'card', layer: 'sintese_exegetica', cardIds: ['vg_assunto'] },
-  { key: 'sermao_vg_verdade', label: 'Verdade', icon: '💡', angle: 0,   color: '#D97706', bg: '#FFFBEB', kind: 'card', layer: 'sintese_exegetica', cardIds: ['vg_verdade'] },
-  { key: 'sermao_vg_climax',  label: 'Clímax',  icon: '✦', angle: 90,  color: '#7C3AED', bg: '#F5F3FF', kind: 'card', layer: 'sintese_exegetica', cardIds: ['vg_climax'] },
-  { key: 'sermao_vg_cristo',  label: 'Cristo',  icon: '✚', angle: 180, color: '#BE3455', bg: '#FFF1F2', kind: 'card', layer: 'sintese_exegetica', cardIds: ['vg_cristo'] },
+  { key: 'sermao_vg_assunto', label: 'Assunto', icon: '📌', angle: -90, color: '#7C3AED', bg: '#F5F3FF', kind: 'card', layer: 'sintese_exegetica', sectionSlug: 'sintese', sectionCardId: 'grande_ideia' },
+  { key: 'sermao_vg_verdade', label: 'Verdade', icon: '💡', angle: 0,   color: '#D97706', bg: '#FFFBEB', kind: 'card', layer: 'sintese_exegetica', sectionSlug: 'sintese', sectionCardId: 'mensagem_texto' },
+  { key: 'sermao_vg_climax',  label: 'Clímax',  icon: '✦', angle: 90,  color: '#7C3AED', bg: '#F5F3FF', kind: 'card', layer: 'sintese_exegetica', sectionSlug: 'ec_argumento', sectionCardId: 'climax' },
+  { key: 'sermao_vg_cristo',  label: 'Cristo',  icon: '✚', angle: 180, color: '#BE3455', bg: '#FFF1F2', kind: 'card', layer: 'sintese_exegetica', sectionSlug: 'contexto_canonico', sectionCardId: 'ecos_nt' },
 
   { key: 'sermao_vg_tema',             label: 'Tema Central',    icon: '🎯', angle: -90, color: '#6D28D9', bg: '#EDE9FE', kind: 'card', layer: 'sintese_homiletica', cardIds: ['vg_tema'] },
   { key: 'sermao_vg_regra_principal',  label: 'Regra Principal', icon: '⚖', angle: 30,  color: '#0F766E', bg: '#F0FDFA', kind: 'card', layer: 'sintese_homiletica', cardIds: ['vg_regra_principal'] },
@@ -262,10 +290,10 @@ const MODE_NODES_MAP: Record<string, NodeDef[]> = {
     { key: 'lugares',      label: 'Lugares',       icon: '📍', angle: -45,  color: '#059669', bg: '#F0FDF4', kind: 'cls',  clsTypes: ['lugar'] },
     { key: 'temas',        label: 'Temas',          icon: '📖', angle: 0,    color: '#2563EB', bg: '#EFF6FF', kind: 'cls',  clsTypes: ['tema'] },
     { key: 'termos',       label: 'Termos-Chave',  icon: '🔑', angle: 45,   color: '#EA580C', bg: '#FFF7ED', kind: 'cls',  clsTypes: ['termo_chave', 'repeticao'] },
-    { key: 'grande_ideia', label: 'Grande Ideia',  icon: '💡', angle: 90,   color: '#D97706', bg: '#FEFCE8', kind: 'card', cardIds: ['preparar_grande_ideia_inicial'] },
-    { key: 'estrutura',    label: 'Estrutura',      icon: '⊞',  angle: 135,  color: '#4F46E5', bg: '#EEF2FF', kind: 'card', cardIds: ['preparar_estrutura_percebida'] },
-    { key: 'climax',       label: 'Clímax',         icon: '✦',  angle: 180,  color: '#7C3AED', bg: '#F5F3FF', kind: 'card', cardIds: ['preparar_climax'] },
-    { key: 'movimento',    label: 'Movimento',      icon: '⟶', angle: -135, color: '#475569', bg: '#F8FAFC', kind: 'card', cardIds: ['preparar_movimento_narrativo', 'preparar_fluxo_argumentativo'] },
+    { key: 'grande_ideia', label: 'Grande Ideia',  icon: '💡', angle: 90,   color: '#D97706', bg: '#FEFCE8', kind: 'card', sectionSlug: 'sintese', sectionCardId: 'grande_ideia' },
+    { key: 'estrutura',    label: 'Estrutura',     icon: '⊞',  angle: 135,  color: '#4F46E5', bg: '#EEF2FF', kind: 'card', sectionSlug: 'estrutura_literaria' },
+    { key: 'climax',       label: 'Clímax',        icon: '✦',  angle: 180,  color: '#7C3AED', bg: '#F5F3FF', kind: 'card', sectionSlug: 'estrutura_literaria', sectionCardId: 'climax_resolucao' },
+    { key: 'movimento',    label: 'Movimento',     icon: '⟶', angle: -135, color: '#475569', bg: '#F8FAFC', kind: 'card', sectionSlug: 'estrutura_literaria', sectionCardId: 'enredo_tensao' },
   ],
   sermao: SERMAO_NODES,
   devocional: [
@@ -294,12 +322,12 @@ const MODE_NODES_MAP: Record<string, NodeDef[]> = {
     { key: 'ss_teologia',  label: 'Teologia',    icon: '🙏', angle: 198, color: '#059669', bg: '#F0FDF4', kind: 'card', sectionSlug: 'ss_teologia_adoracao' },
   ],
   estudo_de_profecias: [
-    { key: 'pf_contexto',  label: 'Contexto Hist.',    icon: '📅', angle: -90,  color: '#B45309', bg: '#FEF3C7', kind: 'card', cardIds: ['vg_contexto'] },
+    { key: 'pf_contexto',  label: 'Contexto Hist.',    icon: '📅', angle: -90,  color: '#B45309', bg: '#FEF3C7', kind: 'card', sectionSlug: 'contexto_historico' },
     { key: 'pf_oraculo',   label: 'O Oráculo',         icon: '📣', angle: -45,  color: '#D97706', bg: '#FFFBEB', kind: 'card', cardIds: ['vg_oraculo'] },
-    { key: 'pf_destinat',  label: 'Destinatários',     icon: '👥', angle: 0,    color: '#92400E', bg: '#FEF3C7', kind: 'card', cardIds: ['vg_destinatarios'] },
+    { key: 'pf_destinat',  label: 'Destinatários',     icon: '👥', angle: 0,    color: '#92400E', bg: '#FEF3C7', kind: 'card', sectionSlug: 'autor_destinatarios', sectionCardId: 'destinatarios' },
     { key: 'pf_simbolos',  label: 'Símbolos',          icon: '🔮', angle: 45,   color: '#B45309', bg: '#FEF3C7', kind: 'card', cardIds: ['vg_simbolos'] },
     { key: 'pf_climax',    label: 'Clímax',            icon: '✦',  angle: 90,   color: '#D97706', bg: '#FFFBEB', kind: 'card', cardIds: ['vg_climax'] },
-    { key: 'pf_cumprim',   label: 'Cumprimento',       icon: '✓',  angle: 135,  color: '#059669', bg: '#F0FDF4', kind: 'card', cardIds: ['vg_cumprimento'] },
+    { key: 'pf_cumprim',   label: 'Cumprimento',       icon: '✓',  angle: 135,  color: '#059669', bg: '#F0FDF4', kind: 'card', sectionSlug: 'progressao_revelacional', sectionCardId: 'promessa_cumprimento' },
     { key: 'pf_eschato',   label: 'Escatologia',       icon: '⌚', angle: 180,  color: '#1E40AF', bg: '#EFF6FF', kind: 'card', cardIds: ['vg_escatologia'] },
     { key: 'pf_reino',     label: 'Reino de Deus',     icon: '👑', angle: -135, color: '#4F46E5', bg: '#EEF2FF', kind: 'card', cardIds: ['vg_reino'] },
   ],
@@ -321,12 +349,12 @@ const MODE_NODES_MAP: Record<string, NodeDef[]> = {
   ],
   estudo_de_carta: CARTA_BASE_NODES,
   comentario_exegetico: [
-    { key: 'vg_estrutura',  label: 'Estrutura',          icon: '⊞',  angle: -90, color: '#F97316', bg: '#FFF7ED', kind: 'card', cardIds: ['preparar_estrutura_percebida'] },
-    { key: 'vg_fluxo',      label: 'Fluxo Arg.',         icon: '⟶', angle: -30, color: '#EA580C', bg: '#FFF7ED', kind: 'card', cardIds: ['preparar_fluxo_argumentativo'] },
+    { key: 'vg_estrutura',  label: 'Estrutura',          icon: '⊞',  angle: -90, color: '#F97316', bg: '#FFF7ED', kind: 'card', sectionSlug: 'estrutura_literaria' },
+    { key: 'vg_fluxo',      label: 'Fluxo Arg.',         icon: '⟶', angle: -30, color: '#EA580C', bg: '#FFF7ED', kind: 'card', sectionSlug: 'estrutura_literaria', sectionCardId: 'fluxo_argumentativo' },
     { key: 'vg_termos',     label: 'Termos Relevantes',  icon: '🔑', angle: 30,  color: '#D97706', bg: '#FFFBEB', kind: 'cls',  clsTypes: ['termo_chave', 'repeticao'] },
     { key: 'vg_questoes',   label: 'Questões Interp.',   icon: '❓', angle: 90,  color: '#B45309', bg: '#FEF3C7', kind: 'card', cardIds: ['vg_questoes'] },
-    { key: 'vg_conexoes',   label: 'Conexões Canônicas', icon: '🔗', angle: 150, color: '#92400E', bg: '#FEF3C7', kind: 'card', cardIds: ['vg_conexoes'] },
-    { key: 'vg_teologia',   label: 'Teologia',           icon: '📖', angle: 210, color: '#78350F', bg: '#FEF3C7', kind: 'card', cardIds: ['vg_teologia'] },
+    { key: 'vg_conexoes',   label: 'Conexões Canônicas', icon: '🔗', angle: 150, color: '#92400E', bg: '#FEF3C7', kind: 'card', sectionSlug: 'contexto_canonico' },
+    { key: 'vg_teologia',   label: 'Teologia',           icon: '📖', angle: 210, color: '#78350F', bg: '#FEF3C7', kind: 'card', sectionSlug: 'contexto_canonico', sectionCardId: 'ecos_nt' },
   ],
 }
 
@@ -382,7 +410,7 @@ function createOverviewSectionDef(sectionDef: SectionDef, nodes: NodeDef[], proj
       `Desenvolva este campo da visão geral da passagem com fidelidade ao texto bíblico.`,
     ))
 
-  return cards.length > 0 ? { ...sectionDef, cards } : sectionDef
+  return { ...sectionDef, cards }
 }
 
 function nodeXY(angle: number, r = RADIUS) {
@@ -571,6 +599,17 @@ export default function VisaoGeralWorkspace({
     return (section?.content as { cards?: Record<string, string> } | null)?.cards ?? {}
   }
 
+  const getLinkedCardEntries = (node: NodeDef): Array<readonly [string, string]> => {
+    const linkedCards = getLinkedCards(node)
+    const entries = node.sectionCardId
+      ? [[node.sectionCardId, linkedCards[node.sectionCardId] ?? '']] as Array<readonly [string, string]>
+      : Object.entries(linkedCards)
+
+    return entries
+      .map(([key, value]) => [key, value?.trim() ?? ''] as const)
+      .filter(([, value]) => Boolean(value))
+  }
+
   const getClsItems = (node: NodeDef): Classification[] =>
     node.kind === 'cls' && node.clsTypes
       ? cls.filter(c => node.clsTypes!.includes(c.type))
@@ -578,18 +617,18 @@ export default function VisaoGeralWorkspace({
 
   const getCardText = (node: NodeDef): string =>
     node.sectionSlug
-      ? Object.values(getLinkedCards(node)).map(value => value?.trim()).filter(Boolean).join('\n\n')
+      ? getLinkedCardEntries(node).map(([, value]) => value).join('\n\n')
       : node.kind === 'card' && node.cardIds
       ? node.cardIds.map(id => cards[id]?.trim()).filter(Boolean).join('\n\n')
       : ''
 
   const getCount = (node: NodeDef): number =>
     node.sectionSlug
-      ? Object.values(getLinkedCards(node)).filter(value => value?.trim()).length
+      ? getLinkedCardEntries(node).length
       : node.kind === 'cls' ? getClsItems(node).length : (getCardText(node) ? 1 : 0)
 
   const getNodeSummary = (node: NodeDef): string => {
-    const text = getCardText(node).replace(/\s+/g, ' ').trim()
+    const text = toPlainText(getCardText(node)).replace(/\s+/g, ' ').trim()
     return text.length > 220 ? `${text.slice(0, 220)}...` : text
   }
 
@@ -1557,10 +1596,8 @@ export default function VisaoGeralWorkspace({
                   {activeNode.kind === 'card' && (() => {
                     if (activeNode.sectionSlug) {
                       const linkedSection = getLinkedSection(activeNode)
-                      const linkedCards = getLinkedCards(activeNode)
-                      const filledEntries = Object.entries(linkedCards)
-                        .map(([key, value]) => [key, value?.trim() ?? ''] as const)
-                        .filter(([, value]) => Boolean(value))
+                      const linkedSectionName = linkedSection?.title ?? activeNode.sectionSlug.replaceAll('_', ' ')
+                      const filledEntries = getLinkedCardEntries(activeNode)
                       const summary = getNodeSummary(activeNode)
 
                       return (
@@ -1576,7 +1613,10 @@ export default function VisaoGeralWorkspace({
                               Fonte da verdade
                             </div>
                             <div style={{ fontSize: '0.78rem', color: '#334155', lineHeight: 1.45 }}>
-                              Este nó representa a seção {linkedSection ? `"${linkedSection.title}"` : 'correspondente'} da barra lateral.
+                              Este nó espelha {activeNode.sectionCardId ? 'um campo' : 'a seção'} "{linkedSectionName}" da barra lateral.
+                            </div>
+                            <div style={{ fontSize: '0.68rem', color: '#64748B', lineHeight: 1.45, marginTop: '0.3rem' }}>
+                              A Visão Geral apenas reflete a fonte de verdade; edite o conteúdo na seção original.
                             </div>
                           </div>
 
@@ -1592,7 +1632,7 @@ export default function VisaoGeralWorkspace({
                                       {key.replaceAll('_', ' ')}
                                     </div>
                                     <div style={{ fontSize: '0.72rem', color: '#475569', lineHeight: 1.45, overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>
-                                      {value}
+                                      {toPlainText(value)}
                                     </div>
                                   </div>
                                 ))}
@@ -1630,7 +1670,7 @@ export default function VisaoGeralWorkspace({
                               fontFamily: 'inherit',
                             }}
                           >
-                            Abrir seção
+                            Editar em {linkedSectionName}
                           </button>
                         </div>
                       )

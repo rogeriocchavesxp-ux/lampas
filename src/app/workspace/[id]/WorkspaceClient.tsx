@@ -584,12 +584,6 @@ export default function WorkspaceClient({ user, project, initialSections }: Prop
               }}>✎</span>
             </button>
           )}
-          <span style={{ color: 'var(--border)', fontSize: '0.78rem', flexShrink: 0 }}>·</span>
-          <span style={{ fontSize: '0.78rem', color: 'var(--text-muted)', flexShrink: 0, whiteSpace: 'nowrap' }}>
-            {modeConfig.passageBased
-              ? `${project.book} ${project.passage_ref}`
-              : project.passage_ref}
-          </span>
           <span style={{
             fontSize: '0.68rem', color: 'var(--text-muted)', flexShrink: 0,
             background: 'var(--surface-2)', border: '1px solid var(--border-subtle)',
@@ -795,12 +789,12 @@ export default function WorkspaceClient({ user, project, initialSections }: Prop
             /* ── Sidebar expanded ────────────────────────────────── */
             <>
               <div style={{
-                padding: '0.58rem 0.65rem 0.48rem',
+                padding: '0.7rem 0.72rem 0.62rem',
                 borderBottom: '1px solid var(--border-subtle)',
                 display: 'flex', alignItems: 'center', justifyContent: 'space-between',
                 flexShrink: 0,
               }}>
-                <LampasLogo height={26} />
+                <LampasLogo height={34} />
                 <button
                   onClick={() => { setSidebarCollapsed(true); localStorage.setItem('lampas_sidebar_c', '1') }}
                   title="Recolher menu"
