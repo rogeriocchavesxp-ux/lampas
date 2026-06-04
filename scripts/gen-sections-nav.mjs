@@ -49,13 +49,20 @@ if (!WORKSPACE_SECTIONS?.length) {
 
 const NAV_FIELDS = ['slug', 'title', 'shortTitle', 'phase', 'communicationMode', 'module', 'group', 'groupLabel', 'order']
 
-const navSections = WORKSPACE_SECTIONS.map(s =>
-  Object.fromEntries(NAV_FIELDS.filter(f => s[f] !== undefined).map(f => [f, s[f]]))
-)
+// cards incluídos com apenas id+title — necessários para LiveReferencePanel
+const navSections = WORKSPACE_SECTIONS.map(s => {
+  const nav = Object.fromEntries(NAV_FIELDS.filter(f => s[f] !== undefined).map(f => [f, s[f]]))
+  if (Array.isArray(s.cards) && s.cards.length > 0) {
+    nav.cards = s.cards.map(c => ({ id: c.id, title: c.title }))
+  }
+  return nav
+})
 
 const lines = [
   '// AUTO-GERADO por scripts/gen-sections-nav.mjs — não editar manualmente',
   '// Contém apenas campos de navegação. Dados completos via /api/workspace/section/[slug]',
+  '',
+  'export interface CardNav { id: string; title: string }',
   '',
   'export interface SectionNav {',
   '  slug: string',
@@ -67,6 +74,7 @@ const lines = [
   '  group: string',
   '  groupLabel: string',
   '  order: number',
+  '  cards?: CardNav[]',
   '}',
   '',
   `export const WORKSPACE_SECTIONS_NAV: SectionNav[] = ${JSON.stringify(navSections, null, 2)}`,

@@ -1,6 +1,8 @@
 // AUTO-GERADO por scripts/gen-sections-nav.mjs — não editar manualmente
 // Contém apenas campos de navegação. Dados completos via /api/workspace/section/[slug]
 
+export interface CardNav { id: string; title: string }
+
 export interface SectionNav {
   slug: string
   title: string
@@ -11,6 +13,7 @@ export interface SectionNav {
   group: string
   groupLabel: string
   order: number
+  cards?: CardNav[]
 }
 
 export const WORKSPACE_SECTIONS_NAV: SectionNav[] = [
@@ -22,7 +25,29 @@ export const WORKSPACE_SECTIONS_NAV: SectionNav[] = [
     "module": "inventio",
     "group": "preparar_espiritual",
     "groupLabel": "Piedade, planejamento e oração",
-    "order": -40
+    "order": -40,
+    "cards": [
+      {
+        "id": "preparar_oracao",
+        "title": "Oração"
+      },
+      {
+        "id": "preparar_pedidos",
+        "title": "Pedidos e dependência"
+      },
+      {
+        "id": "preparar_percepcoes",
+        "title": "Percepções espirituais"
+      },
+      {
+        "id": "preparar_objetivo_estudo",
+        "title": "Objetivo do estudo"
+      },
+      {
+        "id": "preparar_ocasiiao_publico",
+        "title": "Ocasião e público"
+      }
+    ]
   },
   {
     "slug": "preparar_leia_assimile",
@@ -32,7 +57,33 @@ export const WORKSPACE_SECTIONS_NAV: SectionNav[] = [
     "module": "inventio",
     "group": "preparar_assimilacao",
     "groupLabel": "Contato direto com a Escritura",
-    "order": -39
+    "order": -39,
+    "cards": [
+      {
+        "id": "preparar_leitura_lenta",
+        "title": "Leitura lenta"
+      },
+      {
+        "id": "preparar_multiplas_leituras",
+        "title": "Múltiplas leituras"
+      },
+      {
+        "id": "preparar_comparacao_traducoes",
+        "title": "Comparação de traduções"
+      },
+      {
+        "id": "preparar_leitura_voz_alta",
+        "title": "Leitura em voz alta"
+      },
+      {
+        "id": "preparar_ideia_inicial",
+        "title": "Ideia central inicial"
+      },
+      {
+        "id": "preparar_tensoes_repeticoes",
+        "title": "Tensões e repetições"
+      }
+    ]
   },
   {
     "slug": "preparar_primeiras_impressoes",
@@ -42,7 +93,29 @@ export const WORKSPACE_SECTIONS_NAV: SectionNav[] = [
     "module": "inventio",
     "group": "preparar_impressoes",
     "groupLabel": "Notas rápidas e perguntas",
-    "order": -38
+    "order": -38,
+    "cards": [
+      {
+        "id": "preparar_observacoes_livres",
+        "title": "Observações livres"
+      },
+      {
+        "id": "preparar_perguntas_dificuldades",
+        "title": "Perguntas e dificuldades"
+      },
+      {
+        "id": "preparar_conexoes_iniciais",
+        "title": "Conexões iniciais"
+      },
+      {
+        "id": "preparar_marcacoes",
+        "title": "Marcações e destaques"
+      },
+      {
+        "id": "preparar_modo_imersao",
+        "title": "Modo Imersão"
+      }
+    ]
   },
   {
     "slug": "preparar_visao_geral",
@@ -52,7 +125,41 @@ export const WORKSPACE_SECTIONS_NAV: SectionNav[] = [
     "module": "inventio",
     "group": "preparar_visao_geral",
     "groupLabel": "Assimilação macro",
-    "order": -37
+    "order": -37,
+    "cards": [
+      {
+        "id": "preparar_tema_provavel",
+        "title": "Tema provável"
+      },
+      {
+        "id": "preparar_grande_ideia_inicial",
+        "title": "Grande ideia inicial"
+      },
+      {
+        "id": "preparar_estrutura_percebida",
+        "title": "Estrutura percebida"
+      },
+      {
+        "id": "preparar_personagens",
+        "title": "Personagens"
+      },
+      {
+        "id": "preparar_movimento_narrativo",
+        "title": "Movimento narrativo"
+      },
+      {
+        "id": "preparar_fluxo_argumentativo",
+        "title": "Fluxo argumentativo"
+      },
+      {
+        "id": "preparar_climax",
+        "title": "Clímax"
+      },
+      {
+        "id": "preparar_palavras_repetidas",
+        "title": "Palavras repetidas"
+      }
+    ]
   },
   {
     "slug": "investigar_visao_geral",
@@ -62,7 +169,41 @@ export const WORKSPACE_SECTIONS_NAV: SectionNav[] = [
     "module": "inventio",
     "group": "investigar_visao_geral",
     "groupLabel": "Compreensão refinada após investigação",
-    "order": -20
+    "order": -20,
+    "cards": [
+      {
+        "id": "preparar_tema_provavel",
+        "title": "Tema refinado"
+      },
+      {
+        "id": "preparar_grande_ideia_inicial",
+        "title": "Grande ideia refinada"
+      },
+      {
+        "id": "preparar_estrutura_percebida",
+        "title": "Estrutura refinada"
+      },
+      {
+        "id": "preparar_personagens",
+        "title": "Personagens"
+      },
+      {
+        "id": "preparar_movimento_narrativo",
+        "title": "Movimento narrativo refinado"
+      },
+      {
+        "id": "preparar_fluxo_argumentativo",
+        "title": "Fluxo argumentativo refinado"
+      },
+      {
+        "id": "preparar_climax",
+        "title": "Clímax confirmado"
+      },
+      {
+        "id": "preparar_palavras_repetidas",
+        "title": "Termos e repetições"
+      }
+    ]
   },
   {
     "slug": "pregar_visao_geral",
@@ -72,7 +213,41 @@ export const WORKSPACE_SECTIONS_NAV: SectionNav[] = [
     "module": "inventio",
     "group": "pregar_visao_geral",
     "groupLabel": "Síntese final para comunicação",
-    "order": 5
+    "order": 5,
+    "cards": [
+      {
+        "id": "preparar_tema_provavel",
+        "title": "Tema da comunicação"
+      },
+      {
+        "id": "preparar_grande_ideia_inicial",
+        "title": "Grande ideia homilética"
+      },
+      {
+        "id": "preparar_estrutura_percebida",
+        "title": "Estrutura da comunicação"
+      },
+      {
+        "id": "preparar_personagens",
+        "title": "Pontos de identificação"
+      },
+      {
+        "id": "preparar_movimento_narrativo",
+        "title": "Movimento da mensagem"
+      },
+      {
+        "id": "preparar_fluxo_argumentativo",
+        "title": "Fluxo do argumento"
+      },
+      {
+        "id": "preparar_climax",
+        "title": "Clímax da comunicação"
+      },
+      {
+        "id": "preparar_palavras_repetidas",
+        "title": "Termos e imagens centrais"
+      }
+    ]
   },
   {
     "slug": "contexto_historico",
@@ -81,7 +256,33 @@ export const WORKSPACE_SECTIONS_NAV: SectionNav[] = [
     "module": "inventio",
     "group": "contextual",
     "groupLabel": "Estudo Contextual",
-    "order": 1
+    "order": 1,
+    "cards": [
+      {
+        "id": "periodo_data",
+        "title": "Período e data"
+      },
+      {
+        "id": "contexto_politico",
+        "title": "Contexto político"
+      },
+      {
+        "id": "contexto_religioso",
+        "title": "Contexto religioso"
+      },
+      {
+        "id": "cultura_costumes",
+        "title": "Cultura e costumes"
+      },
+      {
+        "id": "geografia",
+        "title": "Geografia"
+      },
+      {
+        "id": "estrutura_social",
+        "title": "Estrutura social"
+      }
+    ]
   },
   {
     "slug": "autor_destinatarios",
@@ -90,7 +291,25 @@ export const WORKSPACE_SECTIONS_NAV: SectionNav[] = [
     "module": "inventio",
     "group": "contextual",
     "groupLabel": "Estudo Contextual",
-    "order": 2
+    "order": 2,
+    "cards": [
+      {
+        "id": "autor",
+        "title": "Autor"
+      },
+      {
+        "id": "questoes_autoria",
+        "title": "Questões de autoria"
+      },
+      {
+        "id": "destinatarios",
+        "title": "Destinatários"
+      },
+      {
+        "id": "situacao_destinatarios",
+        "title": "Situação dos destinatários"
+      }
+    ]
   },
   {
     "slug": "ocasiao_proposito",
@@ -99,7 +318,21 @@ export const WORKSPACE_SECTIONS_NAV: SectionNav[] = [
     "module": "inventio",
     "group": "contextual",
     "groupLabel": "Estudo Contextual",
-    "order": 3
+    "order": 3,
+    "cards": [
+      {
+        "id": "ocasiao",
+        "title": "Ocasião"
+      },
+      {
+        "id": "proposito_declarado",
+        "title": "Propósito declarado"
+      },
+      {
+        "id": "proposito_implicito",
+        "title": "Propósito implícito"
+      }
+    ]
   },
   {
     "slug": "genero_literario",
@@ -108,7 +341,21 @@ export const WORKSPACE_SECTIONS_NAV: SectionNav[] = [
     "module": "inventio",
     "group": "contextual",
     "groupLabel": "Estudo Contextual",
-    "order": 4
+    "order": 4,
+    "cards": [
+      {
+        "id": "genero_livro",
+        "title": "Gênero do livro"
+      },
+      {
+        "id": "genero_pericope",
+        "title": "Gênero da perícope"
+      },
+      {
+        "id": "implicacoes_hermeneuticas",
+        "title": "Implicações hermenêuticas"
+      }
+    ]
   },
   {
     "slug": "estrutura_livro",
@@ -117,7 +364,21 @@ export const WORKSPACE_SECTIONS_NAV: SectionNav[] = [
     "module": "inventio",
     "group": "contextual",
     "groupLabel": "Estudo Contextual",
-    "order": 5
+    "order": 5,
+    "cards": [
+      {
+        "id": "divisoes_principais",
+        "title": "Divisões principais"
+      },
+      {
+        "id": "localizacao_pericope",
+        "title": "Localização da perícope"
+      },
+      {
+        "id": "argumento_livro",
+        "title": "Argumento do livro"
+      }
+    ]
   },
   {
     "slug": "texto_original",
@@ -135,7 +396,21 @@ export const WORKSPACE_SECTIONS_NAV: SectionNav[] = [
     "module": "inventio",
     "group": "textual",
     "groupLabel": "Estudo Textual",
-    "order": 6
+    "order": 6,
+    "cards": [
+      {
+        "id": "limites_pericope",
+        "title": "Limites da perícope"
+      },
+      {
+        "id": "marcadores_delimitacao",
+        "title": "Marcadores de delimitação"
+      },
+      {
+        "id": "conexao_contexto",
+        "title": "Conexão com o contexto"
+      }
+    ]
   },
   {
     "slug": "traducao_textual",
@@ -144,7 +419,21 @@ export const WORKSPACE_SECTIONS_NAV: SectionNav[] = [
     "module": "inventio",
     "group": "textual",
     "groupLabel": "Estudo Textual",
-    "order": 7
+    "order": 7,
+    "cards": [
+      {
+        "id": "minha_traducao",
+        "title": "Minha tradução"
+      },
+      {
+        "id": "variantes_textuais",
+        "title": "Variantes textuais"
+      },
+      {
+        "id": "comparacao_versoes",
+        "title": "Comparação de versões"
+      }
+    ]
   },
   {
     "slug": "analise_morfossintatica",
@@ -153,7 +442,25 @@ export const WORKSPACE_SECTIONS_NAV: SectionNav[] = [
     "module": "inventio",
     "group": "textual",
     "groupLabel": "Estudo Textual",
-    "order": 8
+    "order": 8,
+    "cards": [
+      {
+        "id": "verbos_principais",
+        "title": "Verbos principais"
+      },
+      {
+        "id": "substantivos_casos",
+        "title": "Substantivos e casos"
+      },
+      {
+        "id": "estrutura_sintatica",
+        "title": "Estrutura sintática"
+      },
+      {
+        "id": "particulas_conectivos",
+        "title": "Partículas e conectivos"
+      }
+    ]
   },
   {
     "slug": "termos_chave",
@@ -171,7 +478,141 @@ export const WORKSPACE_SECTIONS_NAV: SectionNav[] = [
     "module": "inventio",
     "group": "textual",
     "groupLabel": "Estudo Textual",
-    "order": 10
+    "order": 10,
+    "cards": [
+      {
+        "id": "esboço_narrativo",
+        "title": "Esboço narrativo"
+      },
+      {
+        "id": "personagens_narrativos",
+        "title": "Personagens"
+      },
+      {
+        "id": "cenario_tempo",
+        "title": "Cenário e tempo"
+      },
+      {
+        "id": "enredo_tensao",
+        "title": "Enredo e tensão dramática"
+      },
+      {
+        "id": "climax_resolucao",
+        "title": "Clímax e resolução"
+      },
+      {
+        "id": "dispositivos_narrativos",
+        "title": "Dispositivos literários"
+      },
+      {
+        "id": "tese_argumento",
+        "title": "Tese e argumento central"
+      },
+      {
+        "id": "fluxo_argumentativo",
+        "title": "Fluxo argumentativo"
+      },
+      {
+        "id": "premissas_conclusoes",
+        "title": "Premissas e fundamentação"
+      },
+      {
+        "id": "exortacoes_aplicacao",
+        "title": "Exortações e aplicação"
+      },
+      {
+        "id": "dispositivos_retoricos",
+        "title": "Dispositivos retóricos"
+      },
+      {
+        "id": "tipo_paralelismo",
+        "title": "Paralelismo"
+      },
+      {
+        "id": "estrutura_estrofica",
+        "title": "Estrutura estrófica"
+      },
+      {
+        "id": "imagens_metaforas",
+        "title": "Imagens e metáforas"
+      },
+      {
+        "id": "quiasmo_inclusio_poetico",
+        "title": "Quiasmo e inclusio"
+      },
+      {
+        "id": "campos_semanticos",
+        "title": "Campos semânticos"
+      },
+      {
+        "id": "tipo_oraculo",
+        "title": "Tipo de oráculo"
+      },
+      {
+        "id": "estrutura_profetica",
+        "title": "Estrutura profética"
+      },
+      {
+        "id": "acusacoes_pecados",
+        "title": "Acusações e denúncia"
+      },
+      {
+        "id": "promessas_salvacao",
+        "title": "Promessas e salvação"
+      },
+      {
+        "id": "cumprimento_progressivo",
+        "title": "Cumprimento progressivo"
+      },
+      {
+        "id": "visoes_simbolos",
+        "title": "Visões e símbolos"
+      },
+      {
+        "id": "estrutura_ciclos",
+        "title": "Estrutura e ciclos"
+      },
+      {
+        "id": "imagens_cosmicas",
+        "title": "Imagens cósmicas"
+      },
+      {
+        "id": "escatologia",
+        "title": "Dimensão escatológica"
+      },
+      {
+        "id": "forma_sapiencial",
+        "title": "Forma sapiencial"
+      },
+      {
+        "id": "paralelos_contraste",
+        "title": "Paralelos e contraste"
+      },
+      {
+        "id": "aplicacao_sapiencial",
+        "title": "Aplicação prática"
+      },
+      {
+        "id": "base_teologica_sap",
+        "title": "Base teológica"
+      },
+      {
+        "id": "tipo_lei",
+        "title": "Tipo de lei"
+      },
+      {
+        "id": "contexto_aliancal",
+        "title": "Contexto alianção"
+      },
+      {
+        "id": "principio_etico",
+        "title": "Princípio ético"
+      },
+      {
+        "id": "hermeneutica_crista",
+        "title": "Hermenêutica cristã"
+      }
+    ]
   },
   {
     "slug": "contexto_canonico",
@@ -180,7 +621,21 @@ export const WORKSPACE_SECTIONS_NAV: SectionNav[] = [
     "module": "inventio",
     "group": "teologico",
     "groupLabel": "Estudo Teológico",
-    "order": 11
+    "order": 11,
+    "cards": [
+      {
+        "id": "contexto_intralivro",
+        "title": "Contexto intralivro"
+      },
+      {
+        "id": "citacoes_alusoes_at",
+        "title": "Citações e alusões ao AT"
+      },
+      {
+        "id": "ecos_nt",
+        "title": "Ecos no NT"
+      }
+    ]
   },
   {
     "slug": "progressao_revelacional",
@@ -189,7 +644,21 @@ export const WORKSPACE_SECTIONS_NAV: SectionNav[] = [
     "module": "inventio",
     "group": "teologico",
     "groupLabel": "Estudo Teológico",
-    "order": 12
+    "order": 12,
+    "cards": [
+      {
+        "id": "posicao_historia_redencao",
+        "title": "Posição na história da redenção"
+      },
+      {
+        "id": "tipologia",
+        "title": "Tipologia"
+      },
+      {
+        "id": "promessa_cumprimento",
+        "title": "Promessa e cumprimento"
+      }
+    ]
   },
   {
     "slug": "sintese",
@@ -198,7 +667,25 @@ export const WORKSPACE_SECTIONS_NAV: SectionNav[] = [
     "module": "inventio",
     "group": "teologico",
     "groupLabel": "Estudo Teológico",
-    "order": 13
+    "order": 13,
+    "cards": [
+      {
+        "id": "grande_ideia",
+        "title": "A Grande Ideia"
+      },
+      {
+        "id": "mensagem_texto",
+        "title": "Mensagem do texto"
+      },
+      {
+        "id": "conceito_ensina",
+        "title": "Conceito que o texto ensina"
+      },
+      {
+        "id": "conceitos_confronta",
+        "title": "Conceitos que o texto confronta"
+      }
+    ]
   },
   {
     "slug": "grande_ideia_homiletica",
@@ -207,7 +694,25 @@ export const WORKSPACE_SECTIONS_NAV: SectionNav[] = [
     "module": "dispositio",
     "group": "proposicao",
     "groupLabel": "Ideia e Proposição",
-    "order": 14
+    "order": 14,
+    "cards": [
+      {
+        "id": "sujeito_homilet",
+        "title": "Sujeito do sermão"
+      },
+      {
+        "id": "complemento_homilet",
+        "title": "Complemento do sermão"
+      },
+      {
+        "id": "grande_ideia_homilet",
+        "title": "Grande Ideia Homilética"
+      },
+      {
+        "id": "proposicao",
+        "title": "Proposição do sermão"
+      }
+    ]
   },
   {
     "slug": "introducao_sermao",
@@ -216,7 +721,25 @@ export const WORKSPACE_SECTIONS_NAV: SectionNav[] = [
     "module": "dispositio",
     "group": "estrutura",
     "groupLabel": "Estrutura do Sermão",
-    "order": 15
+    "order": 15,
+    "cards": [
+      {
+        "id": "gancho",
+        "title": "Gancho (abertura)"
+      },
+      {
+        "id": "necessidade",
+        "title": "Necessidade do ouvinte"
+      },
+      {
+        "id": "assunto_intro",
+        "title": "Apresentação do assunto"
+      },
+      {
+        "id": "leitura_texto",
+        "title": "Leitura e apresentação do texto"
+      }
+    ]
   },
   {
     "slug": "divisoes_sermao",
@@ -225,7 +748,25 @@ export const WORKSPACE_SECTIONS_NAV: SectionNav[] = [
     "module": "dispositio",
     "group": "estrutura",
     "groupLabel": "Estrutura do Sermão",
-    "order": 16
+    "order": 16,
+    "cards": [
+      {
+        "id": "ponto1",
+        "title": "Ponto 1"
+      },
+      {
+        "id": "ponto2",
+        "title": "Ponto 2"
+      },
+      {
+        "id": "ponto3",
+        "title": "Ponto 3 (se houver)"
+      },
+      {
+        "id": "avaliacao_estrutura",
+        "title": "Avaliação da estrutura"
+      }
+    ]
   },
   {
     "slug": "transicoes",
@@ -234,7 +775,21 @@ export const WORKSPACE_SECTIONS_NAV: SectionNav[] = [
     "module": "dispositio",
     "group": "estrutura",
     "groupLabel": "Estrutura do Sermão",
-    "order": 17
+    "order": 17,
+    "cards": [
+      {
+        "id": "transicao_intro_p1",
+        "title": "Introdução → Ponto 1"
+      },
+      {
+        "id": "transicao_1_2",
+        "title": "Ponto 1 → Ponto 2"
+      },
+      {
+        "id": "transicao_2_3",
+        "title": "Ponto 2 → Ponto 3 (se houver)"
+      }
+    ]
   },
   {
     "slug": "aplicacao",
@@ -243,7 +798,25 @@ export const WORKSPACE_SECTIONS_NAV: SectionNav[] = [
     "module": "dispositio",
     "group": "encerramento",
     "groupLabel": "Aplicação e Conclusão",
-    "order": 18
+    "order": 18,
+    "cards": [
+      {
+        "id": "aplicacao_crenca",
+        "title": "O que crer"
+      },
+      {
+        "id": "aplicacao_pratica",
+        "title": "O que fazer"
+      },
+      {
+        "id": "aplicacao_cristologica",
+        "title": "Cristo como centro e motivação"
+      },
+      {
+        "id": "ilustracoes",
+        "title": "Ilustrações"
+      }
+    ]
   },
   {
     "slug": "conclusao_sermao",
@@ -252,7 +825,21 @@ export const WORKSPACE_SECTIONS_NAV: SectionNav[] = [
     "module": "dispositio",
     "group": "encerramento",
     "groupLabel": "Aplicação e Conclusão",
-    "order": 19
+    "order": 19,
+    "cards": [
+      {
+        "id": "sintese_final",
+        "title": "Síntese do sermão"
+      },
+      {
+        "id": "apelo",
+        "title": "Apelo à resposta"
+      },
+      {
+        "id": "encerramento",
+        "title": "Frase de encerramento"
+      }
+    ]
   },
   {
     "slug": "vocabulario_clareza",
@@ -261,7 +848,21 @@ export const WORKSPACE_SECTIONS_NAV: SectionNav[] = [
     "module": "elocutio",
     "group": "vocabulario",
     "groupLabel": "Vocabulário e Clareza",
-    "order": 20
+    "order": 20,
+    "cards": [
+      {
+        "id": "nivel_linguagem",
+        "title": "Nível de linguagem"
+      },
+      {
+        "id": "jargao_teologico",
+        "title": "Termos técnicos e jargão"
+      },
+      {
+        "id": "clareza_frases",
+        "title": "Clareza e concisão"
+      }
+    ]
   },
   {
     "slug": "figuras_linguagem",
@@ -270,7 +871,21 @@ export const WORKSPACE_SECTIONS_NAV: SectionNav[] = [
     "module": "elocutio",
     "group": "imagens",
     "groupLabel": "Imagens e Retórica",
-    "order": 21
+    "order": 21,
+    "cards": [
+      {
+        "id": "metaforas_analogias",
+        "title": "Metáforas e analogias"
+      },
+      {
+        "id": "imagens_concretas",
+        "title": "Imagens do cotidiano"
+      },
+      {
+        "id": "recursos_retoricos",
+        "title": "Recursos retóricos"
+      }
+    ]
   },
   {
     "slug": "tom_pastoral",
@@ -279,7 +894,21 @@ export const WORKSPACE_SECTIONS_NAV: SectionNav[] = [
     "module": "elocutio",
     "group": "tom",
     "groupLabel": "Tom e Voz Pastoral",
-    "order": 22
+    "order": 22,
+    "cards": [
+      {
+        "id": "tom_geral",
+        "title": "Tom geral do sermão"
+      },
+      {
+        "id": "variacao_tonal",
+        "title": "Variações de tom"
+      },
+      {
+        "id": "voz_pregador",
+        "title": "Voz e autoridade pastoral"
+      }
+    ]
   },
   {
     "slug": "internalizacao_estrutura",
@@ -288,7 +917,21 @@ export const WORKSPACE_SECTIONS_NAV: SectionNav[] = [
     "module": "memoria",
     "group": "memorizacao",
     "groupLabel": "Internalização",
-    "order": 23
+    "order": 23,
+    "cards": [
+      {
+        "id": "esboço_pulpito",
+        "title": "Esboço de púlpito"
+      },
+      {
+        "id": "palavras_ancora",
+        "title": "Palavras-âncora"
+      },
+      {
+        "id": "logica_fluxo",
+        "title": "Lógica e fluxo"
+      }
+    ]
   },
   {
     "slug": "pratica_revisao",
@@ -297,7 +940,21 @@ export const WORKSPACE_SECTIONS_NAV: SectionNav[] = [
     "module": "memoria",
     "group": "memorizacao",
     "groupLabel": "Internalização",
-    "order": 24
+    "order": 24,
+    "cards": [
+      {
+        "id": "plano_pratica",
+        "title": "Plano de prática"
+      },
+      {
+        "id": "pontos_vulneraveis",
+        "title": "Pontos vulneráveis"
+      },
+      {
+        "id": "preparacao_espiritual",
+        "title": "Preparação espiritual"
+      }
+    ]
   },
   {
     "slug": "voz_dicao",
@@ -306,7 +963,21 @@ export const WORKSPACE_SECTIONS_NAV: SectionNav[] = [
     "module": "pronuntiatio",
     "group": "entrega",
     "groupLabel": "Entrega e Comunicação",
-    "order": 25
+    "order": 25,
+    "cards": [
+      {
+        "id": "projecao_articulacao",
+        "title": "Projeção e articulação"
+      },
+      {
+        "id": "variacao_ritmo",
+        "title": "Variação e ritmo"
+      },
+      {
+        "id": "enfase_pausas",
+        "title": "Ênfase e pausas"
+      }
+    ]
   },
   {
     "slug": "linguagem_corporal",
@@ -315,7 +986,21 @@ export const WORKSPACE_SECTIONS_NAV: SectionNav[] = [
     "module": "pronuntiatio",
     "group": "entrega",
     "groupLabel": "Entrega e Comunicação",
-    "order": 26
+    "order": 26,
+    "cards": [
+      {
+        "id": "postura_presenca",
+        "title": "Postura e presença"
+      },
+      {
+        "id": "gestos",
+        "title": "Gestos intencionais"
+      },
+      {
+        "id": "contato_visual",
+        "title": "Contato visual"
+      }
+    ]
   },
   {
     "slug": "avaliacao_pregacao",
@@ -324,7 +1009,21 @@ export const WORKSPACE_SECTIONS_NAV: SectionNav[] = [
     "module": "pronuntiatio",
     "group": "avaliacao_pregacao",
     "groupLabel": "Avaliação",
-    "order": 27
+    "order": 27,
+    "cards": [
+      {
+        "id": "auto_avaliacao",
+        "title": "Autoavaliação"
+      },
+      {
+        "id": "feedback_recebido",
+        "title": "Feedback recebido"
+      },
+      {
+        "id": "crescimento_continuo",
+        "title": "Crescimento contínuo"
+      }
+    ]
   },
   {
     "slug": "sermao_inventio",
@@ -335,7 +1034,41 @@ export const WORKSPACE_SECTIONS_NAV: SectionNav[] = [
     "module": "inventio",
     "group": "sermao_inventio",
     "groupLabel": "Invenção · Inventio",
-    "order": 100
+    "order": 100,
+    "cards": [
+      {
+        "id": "sermao_ideia_central",
+        "title": "Ideia Central"
+      },
+      {
+        "id": "sermao_tema",
+        "title": "Tema"
+      },
+      {
+        "id": "sermao_proposicao",
+        "title": "Proposição"
+      },
+      {
+        "id": "sermao_objetivo",
+        "title": "Objetivo do Sermão"
+      },
+      {
+        "id": "sermao_problema_texto",
+        "title": "Problema do Texto"
+      },
+      {
+        "id": "sermao_problema_ouvinte",
+        "title": "Problema do Ouvinte"
+      },
+      {
+        "id": "sermao_foco_cristocentrico",
+        "title": "Foco Cristocêntrico"
+      },
+      {
+        "id": "sermao_argumento_principal",
+        "title": "Argumento principal"
+      }
+    ]
   },
   {
     "slug": "sermao_dispositio",
@@ -346,7 +1079,41 @@ export const WORKSPACE_SECTIONS_NAV: SectionNav[] = [
     "module": "dispositio",
     "group": "sermao_dispositio",
     "groupLabel": "Disposição · Dispositio",
-    "order": 101
+    "order": 101,
+    "cards": [
+      {
+        "id": "sermao_estrutura",
+        "title": "Estrutura do Sermão"
+      },
+      {
+        "id": "sermao_divisoes",
+        "title": "Divisões"
+      },
+      {
+        "id": "sermao_progressao_logica",
+        "title": "Progressão lógica"
+      },
+      {
+        "id": "sermao_introducao",
+        "title": "Introdução"
+      },
+      {
+        "id": "sermao_transicoes",
+        "title": "Transições"
+      },
+      {
+        "id": "sermao_climax",
+        "title": "Clímax"
+      },
+      {
+        "id": "sermao_conclusao",
+        "title": "Conclusão"
+      },
+      {
+        "id": "sermao_aplicacoes",
+        "title": "Aplicações"
+      }
+    ]
   },
   {
     "slug": "sermao_elocutio",
@@ -357,7 +1124,45 @@ export const WORKSPACE_SECTIONS_NAV: SectionNav[] = [
     "module": "elocutio",
     "group": "sermao_elocutio",
     "groupLabel": "Elocução · Elocutio",
-    "order": 102
+    "order": 102,
+    "cards": [
+      {
+        "id": "sermao_clareza",
+        "title": "Clareza"
+      },
+      {
+        "id": "sermao_linguagem_pastoral",
+        "title": "Linguagem pastoral"
+      },
+      {
+        "id": "sermao_ilustracoes",
+        "title": "Ilustrações"
+      },
+      {
+        "id": "sermao_analogias",
+        "title": "Analogias"
+      },
+      {
+        "id": "sermao_retorica",
+        "title": "Retórica"
+      },
+      {
+        "id": "sermao_enfases",
+        "title": "Ênfases"
+      },
+      {
+        "id": "sermao_tom",
+        "title": "Tom"
+      },
+      {
+        "id": "sermao_imagens_verbais",
+        "title": "Imagens verbais"
+      },
+      {
+        "id": "sermao_frases_impacto",
+        "title": "Frases de impacto"
+      }
+    ]
   },
   {
     "slug": "sermao_memoria",
@@ -368,7 +1173,33 @@ export const WORKSPACE_SECTIONS_NAV: SectionNav[] = [
     "module": "memoria",
     "group": "sermao_memoria",
     "groupLabel": "Memória · Memoria",
-    "order": 103
+    "order": 103,
+    "cards": [
+      {
+        "id": "sermao_revisao",
+        "title": "Revisão"
+      },
+      {
+        "id": "sermao_fixacao",
+        "title": "Fixação"
+      },
+      {
+        "id": "sermao_estrutura_mental",
+        "title": "Estrutura mental"
+      },
+      {
+        "id": "sermao_memorabilidade",
+        "title": "Memorabilidade"
+      },
+      {
+        "id": "sermao_frases_chave",
+        "title": "Frases-chave"
+      },
+      {
+        "id": "sermao_fluxo_mental",
+        "title": "Fluxo mental"
+      }
+    ]
   },
   {
     "slug": "sermao_pronuntiatio",
@@ -379,7 +1210,37 @@ export const WORKSPACE_SECTIONS_NAV: SectionNav[] = [
     "module": "pronuntiatio",
     "group": "sermao_pronuntiatio",
     "groupLabel": "Entrega · Pronuntiatio",
-    "order": 104
+    "order": 104,
+    "cards": [
+      {
+        "id": "sermao_entonacao",
+        "title": "Entonação"
+      },
+      {
+        "id": "sermao_ritmo",
+        "title": "Ritmo"
+      },
+      {
+        "id": "sermao_pausas",
+        "title": "Pausas"
+      },
+      {
+        "id": "sermao_gestos",
+        "title": "Gestos"
+      },
+      {
+        "id": "sermao_comunicacao_pastoral",
+        "title": "Comunicação pastoral"
+      },
+      {
+        "id": "sermao_intensidade",
+        "title": "Intensidade"
+      },
+      {
+        "id": "sermao_enfase_vocal",
+        "title": "Ênfase vocal"
+      }
+    ]
   },
   {
     "slug": "sermao_avaliacao",
@@ -390,7 +1251,33 @@ export const WORKSPACE_SECTIONS_NAV: SectionNav[] = [
     "module": "pronuntiatio",
     "group": "sermao_avaliacao",
     "groupLabel": "Avaliação",
-    "order": 105
+    "order": 105,
+    "cards": [
+      {
+        "id": "sermao_fidelidade_biblica",
+        "title": "Fidelidade bíblica"
+      },
+      {
+        "id": "sermao_avaliacao_clareza",
+        "title": "Clareza"
+      },
+      {
+        "id": "sermao_avaliacao_aplicacao",
+        "title": "Aplicação"
+      },
+      {
+        "id": "sermao_tempo",
+        "title": "Tempo"
+      },
+      {
+        "id": "sermao_feedback",
+        "title": "Feedback"
+      },
+      {
+        "id": "sermao_melhorias_futuras",
+        "title": "Melhorias futuras"
+      }
+    ]
   },
   {
     "slug": "estudo_inventio",
@@ -401,7 +1288,29 @@ export const WORKSPACE_SECTIONS_NAV: SectionNav[] = [
     "module": "inventio",
     "group": "estudo_inventio",
     "groupLabel": "Invenção · Inventio",
-    "order": 120
+    "order": 120,
+    "cards": [
+      {
+        "id": "estudo_objetivo",
+        "title": "Objetivo do Estudo"
+      },
+      {
+        "id": "estudo_tema",
+        "title": "Tema"
+      },
+      {
+        "id": "estudo_problema_central",
+        "title": "Problema central"
+      },
+      {
+        "id": "estudo_contexto_necessario",
+        "title": "Contexto necessário"
+      },
+      {
+        "id": "estudo_conhecimentos_previos",
+        "title": "Conhecimentos prévios"
+      }
+    ]
   },
   {
     "slug": "estudo_dispositio",
@@ -412,7 +1321,37 @@ export const WORKSPACE_SECTIONS_NAV: SectionNav[] = [
     "module": "dispositio",
     "group": "estudo_dispositio",
     "groupLabel": "Disposição · Dispositio",
-    "order": 121
+    "order": 121,
+    "cards": [
+      {
+        "id": "estudo_estrutura_pedagogica",
+        "title": "Estrutura pedagógica"
+      },
+      {
+        "id": "estudo_sequencia_topicos",
+        "title": "Sequência de tópicos"
+      },
+      {
+        "id": "estudo_organizacao_didatica",
+        "title": "Organização didática"
+      },
+      {
+        "id": "estudo_perguntas",
+        "title": "Perguntas"
+      },
+      {
+        "id": "estudo_progressao_ensino",
+        "title": "Progressão do ensino"
+      },
+      {
+        "id": "estudo_exercicios",
+        "title": "Exercícios"
+      },
+      {
+        "id": "estudo_participacao",
+        "title": "Participação"
+      }
+    ]
   },
   {
     "slug": "estudo_elocutio",
@@ -423,7 +1362,33 @@ export const WORKSPACE_SECTIONS_NAV: SectionNav[] = [
     "module": "elocutio",
     "group": "estudo_elocutio",
     "groupLabel": "Elocução · Elocutio",
-    "order": 122
+    "order": 122,
+    "cards": [
+      {
+        "id": "estudo_clareza_didatica",
+        "title": "Clareza didática"
+      },
+      {
+        "id": "estudo_exemplos",
+        "title": "Exemplos"
+      },
+      {
+        "id": "estudo_analogias",
+        "title": "Analogias"
+      },
+      {
+        "id": "estudo_simplificacao",
+        "title": "Simplificação"
+      },
+      {
+        "id": "estudo_linguagem_acessivel",
+        "title": "Linguagem acessível"
+      },
+      {
+        "id": "estudo_explicacoes_progressivas",
+        "title": "Explicações progressivas"
+      }
+    ]
   },
   {
     "slug": "estudo_memoria",
@@ -434,7 +1399,29 @@ export const WORKSPACE_SECTIONS_NAV: SectionNav[] = [
     "module": "memoria",
     "group": "estudo_memoria",
     "groupLabel": "Memória · Memoria",
-    "order": 123
+    "order": 123,
+    "cards": [
+      {
+        "id": "estudo_revisao",
+        "title": "Revisão"
+      },
+      {
+        "id": "estudo_sintese",
+        "title": "Síntese"
+      },
+      {
+        "id": "estudo_pontos_chave",
+        "title": "Pontos-chave"
+      },
+      {
+        "id": "estudo_fixacao",
+        "title": "Fixação"
+      },
+      {
+        "id": "estudo_repeticao_pedagogica",
+        "title": "Repetição pedagógica"
+      }
+    ]
   },
   {
     "slug": "estudo_pronuntiatio",
@@ -445,7 +1432,29 @@ export const WORKSPACE_SECTIONS_NAV: SectionNav[] = [
     "module": "pronuntiatio",
     "group": "estudo_pronuntiatio",
     "groupLabel": "Entrega · Pronuntiatio",
-    "order": 124
+    "order": 124,
+    "cards": [
+      {
+        "id": "estudo_interacao",
+        "title": "Interação"
+      },
+      {
+        "id": "estudo_participacao_entrega",
+        "title": "Participação"
+      },
+      {
+        "id": "estudo_dinamica",
+        "title": "Dinâmica"
+      },
+      {
+        "id": "estudo_ritmo_ensino",
+        "title": "Ritmo de ensino"
+      },
+      {
+        "id": "estudo_perguntas_grupo",
+        "title": "Perguntas ao grupo"
+      }
+    ]
   },
   {
     "slug": "devocional_inventio",
@@ -456,7 +1465,29 @@ export const WORKSPACE_SECTIONS_NAV: SectionNav[] = [
     "module": "inventio",
     "group": "devocional_inventio",
     "groupLabel": "Invenção · Inventio",
-    "order": 140
+    "order": 140,
+    "cards": [
+      {
+        "id": "devocional_verdade_central",
+        "title": "Verdade central"
+      },
+      {
+        "id": "devocional_esperanca",
+        "title": "Esperança"
+      },
+      {
+        "id": "devocional_consolo",
+        "title": "Consolo"
+      },
+      {
+        "id": "devocional_exortacao",
+        "title": "Exortação"
+      },
+      {
+        "id": "devocional_chamado_espiritual",
+        "title": "Chamado espiritual"
+      }
+    ]
   },
   {
     "slug": "devocional_dispositio",
@@ -467,7 +1498,25 @@ export const WORKSPACE_SECTIONS_NAV: SectionNav[] = [
     "module": "dispositio",
     "group": "devocional_dispositio",
     "groupLabel": "Disposição · Dispositio",
-    "order": 141
+    "order": 141,
+    "cards": [
+      {
+        "id": "devocional_fluxo_meditativo",
+        "title": "Fluxo meditativo"
+      },
+      {
+        "id": "devocional_progressao_espiritual",
+        "title": "Progressão espiritual"
+      },
+      {
+        "id": "devocional_aplicacao_pessoal",
+        "title": "Aplicação pessoal"
+      },
+      {
+        "id": "devocional_jornada_emocional",
+        "title": "Jornada emocional"
+      }
+    ]
   },
   {
     "slug": "devocional_elocutio",
@@ -478,7 +1527,29 @@ export const WORKSPACE_SECTIONS_NAV: SectionNav[] = [
     "module": "elocutio",
     "group": "devocional_elocutio",
     "groupLabel": "Elocução · Elocutio",
-    "order": 142
+    "order": 142,
+    "cards": [
+      {
+        "id": "devocional_linguagem_pastoral",
+        "title": "Linguagem pastoral"
+      },
+      {
+        "id": "devocional_sensibilidade",
+        "title": "Sensibilidade"
+      },
+      {
+        "id": "devocional_simplicidade",
+        "title": "Simplicidade"
+      },
+      {
+        "id": "devocional_beleza_textual",
+        "title": "Beleza textual"
+      },
+      {
+        "id": "devocional_tom",
+        "title": "Tom devocional"
+      }
+    ]
   },
   {
     "slug": "devocional_memoria",
@@ -489,7 +1560,25 @@ export const WORKSPACE_SECTIONS_NAV: SectionNav[] = [
     "module": "memoria",
     "group": "devocional_memoria",
     "groupLabel": "Memória · Memoria",
-    "order": 143
+    "order": 143,
+    "cards": [
+      {
+        "id": "devocional_internalizacao",
+        "title": "Internalização"
+      },
+      {
+        "id": "devocional_reflexao",
+        "title": "Reflexão"
+      },
+      {
+        "id": "devocional_oracao",
+        "title": "Oração"
+      },
+      {
+        "id": "devocional_meditacao",
+        "title": "Meditação"
+      }
+    ]
   },
   {
     "slug": "devocional_pronuntiatio",
@@ -500,7 +1589,25 @@ export const WORKSPACE_SECTIONS_NAV: SectionNav[] = [
     "module": "pronuntiatio",
     "group": "devocional_pronuntiatio",
     "groupLabel": "Entrega · Pronuntiatio",
-    "order": 144
+    "order": 144,
+    "cards": [
+      {
+        "id": "devocional_leitura",
+        "title": "Leitura"
+      },
+      {
+        "id": "devocional_pausas",
+        "title": "Pausas"
+      },
+      {
+        "id": "devocional_meditacao_guiada",
+        "title": "Meditação guiada"
+      },
+      {
+        "id": "devocional_ritmo_contemplativo",
+        "title": "Ritmo contemplativo"
+      }
+    ]
   },
   {
     "slug": "eb_preparacao",
@@ -510,7 +1617,25 @@ export const WORKSPACE_SECTIONS_NAV: SectionNav[] = [
     "module": "inventio",
     "group": "eb_preparar",
     "groupLabel": "I. Preparar",
-    "order": 100
+    "order": 100,
+    "cards": [
+      {
+        "id": "oracao",
+        "title": "Oração"
+      },
+      {
+        "id": "publico_alvo",
+        "title": "Público-alvo"
+      },
+      {
+        "id": "faixa_etaria",
+        "title": "Faixa etária"
+      },
+      {
+        "id": "tempo_disponivel",
+        "title": "Tempo disponível"
+      }
+    ]
   },
   {
     "slug": "eb_objetivos",
@@ -520,7 +1645,17 @@ export const WORKSPACE_SECTIONS_NAV: SectionNav[] = [
     "module": "inventio",
     "group": "eb_preparar",
     "groupLabel": "I. Preparar",
-    "order": 101
+    "order": 101,
+    "cards": [
+      {
+        "id": "objetivos_aula",
+        "title": "Objetivos da aula"
+      },
+      {
+        "id": "resultados_esperados",
+        "title": "Resultados esperados"
+      }
+    ]
   },
   {
     "slug": "eb_texto_base",
@@ -530,7 +1665,25 @@ export const WORKSPACE_SECTIONS_NAV: SectionNav[] = [
     "module": "inventio",
     "group": "eb_compreender",
     "groupLabel": "II. Compreender",
-    "order": 102
+    "order": 102,
+    "cards": [
+      {
+        "id": "leitura_texto",
+        "title": "Leitura do texto"
+      },
+      {
+        "id": "estrutura",
+        "title": "Estrutura"
+      },
+      {
+        "id": "personagens",
+        "title": "Personagens"
+      },
+      {
+        "id": "lugares",
+        "title": "Lugares"
+      }
+    ]
   },
   {
     "slug": "eb_temas_termos",
@@ -540,7 +1693,21 @@ export const WORKSPACE_SECTIONS_NAV: SectionNav[] = [
     "module": "inventio",
     "group": "eb_compreender",
     "groupLabel": "II. Compreender",
-    "order": 103
+    "order": 103,
+    "cards": [
+      {
+        "id": "temas_principais",
+        "title": "Temas principais"
+      },
+      {
+        "id": "termos_chave",
+        "title": "Termos-chave"
+      },
+      {
+        "id": "grande_ideia",
+        "title": "Grande Ideia"
+      }
+    ]
   },
   {
     "slug": "eb_introducao",
@@ -550,7 +1717,21 @@ export const WORKSPACE_SECTIONS_NAV: SectionNav[] = [
     "module": "dispositio",
     "group": "eb_ensinar",
     "groupLabel": "III. Ensinar",
-    "order": 104
+    "order": 104,
+    "cards": [
+      {
+        "id": "gancho",
+        "title": "Gancho"
+      },
+      {
+        "id": "quebra_gelo",
+        "title": "Quebra-gelo"
+      },
+      {
+        "id": "conexao_vida",
+        "title": "Conexão com a vida"
+      }
+    ]
   },
   {
     "slug": "eb_desenvolvimento",
@@ -560,7 +1741,25 @@ export const WORKSPACE_SECTIONS_NAV: SectionNav[] = [
     "module": "dispositio",
     "group": "eb_ensinar",
     "groupLabel": "III. Ensinar",
-    "order": 105
+    "order": 105,
+    "cards": [
+      {
+        "id": "ponto_1",
+        "title": "Ponto 1"
+      },
+      {
+        "id": "ponto_2",
+        "title": "Ponto 2"
+      },
+      {
+        "id": "ponto_3",
+        "title": "Ponto 3"
+      },
+      {
+        "id": "transicoes",
+        "title": "Transições"
+      }
+    ]
   },
   {
     "slug": "eb_perguntas",
@@ -570,7 +1769,21 @@ export const WORKSPACE_SECTIONS_NAV: SectionNav[] = [
     "module": "dispositio",
     "group": "eb_ensinar",
     "groupLabel": "III. Ensinar",
-    "order": 106
+    "order": 106,
+    "cards": [
+      {
+        "id": "perguntas_observacao",
+        "title": "Perguntas de observação"
+      },
+      {
+        "id": "perguntas_interpretacao",
+        "title": "Perguntas de interpretação"
+      },
+      {
+        "id": "perguntas_aplicacao",
+        "title": "Perguntas de aplicação"
+      }
+    ]
   },
   {
     "slug": "eb_dinamicas",
@@ -580,7 +1793,21 @@ export const WORKSPACE_SECTIONS_NAV: SectionNav[] = [
     "module": "dispositio",
     "group": "eb_ensinar",
     "groupLabel": "III. Ensinar",
-    "order": 107
+    "order": 107,
+    "cards": [
+      {
+        "id": "exercicios",
+        "title": "Exercícios"
+      },
+      {
+        "id": "discussao_grupo",
+        "title": "Discussão em grupo"
+      },
+      {
+        "id": "sintese",
+        "title": "Síntese"
+      }
+    ]
   },
   {
     "slug": "eb_aplicacoes",
@@ -590,7 +1817,25 @@ export const WORKSPACE_SECTIONS_NAV: SectionNav[] = [
     "module": "elocutio",
     "group": "eb_aplicar",
     "groupLabel": "IV. Aplicar",
-    "order": 108
+    "order": 108,
+    "cards": [
+      {
+        "id": "aplicacoes_individuais",
+        "title": "Aplicações individuais"
+      },
+      {
+        "id": "aplicacoes_familiares",
+        "title": "Aplicações familiares"
+      },
+      {
+        "id": "aplicacoes_eclesiasticas",
+        "title": "Aplicações eclesiásticas"
+      },
+      {
+        "id": "aplicacoes_missionais",
+        "title": "Aplicações missionais"
+      }
+    ]
   },
   {
     "slug": "eb_material",
@@ -600,7 +1845,21 @@ export const WORKSPACE_SECTIONS_NAV: SectionNav[] = [
     "module": "memoria",
     "group": "eb_recursos",
     "groupLabel": "V. Recursos",
-    "order": 109
+    "order": 109,
+    "cards": [
+      {
+        "id": "material_professor",
+        "title": "Material do professor"
+      },
+      {
+        "id": "material_aluno",
+        "title": "Material do aluno"
+      },
+      {
+        "id": "slides_handout",
+        "title": "Slides / Handout"
+      }
+    ]
   },
   {
     "slug": "edt_definicao",
@@ -610,7 +1869,25 @@ export const WORKSPACE_SECTIONS_NAV: SectionNav[] = [
     "module": "inventio",
     "group": "edt_definicao_grp",
     "groupLabel": "I. Definição",
-    "order": 200
+    "order": 200,
+    "cards": [
+      {
+        "id": "nome_doutrina",
+        "title": "Nome da doutrina"
+      },
+      {
+        "id": "definicao_resumida",
+        "title": "Definição resumida"
+      },
+      {
+        "id": "definicao_expandida",
+        "title": "Definição expandida"
+      },
+      {
+        "id": "questao_central",
+        "title": "Questão central"
+      }
+    ]
   },
   {
     "slug": "edt_fundamentacao_biblica",
@@ -620,7 +1897,25 @@ export const WORKSPACE_SECTIONS_NAV: SectionNav[] = [
     "module": "inventio",
     "group": "edt_fundamentacao_grp",
     "groupLabel": "II. Fundamentação Bíblica",
-    "order": 201
+    "order": 201,
+    "cards": [
+      {
+        "id": "passagens_principais",
+        "title": "Passagens principais"
+      },
+      {
+        "id": "desenvolvimento_at",
+        "title": "Desenvolvimento no AT"
+      },
+      {
+        "id": "desenvolvimento_nt",
+        "title": "Desenvolvimento no NT"
+      },
+      {
+        "id": "progressao_revelacional",
+        "title": "Progressão revelacional"
+      }
+    ]
   },
   {
     "slug": "edt_historia_doutrina",
@@ -630,7 +1925,25 @@ export const WORKSPACE_SECTIONS_NAV: SectionNav[] = [
     "module": "inventio",
     "group": "edt_historia_grp",
     "groupLabel": "III. História",
-    "order": 202
+    "order": 202,
+    "cards": [
+      {
+        "id": "igreja_primitiva_patristica",
+        "title": "Igreja Primitiva e Patrística"
+      },
+      {
+        "id": "medieval",
+        "title": "Período Medieval"
+      },
+      {
+        "id": "reforma",
+        "title": "Reforma"
+      },
+      {
+        "id": "pos_reforma_atualidade",
+        "title": "Pós-Reforma e atualidade"
+      }
+    ]
   },
   {
     "slug": "edt_formulacao_sistematica",
@@ -640,7 +1953,25 @@ export const WORKSPACE_SECTIONS_NAV: SectionNav[] = [
     "module": "inventio",
     "group": "edt_formulacao_grp",
     "groupLabel": "IV. Formulação Sistemática",
-    "order": 203
+    "order": 203,
+    "cards": [
+      {
+        "id": "definicao_tecnica",
+        "title": "Definição técnica"
+      },
+      {
+        "id": "relacoes_doutrinarias",
+        "title": "Relações doutrinárias"
+      },
+      {
+        "id": "implicacoes_teologicas",
+        "title": "Implicações teológicas"
+      },
+      {
+        "id": "distincoes_necessarias",
+        "title": "Distinções necessárias"
+      }
+    ]
   },
   {
     "slug": "edt_controversias",
@@ -650,7 +1981,25 @@ export const WORKSPACE_SECTIONS_NAV: SectionNav[] = [
     "module": "inventio",
     "group": "edt_controversias_grp",
     "groupLabel": "V. Controvérsias",
-    "order": 204
+    "order": 204,
+    "cards": [
+      {
+        "id": "erros_historicos",
+        "title": "Erros históricos"
+      },
+      {
+        "id": "heresias_relacionadas",
+        "title": "Heresias relacionadas"
+      },
+      {
+        "id": "visoes_concorrentes",
+        "title": "Visões concorrentes"
+      },
+      {
+        "id": "respostas_reformadas",
+        "title": "Respostas reformadas"
+      }
+    ]
   },
   {
     "slug": "edt_confissionalidade",
@@ -660,7 +2009,25 @@ export const WORKSPACE_SECTIONS_NAV: SectionNav[] = [
     "module": "inventio",
     "group": "edt_confissionalidade_grp",
     "groupLabel": "VI. Confissionalidade",
-    "order": 205
+    "order": 205,
+    "cards": [
+      {
+        "id": "confissao_westminster",
+        "title": "Confissão de Westminster"
+      },
+      {
+        "id": "catecismo_maior",
+        "title": "Catecismo Maior"
+      },
+      {
+        "id": "catecismo_menor",
+        "title": "Catecismo Menor"
+      },
+      {
+        "id": "outros_simbolos",
+        "title": "Outros símbolos"
+      }
+    ]
   },
   {
     "slug": "edt_aplicacoes",
@@ -670,7 +2037,25 @@ export const WORKSPACE_SECTIONS_NAV: SectionNav[] = [
     "module": "inventio",
     "group": "edt_aplicacoes_grp",
     "groupLabel": "VII. Aplicações",
-    "order": 206
+    "order": 206,
+    "cards": [
+      {
+        "id": "aplicacao_eclesial",
+        "title": "Aplicação eclesial"
+      },
+      {
+        "id": "aplicacao_familiar",
+        "title": "Aplicação familiar"
+      },
+      {
+        "id": "vida_crista",
+        "title": "Vida cristã"
+      },
+      {
+        "id": "ministerio",
+        "title": "Ministério"
+      }
+    ]
   },
   {
     "slug": "edt_bibliografia",
@@ -680,7 +2065,21 @@ export const WORKSPACE_SECTIONS_NAV: SectionNav[] = [
     "module": "inventio",
     "group": "edt_bibliografia_grp",
     "groupLabel": "VIII. Bibliografia",
-    "order": 207
+    "order": 207,
+    "cards": [
+      {
+        "id": "livros_principais",
+        "title": "Livros principais"
+      },
+      {
+        "id": "artigos",
+        "title": "Artigos e capítulos"
+      },
+      {
+        "id": "fontes_primarias",
+        "title": "Fontes primárias"
+      }
+    ]
   },
   {
     "slug": "et_definicao",
@@ -689,7 +2088,21 @@ export const WORKSPACE_SECTIONS_NAV: SectionNav[] = [
     "module": "inventio",
     "group": "et_definicao_grp",
     "groupLabel": "I. Definição do Tema",
-    "order": 500
+    "order": 500,
+    "cards": [
+      {
+        "id": "nome_tema",
+        "title": "Nome e campo semântico"
+      },
+      {
+        "id": "questao_orientadora",
+        "title": "Questão orientadora"
+      },
+      {
+        "id": "delimitacao",
+        "title": "Delimitação e escopo"
+      }
+    ]
   },
   {
     "slug": "et_at",
@@ -698,7 +2111,21 @@ export const WORKSPACE_SECTIONS_NAV: SectionNav[] = [
     "module": "inventio",
     "group": "et_at_grp",
     "groupLabel": "II. Antigo Testamento",
-    "order": 501
+    "order": 501,
+    "cards": [
+      {
+        "id": "patriarcal",
+        "title": "Período patriarcal e Pentateuco"
+      },
+      {
+        "id": "mosaico",
+        "title": "Livros históricos e poéticos"
+      },
+      {
+        "id": "profetico",
+        "title": "Profetas"
+      }
+    ]
   },
   {
     "slug": "et_nt",
@@ -707,7 +2134,21 @@ export const WORKSPACE_SECTIONS_NAV: SectionNav[] = [
     "module": "inventio",
     "group": "et_nt_grp",
     "groupLabel": "III. Novo Testamento",
-    "order": 502
+    "order": 502,
+    "cards": [
+      {
+        "id": "evangelhos",
+        "title": "Evangelhos"
+      },
+      {
+        "id": "cartas",
+        "title": "Cartas apostólicas"
+      },
+      {
+        "id": "apocalipse",
+        "title": "Cumprimento escatológico"
+      }
+    ]
   },
   {
     "slug": "et_sintese_canonica",
@@ -716,7 +2157,21 @@ export const WORKSPACE_SECTIONS_NAV: SectionNav[] = [
     "module": "inventio",
     "group": "et_sintese_grp",
     "groupLabel": "IV. Síntese Canônica",
-    "order": 503
+    "order": 503,
+    "cards": [
+      {
+        "id": "progressao",
+        "title": "Progressão canônica"
+      },
+      {
+        "id": "cumprimento",
+        "title": "Cristo como centro"
+      },
+      {
+        "id": "unidade",
+        "title": "Unidade canônica"
+      }
+    ]
   },
   {
     "slug": "et_teologia_sistematica",
@@ -725,7 +2180,17 @@ export const WORKSPACE_SECTIONS_NAV: SectionNav[] = [
     "module": "dispositio",
     "group": "et_sistematica_grp",
     "groupLabel": "V. Teologia Sistemática",
-    "order": 504
+    "order": 504,
+    "cards": [
+      {
+        "id": "formulacao",
+        "title": "Formulação doutrinária"
+      },
+      {
+        "id": "implicacoes",
+        "title": "Implicações para outros loci"
+      }
+    ]
   },
   {
     "slug": "et_aplicacoes",
@@ -734,7 +2199,21 @@ export const WORKSPACE_SECTIONS_NAV: SectionNav[] = [
     "module": "dispositio",
     "group": "et_aplicacoes_grp",
     "groupLabel": "VI. Aplicações",
-    "order": 505
+    "order": 505,
+    "cards": [
+      {
+        "id": "vida_crista",
+        "title": "Vida cristã"
+      },
+      {
+        "id": "eclesial",
+        "title": "Vida eclesial"
+      },
+      {
+        "id": "missional",
+        "title": "Missão"
+      }
+    ]
   },
   {
     "slug": "ec_ocasiao",
@@ -743,7 +2222,21 @@ export const WORKSPACE_SECTIONS_NAV: SectionNav[] = [
     "module": "inventio",
     "group": "ec_ocasiao_grp",
     "groupLabel": "Ocasião e Propósito",
-    "order": 400
+    "order": 400,
+    "cards": [
+      {
+        "id": "situacao",
+        "title": "Situação dos destinatários"
+      },
+      {
+        "id": "proposito",
+        "title": "Propósito da carta"
+      },
+      {
+        "id": "relacao_autor",
+        "title": "Relação autor–destinatários"
+      }
+    ]
   },
   {
     "slug": "ec_estrutura",
@@ -752,7 +2245,21 @@ export const WORKSPACE_SECTIONS_NAV: SectionNav[] = [
     "module": "inventio",
     "group": "ec_estrutura_grp",
     "groupLabel": "Estrutura Retórica",
-    "order": 401
+    "order": 401,
+    "cards": [
+      {
+        "id": "divisao_epistolar",
+        "title": "Divisão epistolar"
+      },
+      {
+        "id": "tipo_retorico",
+        "title": "Tipo retórico"
+      },
+      {
+        "id": "macroargumento",
+        "title": "Estrutura argumentativa"
+      }
+    ]
   },
   {
     "slug": "ec_argumento",
@@ -761,7 +2268,21 @@ export const WORKSPACE_SECTIONS_NAV: SectionNav[] = [
     "module": "inventio",
     "group": "ec_argumento_grp",
     "groupLabel": "Argumento Central",
-    "order": 402
+    "order": 402,
+    "cards": [
+      {
+        "id": "tese_central",
+        "title": "Tese central"
+      },
+      {
+        "id": "desenvolvimento",
+        "title": "Desenvolvimento do argumento"
+      },
+      {
+        "id": "climax",
+        "title": "Clímax e resolução"
+      }
+    ]
   },
   {
     "slug": "ss_paralelismo",
@@ -770,7 +2291,21 @@ export const WORKSPACE_SECTIONS_NAV: SectionNav[] = [
     "module": "inventio",
     "group": "ss_paralelismo_grp",
     "groupLabel": "Paralelismo Poético",
-    "order": 500
+    "order": 500,
+    "cards": [
+      {
+        "id": "tipo_paralelismo",
+        "title": "Tipo de paralelismo"
+      },
+      {
+        "id": "estrutura_bimembre",
+        "title": "Estrutura bimembre"
+      },
+      {
+        "id": "quiasmo",
+        "title": "Quiasmo"
+      }
+    ]
   },
   {
     "slug": "ss_estrutura",
@@ -779,7 +2314,21 @@ export const WORKSPACE_SECTIONS_NAV: SectionNav[] = [
     "module": "inventio",
     "group": "ss_estrutura_grp",
     "groupLabel": "Estrutura Poética",
-    "order": 501
+    "order": 501,
+    "cards": [
+      {
+        "id": "divisao_estrofes",
+        "title": "Divisão em estrofes"
+      },
+      {
+        "id": "movimento_poetico",
+        "title": "Movimento do poema"
+      },
+      {
+        "id": "climax_poetico",
+        "title": "Clímax"
+      }
+    ]
   },
   {
     "slug": "ss_imagistica",
@@ -788,7 +2337,21 @@ export const WORKSPACE_SECTIONS_NAV: SectionNav[] = [
     "module": "inventio",
     "group": "ss_imagistica_grp",
     "groupLabel": "Imagística e Metáforas",
-    "order": 502
+    "order": 502,
+    "cards": [
+      {
+        "id": "imagens_centrais",
+        "title": "Imagens centrais"
+      },
+      {
+        "id": "campo_semantico",
+        "title": "Campo semântico dominante"
+      },
+      {
+        "id": "intertextualidade",
+        "title": "Conexões canônicas"
+      }
+    ]
   },
   {
     "slug": "ss_temas_sabedoria",
@@ -797,7 +2360,21 @@ export const WORKSPACE_SECTIONS_NAV: SectionNav[] = [
     "module": "inventio",
     "group": "ss_temas_grp",
     "groupLabel": "Temas e Questões",
-    "order": 503
+    "order": 503,
+    "cards": [
+      {
+        "id": "tema_central",
+        "title": "Tema teológico central"
+      },
+      {
+        "id": "questao_existencial",
+        "title": "Questão existencial"
+      },
+      {
+        "id": "tensao_resolucao",
+        "title": "Tensão e resolução"
+      }
+    ]
   },
   {
     "slug": "ss_teologia_adoracao",
@@ -806,7 +2383,21 @@ export const WORKSPACE_SECTIONS_NAV: SectionNav[] = [
     "module": "inventio",
     "group": "ss_teologia_grp",
     "groupLabel": "Teologia da Adoração",
-    "order": 504
+    "order": 504,
+    "cards": [
+      {
+        "id": "revelacao_de_deus",
+        "title": "O que revela sobre Deus"
+      },
+      {
+        "id": "relacao_crente",
+        "title": "A relação do crente com Deus"
+      },
+      {
+        "id": "cristologia",
+        "title": "Conexão com Cristo"
+      }
+    ]
   },
   {
     "slug": "pf_contexto",
@@ -815,7 +2406,21 @@ export const WORKSPACE_SECTIONS_NAV: SectionNav[] = [
     "module": "inventio",
     "group": "pf_contexto_grp",
     "groupLabel": "Contexto Histórico",
-    "order": 600
+    "order": 600,
+    "cards": [
+      {
+        "id": "periodo_historico",
+        "title": "Período histórico"
+      },
+      {
+        "id": "situacao_nacao",
+        "title": "Situação de Israel"
+      },
+      {
+        "id": "destinatarios",
+        "title": "Destinatários"
+      }
+    ]
   },
   {
     "slug": "pf_oraculo",
@@ -824,7 +2429,21 @@ export const WORKSPACE_SECTIONS_NAV: SectionNav[] = [
     "module": "inventio",
     "group": "pf_oraculo_grp",
     "groupLabel": "O Oráculo",
-    "order": 601
+    "order": 601,
+    "cards": [
+      {
+        "id": "tipo_oraculo",
+        "title": "Tipo de oráculo"
+      },
+      {
+        "id": "estrutura_oraculo",
+        "title": "Estrutura do oráculo"
+      },
+      {
+        "id": "mensagem_central",
+        "title": "Mensagem central"
+      }
+    ]
   },
   {
     "slug": "pf_simbolos",
@@ -833,7 +2452,21 @@ export const WORKSPACE_SECTIONS_NAV: SectionNav[] = [
     "module": "inventio",
     "group": "pf_simbolos_grp",
     "groupLabel": "Símbolos e Imagens",
-    "order": 602
+    "order": 602,
+    "cards": [
+      {
+        "id": "simbolos_principais",
+        "title": "Símbolos principais"
+      },
+      {
+        "id": "visoes_acoes",
+        "title": "Visões e ações simbólicas"
+      },
+      {
+        "id": "tradicoes_evocadas",
+        "title": "Tradições canônicas evocadas"
+      }
+    ]
   },
   {
     "slug": "pf_cumprimento",
@@ -842,7 +2475,21 @@ export const WORKSPACE_SECTIONS_NAV: SectionNav[] = [
     "module": "inventio",
     "group": "pf_cumprimento_grp",
     "groupLabel": "Cumprimento",
-    "order": 603
+    "order": 603,
+    "cards": [
+      {
+        "id": "cumprimento_historico",
+        "title": "Cumprimento histórico"
+      },
+      {
+        "id": "cumprimento_cristologico",
+        "title": "Cumprimento em Cristo"
+      },
+      {
+        "id": "horizonte_escatologico",
+        "title": "Horizonte escatológico"
+      }
+    ]
   },
   {
     "slug": "pf_escatologia",
@@ -851,7 +2498,21 @@ export const WORKSPACE_SECTIONS_NAV: SectionNav[] = [
     "module": "inventio",
     "group": "pf_escatologia_grp",
     "groupLabel": "Escatologia e Alianças",
-    "order": 604
+    "order": 604,
+    "cards": [
+      {
+        "id": "aliancas",
+        "title": "Vinculação com as alianças"
+      },
+      {
+        "id": "progressao_redentora",
+        "title": "Progressão redentora"
+      },
+      {
+        "id": "reino_de_deus",
+        "title": "Reino de Deus"
+      }
+    ]
   },
   {
     "slug": "pt_tema",
@@ -861,7 +2522,25 @@ export const WORKSPACE_SECTIONS_NAV: SectionNav[] = [
     "module": "inventio",
     "group": "pt_tema_grp",
     "groupLabel": "I. Tema e Problema",
-    "order": 300
+    "order": 300,
+    "cards": [
+      {
+        "id": "tema",
+        "title": "Tema"
+      },
+      {
+        "id": "problema_pesquisa",
+        "title": "Problema da pesquisa"
+      },
+      {
+        "id": "delimitacao",
+        "title": "Delimitação"
+      },
+      {
+        "id": "justificativa",
+        "title": "Justificativa"
+      }
+    ]
   },
   {
     "slug": "pt_hipotese",
@@ -871,7 +2550,21 @@ export const WORKSPACE_SECTIONS_NAV: SectionNav[] = [
     "module": "inventio",
     "group": "pt_hipotese_grp",
     "groupLabel": "II. Hipótese",
-    "order": 301
+    "order": 301,
+    "cards": [
+      {
+        "id": "questao_principal",
+        "title": "Questão principal"
+      },
+      {
+        "id": "hipoteses",
+        "title": "Hipóteses"
+      },
+      {
+        "id": "metodologia",
+        "title": "Metodologia"
+      }
+    ]
   },
   {
     "slug": "pt_revisao_bibliografica",
@@ -881,7 +2574,25 @@ export const WORKSPACE_SECTIONS_NAV: SectionNav[] = [
     "module": "inventio",
     "group": "pt_revisao_grp",
     "groupLabel": "III. Revisão Bibliográfica",
-    "order": 302
+    "order": 302,
+    "cards": [
+      {
+        "id": "estado_da_arte",
+        "title": "Estado da arte"
+      },
+      {
+        "id": "autores_principais",
+        "title": "Autores principais"
+      },
+      {
+        "id": "obras_centrais",
+        "title": "Obras centrais"
+      },
+      {
+        "id": "debates_academicos",
+        "title": "Debates acadêmicos"
+      }
+    ]
   },
   {
     "slug": "pt_exegese",
@@ -891,7 +2602,21 @@ export const WORKSPACE_SECTIONS_NAV: SectionNav[] = [
     "module": "inventio",
     "group": "pt_exegese_grp",
     "groupLabel": "IV. Exegese",
-    "order": 303
+    "order": 303,
+    "cards": [
+      {
+        "id": "passagens_relevantes",
+        "title": "Passagens relevantes"
+      },
+      {
+        "id": "analise_textual",
+        "title": "Análise textual"
+      },
+      {
+        "id": "analise_morfossintatica",
+        "title": "Análise morfossintática"
+      }
+    ]
   },
   {
     "slug": "pt_teologia_biblica",
@@ -901,7 +2626,21 @@ export const WORKSPACE_SECTIONS_NAV: SectionNav[] = [
     "module": "inventio",
     "group": "pt_tb_grp",
     "groupLabel": "V. Teologia Bíblica",
-    "order": 304
+    "order": 304,
+    "cards": [
+      {
+        "id": "desenvolvimento_canonico",
+        "title": "Desenvolvimento canônico"
+      },
+      {
+        "id": "historia_redencao",
+        "title": "História da redenção"
+      },
+      {
+        "id": "tipologia",
+        "title": "Tipologia"
+      }
+    ]
   },
   {
     "slug": "pt_teologia_sistematica",
@@ -911,7 +2650,21 @@ export const WORKSPACE_SECTIONS_NAV: SectionNav[] = [
     "module": "dispositio",
     "group": "pt_ts_grp",
     "groupLabel": "VI. Teologia Sistemática",
-    "order": 305
+    "order": 305,
+    "cards": [
+      {
+        "id": "formulacao_doutrinaria",
+        "title": "Formulação doutrinária"
+      },
+      {
+        "id": "loci_classicos",
+        "title": "Loci clássicos"
+      },
+      {
+        "id": "implicacoes",
+        "title": "Implicações sistemáticas"
+      }
+    ]
   },
   {
     "slug": "pt_interacao_autores",
@@ -921,7 +2674,21 @@ export const WORKSPACE_SECTIONS_NAV: SectionNav[] = [
     "module": "dispositio",
     "group": "pt_interacao_grp",
     "groupLabel": "VII. Interação com Autores",
-    "order": 306
+    "order": 306,
+    "cards": [
+      {
+        "id": "concordancias",
+        "title": "Concordâncias"
+      },
+      {
+        "id": "divergencias",
+        "title": "Divergências"
+      },
+      {
+        "id": "avaliacao_critica",
+        "title": "Avaliação crítica"
+      }
+    ]
   },
   {
     "slug": "pt_conclusoes",
@@ -931,7 +2698,21 @@ export const WORKSPACE_SECTIONS_NAV: SectionNav[] = [
     "module": "dispositio",
     "group": "pt_conclusoes_grp",
     "groupLabel": "VIII. Conclusões",
-    "order": 307
+    "order": 307,
+    "cards": [
+      {
+        "id": "respostas_questao",
+        "title": "Respostas à questão"
+      },
+      {
+        "id": "implicacoes_teologicas",
+        "title": "Implicações teológicas"
+      },
+      {
+        "id": "contribuicao_original",
+        "title": "Contribuição original"
+      }
+    ]
   },
   {
     "slug": "pt_referencias",
@@ -941,7 +2722,21 @@ export const WORKSPACE_SECTIONS_NAV: SectionNav[] = [
     "module": "dispositio",
     "group": "pt_referencias_grp",
     "groupLabel": "IX. Referências",
-    "order": 308
+    "order": 308,
+    "cards": [
+      {
+        "id": "abnt_chicago",
+        "title": "ABNT / Chicago"
+      },
+      {
+        "id": "fontes_primarias",
+        "title": "Fontes primárias"
+      },
+      {
+        "id": "fontes_secundarias",
+        "title": "Fontes secundárias"
+      }
+    ]
   }
 ]
 
