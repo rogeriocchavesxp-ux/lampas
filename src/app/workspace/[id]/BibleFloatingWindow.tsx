@@ -14,10 +14,11 @@ type ClassType =
   | 'personagem' | 'lugar' | 'termo_chave' | 'tema' | 'teologia'
   | 'tempo' | 'instituicao' | 'cargo' | 'conflito' | 'repeticao'
   | 'objetivo' | 'comentario' | 'insight' | 'observacao'
+  | 'conectivo' | 'verbo_principal' | 'promessa' | 'imperativo'
 
 type HColor = 'yellow' | 'blue' | 'green' | 'purple' | 'orange' | 'red'
 type MenuState = 'main' | 'colors' | 'more'
-type ViewMode = 'pt' | 'orig' | 'side' | 'interlinear'
+type ViewMode = 'pt' | 'orig' | 'side' | 'interlinear' | 'proprio'
 type MenuCtx = { kind: 'new'; pending: PendingSel } | { kind: 'cls'; id: string } | { kind: 'hl'; id: string }
 
 interface Classification {
@@ -43,24 +44,29 @@ interface Seg { text: string; classId: string | null; hlId: string | null; hlCol
 interface ClassDef { emoji: string; label: string; color: string; sectionSlug?: string; cardId?: string; sectionTitle?: string }
 
 const CLASS_DEF: Record<ClassType, ClassDef> = {
-  personagem:  { emoji: '👤', label: 'Personagem',   color: '#D97706', sectionSlug: 'preparar_visao_geral', cardId: 'preparar_personagens',       sectionTitle: '4. Visão Geral' },
-  lugar:       { emoji: '📍', label: 'Lugar',         color: '#10B981' },
-  termo_chave: { emoji: '🔑', label: 'Termo-Chave',  color: '#F97316' },
-  tema:        { emoji: '📖', label: 'Tema',          color: '#3B82F6', sectionSlug: 'preparar_visao_geral', cardId: 'preparar_tema_provavel',      sectionTitle: '4. Visão Geral' },
-  teologia:    { emoji: '✦',  label: 'Teologia',      color: '#8B5CF6' },
-  tempo:       { emoji: '📅', label: 'Tempo',         color: '#6366F1' },
-  instituicao: { emoji: '🏛️', label: 'Instituição',   color: '#7C3AED' },
-  cargo:       { emoji: '👑', label: 'Cargo',         color: '#F59E0B' },
-  conflito:    { emoji: '⚠️', label: 'Conflito',      color: '#EF4444' },
-  repeticao:   { emoji: '🔄', label: 'Repetição',    color: '#EC4899', sectionSlug: 'preparar_visao_geral', cardId: 'preparar_palavras_repetidas', sectionTitle: '4. Visão Geral' },
-  objetivo:    { emoji: '🎯', label: 'Objetivo',      color: '#10B981' },
-  comentario:  { emoji: '📝', label: 'Comentário',   color: '#64748B' },
-  insight:     { emoji: '💡', label: 'Insight',       color: '#F59E0B' },
-  observacao:  { emoji: '📌', label: 'Observação',   color: '#D97706', sectionSlug: 'preparar_primeiras_impressoes', cardId: 'preparar_observacoes_livres', sectionTitle: '3. Impressões' },
+  personagem:     { emoji: '👤', label: 'Personagem',    color: '#D97706', sectionSlug: 'preparar_visao_geral', cardId: 'preparar_personagens',       sectionTitle: '4. Visão Geral' },
+  lugar:          { emoji: '📍', label: 'Lugar',          color: '#10B981' },
+  termo_chave:    { emoji: '🔑', label: 'Termo-Chave',   color: '#F97316' },
+  tema:           { emoji: '📖', label: 'Tema',           color: '#3B82F6', sectionSlug: 'preparar_visao_geral', cardId: 'preparar_tema_provavel',      sectionTitle: '4. Visão Geral' },
+  teologia:       { emoji: '✦',  label: 'Teologia',       color: '#8B5CF6' },
+  conectivo:      { emoji: '→',  label: 'Conectivo',      color: '#0891B2' },
+  verbo_principal:{ emoji: '⚡', label: 'Verbo Principal',color: '#7C3AED' },
+  promessa:       { emoji: '🌟', label: 'Promessa',       color: '#16A34A' },
+  imperativo:     { emoji: '📣', label: 'Imperativo',     color: '#DC2626' },
+  tempo:          { emoji: '📅', label: 'Tempo',          color: '#6366F1' },
+  instituicao:    { emoji: '🏛️', label: 'Instituição',    color: '#7C3AED' },
+  cargo:          { emoji: '👑', label: 'Cargo',          color: '#F59E0B' },
+  conflito:       { emoji: '⚠️', label: 'Conflito',       color: '#EF4444' },
+  repeticao:      { emoji: '🔄', label: 'Repetição',     color: '#EC4899', sectionSlug: 'preparar_visao_geral', cardId: 'preparar_palavras_repetidas', sectionTitle: '4. Visão Geral' },
+  objetivo:       { emoji: '🎯', label: 'Objetivo',       color: '#10B981' },
+  comentario:     { emoji: '📝', label: 'Comentário',    color: '#64748B' },
+  insight:        { emoji: '💡', label: 'Insight',        color: '#F59E0B' },
+  observacao:     { emoji: '📌', label: 'Observação',    color: '#D97706', sectionSlug: 'preparar_primeiras_impressoes', cardId: 'preparar_observacoes_livres', sectionTitle: '3. Impressões' },
 }
 
-const PRIMARY_CATS:   ClassType[] = ['personagem', 'lugar', 'termo_chave', 'tema', 'teologia']
-const SECONDARY_CATS: ClassType[] = ['tempo', 'instituicao', 'cargo', 'conflito', 'repeticao', 'objetivo', 'comentario', 'insight', 'observacao']
+const PRIMARY_CATS:        ClassType[] = ['personagem', 'lugar', 'termo_chave', 'tema', 'teologia']
+const PRIMARY_CATS_PROPRIO:ClassType[] = ['conectivo', 'verbo_principal', 'promessa', 'imperativo', 'personagem', 'tema']
+const SECONDARY_CATS:      ClassType[] = ['tempo', 'instituicao', 'cargo', 'conflito', 'repeticao', 'objetivo', 'comentario', 'insight', 'observacao']
 
 const HCOLORS: Record<HColor, { bg: string; dot: string }> = {
   yellow: { bg: '#FEF3C7', dot: '#F59E0B' }, blue:   { bg: '#DBEAFE', dot: '#3B82F6' },
@@ -74,10 +80,11 @@ type Version = typeof VERSIONS[number]
 const LOCALLY_AVAILABLE = new Set<Version>(['ACF'])
 
 const VIEW_MODES: { id: ViewMode; label: string }[] = [
-  { id: 'pt',          label: 'Português'  },
-  { id: 'orig',        label: 'Original'   },
-  { id: 'side',        label: 'Lado a Lado'},
-  { id: 'interlinear', label: 'Interlinear'},
+  { id: 'pt',          label: 'Português'   },
+  { id: 'orig',        label: 'Original'    },
+  { id: 'side',        label: 'Lado a Lado' },
+  { id: 'interlinear', label: 'Interlinear' },
+  { id: 'proprio',     label: 'Texto Próprio'},
 ]
 
 const DEFAULT_W = 520
@@ -86,10 +93,13 @@ const MIN_W = 340, MAX_W = 960, MIN_H = 320, MAX_H = 920
 
 // ── Storage helpers ───────────────────────────────────────────────────────────
 
-const bibk = (b: string, r: string, v: string) => `lb_${b}_${r}_${v}`.replace(/\s/g, '_')
+const bibk  = (b: string, r: string, v: string) => `lb_${b}_${r}_${v}`.replace(/\s/g, '_')
 const origk = (b: string, r: string) => `lo_${b}_${r}`.replace(/\s/g, '_')
-const clsk = (p: string) => `lc_${p}`
-const hlk  = (p: string) => `lh_${p}`
+const clsk  = (p: string) => `lc_${p}`
+const hlk   = (p: string) => `lh_${p}`
+const ptxk  = (p: string) => `lpt_${p}`
+const rptx  = (p: string): string => { try { return localStorage.getItem(ptxk(p)) ?? '' } catch { return '' } }
+const wptx  = (p: string, v: string) => { try { localStorage.setItem(ptxk(p), v) } catch {} }
 
 const rb  = (k: string): Verse[] | null => { try { const r = sessionStorage.getItem(k); return r ? JSON.parse(r) : null } catch { return null } }
 const wb  = (k: string, v: Verse[]) => { try { sessionStorage.setItem(k, JSON.stringify(v)) } catch {} }
@@ -190,6 +200,10 @@ export default function BibleFloatingWindow({ book, passageRef, testament, proje
   const [panelTab,   setPanelTab]   = useState<'cls' | 'hl'>('cls')
   const [clsFilter,  setClsFilter]  = useState<ClassType | 'all'>('all')
 
+  // Texto Próprio
+  const [proprioText,    setProprioText]    = useState('')
+  const [proprioEditing, setProprioEditing] = useState(false)
+
   // Menu
   const [menuCtx,   setMenuCtx]   = useState<MenuCtx | null>(null)
   const [menuPos,   setMenuPos]   = useState<{ x: number; y: number } | null>(null)
@@ -209,7 +223,8 @@ export default function BibleFloatingWindow({ book, passageRef, testament, proje
     else    setPos({ x: Math.max(40, window.innerWidth - DEFAULT_W - 40), y: 64 })
     if (ss) setSize(JSON.parse(ss))
     if (sm) setViewMode(sm)
-  }, [])
+    setProprioText(rptx(projectId))
+  }, [projectId])
 
   useEffect(() => {
     const local = rcl(projectId)
@@ -303,18 +318,45 @@ export default function BibleFloatingWindow({ book, passageRef, testament, proje
 
   // ── Text selection ────────────────────────────────────────────────────────
   function handleMouseUp() {
+    if (proprioEditing) return
     const sel = window.getSelection()
     if (!sel || sel.isCollapsed || !sel.rangeCount) return
     const txt = sel.toString().trim()
     if (!txt || txt.length < 2) return
     const range = sel.getRangeAt(0)
     if (!textRef.current?.contains(range.commonAncestorContainer)) return
+    const rect = range.getBoundingClientRect()
+
+    // Texto Próprio: calcula offset sobre o texto completo
+    if (viewMode === 'proprio') {
+      const container = textRef.current.querySelector('[data-verse="0"]')
+      if (!container) return
+      const fullText = container.textContent ?? ''
+      const startOff = getTextOffset(range.startContainer, range.startOffset, container)
+      const endOff   = getTextOffset(range.endContainer,   range.endOffset,   container)
+      if (startOff < 0 || endOff < 0 || startOff >= endOff) return
+      setMenuCtx({ kind: 'new', pending: { startVerse: 0, endVerse: 0, startOffset: startOff, endOffset: endOff, text: txt } })
+      setMenuState('main'); setNoteVal('')
+      setMenuPos({ x: rect.left + rect.width / 2, y: rect.top - 8 })
+      return
+    }
+
     const ss = findVerse(range.startContainer), es = findVerse(range.endContainer)
     if (!ss || !es) return
-    const rect = range.getBoundingClientRect()
     setMenuCtx({ kind: 'new', pending: { startVerse: parseInt(ss.dataset.verse!), endVerse: parseInt(es.dataset.verse!), startOffset: charOff(range.startContainer, range.startOffset, ss), endOffset: charOff(range.endContainer, range.endOffset, es), text: txt } })
     setMenuState('main'); setNoteVal('')
     setMenuPos({ x: rect.left + rect.width / 2, y: rect.top - 8 })
+  }
+
+  function getTextOffset(node: Node, offset: number, container: Element): number {
+    const walker = document.createTreeWalker(container, NodeFilter.SHOW_TEXT)
+    let total = 0
+    while (walker.nextNode()) {
+      const n = walker.currentNode as Text
+      if (n === node) return total + offset
+      total += n.length
+    }
+    return -1
   }
 
   function handleClickCls(id: string, e: React.MouseEvent) {
@@ -527,6 +569,161 @@ export default function BibleFloatingWindow({ book, passageRef, testament, proje
     )
   }
 
+  // ── Texto Próprio ─────────────────────────────────────────────────────────
+
+  function importProprioText() {
+    const plain = verses.map(v => `${v.v} ${v.t}`).join('\n')
+    const full  = plain || ''
+    setProprioText(full)
+    wptx(projectId, full)
+    setProprioEditing(false)
+  }
+
+  function saveProprioText(text: string) {
+    setProprioText(text)
+    wptx(projectId, text)
+  }
+
+  function renderProprio() {
+    const proprioCls = clsList.filter(c => c.startVerse === 0)
+    const proprioHl  = hlList.filter(h => h.startVerse === 0)
+
+    const buildProprioSegs = (text: string): Seg[] => {
+      const n    = text.length
+      const cids = new Array<string | null>(n).fill(null)
+      const hids = new Array<string | null>(n).fill(null)
+      const hcol = new Array<HColor | null>(n).fill(null)
+      for (const h of proprioHl) {
+        for (let i = Math.max(0, h.startOffset); i < Math.min(n, h.endOffset); i++) { hids[i] = h.id; hcol[i] = h.color }
+      }
+      for (const c of proprioCls) {
+        for (let i = Math.max(0, c.startOffset); i < Math.min(n, c.endOffset); i++) cids[i] = c.id
+      }
+      if (!cids.some(Boolean) && !hids.some(Boolean)) return [{ text, classId: null, hlId: null, hlColor: null }]
+      const segs: Seg[] = []; let pos = 0
+      while (pos < n) {
+        let end = pos + 1
+        while (end < n && cids[end] === cids[pos] && hids[end] === hids[pos]) end++
+        segs.push({ text: text.slice(pos, end), classId: cids[pos], hlId: hids[pos], hlColor: hcol[pos] })
+        pos = end
+      }
+      return segs
+    }
+
+    if (proprioEditing) {
+      return (
+        <div style={{ padding: '1rem', display: 'flex', flexDirection: 'column', gap: '0.6rem', height: '100%', boxSizing: 'border-box' }}>
+          <div style={{ display: 'flex', gap: '0.45rem', alignItems: 'center', flexShrink: 0 }}>
+            <button onClick={importProprioText} disabled={!verses.length} style={{ background: accent, color: '#FFF', border: 'none', borderRadius: '7px', padding: '0.3rem 0.75rem', fontSize: '0.7rem', fontWeight: 600, cursor: verses.length ? 'pointer' : 'not-allowed', fontFamily: 'inherit', opacity: verses.length ? 1 : 0.5 }}>
+              Importar texto atual ({version})
+            </button>
+            <button onClick={() => { saveProprioText(proprioText); setProprioEditing(false) }} style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: '7px', padding: '0.3rem 0.75rem', fontSize: '0.7rem', fontWeight: 600, cursor: 'pointer', color: 'var(--text-primary)', fontFamily: 'inherit' }}>
+              Concluir edição
+            </button>
+            {proprioText && (
+              <button onClick={() => { saveProprioText(''); setProprioEditing(false) }} style={{ background: 'transparent', border: 'none', color: 'var(--text-muted)', fontSize: '0.7rem', cursor: 'pointer', fontFamily: 'inherit', marginLeft: 'auto' }}>
+                Limpar
+              </button>
+            )}
+          </div>
+          <textarea
+            autoFocus
+            value={proprioText}
+            onChange={e => setProprioText(e.target.value)}
+            placeholder={'Cole ou escreva qualquer texto bíblico aqui.\n\nExemplos:\n- Tradução própria da perícope\n- Estrutura diagramada\n- Transcrição com marcações'}
+            style={{ flex: 1, width: '100%', border: '1px solid var(--border)', borderRadius: '8px', padding: '0.85rem', fontSize: '0.92rem', fontFamily: "'EB Garamond', Georgia, serif", lineHeight: 1.9, color: 'var(--text-primary)', background: 'var(--surface)', resize: 'none', outline: 'none', boxSizing: 'border-box' }}
+          />
+        </div>
+      )
+    }
+
+    if (!proprioText) {
+      return (
+        <div style={{ padding: '2rem 1.5rem', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '1rem', height: '100%', boxSizing: 'border-box', textAlign: 'center' }}>
+          <div style={{ fontSize: '2rem', opacity: 0.3 }}>✏️</div>
+          <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', lineHeight: 1.6, maxWidth: '280px', margin: 0 }}>
+            Cole sua tradução, estrutura diagramada ou qualquer texto para anotar e classificar.
+          </p>
+          <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', justifyContent: 'center' }}>
+            <button onClick={() => setProprioEditing(true)} style={{ background: accent, color: '#FFF', border: 'none', borderRadius: '8px', padding: '0.45rem 1rem', fontSize: '0.78rem', fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit' }}>
+              Colar texto
+            </button>
+            <button onClick={importProprioText} disabled={!verses.length} style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: '8px', padding: '0.45rem 1rem', fontSize: '0.78rem', fontWeight: 600, cursor: verses.length ? 'pointer' : 'not-allowed', color: 'var(--text-primary)', fontFamily: 'inherit', opacity: verses.length ? 1 : 0.5 }}>
+              Importar {version}
+            </button>
+          </div>
+          <p style={{ fontSize: '0.68rem', color: 'var(--text-muted)', margin: 0, opacity: 0.6 }}>
+            Selecione trechos para marcar conectivos, verbos, promessas, imperativos e mais.
+          </p>
+        </div>
+      )
+    }
+
+    const segs = buildProprioSegs(proprioText)
+    return (
+      <div style={{ padding: '1rem 1.25rem 1.5rem', display: 'flex', flexDirection: 'column', gap: '0.65rem' }}>
+        {/* Toolbar */}
+        <div style={{ display: 'flex', gap: '0.4rem', alignItems: 'center', flexShrink: 0 }}>
+          <span style={{ fontSize: '0.6rem', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.06em', flex: 1 }}>
+            Selecione trechos para marcar
+          </span>
+          <button onClick={() => setProprioEditing(true)} style={{ background: 'transparent', border: '1px solid var(--border)', borderRadius: '6px', padding: '0.2rem 0.55rem', fontSize: '0.62rem', color: 'var(--text-muted)', cursor: 'pointer', fontFamily: 'inherit' }}>
+            Editar
+          </button>
+        </div>
+        {/* Anotações rápidas legend */}
+        <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap' }}>
+          {PRIMARY_CATS_PROPRIO.map(t => {
+            const d = CLASS_DEF[t]
+            return (
+              <span key={t} style={{ fontSize: '0.58rem', background: d.color + '15', border: `1px solid ${d.color}30`, color: d.color, borderRadius: '4px', padding: '1px 6px', fontWeight: 600 }}>
+                {d.emoji} {d.label}
+              </span>
+            )
+          })}
+        </div>
+        {/* Texto anotável */}
+        <div data-verse="0" style={{ fontFamily: "'EB Garamond', Georgia, serif", fontSize: '1.02rem', lineHeight: '1.95', color: 'var(--text-primary)', whiteSpace: 'pre-wrap', wordBreak: 'break-word', userSelect: 'text', cursor: 'text' }}>
+          {segs.map((seg, i) => {
+            const cls = seg.classId ? clsById[seg.classId] : null
+            const def = cls ? CLASS_DEF[cls.type] : null
+            const hlBg = seg.hlColor ? HCOLORS[seg.hlColor].bg : undefined
+            const style: React.CSSProperties = {}
+            if (hlBg) style.background = hlBg
+            if (def)  { style.textDecoration = 'underline'; style.textDecorationColor = def.color + 'DD'; style.textUnderlineOffset = '3px'; style.textDecorationThickness = '1.5px'; style.cursor = 'pointer' }
+            return (
+              <span key={i} style={style}
+                onClick={seg.classId ? e => handleClickCls(seg.classId!, e) : undefined}
+                onMouseEnter={def && seg.classId ? e => setTooltip({ id: seg.classId!, rect: (e.target as Element).getBoundingClientRect() }) : undefined}
+                onMouseLeave={def ? () => setTooltip(null) : undefined}
+              >{seg.text}</span>
+            )
+          })}
+        </div>
+        {/* Classificações no texto próprio */}
+        {proprioCls.length > 0 && (
+          <div style={{ borderTop: '1px solid var(--border-subtle)', paddingTop: '0.75rem', display: 'flex', flexDirection: 'column', gap: '0.3rem' }}>
+            <div style={{ fontSize: '0.58rem', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '0.2rem' }}>
+              Observações ({proprioCls.length})
+            </div>
+            {proprioCls.map(c => {
+              const d = CLASS_DEF[c.type]
+              return (
+                <div key={c.id} style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.75rem', padding: '0.2rem 0' }}>
+                  <span style={{ color: d.color, flexShrink: 0 }}>{d.emoji}</span>
+                  <span style={{ color: d.color, fontWeight: 700, fontSize: '0.62rem', textTransform: 'uppercase', letterSpacing: '0.04em', flexShrink: 0 }}>{d.label}</span>
+                  <span style={{ fontStyle: 'italic', color: 'var(--text-secondary)', fontFamily: "'EB Garamond', Georgia, serif", flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>"{c.selectedText}"</span>
+                  {c.note && <span style={{ fontSize: '0.66rem', color: 'var(--text-muted)' }}>{c.note}</span>}
+                  <button onClick={() => { const n = clsList.filter(x => x.id !== c.id); setClsList(n); wcl(projectId, n) }} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)', fontSize: '0.75rem', padding: 0, lineHeight: 1, flexShrink: 0 }} onMouseEnter={e => { e.currentTarget.style.color = 'var(--error)' }} onMouseLeave={e => { e.currentTarget.style.color = 'var(--text-muted)' }}>×</button>
+                </div>
+              )
+            })}
+          </div>
+        )}
+      </div>
+    )
+  }
+
   // ── Minimized ─────────────────────────────────────────────────────────────
 
   if (minimized) {
@@ -673,6 +870,9 @@ export default function BibleFloatingWindow({ book, passageRef, testament, proje
 
           {/* INTERLINEAR */}
           {viewMode === 'interlinear' && renderInterlinear()}
+
+          {/* TEXTO PRÓPRIO */}
+          {viewMode === 'proprio' && renderProprio()}
         </div>
 
         {/* ── Annotations panel ── */}
@@ -733,7 +933,7 @@ export default function BibleFloatingWindow({ book, passageRef, testament, proje
 
           {menuState === 'main' && (
             <>
-              {PRIMARY_CATS.map(type => { const def = CLASS_DEF[type]; const isActive = activeCls?.type === type; return (
+              {(viewMode === 'proprio' ? PRIMARY_CATS_PROPRIO : PRIMARY_CATS).map(type => { const def = CLASS_DEF[type]; const isActive = activeCls?.type === type; return (
                 <button key={type} onClick={() => applyClass(type)} disabled={saving} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', width: '100%', background: isActive ? `${def.color}25` : 'transparent', border: 'none', borderRadius: '7px', padding: '0.36rem 0.5rem', cursor: saving ? 'wait' : 'pointer', fontFamily: 'inherit', textAlign: 'left', transition: 'background 0.1s' }} onMouseEnter={e => { e.currentTarget.style.background = isActive ? `${def.color}35` : 'rgba(255,255,255,0.08)' }} onMouseLeave={e => { e.currentTarget.style.background = isActive ? `${def.color}25` : 'transparent' }}>
                   <span style={{ fontSize: '0.78rem' }}>{def.emoji}</span>
                   <span style={{ fontSize: '0.76rem', color: isActive ? def.color : 'rgba(255,255,255,0.85)', fontWeight: isActive ? 600 : 400 }}>{def.label}</span>

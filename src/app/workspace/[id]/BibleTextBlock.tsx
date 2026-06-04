@@ -14,6 +14,7 @@ type ClassType =
   | 'personagem' | 'lugar' | 'termo_chave' | 'tema' | 'teologia'
   | 'tempo' | 'instituicao' | 'cargo' | 'conflito' | 'repeticao'
   | 'objetivo' | 'comentario' | 'insight' | 'observacao'
+  | 'conectivo' | 'verbo_principal' | 'promessa' | 'imperativo'
 
 type HColor = 'yellow' | 'blue' | 'green' | 'purple' | 'orange' | 'red'
 type MenuState = 'main' | 'colors' | 'more'
@@ -63,13 +64,17 @@ const CLASS_DEF: Record<ClassType, ClassDef> = {
   conflito:    { emoji: '⚠️', label: 'Conflito',      color: '#EF4444' },
   repeticao:   { emoji: '🔄', label: 'Repetição',    color: '#EC4899', sectionSlug: 'preparar_visao_geral',           cardId: 'preparar_palavras_repetidas', sectionTitle: '4. Visão Geral da Passagem' },
   objetivo:    { emoji: '🎯', label: 'Objetivo',      color: '#10B981' },
-  comentario:  { emoji: '📝', label: 'Comentário',   color: '#64748B' },
-  insight:     { emoji: '💡', label: 'Insight',       color: '#F59E0B' },
-  observacao:  { emoji: '📌', label: 'Observação',   color: '#D97706', sectionSlug: 'preparar_primeiras_impressoes', cardId: 'preparar_observacoes_livres', sectionTitle: '3. Primeiras Impressões' },
+  comentario:      { emoji: '📝', label: 'Comentário',    color: '#64748B' },
+  insight:         { emoji: '💡', label: 'Insight',        color: '#F59E0B' },
+  observacao:      { emoji: '📌', label: 'Observação',    color: '#D97706', sectionSlug: 'preparar_primeiras_impressoes', cardId: 'preparar_observacoes_livres', sectionTitle: '3. Primeiras Impressões' },
+  conectivo:       { emoji: '→',  label: 'Conectivo',      color: '#0891B2' },
+  verbo_principal: { emoji: '⚡', label: 'Verbo Principal',color: '#7C3AED' },
+  promessa:        { emoji: '🌟', label: 'Promessa',       color: '#16A34A' },
+  imperativo:      { emoji: '📣', label: 'Imperativo',     color: '#DC2626' },
 }
 
 const PRIMARY_CATS:   ClassType[] = ['personagem', 'lugar', 'termo_chave', 'tema', 'teologia']
-const SECONDARY_CATS: ClassType[] = ['tempo', 'instituicao', 'cargo', 'conflito', 'repeticao', 'objetivo', 'comentario', 'insight', 'observacao']
+const SECONDARY_CATS: ClassType[] = ['conectivo', 'verbo_principal', 'promessa', 'imperativo', 'tempo', 'instituicao', 'cargo', 'conflito', 'repeticao', 'objetivo', 'comentario', 'insight', 'observacao']
 
 const HCOLORS: Record<HColor, { bg: string; dot: string }> = {
   yellow: { bg: '#FEF3C7', dot: '#F59E0B' },
