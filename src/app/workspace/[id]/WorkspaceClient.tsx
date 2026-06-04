@@ -738,9 +738,9 @@ export default function WorkspaceClient({ user, project, initialSections }: Prop
               }}
               onMouseEnter={e => { e.currentTarget.style.background = 'rgba(124,58,237,0.06)' }}
               onMouseLeave={e => { e.currentTarget.style.background = 'transparent' }}
-              title="Transferir este estudo de carta para um projeto de Sermão"
+              title="Transferir base exegética deste estudo para um projeto de Sermão"
             >
-              → Sermão
+              Enviar para Sermão
             </button>
           </>
         )}
@@ -1287,6 +1287,7 @@ export default function WorkspaceClient({ user, project, initialSections }: Prop
                 userId={user.id}
                 existingSection={activeSection}
                 allVGSections={sections.filter(s => s.slug === 'preparar_visao_geral' || s.slug === 'investigar_visao_geral' || s.slug === 'pregar_visao_geral')}
+                allSections={sections}
                 onUpdate={handleSectionUpdate}
                 onAskAI={handleAskAI}
                 onOpenBible={() => setBibleOpen(true)}

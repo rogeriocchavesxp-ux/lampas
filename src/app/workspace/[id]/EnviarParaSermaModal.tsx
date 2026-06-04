@@ -7,13 +7,16 @@ import type { Project, Section } from '@/types/database'
 
 // Seções que NÃO devem ser copiadas para o Sermão.
 // Fases homiléticas ficam em branco — o pregador as constrói do zero.
+// ec_* são exclusivas da Carta e não têm correspondência na navegação do Sermão.
 function shouldCopy(slug: string): boolean {
-  if (slug === 'comunicar_visao_geral')   return false
-  if (slug.startsWith('sermao_'))         return false  // sermao_dispositio, elocutio, etc.
-  if (slug.startsWith('devocional_'))     return false
-  if (slug.startsWith('eb_'))             return false
-  if (slug.startsWith('edt_'))            return false
-  if (slug.startsWith('et_'))             return false
+  if (slug === 'pregar_visao_geral')   return false  // fase homilética — pregador constrói do zero
+  if (slug === 'comunicar_visao_geral') return false  // slug legado — excluir por segurança
+  if (slug.startsWith('sermao_'))      return false  // sermao_dispositio, elocutio, etc.
+  if (slug.startsWith('devocional_'))  return false
+  if (slug.startsWith('eb_'))          return false
+  if (slug.startsWith('edt_'))         return false
+  if (slug.startsWith('et_'))          return false
+  if (slug.startsWith('ec_'))          return false  // ec_ocasiao, ec_estrutura, ec_argumento — específicos da Carta, sem correspondência no Sermão
   return true
 }
 
@@ -196,15 +199,51 @@ export default function EnviarParaSermaModal({ project, sections, userId, onClos
 
         {/* ── Sucesso ── */}
         {step === 'done' && (
-          <div style={{ padding: '2rem', textAlign: 'center' }}>
-            <div style={{ fontSize: '2.2rem', marginBottom: '0.6rem' }}>✓</div>
-            <div style={{ fontSize: '1rem', fontWeight: 700, color: '#0F172A', marginBottom: '0.4rem' }}>
-              Estudo enviado para Sermão
+          <div style={{ padding: '1.75rem' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', marginBottom: '0.5rem' }}>
+              <div style={{
+                width: '28px', height: '28px', borderRadius: '50%',
+                background: 'rgba(16,185,129,0.1)', border: '1.5px solid rgba(16,185,129,0.3)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                color: '#10B981', fontSize: '0.85rem', fontWeight: 700, flexShrink: 0,
+              }}>✓</div>
+              <div style={{ fontSize: '1rem', fontWeight: 700, color: '#0F172A' }}>
+                Conteúdo transferido para o Sermão
+              </div>
             </div>
-            <p style={{ fontSize: '0.83rem', color: '#64748B', lineHeight: 1.55, marginBottom: '1.75rem' }}>
-              {sectionsToCopy.length} seções copiadas. Os campos homiléticos estão
-              em branco para construção pastoral.
+
+            <p style={{ fontSize: '0.82rem', color: '#64748B', lineHeight: 1.55, marginBottom: '1rem', margin: '0 0 1rem' }}>
+              As seções exegéticas e preparatórias foram copiadas. Os campos homiléticos ficam em branco — o pregador os constrói a partir da base.
             </p>
+
+            <div style={{
+              background: '#F8FAFC', border: '1px solid #E2E8F0',
+              borderRadius: '8px', padding: '0.75rem 1rem', marginBottom: '1.5rem',
+            }}>
+              <div style={{ fontSize: '0.6rem', fontWeight: 700, color: '#94A3B8', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '0.5rem' }}>
+                O que foi transferido
+              </div>
+              {[
+                { label: 'Preparação espiritual e leituras', check: true },
+                { label: 'Visão Geral e primeiras impressões', check: true },
+                { label: 'Estudo Contextual (histórico e literário)', check: true },
+                { label: 'Estudo Textual (texto original e termos)', check: true },
+                { label: 'Estudo Teológico (mensagem e cânone)', check: true },
+                { label: 'Visão Geral Homilética', check: false, note: 'pregador constrói do zero' },
+                { label: 'Estrutura e linguagem do sermão', check: false, note: 'pregador constrói do zero' },
+              ].map((item, i) => (
+                <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.2rem 0' }}>
+                  <span style={{ fontSize: '0.72rem', color: item.check ? '#10B981' : '#CBD5E1', flexShrink: 0 }}>
+                    {item.check ? '✓' : '○'}
+                  </span>
+                  <span style={{ fontSize: '0.75rem', color: item.check ? '#1E293B' : '#94A3B8' }}>
+                    {item.label}
+                    {item.note && <span style={{ color: '#CBD5E1', marginLeft: '0.3rem' }}>— {item.note}</span>}
+                  </span>
+                </div>
+              ))}
+            </div>
+
             <div style={{ display: 'flex', gap: '0.75rem' }}>
               <button onClick={onClose} style={{
                 flex: 1, padding: '0.65rem', background: 'transparent',
