@@ -11,11 +11,6 @@ const inter = Inter({
 export const metadata: Metadata = {
   title: 'Lampas — Iluminando a sua jornada de estudo bíblico',
   description: 'Iluminando a sua jornada de estudo bíblico com IA reformada',
-  icons: {
-    icon: '/lampas-mark.svg',
-    shortcut: '/lampas-mark.svg',
-    apple: '/lampas-mark.svg',
-  },
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
