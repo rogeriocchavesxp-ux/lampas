@@ -127,6 +127,7 @@ const EXEGESE_BIBLICA: StudyModeConfig = {
         id: 'interpretar_inventio', label: 'Exegese', subtitle: 'Descobrir o significado',
         color: 'var(--accent)', bgActive: 'rgba(59,130,246,0.08)',
         groups: [
+          { id: 'investigar_visao_geral', label: 'Visão Geral' },
           { id: 'contextual', label: 'Estudo Contextual' },
           { id: 'textual',    label: 'Estudo Textual' },
           { id: 'teologico',  label: 'Estudo Teológico' },
@@ -142,6 +143,7 @@ const EXEGESE_BIBLICA: StudyModeConfig = {
           id: 'sermao', label: 'Sermão', subtitle: 'Proclamação pública',
           color: 'var(--ai)', bgActive: 'rgba(139,92,246,0.08)',
           groups: [
+            { id: 'comunicar_visao_geral', label: 'Visão Geral' },
             { id: 'sermao_dispositio',   label: 'Estrutura' },
             { id: 'sermao_elocutio',     label: 'Linguagem' },
             { id: 'sermao_memoria',      label: 'Internalização' },
@@ -219,6 +221,7 @@ const SERMAO: StudyModeConfig = {
         id: 'interpretar_inventio', label: 'Exegese', subtitle: 'O que o texto diz',
         color: 'var(--accent)', bgActive: 'rgba(59,130,246,0.08)',
         groups: [
+          { id: 'investigar_visao_geral', label: 'Visão Geral' },
           { id: 'contextual', label: 'Estudo Contextual' },
           { id: 'textual',    label: 'Estudo Textual' },
           { id: 'teologico',  label: 'Estudo Teológico' },
@@ -233,6 +236,7 @@ const SERMAO: StudyModeConfig = {
         id: 'sermao', label: 'Sermão', subtitle: 'Proclamação pública',
         color: '#7C3AED', bgActive: 'rgba(124,58,237,0.08)',
         groups: [
+          { id: 'comunicar_visao_geral', label: 'Visão Geral' },
           { id: 'sermao_dispositio',   label: 'Estrutura' },
           { id: 'sermao_elocutio',     label: 'Linguagem' },
           { id: 'sermao_memoria',      label: 'Internalização' },
@@ -284,6 +288,7 @@ const DEVOCIONAL: StudyModeConfig = {
         id: 'interpretar_inventio', label: 'Meditação', subtitle: 'Escuta atenta',
         color: '#9A3412', bgActive: 'rgba(154,52,18,0.08)',
         groups: [
+          { id: 'investigar_visao_geral', label: 'Visão Geral' },
           { id: 'contextual', label: 'Contexto' },
           { id: 'textual',    label: 'O Texto' },
           { id: 'teologico',  label: 'Mensagem' },
@@ -298,6 +303,7 @@ const DEVOCIONAL: StudyModeConfig = {
         id: 'devocional', label: 'Devocional', subtitle: 'Reflexão e resposta',
         color: '#9A3412', bgActive: 'rgba(154,52,18,0.08)',
         groups: [
+          { id: 'comunicar_visao_geral',   label: 'Visão Geral' },
           { id: 'devocional_dispositio',   label: 'Reflexão' },
           { id: 'devocional_elocutio',     label: 'Resposta' },
           { id: 'devocional_pronuntiatio', label: 'Compromisso' },
@@ -346,6 +352,7 @@ const ESTUDO_BIBLICO: StudyModeConfig = {
         id: 'eb_compreender_mode', label: 'O Texto', subtitle: 'Análise e estrutura',
         color: 'var(--accent)', bgActive: 'rgba(59,130,246,0.08)',
         groups: [
+          { id: 'investigar_visao_geral', label: 'Visão Geral' },
           { id: 'eb_compreender', label: 'Texto, Temas e Termos' },
         ],
       }],
@@ -358,6 +365,7 @@ const ESTUDO_BIBLICO: StudyModeConfig = {
         id: 'eb_ensinar_mode', label: 'Ensinar', subtitle: 'Desenvolvimento e perguntas',
         color: '#10B981', bgActive: 'rgba(16,185,129,0.08)',
         groups: [
+          { id: 'comunicar_visao_geral', label: 'Visão Geral' },
           { id: 'eb_ensinar',  label: 'Desenvolvimento e Perguntas' },
           { id: 'eb_aplicar',  label: 'Aplicações' },
           { id: 'eb_recursos', label: 'Material' },
@@ -407,6 +415,7 @@ const ESTUDO_DOUTRINARIO: StudyModeConfig = {
         id: 'edt_investigar_mode', label: 'Investigação', subtitle: 'História e sistema',
         color: 'var(--accent)', bgActive: 'rgba(59,130,246,0.08)',
         groups: [
+          { id: 'investigar_visao_geral', label: 'Visão Geral' },
           { id: 'edt_historia_grp',         label: 'História da Doutrina' },
           { id: 'edt_formulacao_grp',        label: 'Formulação Sistemática' },
           { id: 'edt_controversias_grp',     label: 'Controvérsias' },
@@ -422,6 +431,7 @@ const ESTUDO_DOUTRINARIO: StudyModeConfig = {
         id: 'edt_aplicar_mode', label: 'Aplicação', subtitle: 'Prática e fontes',
         color: 'var(--ai)', bgActive: 'rgba(139,92,246,0.08)',
         groups: [
+          { id: 'comunicar_visao_geral', label: 'Visão Geral' },
           { id: 'edt_aplicacoes_grp',  label: 'Aplicações' },
           { id: 'edt_bibliografia_grp', label: 'Bibliografia' },
         ],
@@ -469,6 +479,7 @@ const ESTUDO_TEMATICO: StudyModeConfig = {
         id: 'et_canonico_mode', label: 'Cânone', subtitle: 'Desenvolvimento canônico',
         color: 'var(--accent)', bgActive: 'rgba(59,130,246,0.08)',
         groups: [
+          { id: 'investigar_visao_geral', label: 'Visão Geral' },
           { id: 'et_at_grp',      label: 'Antigo Testamento' },
           { id: 'et_nt_grp',      label: 'Novo Testamento' },
           { id: 'et_sintese_grp', label: 'Síntese Canônica' },
@@ -483,6 +494,7 @@ const ESTUDO_TEMATICO: StudyModeConfig = {
         id: 'et_formular_mode', label: 'Formulação', subtitle: 'Sistema e prática',
         color: 'var(--ai)', bgActive: 'rgba(139,92,246,0.08)',
         groups: [
+          { id: 'comunicar_visao_geral', label: 'Visão Geral' },
           { id: 'et_sistematica_grp', label: 'Teologia Sistemática' },
           { id: 'et_aplicacoes_grp',  label: 'Aplicações' },
         ],
@@ -532,6 +544,7 @@ const ESTUDO_DE_CARTA: StudyModeConfig = {
         id: 'ec_carta_mode', label: 'A Carta', subtitle: 'Estrutura e argumento',
         color: '#6D28D9', bgActive: 'rgba(109,40,217,0.08)',
         groups: [
+          { id: 'investigar_visao_geral', label: 'Visão Geral' },
           { id: 'ec_ocasiao_grp',   label: 'Ocasião e Propósito' },
           { id: 'ec_estrutura_grp', label: 'Estrutura Retórica' },
           { id: 'ec_argumento_grp', label: 'Argumento Central' },
@@ -549,6 +562,7 @@ const ESTUDO_DE_CARTA: StudyModeConfig = {
         id: 'sermao', label: 'Sermão', subtitle: 'Proclamação',
         color: 'var(--ai)', bgActive: 'rgba(139,92,246,0.08)',
         groups: [
+          { id: 'comunicar_visao_geral', label: 'Visão Geral' },
           { id: 'sermao_dispositio', label: 'Estrutura' },
           { id: 'sermao_elocutio',   label: 'Linguagem' },
         ],
@@ -596,6 +610,7 @@ const COMENTARIO_EXEGETICO: StudyModeConfig = {
         id: 'interpretar_inventio', label: 'Análise', subtitle: 'Texto e exegese',
         color: '#F97316', bgActive: 'rgba(249,115,22,0.08)',
         groups: [
+          { id: 'investigar_visao_geral', label: 'Visão Geral' },
           { id: 'textual',   label: 'Texto e Tradução' },
           { id: 'contextual', label: 'Contexto' },
           { id: 'teologico',  label: 'Teologia' },
@@ -610,7 +625,8 @@ const COMENTARIO_EXEGETICO: StudyModeConfig = {
         id: 'comentario', label: 'Comentário', subtitle: 'Versículo a versículo',
         color: '#F97316', bgActive: 'rgba(249,115,22,0.08)',
         groups: [
-          { id: 'comentario_expositivo', label: 'Comentário Expositivo' },
+          { id: 'comunicar_visao_geral',  label: 'Visão Geral' },
+          { id: 'comentario_expositivo',  label: 'Comentário Expositivo' },
         ],
       }],
     },

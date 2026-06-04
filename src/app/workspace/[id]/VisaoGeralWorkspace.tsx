@@ -183,6 +183,7 @@ interface Props {
   project: Project
   userId: string
   existingSection: Section | undefined
+  allVGSections?: Section[]
   onUpdate: (s: Section) => void
   onAskAI: (prompt: string) => void
   onOpenBible?: () => void
@@ -192,7 +193,7 @@ interface Props {
 // ── Component ─────────────────────────────────────────────────────────────────
 
 export default function VisaoGeralWorkspace({
-  sectionDef, project, userId, existingSection, onUpdate, onAskAI, onOpenBible, onNavigate,
+  sectionDef, project, userId, existingSection, allVGSections, onUpdate, onAskAI, onOpenBible, onNavigate,
 }: Props) {
   const supabase    = useMemo(() => createClient(), [])
   const wrapRef     = useRef<HTMLDivElement>(null)
@@ -207,6 +208,20 @@ export default function VisaoGeralWorkspace({
   const isPassageMode = project.book !== '—'
   const centerTitle   = isPassageMode ? project.book : 'Tema'
   const centerSub     = isPassageMode ? project.passage_ref : project.passage_ref
+
+  // Fase da visão geral (derivada do slug)
+  const phase = sectionDef.slug === 'preparar_visao_geral' ? 'preparar'
+    : sectionDef.slug === 'investigar_visao_geral' ? 'investigar'
+    : 'comunicar'
+  const prevSlug = phase === 'investigar' ? 'preparar_visao_geral'
+    : phase === 'comunicar' ? 'investigar_visao_geral'
+    : null
+  const PHASE_LABEL: Record<string, string> = {
+    preparar: 'Inicial', investigar: 'Investigativa', comunicar: 'Homilética',
+  }
+  const PHASE_COLOR: Record<string, string> = {
+    preparar: '#D97706', investigar: '#2563EB', comunicar: '#7C3AED',
+  }
 
   const [mode,         setMode]        = useState<'visual' | 'structured'>('visual')
   const [activePanel,  setActivePanel] = useState<string | null>(null)
@@ -227,6 +242,16 @@ export default function VisaoGeralWorkspace({
   const [expandedField, setExpandedField] = useState<{ label: string; fieldKey: keyof Classification } | null>(null)
   const [expandDraft,   setExpandDraft]   = useState('')
   const [expandMode,    setExpandMode]    = useState<'view' | 'edit'>('view')
+
+  // Evolução das fases
+  const [inherited,       setInherited]       = useState(false)
+  const [showEvolution,   setShowEvolution]   = useState(false)
+  const [evolutionLoading,setEvolutionLoading]= useState(false)
+  const [evolutionData,   setEvolutionData]   = useState<{
+    preparar?: Record<string, string>
+    investigar?: Record<string, string>
+    comunicar?: Record<string, string>
+  } | null>(null)
 
   // ── Data — carrega do banco (fonte de verdade) e sincroniza localStorage ───
   useEffect(() => {
@@ -258,6 +283,26 @@ export default function VisaoGeralWorkspace({
 
     return () => { mounted = false; window.clearInterval(intervalId) }
   }, [project.id])
+
+  // Herança automática: copia conteúdo da fase anterior na primeira abertura
+  useEffect(() => {
+    if (phase === 'preparar' || existingSection) return
+    let mounted = true
+    supabase.from('sections')
+      .select('content')
+      .eq('project_id', project.id)
+      .eq('slug', prevSlug!)
+      .maybeSingle()
+      .then(({ data }) => {
+        if (!mounted || !data?.content) return
+        const prevCards = (data.content as { cards?: Record<string, string> })?.cards ?? {}
+        if (Object.keys(prevCards).length > 0) {
+          setCardDraft(prevCards)
+          setInherited(true)
+        }
+      })
+    return () => { mounted = false }
+  }, [phase, project.id, prevSlug, existingSection?.id, supabase])
 
   useEffect(() => {
     if (!wrapRef.current) return
@@ -301,6 +346,38 @@ export default function VisaoGeralWorkspace({
     node.kind === 'cls' ? getClsItems(node).length : (getCardText(node) ? 1 : 0)
 
   const totalItems = nodes.reduce((s, n) => s + getCount(n), 0)
+
+  // ── Abrir modal de evolução das fases ─────────────────────────────────────
+  const openEvolution = useCallback(async () => {
+    setEvolutionLoading(true)
+    try {
+      // Prioriza allVGSections passado pelo WorkspaceClient (evita fetch extra)
+      const local = allVGSections ?? []
+      const slugsNeeded = ['preparar_visao_geral', 'investigar_visao_geral', 'comunicar_visao_geral']
+      const hasFull = slugsNeeded.every(s => local.some(sec => sec.slug === s))
+
+      let rows = local
+      if (!hasFull) {
+        const { data } = await supabase.from('sections')
+          .select('slug, content')
+          .eq('project_id', project.id)
+          .in('slug', slugsNeeded)
+        rows = (data ?? []) as typeof rows
+      }
+
+      const result: NonNullable<typeof evolutionData> = {}
+      for (const s of rows) {
+        const ph = s.slug === 'preparar_visao_geral' ? 'preparar'
+          : s.slug === 'investigar_visao_geral' ? 'investigar' : 'comunicar'
+        result[ph as 'preparar' | 'investigar' | 'comunicar'] =
+          (s.content as { cards?: Record<string, string> })?.cards ?? {}
+      }
+      setEvolutionData(result)
+      setShowEvolution(true)
+    } finally {
+      setEvolutionLoading(false)
+    }
+  }, [allVGSections, project.id, supabase, evolutionData])
 
   // ── Save card ──────────────────────────────────────────────────────────────
   const saveCard = useCallback(async (cardId: string, value: string) => {
@@ -510,8 +587,23 @@ export default function VisaoGeralWorkspace({
       {/* ── Header ─────────────────────────────────────────────────────────── */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1.1rem', gap: '0.75rem', flexWrap: 'wrap' }}>
         <div>
-          <div style={{ fontSize: '0.87rem', fontWeight: 700, color: 'var(--text-primary)', letterSpacing: '-0.01em' }}>
-            Visão Geral · {project.book} {project.passage_ref}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            <div style={{ fontSize: '0.87rem', fontWeight: 700, color: 'var(--text-primary)', letterSpacing: '-0.01em' }}>
+              Visão Geral
+            </div>
+            <span style={{
+              fontSize: '0.63rem', fontWeight: 700, letterSpacing: '0.06em',
+              textTransform: 'uppercase',
+              color: PHASE_COLOR[phase],
+              background: PHASE_COLOR[phase] + '15',
+              border: `1px solid ${PHASE_COLOR[phase]}30`,
+              padding: '2px 7px', borderRadius: '999px',
+            }}>
+              {PHASE_LABEL[phase]}
+            </span>
+          </div>
+          <div style={{ fontSize: '0.71rem', color: 'var(--text-muted)', marginTop: '2px' }}>
+            {isPassageMode ? `${project.book} ${project.passage_ref}` : project.passage_ref}
           </div>
           {mode === 'visual' && (
             <div style={{ fontSize: '0.71rem', color: 'var(--text-muted)', marginTop: '2px', lineHeight: 1.4 }}>
@@ -549,6 +641,42 @@ export default function VisaoGeralWorkspace({
           </div>
         </div>
       </div>
+
+      {/* ── Banner de fase (INVESTIGAR / COMUNICAR) ────────────────────────── */}
+      {phase !== 'preparar' && (
+        <div style={{
+          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+          gap: '0.75rem', flexWrap: 'wrap',
+          marginBottom: '1rem',
+          padding: '0.6rem 0.9rem',
+          background: PHASE_COLOR[phase] + '0C',
+          border: `1px solid ${PHASE_COLOR[phase]}25`,
+          borderRadius: '8px',
+        }}>
+          <span style={{ fontSize: '0.73rem', color: PHASE_COLOR[phase], lineHeight: 1.5 }}>
+            {inherited
+              ? `Conteúdo herdado da etapa ${phase === 'investigar' ? 'Preparar' : 'Investigar'}. Evolua livremente — as versões anteriores não são alteradas.`
+              : `Esta visão pode ser desenvolvida sem alterar versões anteriores.`}
+          </span>
+          <button
+            onClick={openEvolution}
+            disabled={evolutionLoading}
+            style={{
+              display: 'flex', alignItems: 'center', gap: '5px', flexShrink: 0,
+              background: 'transparent',
+              border: `1px solid ${PHASE_COLOR[phase]}40`,
+              borderRadius: '6px', padding: '4px 10px',
+              fontSize: '0.7rem', fontWeight: 600,
+              color: PHASE_COLOR[phase], cursor: evolutionLoading ? 'wait' : 'pointer',
+              fontFamily: 'inherit', transition: 'all 0.12s',
+            }}
+            onMouseEnter={e => { e.currentTarget.style.background = PHASE_COLOR[phase] + '15' }}
+            onMouseLeave={e => { e.currentTarget.style.background = 'transparent' }}
+          >
+            {evolutionLoading ? '…' : '✓ Ver evolução'}
+          </button>
+        </div>
+      )}
 
       {/* ── Structured ─────────────────────────────────────────────────────── */}
       {mode === 'structured' && (
@@ -1205,6 +1333,139 @@ export default function VisaoGeralWorkspace({
       {toast && (
         <div style={{ position: 'fixed', bottom: '1.5rem', right: '1.5rem', zIndex: 9998, background: '#18181B', color: '#FFF', padding: '0.65rem 1.1rem', borderRadius: '10px', fontSize: '0.82rem', fontWeight: 500, boxShadow: '0 8px 24px rgba(0,0,0,0.2)', animation: 'fadeIn 0.2s ease-out', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
           ✓ {toast}
+        </div>
+      )}
+
+      {/* ── Modal de evolução das fases ── */}
+      {showEvolution && evolutionData && (
+        <div
+          onClick={e => { if (e.target === e.currentTarget) setShowEvolution(false) }}
+          style={{
+            position: 'fixed', inset: 0, zIndex: 1001,
+            background: 'rgba(15,23,42,0.5)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            padding: '1rem',
+          }}
+        >
+          <div style={{
+            background: '#FFFFFF', borderRadius: '14px', border: '1px solid #E2E8F0',
+            width: '100%', maxWidth: '960px', maxHeight: '85vh',
+            display: 'flex', flexDirection: 'column', overflow: 'hidden',
+            boxShadow: '0 24px 64px rgba(0,0,0,0.18)',
+            animation: 'fadeIn 0.15s ease-out',
+          }}>
+            {/* Header */}
+            <div style={{
+              padding: '1rem 1.4rem', borderBottom: '1px solid #F1F5F9',
+              display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0,
+            }}>
+              <div>
+                <div style={{ fontSize: '1rem', fontWeight: 700, color: '#0F172A', letterSpacing: '-0.02em' }}>
+                  Evolução da Compreensão
+                </div>
+                <div style={{ fontSize: '0.75rem', color: '#94A3B8', marginTop: '2px' }}>
+                  {isPassageMode ? `${project.book} ${project.passage_ref}` : project.passage_ref}
+                </div>
+              </div>
+              <button onClick={() => setShowEvolution(false)} style={{
+                background: 'none', border: '1px solid #E2E8F0', borderRadius: '7px',
+                padding: '0.3rem 0.55rem', cursor: 'pointer', color: '#94A3B8', fontSize: '0.9rem',
+              }}>✕</button>
+            </div>
+
+            {/* Column headers */}
+            <div style={{
+              display: 'grid', gridTemplateColumns: '1fr 1fr 1fr',
+              borderBottom: '1px solid #F1F5F9', flexShrink: 0,
+            }}>
+              {(['preparar', 'investigar', 'comunicar'] as const).map(ph => (
+                <div key={ph} style={{
+                  padding: '0.6rem 1rem', textAlign: 'center',
+                  background: PHASE_COLOR[ph] + '08',
+                  borderRight: ph !== 'comunicar' ? '1px solid #F1F5F9' : 'none',
+                }}>
+                  <span style={{
+                    fontSize: '0.65rem', fontWeight: 700, textTransform: 'uppercase',
+                    letterSpacing: '0.08em', color: PHASE_COLOR[ph],
+                  }}>
+                    {ph === 'preparar' ? 'Preparar — Inicial' : ph === 'investigar' ? 'Investigar — Investigativa' : 'Comunicar — Homilética'}
+                  </span>
+                  {!evolutionData[ph] && (
+                    <div style={{ fontSize: '0.62rem', color: '#94A3B8', marginTop: '2px' }}>Não iniciada</div>
+                  )}
+                </div>
+              ))}
+            </div>
+
+            {/* Body */}
+            <div style={{ flex: 1, overflowY: 'auto' }}>
+              {nodes.filter(n => n.kind === 'card' && n.cardIds?.length).map(node => {
+                const cardId = node.cardIds![0]
+                const vals = {
+                  preparar:   evolutionData.preparar?.[cardId] ?? '',
+                  investigar: evolutionData.investigar?.[cardId] ?? '',
+                  comunicar:  evolutionData.comunicar?.[cardId] ?? '',
+                }
+                const anyValue = vals.preparar || vals.investigar || vals.comunicar
+                if (!anyValue) return null
+                return (
+                  <div key={node.key} style={{ borderBottom: '1px solid #F1F5F9' }}>
+                    {/* Row header */}
+                    <div style={{
+                      padding: '0.45rem 1rem', background: '#F8FAFC',
+                      display: 'flex', alignItems: 'center', gap: '0.5rem',
+                      borderBottom: '1px solid #F1F5F9',
+                    }}>
+                      <span style={{ fontSize: '0.75rem' }}>{node.icon}</span>
+                      <span style={{ fontSize: '0.72rem', fontWeight: 700, color: node.color, textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+                        {node.label}
+                      </span>
+                    </div>
+                    {/* 3 columns */}
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr' }}>
+                      {(['preparar', 'investigar', 'comunicar'] as const).map((ph, i) => {
+                        const val = vals[ph]
+                        const prevVal = ph === 'investigar' ? vals.preparar : ph === 'comunicar' ? vals.investigar : null
+                        const changed = prevVal !== null && val && val !== prevVal
+                        const isNew   = prevVal !== null && val && !prevVal
+                        return (
+                          <div key={ph} style={{
+                            padding: '0.75rem 1rem',
+                            borderRight: i < 2 ? '1px solid #F1F5F9' : 'none',
+                            background: isNew ? '#F0FDF4' : changed ? PHASE_COLOR[ph] + '05' : 'transparent',
+                            minHeight: '60px',
+                          }}>
+                            {val ? (
+                              <p style={{
+                                fontSize: '0.79rem', color: changed || isNew ? '#1E293B' : '#64748B',
+                                lineHeight: 1.55, margin: 0,
+                                fontWeight: changed || isNew ? 500 : 400,
+                              }}>
+                                {val}
+                              </p>
+                            ) : (
+                              <p style={{ fontSize: '0.72rem', color: '#CBD5E1', fontStyle: 'italic', margin: 0 }}>—</p>
+                            )}
+                          </div>
+                        )
+                      })}
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+
+            <div style={{
+              padding: '0.75rem 1.4rem', borderTop: '1px solid #F1F5F9',
+              flexShrink: 0, display: 'flex', justifyContent: 'flex-end',
+            }}>
+              <button onClick={() => setShowEvolution(false)} style={{
+                background: '#0F172A', border: 'none', borderRadius: '7px',
+                padding: '0.46rem 1.15rem', color: '#FFF', fontSize: '0.81rem',
+                fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit',
+              }}>Fechar</button>
+            </div>
+          </div>
         </div>
       )}
 
