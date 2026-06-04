@@ -3,7 +3,7 @@
 import { useState, useMemo, cloneElement, isValidElement } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
-import { LampasMarkIcon } from '@/components/LampasLogo'
+import { LampasLogo } from '@/components/LampasLogo'
 import type { User } from '@supabase/supabase-js'
 import type { Project, Profile } from '@/types/database'
 import {
@@ -393,7 +393,16 @@ export default function DashboardClient({ user, projects: initialProjects, profi
         height: '56px', display: 'flex', alignItems: 'center',
         justifyContent: 'space-between', background: 'var(--surface)',
       }}>
-        <LampasMarkIcon size={36} />
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '1px' }}>
+          <LampasLogo height={30} />
+          <span style={{
+            fontSize: '0.58rem', color: 'var(--text-muted)',
+            letterSpacing: '0.08em', textTransform: 'uppercase',
+            fontWeight: 500, lineHeight: 1, paddingLeft: '38px',
+          }}>
+            Estude. Interprete. Comunique.
+          </span>
+        </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
           <span style={{ color: 'var(--text-muted)', fontSize: '0.82rem' }}>{user.email}</span>
           <button onClick={() => router.push('/billing')} style={{

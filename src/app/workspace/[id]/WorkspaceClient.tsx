@@ -40,7 +40,7 @@ import {
   BookCopy, Link2, Paperclip, ChevronDown, ChevronRight, ChevronUp,
   type LucideIcon,
 } from 'lucide-react'
-import { LampasMarkIcon } from '@/components/LampasLogo'
+import { LampasLogo, LampasMarkIcon } from '@/components/LampasLogo'
 import {
   getModeConfig,
   STUDY_MODE_REGISTRY,
@@ -789,7 +789,7 @@ export default function WorkspaceClient({ user, project, initialSections }: Prop
                 display: 'flex', alignItems: 'center', justifyContent: 'space-between',
                 flexShrink: 0,
               }}>
-                <LampasMarkIcon size={28} />
+                <LampasLogo height={26} />
                 <button
                   onClick={() => { setSidebarCollapsed(true); localStorage.setItem('lampas_sidebar_c', '1') }}
                   title="Recolher menu"
