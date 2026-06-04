@@ -5,6 +5,7 @@ import { createClient } from '@/lib/supabase/client'
 import type { Project, Section } from '@/types/database'
 import type { SectionDef } from '@/lib/workspace-sections'
 import MarkdownRenderer from '@/components/MarkdownRenderer'
+import RichEditor from '@/components/RichEditor'
 import { ChevronDown, ChevronUp, MoreHorizontal } from 'lucide-react'
 
 type CardState = 'idle' | 'generating' | 'saving' | 'saved'
@@ -547,45 +548,38 @@ export default function SectionWorkspace({
               {expanded && (
                 <div style={{ paddingBottom: '1.25rem' }}>
                   {isEditing ? (
-                    <textarea
+                    <RichEditor
                       value={content}
-                      onChange={e => scheduleAutosave(card.id, e.target.value)}
+                      onChange={html => scheduleAutosave(card.id, html)}
                       placeholder={card.placeholder}
-                      rows={8}
+                      moduleColor={moduleColor}
+                      minHeight={200}
+                    />
+                  ) : (
+                    <div
                       style={{
                         width: '100%',
                         background: 'var(--surface)',
                         border: '1px solid var(--border)',
                         borderRadius: '8px',
                         padding: '1rem 1.1rem',
-                        color: 'var(--text-primary)',
-                        fontSize: '0.9rem', lineHeight: '1.78',
-                        resize: 'vertical', outline: 'none',
-                        fontFamily: 'var(--font-serif)',
                         boxSizing: 'border-box',
-                        caretColor: moduleColor,
-                        transition: 'border-color 0.15s, box-shadow 0.15s',
+                        minHeight: '5rem',
                       }}
-                      onFocus={e => {
-                        e.target.style.borderColor = `${moduleColor}60`
-                        e.target.style.boxShadow = `0 0 0 3px ${moduleColor}12`
-                      }}
-                      onBlur={e => {
-                        e.target.style.borderColor = 'var(--border)'
-                        e.target.style.boxShadow = 'none'
-                      }}
-                    />
-                  ) : (
-                    <div style={{
-                      width: '100%',
-                      background: 'var(--surface)',
-                      border: '1px solid var(--border)',
-                      borderRadius: '8px',
-                      padding: '1rem 1.1rem',
-                      boxSizing: 'border-box',
-                      minHeight: '5rem',
-                    }}>
-                      <MarkdownRenderer content={content} moduleColor={moduleColor} />
+                    >
+                      {content.trimStart().startsWith('<') ? (
+                        <div
+                          className="rich-content-display"
+                          dangerouslySetInnerHTML={{ __html: content }}
+                          style={{
+                            fontFamily: 'var(--font-serif), Georgia, serif',
+                            fontSize: '0.9rem', lineHeight: '1.78',
+                            color: 'var(--text-primary)',
+                          }}
+                        />
+                      ) : (
+                        <MarkdownRenderer content={content} moduleColor={moduleColor} />
+                      )}
                     </div>
                   )}
 

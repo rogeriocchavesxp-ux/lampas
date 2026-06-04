@@ -123,3 +123,20 @@ a:hover { color: var(--accent-hover); }
   color: var(--ai);
   margin-left: 1px;
 }
+
+/* Rich content display (read mode) */
+.rich-content-display p          { margin: 0 0 0.25em; }
+.rich-content-display ul,
+.rich-content-display ol         { padding-left: 1.5em; margin: 0.25em 0; }
+.rich-content-display li         { margin: 0.1em 0; }
+.rich-content-display blockquote {
+  border-left: 3px solid rgba(99,102,241,0.4);
+  padding-left: 0.85rem;
+  margin: 0.5em 0;
+  color: var(--text-secondary);
+  font-style: italic;
+}
+.rich-content-display strong { font-weight: 700; }
+.rich-content-display em     { font-style: italic; }
+.rich-content-display u      { text-decoration: underline; text-underline-offset: 2px; }
+.rich-content-display s      { text-decoration: line-through; }
