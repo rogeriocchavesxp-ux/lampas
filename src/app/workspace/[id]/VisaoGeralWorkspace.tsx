@@ -212,15 +212,15 @@ export default function VisaoGeralWorkspace({
   // Fase da visão geral (derivada do slug)
   const phase = sectionDef.slug === 'preparar_visao_geral' ? 'preparar'
     : sectionDef.slug === 'investigar_visao_geral' ? 'investigar'
-    : 'comunicar'
+    : 'pregar'
   const prevSlug = phase === 'investigar' ? 'preparar_visao_geral'
-    : phase === 'comunicar' ? 'investigar_visao_geral'
+    : phase === 'pregar' ? 'investigar_visao_geral'
     : null
   const PHASE_LABEL: Record<string, string> = {
-    preparar: 'Inicial', investigar: 'Investigativa', comunicar: 'Homilética',
+    preparar: 'Inicial', investigar: 'Investigativa', pregar: 'Homilética',
   }
   const PHASE_COLOR: Record<string, string> = {
-    preparar: '#D97706', investigar: '#2563EB', comunicar: '#7C3AED',
+    preparar: '#D97706', investigar: '#2563EB', pregar: '#7C3AED',
   }
 
   const [mode,         setMode]        = useState<'visual' | 'structured'>('visual')
@@ -250,7 +250,7 @@ export default function VisaoGeralWorkspace({
   const [evolutionData,   setEvolutionData]   = useState<{
     preparar?: Record<string, string>
     investigar?: Record<string, string>
-    comunicar?: Record<string, string>
+    pregar?: Record<string, string>
   } | null>(null)
 
   // ── Data — carrega do banco (fonte de verdade) e sincroniza localStorage ───
@@ -353,7 +353,7 @@ export default function VisaoGeralWorkspace({
     try {
       // Prioriza allVGSections passado pelo WorkspaceClient (evita fetch extra)
       const local = allVGSections ?? []
-      const slugsNeeded = ['preparar_visao_geral', 'investigar_visao_geral', 'comunicar_visao_geral']
+      const slugsNeeded = ['preparar_visao_geral', 'investigar_visao_geral', 'pregar_visao_geral']
       const hasFull = slugsNeeded.every(s => local.some(sec => sec.slug === s))
 
       let rows = local
@@ -368,8 +368,8 @@ export default function VisaoGeralWorkspace({
       const result: NonNullable<typeof evolutionData> = {}
       for (const s of rows) {
         const ph = s.slug === 'preparar_visao_geral' ? 'preparar'
-          : s.slug === 'investigar_visao_geral' ? 'investigar' : 'comunicar'
-        result[ph as 'preparar' | 'investigar' | 'comunicar'] =
+          : s.slug === 'investigar_visao_geral' ? 'investigar' : 'pregar'
+        result[ph as 'preparar' | 'investigar' | 'pregar'] =
           (s.content as { cards?: Record<string, string> })?.cards ?? {}
       }
       setEvolutionData(result)
@@ -1378,17 +1378,17 @@ export default function VisaoGeralWorkspace({
               display: 'grid', gridTemplateColumns: '1fr 1fr 1fr',
               borderBottom: '1px solid #F1F5F9', flexShrink: 0,
             }}>
-              {(['preparar', 'investigar', 'comunicar'] as const).map(ph => (
+              {(['preparar', 'investigar', 'pregar'] as const).map(ph => (
                 <div key={ph} style={{
                   padding: '0.6rem 1rem', textAlign: 'center',
                   background: PHASE_COLOR[ph] + '08',
-                  borderRight: ph !== 'comunicar' ? '1px solid #F1F5F9' : 'none',
+                  borderRight: ph !== 'pregar' ? '1px solid #F1F5F9' : 'none',
                 }}>
                   <span style={{
                     fontSize: '0.65rem', fontWeight: 700, textTransform: 'uppercase',
                     letterSpacing: '0.08em', color: PHASE_COLOR[ph],
                   }}>
-                    {ph === 'preparar' ? 'Preparar — Inicial' : ph === 'investigar' ? 'Investigar — Investigativa' : 'Comunicar — Homilética'}
+                    {ph === 'preparar' ? 'Preparar — Inicial' : ph === 'investigar' ? 'Investigar — Investigativa' : 'Pregar — Homilética'}
                   </span>
                   {!evolutionData[ph] && (
                     <div style={{ fontSize: '0.62rem', color: '#94A3B8', marginTop: '2px' }}>Não iniciada</div>
@@ -1404,9 +1404,9 @@ export default function VisaoGeralWorkspace({
                 const vals = {
                   preparar:   evolutionData.preparar?.[cardId] ?? '',
                   investigar: evolutionData.investigar?.[cardId] ?? '',
-                  comunicar:  evolutionData.comunicar?.[cardId] ?? '',
+                  pregar:     evolutionData.pregar?.[cardId] ?? '',
                 }
-                const anyValue = vals.preparar || vals.investigar || vals.comunicar
+                const anyValue = vals.preparar || vals.investigar || vals.pregar
                 if (!anyValue) return null
                 return (
                   <div key={node.key} style={{ borderBottom: '1px solid #F1F5F9' }}>
@@ -1423,9 +1423,9 @@ export default function VisaoGeralWorkspace({
                     </div>
                     {/* 3 columns */}
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr' }}>
-                      {(['preparar', 'investigar', 'comunicar'] as const).map((ph, i) => {
+                      {(['preparar', 'investigar', 'pregar'] as const).map((ph, i) => {
                         const val = vals[ph]
-                        const prevVal = ph === 'investigar' ? vals.preparar : ph === 'comunicar' ? vals.investigar : null
+                        const prevVal = ph === 'investigar' ? vals.preparar : ph === 'pregar' ? vals.investigar : null
                         const changed = prevVal !== null && val && val !== prevVal
                         const isNew   = prevVal !== null && val && !prevVal
                         return (

@@ -75,7 +75,7 @@ const GROUP_SUBTITLES: Record<string, string> = {
   preparar_impressoes:  'Notas rápidas e perguntas',
   preparar_visao_geral:    'Tema, estrutura e clímax',
   investigar_visao_geral:  'Compreensão refinada após investigação',
-  comunicar_visao_geral:   'Síntese final para comunicação',
+  pregar_visao_geral:   'Síntese final para comunicação',
   // Comunicar — Sermão
   sermao_dispositio:    'Organização e estrutura',
   sermao_elocutio:      'Forma de comunicação',
@@ -104,7 +104,7 @@ const GROUP_ICONS: Record<string, LucideIcon> = {
   preparar_impressoes:       FileText,
   preparar_visao_geral:      Crosshair,
   investigar_visao_geral:    Crosshair,
-  comunicar_visao_geral:     Crosshair,
+  pregar_visao_geral:     Crosshair,
   // Investigar
   contextual:                Landmark,
   textual:                   Languages,
@@ -1119,14 +1119,14 @@ export default function WorkspaceClient({ user, project, initialSections }: Prop
                 onUpdate={handleSectionUpdate}
                 onAskAI={handleAskAI}
               />
-            ) : (activeSlug === 'preparar_visao_geral' || activeSlug === 'investigar_visao_geral' || activeSlug === 'comunicar_visao_geral') && activeDef ? (
+            ) : (activeSlug === 'preparar_visao_geral' || activeSlug === 'investigar_visao_geral' || activeSlug === 'pregar_visao_geral') && activeDef ? (
               <VisaoGeralWorkspace
                 key={activeSlug}
                 sectionDef={activeDef}
                 project={project}
                 userId={user.id}
                 existingSection={activeSection}
-                allVGSections={sections.filter(s => s.slug === 'preparar_visao_geral' || s.slug === 'investigar_visao_geral' || s.slug === 'comunicar_visao_geral')}
+                allVGSections={sections.filter(s => s.slug === 'preparar_visao_geral' || s.slug === 'investigar_visao_geral' || s.slug === 'pregar_visao_geral')}
                 onUpdate={handleSectionUpdate}
                 onAskAI={handleAskAI}
                 onOpenBible={() => setBibleOpen(true)}

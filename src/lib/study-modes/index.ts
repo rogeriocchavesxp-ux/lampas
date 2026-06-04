@@ -143,7 +143,7 @@ const EXEGESE_BIBLICA: StudyModeConfig = {
           id: 'sermao', label: 'Sermão', subtitle: 'Proclamação pública',
           color: 'var(--ai)', bgActive: 'rgba(139,92,246,0.08)',
           groups: [
-            { id: 'comunicar_visao_geral', label: 'Visão Geral' },
+            { id: 'pregar_visao_geral', label: 'Visão Geral' },
             { id: 'sermao_dispositio',   label: 'Estrutura' },
             { id: 'sermao_elocutio',     label: 'Linguagem' },
             { id: 'sermao_memoria',      label: 'Internalização' },
@@ -236,7 +236,7 @@ const SERMAO: StudyModeConfig = {
         id: 'sermao', label: 'Sermão', subtitle: 'Proclamação pública',
         color: '#7C3AED', bgActive: 'rgba(124,58,237,0.08)',
         groups: [
-          { id: 'comunicar_visao_geral', label: 'Visão Geral' },
+          { id: 'pregar_visao_geral', label: 'Visão Geral' },
           { id: 'sermao_dispositio',   label: 'Estrutura' },
           { id: 'sermao_elocutio',     label: 'Linguagem' },
           { id: 'sermao_memoria',      label: 'Internalização' },
@@ -303,7 +303,7 @@ const DEVOCIONAL: StudyModeConfig = {
         id: 'devocional', label: 'Devocional', subtitle: 'Reflexão e resposta',
         color: '#9A3412', bgActive: 'rgba(154,52,18,0.08)',
         groups: [
-          { id: 'comunicar_visao_geral',   label: 'Visão Geral' },
+          { id: 'pregar_visao_geral',   label: 'Visão Geral' },
           { id: 'devocional_dispositio',   label: 'Reflexão' },
           { id: 'devocional_elocutio',     label: 'Resposta' },
           { id: 'devocional_pronuntiatio', label: 'Compromisso' },
@@ -365,7 +365,7 @@ const ESTUDO_BIBLICO: StudyModeConfig = {
         id: 'eb_ensinar_mode', label: 'Ensinar', subtitle: 'Desenvolvimento e perguntas',
         color: '#10B981', bgActive: 'rgba(16,185,129,0.08)',
         groups: [
-          { id: 'comunicar_visao_geral', label: 'Visão Geral' },
+          { id: 'pregar_visao_geral', label: 'Visão Geral' },
           { id: 'eb_ensinar',  label: 'Desenvolvimento e Perguntas' },
           { id: 'eb_aplicar',  label: 'Aplicações' },
           { id: 'eb_recursos', label: 'Material' },
@@ -431,7 +431,7 @@ const ESTUDO_DOUTRINARIO: StudyModeConfig = {
         id: 'edt_aplicar_mode', label: 'Aplicação', subtitle: 'Prática e fontes',
         color: 'var(--ai)', bgActive: 'rgba(139,92,246,0.08)',
         groups: [
-          { id: 'comunicar_visao_geral', label: 'Visão Geral' },
+          { id: 'pregar_visao_geral', label: 'Visão Geral' },
           { id: 'edt_aplicacoes_grp',  label: 'Aplicações' },
           { id: 'edt_bibliografia_grp', label: 'Bibliografia' },
         ],
@@ -494,7 +494,7 @@ const ESTUDO_TEMATICO: StudyModeConfig = {
         id: 'et_formular_mode', label: 'Formulação', subtitle: 'Sistema e prática',
         color: 'var(--ai)', bgActive: 'rgba(139,92,246,0.08)',
         groups: [
-          { id: 'comunicar_visao_geral', label: 'Visão Geral' },
+          { id: 'pregar_visao_geral', label: 'Visão Geral' },
           { id: 'et_sistematica_grp', label: 'Teologia Sistemática' },
           { id: 'et_aplicacoes_grp',  label: 'Aplicações' },
         ],
@@ -562,7 +562,7 @@ const ESTUDO_DE_CARTA: StudyModeConfig = {
         id: 'sermao', label: 'Sermão', subtitle: 'Proclamação',
         color: 'var(--ai)', bgActive: 'rgba(139,92,246,0.08)',
         groups: [
-          { id: 'comunicar_visao_geral', label: 'Visão Geral' },
+          { id: 'pregar_visao_geral', label: 'Visão Geral' },
           { id: 'sermao_dispositio', label: 'Estrutura' },
           { id: 'sermao_elocutio',   label: 'Linguagem' },
         ],
@@ -625,7 +625,7 @@ const COMENTARIO_EXEGETICO: StudyModeConfig = {
         id: 'comentario', label: 'Comentário', subtitle: 'Versículo a versículo',
         color: '#F97316', bgActive: 'rgba(249,115,22,0.08)',
         groups: [
-          { id: 'comunicar_visao_geral',  label: 'Visão Geral' },
+          { id: 'pregar_visao_geral',  label: 'Visão Geral' },
           { id: 'comentario_expositivo',  label: 'Comentário Expositivo' },
         ],
       }],

@@ -143,12 +143,12 @@ export const PREPARE_SECTIONS: SectionDef[] = [
     ],
   },
   {
-    slug: 'comunicar_visao_geral',
+    slug: 'pregar_visao_geral',
     title: 'Visão Geral Homilética',
     shortTitle: 'Visão Geral',
     phase: 'comunicar',
     module: 'inventio',
-    group: 'comunicar_visao_geral',
+    group: 'pregar_visao_geral',
     groupLabel: 'Síntese final para comunicação',
     order: 5,
     objective:
