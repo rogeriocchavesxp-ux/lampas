@@ -46,7 +46,6 @@ import {
   STUDY_MODE_REGISTRY,
   type NavPhase,
 } from '@/lib/study-modes'
-import pkg from '../../../../package.json'
 
 interface Props {
   user: User
@@ -790,7 +789,7 @@ export default function WorkspaceClient({ user, project, initialSections }: Prop
             /* ── Sidebar expanded ────────────────────────────────── */
             <>
               <div style={{
-                padding: '0.58rem 0.7rem 0.5rem',
+                padding: '0.85rem 0.75rem 0.7rem',
                 borderBottom: '1px solid var(--border-subtle)',
                 display: 'flex', alignItems: 'center', justifyContent: 'space-between',
                 flexShrink: 0,
@@ -822,9 +821,9 @@ export default function WorkspaceClient({ user, project, initialSections }: Prop
                     {/* ── Connector line between phases ──────────── */}
                     {phaseIdx > 0 && (
                       <div style={{
-                        width: '2px', height: '6px',
+                        width: '2px', height: '14px',
                         background: 'var(--border)',
-                        marginLeft: '17px',
+                        marginLeft: '19px',
                         borderRadius: '1px',
                       }} />
                     )}
@@ -835,10 +834,10 @@ export default function WorkspaceClient({ user, project, initialSections }: Prop
                       style={{
                         width: '100%', border: 'none', cursor: 'pointer',
                         background: 'transparent', textAlign: 'left', fontFamily: 'inherit',
-                        padding: '6px 10px 6px 8px',
-                        display: 'flex', alignItems: 'center', gap: '8px',
+                        padding: '12px 12px 12px 10px',
+                        display: 'flex', alignItems: 'flex-start', gap: '10px',
                         transition: 'background 0.15s',
-                        borderRadius: '7px',
+                        borderRadius: '8px',
                       }}
                       onMouseEnter={e => { if (!phaseOpen) e.currentTarget.style.background = 'rgba(0,0,0,0.03)' }}
                       onMouseLeave={e => { if (!phaseOpen) e.currentTarget.style.background = 'transparent' }}
@@ -848,7 +847,7 @@ export default function WorkspaceClient({ user, project, initialSections }: Prop
                         width: '20px', height: '20px', borderRadius: '50%',
                         background: phaseOpen ? phase.color : `${phase.color}18`,
                         border: `1.5px solid ${phaseOpen ? phase.color : phase.color + '55'}`,
-                        flexShrink: 0, marginTop: '1px',
+                        flexShrink: 0, marginTop: '2px',
                         display: 'flex', alignItems: 'center', justifyContent: 'center',
                         boxShadow: phaseOpen ? `0 0 0 3px ${phase.color}15` : 'none',
                         transition: 'all 0.2s',
@@ -865,8 +864,8 @@ export default function WorkspaceClient({ user, project, initialSections }: Prop
                       <div style={{ flex: 1, minWidth: 0 }}>
                         {/* Main title */}
                         <div style={{
-                          fontSize: '0.82rem', fontWeight: 700,
-                          letterSpacing: '0.03em', lineHeight: 1.15,
+                          fontSize: '1.0rem', fontWeight: 700,
+                          letterSpacing: '-0.01em', lineHeight: 1.15,
                           color: phaseOpen ? phase.color : 'var(--text-primary)',
                           transition: 'color 0.15s',
                         }}>
@@ -874,9 +873,8 @@ export default function WorkspaceClient({ user, project, initialSections }: Prop
                         </div>
                         {/* Description */}
                         <div style={{
-                          fontSize: '0.65rem', color: 'var(--text-muted)',
-                          marginTop: '2px', lineHeight: 1.25, fontWeight: 400,
-                          overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+                          fontSize: '0.68rem', color: 'var(--text-muted)',
+                          marginTop: '3px', lineHeight: 1.4, fontWeight: 400,
                         }}>
                           {phase.description}
                         </div>
@@ -884,8 +882,8 @@ export default function WorkspaceClient({ user, project, initialSections }: Prop
 
                       {/* Chevron */}
                       {phaseOpen
-                        ? <ChevronUp size={12} strokeWidth={1.75} style={{ flexShrink: 0, color: 'var(--text-muted)', opacity: 0.5 }} />
-                        : <ChevronDown size={12} strokeWidth={1.75} style={{ flexShrink: 0, color: 'var(--text-muted)', opacity: 0.4 }} />
+                        ? <ChevronUp size={13} strokeWidth={1.75} style={{ flexShrink: 0, color: 'var(--text-muted)', opacity: 0.5, marginTop: '5px' }} />
+                        : <ChevronDown size={13} strokeWidth={1.75} style={{ flexShrink: 0, color: 'var(--text-muted)', opacity: 0.4, marginTop: '5px' }} />
                       }
                     </button>
 
@@ -894,7 +892,7 @@ export default function WorkspaceClient({ user, project, initialSections }: Prop
                       <div style={{
                         marginLeft: '20px',
                         borderLeft: `2px solid ${phase.color}22`,
-                        paddingBottom: '4px',
+                        paddingBottom: '6px',
                       }}>
                         {phase.modes.map((mode, modeIdx) => {
                           const modeOpen = singleMode || expandedCanons.has(mode.id)
@@ -913,30 +911,30 @@ export default function WorkspaceClient({ user, project, initialSections }: Prop
                                       border: modeOpen ? `1px solid ${mode.color}25` : '1px solid transparent',
                                       cursor: 'pointer',
                                       background: modeOpen ? mode.bgActive : 'transparent',
-                                      borderRadius: '7px',
+                                      borderRadius: '9px',
                                       textAlign: 'left', fontFamily: 'inherit',
-                                      padding: '0.34rem 0.52rem',
-                                      marginTop: modeIdx > 0 ? '0.14rem' : '0',
-                                      display: 'flex', alignItems: 'center', gap: '0.4rem',
+                                      padding: '0.5rem 0.6rem',
+                                      marginTop: modeIdx > 0 ? '0.25rem' : '0',
+                                      display: 'flex', alignItems: 'center', gap: '0.5rem',
                                       transition: 'background 0.12s, border-color 0.12s',
                                     }}
                                     onMouseEnter={e => { if (!modeOpen) e.currentTarget.style.background = 'rgba(0,0,0,0.04)' }}
                                     onMouseLeave={e => { if (!modeOpen) e.currentTarget.style.background = 'transparent' }}
                                   >
                                     {ModeIconEl && (
-                                      <ModeIconEl size={12} strokeWidth={1.8} style={{ flexShrink: 0, color: mode.color, opacity: modeOpen ? 1 : 0.65 }} />
+                                      <ModeIconEl size={14} strokeWidth={1.8} style={{ flexShrink: 0, color: mode.color, opacity: modeOpen ? 1 : 0.65 }} />
                                     )}
                                     <div style={{ flex: 1, minWidth: 0 }}>
-                                      <div style={{ fontSize: '0.72rem', fontWeight: 650, color: modeOpen ? mode.color : 'var(--text-secondary)', lineHeight: 1.15 }}>
+                                      <div style={{ fontSize: '0.78rem', fontWeight: 600, color: modeOpen ? mode.color : 'var(--text-secondary)', lineHeight: 1.25 }}>
                                         {mode.label}
                                       </div>
-                                      <div style={{ fontSize: '0.58rem', color: 'var(--text-muted)', lineHeight: 1.15, marginTop: '0.02rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                                      <div style={{ fontSize: '0.66rem', color: 'var(--text-muted)', lineHeight: 1.2, marginTop: '0.08rem' }}>
                                         {mode.subtitle}
                                       </div>
                                     </div>
                                     {modeOpen
-                                      ? <ChevronDown size={10} style={{ flexShrink: 0, color: 'var(--text-muted)', opacity: 0.6 }} />
-                                      : <ChevronRight size={10} style={{ flexShrink: 0, color: 'var(--text-muted)', opacity: 0.4 }} />
+                                      ? <ChevronDown size={11} style={{ flexShrink: 0, color: 'var(--text-muted)', opacity: 0.6 }} />
+                                      : <ChevronRight size={11} style={{ flexShrink: 0, color: 'var(--text-muted)', opacity: 0.4 }} />
                                     }
                                   </button>
                                 )
@@ -944,7 +942,7 @@ export default function WorkspaceClient({ user, project, initialSections }: Prop
 
                               {/* Groups */}
                               {modeOpen && (
-                                <div style={{ paddingBottom: '0.05rem' }}>
+                                <div style={{ paddingBottom: '0.15rem' }}>
                                   {mode.groups.map((group, groupIdx) => {
                                     const groupOpen      = expandedGroups.has(group.id)
                                     const isUtilityGroup = isToolSlug(group.id) || group.id === 'colagens' || group.id === 'comentario_expositivo'
@@ -966,7 +964,7 @@ export default function WorkspaceClient({ user, project, initialSections }: Prop
                                       ?? ''
 
                                     return (
-                                      <div key={group.id} style={{ marginBottom: groupOpen ? '0.22rem' : 0 }}>
+                                      <div key={group.id} style={{ marginBottom: groupOpen ? '0.45rem' : 0 }}>
 
                                         {/* ── Group header ── */}
                                         {(() => {
@@ -982,8 +980,8 @@ export default function WorkspaceClient({ user, project, initialSections }: Prop
                                                 background: isActive ? mode.bgActive : 'transparent',
                                                 borderRadius: '10px',
                                                 textAlign: 'left', fontFamily: 'inherit',
-                                                padding: '0.45rem 0.6rem',
-                                                display: 'flex', alignItems: 'center', gap: '0.5rem',
+                                                padding: '0.52rem 0.65rem',
+                                                display: 'flex', alignItems: 'center', gap: '0.55rem',
                                                 transition: 'background 0.12s, border-color 0.12s, box-shadow 0.12s',
                                                 boxShadow: isActive ? '0 1px 3px rgba(0,0,0,0.06)' : 'none',
                                               }}
@@ -1014,7 +1012,7 @@ export default function WorkspaceClient({ user, project, initialSections }: Prop
 
                                               <div style={{ flex: 1, minWidth: 0 }}>
                                                 <div style={{
-                                                  fontSize: '0.79rem', fontWeight: 600, lineHeight: 1.25,
+                                                  fontSize: '0.8rem', fontWeight: 600, lineHeight: 1.3,
                                                   color: highlight ? mode.color : 'var(--text-primary)',
                                                   transition: 'color 0.15s',
                                                   overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
@@ -1024,8 +1022,8 @@ export default function WorkspaceClient({ user, project, initialSections }: Prop
                                                 </div>
                                                 {groupSub && (
                                                   <div style={{
-                                                    fontSize: '0.64rem', color: 'var(--text-muted)',
-                                                    marginTop: '0.1rem', lineHeight: 1.25,
+                                                    fontSize: '0.67rem', color: 'var(--text-muted)',
+                                                    marginTop: '0.1rem', lineHeight: 1.3,
                                                     overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
                                                   }}>
                                                     {groupSub}
@@ -1042,7 +1040,7 @@ export default function WorkspaceClient({ user, project, initialSections }: Prop
                                               )}
                                               {!isDirect && done > 0 && !isActive && (
                                                 <span style={{
-                                                  fontSize: '0.56rem', flexShrink: 0, fontWeight: 700,
+                                                  fontSize: '0.6rem', flexShrink: 0, fontWeight: 600,
                                                   color: done === total ? 'var(--success)' : mode.color,
                                                 }}>
                                                   {done === total ? '✓' : `${done}/${total}`}
@@ -1050,8 +1048,8 @@ export default function WorkspaceClient({ user, project, initialSections }: Prop
                                               )}
                                               {!isDirect && (
                                                 groupOpen
-                                                  ? <ChevronDown size={10} style={{ flexShrink: 0, color: 'var(--text-muted)', opacity: 0.55 }} />
-                                                  : <ChevronRight size={10} style={{ flexShrink: 0, color: 'var(--text-muted)', opacity: 0.4 }} />
+                                                  ? <ChevronDown size={12} style={{ flexShrink: 0, color: 'var(--text-muted)', opacity: 0.55 }} />
+                                                  : <ChevronRight size={12} style={{ flexShrink: 0, color: 'var(--text-muted)', opacity: 0.4 }} />
                                               )}
                                             </button>
                                           )
@@ -1060,9 +1058,9 @@ export default function WorkspaceClient({ user, project, initialSections }: Prop
                                         {/* ── Section list (with vertical line) ── */}
                                         {!isDirect && groupOpen && (
                                           <div style={{
-                                            marginLeft: '1.2rem',
+                                            marginLeft: '1.45rem',
                                             borderLeft: `1px solid var(--border-subtle)`,
-                                            marginBottom: '0.08rem',
+                                            marginBottom: '0.15rem',
                                           }}>
                                             {secs.map((sd, secIdx) => {
                                               const sec      = sections.find(s => s.slug === sd.slug)
@@ -1075,22 +1073,22 @@ export default function WorkspaceClient({ user, project, initialSections }: Prop
                                                   style={{
                                                     width: '100%', border: 'none', fontFamily: 'inherit',
                                                     background: isActive ? `${mode.color}10` : 'transparent',
-                                                    padding: '0.18rem 0.55rem 0.18rem 0.42rem',
-                                                    display: 'flex', alignItems: 'center', gap: '0.35rem',
+                                                    padding: '0.28rem 0.65rem 0.28rem 0.55rem',
+                                                    display: 'flex', alignItems: 'center', gap: '0.45rem',
                                                     cursor: 'pointer', textAlign: 'left',
-                                                    borderRadius: '5px',
+                                                    borderRadius: '7px',
                                                     transition: 'background 0.1s',
                                                   }}
                                                   onMouseEnter={e => { if (!isActive) e.currentTarget.style.background = 'rgba(0,0,0,0.04)' }}
                                                   onMouseLeave={e => { if (!isActive) e.currentTarget.style.background = 'transparent' }}
                                                 >
                                                   <span style={{
-                                                    width: '3px', height: '3px', borderRadius: '50%',
+                                                    width: '4px', height: '4px', borderRadius: '50%',
                                                     background: isActive ? mode.color : 'var(--border)',
                                                     flexShrink: 0, transition: 'background 0.15s',
                                                   }} />
                                                   <span style={{
-                                                    flex: 1, fontSize: '0.69rem', lineHeight: 1.22,
+                                                    flex: 1, fontSize: '0.74rem', lineHeight: 1.35,
                                                     color: isActive ? mode.color : 'var(--text-secondary)',
                                                     fontWeight: isActive ? 600 : 400,
                                                     overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
@@ -1098,7 +1096,7 @@ export default function WorkspaceClient({ user, project, initialSections }: Prop
                                                     {sd.shortTitle}
                                                   </span>
                                                   <span style={{
-                                                    width: '4px', height: '4px', borderRadius: '50%',
+                                                    width: '5px', height: '5px', borderRadius: '50%',
                                                     background: dot, flexShrink: 0,
                                                     opacity: isActive ? 1 : 0.5,
                                                   }} />
@@ -1116,19 +1114,19 @@ export default function WorkspaceClient({ user, project, initialSections }: Prop
                                                     width: '100%', border: 'none', fontFamily: 'inherit',
                                                     background: isSynActive ? mode.bgActive : 'transparent',
                                                     borderLeft: `2px solid ${isSynActive ? mode.color : 'transparent'}`,
-                                                    padding: '0.18rem 0.35rem 0.18rem 0.42rem',
-                                                    display: 'flex', alignItems: 'center', gap: '0.28rem',
+                                                    padding: '0.28rem 0.4rem 0.28rem 0.52rem',
+                                                    display: 'flex', alignItems: 'center', gap: '0.32rem',
                                                     cursor: 'pointer', textAlign: 'left',
-                                                    marginLeft: '-1px', marginTop: '0.08rem',
+                                                    marginLeft: '-1px', marginTop: '0.12rem',
                                                     borderTop: '1px solid var(--border-subtle)',
                                                     transition: 'background 0.1s',
                                                   }}
                                                   onMouseEnter={e => { if (!isSynActive) e.currentTarget.style.background = 'rgba(0,0,0,0.04)' }}
                                                   onMouseLeave={e => { if (!isSynActive) e.currentTarget.style.background = 'transparent' }}
                                                 >
-                                                  <span style={{ fontSize: '0.56rem', color: isSynActive ? mode.color : 'var(--text-muted)', flexShrink: 0, lineHeight: 1 }}>→</span>
+                                                  <span style={{ fontSize: '0.62rem', color: isSynActive ? mode.color : 'var(--text-muted)', flexShrink: 0, lineHeight: 1 }}>→</span>
                                                   <span style={{
-                                                    flex: 1, fontSize: '0.62rem', lineHeight: 1.2,
+                                                    flex: 1, fontSize: '0.68rem', lineHeight: 1.3,
                                                     color: isSynActive ? mode.color : 'var(--text-muted)',
                                                     fontStyle: 'italic',
                                                     overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
@@ -1157,17 +1155,6 @@ export default function WorkspaceClient({ user, project, initialSections }: Prop
                 )
               })}
 
-              {/* ── Version footer ── */}
-              <div style={{
-                marginTop: 'auto',
-                padding: '0.6rem 1rem 0.4rem',
-                borderTop: '1px solid var(--border-subtle)',
-                textAlign: 'center',
-              }}>
-                <span style={{ fontSize: '0.58rem', color: 'var(--text-muted)', fontWeight: 500, letterSpacing: '0.04em' }}>
-                  v{pkg.version}
-                </span>
-              </div>
             </>
           )}
         </nav>
