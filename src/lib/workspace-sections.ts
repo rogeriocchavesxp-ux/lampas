@@ -4,6 +4,8 @@ import { ESTUDO_BIBLICO_SECTIONS } from './estudo-biblico-sections'
 import { ESTUDO_DOUTRINARIO_SECTIONS } from './estudo-doutrinario-sections'
 import { ESTUDO_TEMATICO_SECTIONS } from './estudo-tematico-sections'
 import { ESTUDO_CARTA_SECTIONS } from './estudo-carta-sections'
+import { ESTUDO_SALMOS_SABEDORIA_SECTIONS } from './estudo-salmos-sabedoria-sections'
+import { ESTUDO_PROFECIAS_SECTIONS } from './estudo-profecias-sections'
 import { PESQUISA_TEOLOGICA_SECTIONS } from './pesquisa-teologica-sections'
 
 export interface CardDef {
@@ -1372,6 +1374,8 @@ WORKSPACE_SECTIONS.push(...ESTUDO_BIBLICO_SECTIONS)
 WORKSPACE_SECTIONS.push(...ESTUDO_DOUTRINARIO_SECTIONS)
 WORKSPACE_SECTIONS.push(...ESTUDO_TEMATICO_SECTIONS)
 WORKSPACE_SECTIONS.push(...ESTUDO_CARTA_SECTIONS)
+WORKSPACE_SECTIONS.push(...ESTUDO_SALMOS_SABEDORIA_SECTIONS)
+WORKSPACE_SECTIONS.push(...ESTUDO_PROFECIAS_SECTIONS)
 WORKSPACE_SECTIONS.push(...PESQUISA_TEOLOGICA_SECTIONS)
 
 export const INVENTIO_GROUPS = [

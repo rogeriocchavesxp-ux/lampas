@@ -115,6 +115,25 @@ const MODE_NODES_MAP: Record<string, NodeDef[]> = {
     { key: 'vg_aplicacoes',  label: 'Aplicações',     icon: '🎯', angle: 167,  color: '#059669', bg: '#F0FDF4', kind: 'card', cardIds: ['vg_aplicacoes'] },
     { key: 'vg_topicos',     label: 'Para Discussão', icon: '💬', angle: 219,  color: '#475569', bg: '#F8FAFC', kind: 'card', cardIds: ['vg_topicos'] },
   ],
+  estudo_de_salmos_sabedoria: [
+    { key: 'ss_tipo',      label: 'Tipo de Poema',     icon: '📜', angle: -90,  color: '#6D28D9', bg: '#F5F3FF', kind: 'card', cardIds: ['vg_tipo'] },
+    { key: 'ss_paralel',   label: 'Paralelismo',        icon: '⇌',  angle: -39,  color: '#7C3AED', bg: '#EDE9FE', kind: 'card', cardIds: ['vg_paralelismo'] },
+    { key: 'ss_estrutura', label: 'Estrutura',          icon: '⊞',  angle: 13,   color: '#8B5CF6', bg: '#EDE9FE', kind: 'card', cardIds: ['vg_estrutura'] },
+    { key: 'ss_imagens',   label: 'Imagens',            icon: '🎨', angle: 64,   color: '#6D28D9', bg: '#F5F3FF', kind: 'card', cardIds: ['vg_imagens'] },
+    { key: 'ss_movimento', label: 'Movimento Emocional',icon: '⟶', angle: 116,  color: '#D97706', bg: '#FFFBEB', kind: 'card', cardIds: ['vg_movimento'] },
+    { key: 'ss_tema',      label: 'Tema Central',       icon: '💡', angle: 167,  color: '#B45309', bg: '#FEF3C7', kind: 'card', cardIds: ['vg_tema'] },
+    { key: 'ss_adoracao',  label: 'Adoração / Resposta',icon: '🙏', angle: 219,  color: '#059669', bg: '#F0FDF4', kind: 'card', cardIds: ['vg_adoracao'] },
+  ],
+  estudo_de_profecias: [
+    { key: 'pf_contexto',  label: 'Contexto Hist.',    icon: '📅', angle: -90,  color: '#B45309', bg: '#FEF3C7', kind: 'card', cardIds: ['vg_contexto'] },
+    { key: 'pf_oraculo',   label: 'O Oráculo',         icon: '📣', angle: -45,  color: '#D97706', bg: '#FFFBEB', kind: 'card', cardIds: ['vg_oraculo'] },
+    { key: 'pf_destinat',  label: 'Destinatários',     icon: '👥', angle: 0,    color: '#92400E', bg: '#FEF3C7', kind: 'card', cardIds: ['vg_destinatarios'] },
+    { key: 'pf_simbolos',  label: 'Símbolos',          icon: '🔮', angle: 45,   color: '#B45309', bg: '#FEF3C7', kind: 'card', cardIds: ['vg_simbolos'] },
+    { key: 'pf_climax',    label: 'Clímax',            icon: '✦',  angle: 90,   color: '#D97706', bg: '#FFFBEB', kind: 'card', cardIds: ['vg_climax'] },
+    { key: 'pf_cumprim',   label: 'Cumprimento',       icon: '✓',  angle: 135,  color: '#059669', bg: '#F0FDF4', kind: 'card', cardIds: ['vg_cumprimento'] },
+    { key: 'pf_eschato',   label: 'Escatologia',       icon: '⌚', angle: 180,  color: '#1E40AF', bg: '#EFF6FF', kind: 'card', cardIds: ['vg_escatologia'] },
+    { key: 'pf_reino',     label: 'Reino de Deus',     icon: '👑', angle: -135, color: '#4F46E5', bg: '#EEF2FF', kind: 'card', cardIds: ['vg_reino'] },
+  ],
   estudo_doutrinario: [
     { key: 'vg_definicao',     label: 'Definição',       icon: '📖', angle: -90, color: '#1E40AF', bg: '#EFF6FF', kind: 'card', cardIds: ['vg_definicao'] },
     { key: 'vg_questao',       label: 'Questão Central', icon: '❓', angle: -30, color: '#2563EB', bg: '#EFF6FF', kind: 'card', cardIds: ['vg_questao'] },
@@ -159,14 +178,16 @@ function buildVGNodePrompt(project: Project, node: NodeDef): string {
   const mode = project.study_mode ?? 'exegese_biblica'
 
   const prompts: Record<string, string> = {
-    exegese_biblica:     `Analise ${ref} e liste os principais elementos de "${node.label}" na passagem, com breve nota exegética sobre cada um.`,
-    sermao:              `Analisando ${ref} para pregação, desenvolva "${node.label}" com foco no potencial homilético do texto.`,
-    devocional:          `Lendo ${ref} devocionalmente, desenvolva "${node.label}" como reflexão espiritual formativa.`,
-    estudo_biblico:      `Para um estudo bíblico sobre ${ref}, desenvolva "${node.label}" de forma didática e participativa.`,
-    estudo_doutrinario:  `Sobre a doutrina "${ref}", desenvolva "${node.label}" com precisão teológica reformada.`,
-    estudo_tematico:     `Para o estudo temático sobre "${ref}", desenvolva "${node.label}" rastreando sua progressão canônica.`,
-    estudo_de_carta:     `Para o estudo de ${ref}, desenvolva "${node.label}" em seu contexto epistolar e argumentativo.`,
-    comentario_exegetico:`Para um comentário exegético de ${ref}, desenvolva "${node.label}" com rigor analítico.`,
+    exegese_biblica:            `Analise ${ref} e liste os principais elementos de "${node.label}" na passagem, com breve nota exegética sobre cada um.`,
+    sermao:                     `Analisando ${ref} para pregação, desenvolva "${node.label}" com foco no potencial homilético do texto.`,
+    devocional:                 `Lendo ${ref} devocionalmente, desenvolva "${node.label}" como reflexão espiritual formativa.`,
+    estudo_biblico:             `Para um estudo bíblico sobre ${ref}, desenvolva "${node.label}" de forma didática e participativa.`,
+    estudo_de_salmos_sabedoria: `Analisando o poema de ${ref}, desenvolva "${node.label}" com atenção à estrutura poética, paralelismo e teologia da adoração.`,
+    estudo_de_profecias:        `Para a análise profética de ${ref}, desenvolva "${node.label}" considerando o contexto histórico, o oráculo e seu cumprimento canônico.`,
+    estudo_doutrinario:         `Sobre a doutrina "${ref}", desenvolva "${node.label}" com precisão teológica reformada.`,
+    estudo_tematico:            `Para o estudo temático sobre "${ref}", desenvolva "${node.label}" rastreando sua progressão canônica.`,
+    estudo_de_carta:            `Para o estudo de ${ref}, desenvolva "${node.label}" em seu contexto epistolar e argumentativo.`,
+    comentario_exegetico:       `Para um comentário exegético de ${ref}, desenvolva "${node.label}" com rigor analítico.`,
   }
   return prompts[mode] ?? prompts.exegese_biblica
 }

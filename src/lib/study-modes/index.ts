@@ -8,6 +8,8 @@
 export type StudyModeId =
   | 'exegese_biblica'
   | 'estudo_de_carta'
+  | 'estudo_de_salmos_sabedoria'
+  | 'estudo_de_profecias'
   | 'estudo_doutrinario'
   | 'estudo_tematico'
   | 'sermao'
@@ -634,17 +636,168 @@ const COMENTARIO_EXEGETICO: StudyModeConfig = {
   ],
 }
 
+// ── 9. Estudo de Salmos e Sabedoria ─────────────────────────────────────
+
+const ESTUDO_DE_SALMOS_SABEDORIA: StudyModeConfig = {
+  id: 'estudo_de_salmos_sabedoria',
+  name: 'Salmos e Sabedoria',
+  tagline: 'Poesia, lamentos e sabedoria das Escrituras',
+  color: '#6D28D9',
+  audience: 'Pastores · Professores · Estudantes',
+  titlePlaceholder: 'Ex: Lamento e confiança em Deus — Salmo 22',
+  passageBased: true,
+  passageLabel: 'Salmo / Passagem',
+  topicLabel: 'Tema',
+  defaultSection: 'preparacao_espiritual',
+  defaultExpandedPhases: ['preparar', 'investigar'],
+  defaultExpandedCanons: ['preparar_imersao', 'ss_investigar_mode'],
+  defaultExpandedGroups: ['preparar_espiritual'],
+  phases: [
+    {
+      id: 'preparar', roman: 'I', label: 'Preparar',
+      description: 'Oração, leitura lenta e imersão no poema',
+      color: '#D97706', bgActive: 'rgba(217,119,6,0.08)',
+      modes: [{
+        id: 'preparar_imersao', label: 'Imersão', subtitle: 'Oração e leitura',
+        color: '#D97706', bgActive: 'rgba(217,119,6,0.08)',
+        groups: [
+          { id: 'preparar_espiritual',  label: 'Preparação Espiritual' },
+          { id: 'preparar_assimilacao', label: 'Leia e Assimile' },
+          { id: 'preparar_impressoes',  label: 'Primeiras Impressões' },
+          { id: 'preparar_visao_geral', label: 'Visão Geral' },
+        ],
+      }],
+    },
+    {
+      id: 'investigar', roman: 'II', label: 'Investigar',
+      description: 'Paralelismo, estrutura, imagens e teologia da adoração',
+      color: '#6D28D9', bgActive: 'rgba(109,40,217,0.08)',
+      modes: [{
+        id: 'ss_investigar_mode', label: 'O Poema', subtitle: 'Forma e conteúdo',
+        color: '#6D28D9', bgActive: 'rgba(109,40,217,0.08)',
+        groups: [
+          { id: 'investigar_visao_geral', label: 'Visão Geral' },
+          { id: 'ss_paralelismo_grp',     label: 'Paralelismo Poético' },
+          { id: 'ss_estrutura_grp',       label: 'Estrutura do Poema' },
+          { id: 'ss_imagistica_grp',      label: 'Imagística e Metáforas' },
+          { id: 'ss_temas_grp',           label: 'Temas e Questões' },
+          { id: 'ss_teologia_grp',        label: 'Teologia da Adoração' },
+        ],
+      }],
+    },
+    {
+      id: 'comunicar', roman: 'III', label: 'Comunicar',
+      description: 'Proclamação e reflexão pastoral',
+      color: 'var(--ai)', bgActive: 'rgba(139,92,246,0.08)',
+      modes: [
+        {
+          id: 'sermao', label: 'Sermão', subtitle: 'Proclamação pública',
+          color: 'var(--ai)', bgActive: 'rgba(139,92,246,0.08)',
+          groups: [
+            { id: 'pregar_visao_geral',  label: 'Visão Geral' },
+            { id: 'sermao_dispositio',   label: 'Estrutura' },
+            { id: 'sermao_elocutio',     label: 'Linguagem' },
+            { id: 'sermao_memoria',      label: 'Internalização' },
+            { id: 'sermao_pronuntiatio', label: 'Execução' },
+          ],
+        },
+        {
+          id: 'devocional', label: 'Devocional', subtitle: 'Reflexão e resposta',
+          color: '#9A3412', bgActive: 'rgba(154,52,18,0.08)',
+          groups: [
+            { id: 'devocional_dispositio',   label: 'Reflexão' },
+            { id: 'devocional_elocutio',     label: 'Resposta' },
+            { id: 'devocional_pronuntiatio', label: 'Compromisso' },
+          ],
+        },
+      ],
+    },
+    toolPhase(),
+  ],
+}
+
+// ── 10. Estudo de Profecias ──────────────────────────────────────────────
+
+const ESTUDO_DE_PROFECIAS: StudyModeConfig = {
+  id: 'estudo_de_profecias',
+  name: 'Profecias',
+  tagline: 'A mensagem profética no contexto histórico e redentor',
+  color: '#B45309',
+  audience: 'Pastores · Seminaristas · Pesquisadores',
+  titlePlaceholder: 'Ex: O servo sofredor — Isaías 52.13-53.12',
+  passageBased: true,
+  passageLabel: 'Passagem / Oráculo',
+  topicLabel: 'Tema',
+  defaultSection: 'preparacao_espiritual',
+  defaultExpandedPhases: ['preparar', 'investigar'],
+  defaultExpandedCanons: ['preparar_imersao', 'pf_investigar_mode'],
+  defaultExpandedGroups: ['preparar_espiritual'],
+  phases: [
+    {
+      id: 'preparar', roman: 'I', label: 'Preparar',
+      description: 'Oração e imersão no oráculo profético',
+      color: '#D97706', bgActive: 'rgba(217,119,6,0.08)',
+      modes: [{
+        id: 'preparar_imersao', label: 'Imersão', subtitle: 'Oração e leitura',
+        color: '#D97706', bgActive: 'rgba(217,119,6,0.08)',
+        groups: [
+          { id: 'preparar_espiritual',  label: 'Preparação Espiritual' },
+          { id: 'preparar_assimilacao', label: 'Leia e Assimile' },
+          { id: 'preparar_impressoes',  label: 'Primeiras Impressões' },
+          { id: 'preparar_visao_geral', label: 'Visão Geral' },
+        ],
+      }],
+    },
+    {
+      id: 'investigar', roman: 'II', label: 'Investigar',
+      description: 'Contexto, oráculo, símbolos, cumprimento e alianças',
+      color: '#B45309', bgActive: 'rgba(180,83,9,0.08)',
+      modes: [{
+        id: 'pf_investigar_mode', label: 'O Oráculo', subtitle: 'Análise profética',
+        color: '#B45309', bgActive: 'rgba(180,83,9,0.08)',
+        groups: [
+          { id: 'investigar_visao_geral', label: 'Visão Geral' },
+          { id: 'pf_contexto_grp',        label: 'Contexto Histórico' },
+          { id: 'pf_oraculo_grp',         label: 'O Oráculo' },
+          { id: 'pf_simbolos_grp',        label: 'Símbolos e Imagens' },
+          { id: 'pf_cumprimento_grp',     label: 'Cumprimento Canônico' },
+          { id: 'pf_escatologia_grp',     label: 'Escatologia e Alianças' },
+        ],
+      }],
+    },
+    {
+      id: 'comunicar', roman: 'III', label: 'Comunicar',
+      description: 'Proclamação da mensagem profética',
+      color: 'var(--ai)', bgActive: 'rgba(139,92,246,0.08)',
+      modes: [{
+        id: 'sermao', label: 'Sermão', subtitle: 'Proclamação pública',
+        color: 'var(--ai)', bgActive: 'rgba(139,92,246,0.08)',
+        groups: [
+          { id: 'pregar_visao_geral',  label: 'Visão Geral' },
+          { id: 'sermao_dispositio',   label: 'Estrutura' },
+          { id: 'sermao_elocutio',     label: 'Linguagem' },
+          { id: 'sermao_memoria',      label: 'Internalização' },
+          { id: 'sermao_pronuntiatio', label: 'Execução' },
+        ],
+      }],
+    },
+    toolPhase(),
+  ],
+}
+
 // ── Registry ──────────────────────────────────────────────────────────────
 
 export const STUDY_MODE_REGISTRY: Record<StudyModeId, StudyModeConfig> = {
-  exegese_biblica:     EXEGESE_BIBLICA,
-  estudo_de_carta:     ESTUDO_DE_CARTA,
-  estudo_doutrinario:  ESTUDO_DOUTRINARIO,
-  estudo_tematico:     ESTUDO_TEMATICO,
-  sermao:              SERMAO,
-  estudo_biblico:      ESTUDO_BIBLICO,
-  devocional:          DEVOCIONAL,
-  comentario_exegetico: COMENTARIO_EXEGETICO,
+  exegese_biblica:             EXEGESE_BIBLICA,
+  estudo_de_carta:             ESTUDO_DE_CARTA,
+  estudo_de_salmos_sabedoria:  ESTUDO_DE_SALMOS_SABEDORIA,
+  estudo_de_profecias:         ESTUDO_DE_PROFECIAS,
+  estudo_doutrinario:          ESTUDO_DOUTRINARIO,
+  estudo_tematico:             ESTUDO_TEMATICO,
+  sermao:                      SERMAO,
+  estudo_biblico:              ESTUDO_BIBLICO,
+  devocional:                  DEVOCIONAL,
+  comentario_exegetico:        COMENTARIO_EXEGETICO,
 }
 
 // ── Helper ────────────────────────────────────────────────────────────────

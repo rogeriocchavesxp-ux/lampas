@@ -14,14 +14,16 @@ import {
 } from '@/lib/study-modes'
 
 const LEGACY_TYPE: Record<StudyModeId, string> = {
-  exegese_biblica:      'exegese',
-  estudo_de_carta:      'exegese',
-  estudo_doutrinario:   'estudo_doutrinario',
-  estudo_tematico:      'estudo_doutrinario',
-  sermao:               'sermao',
-  estudo_biblico:       'estudo_biblico',
-  devocional:           'devocional',
-  comentario_exegetico: 'exegese',
+  exegese_biblica:             'exegese',
+  estudo_de_carta:             'exegese',
+  estudo_de_salmos_sabedoria:  'estudo_biblico',
+  estudo_de_profecias:         'estudo_biblico',
+  estudo_doutrinario:          'estudo_doutrinario',
+  estudo_tematico:             'estudo_doutrinario',
+  sermao:                      'sermao',
+  estudo_biblico:              'estudo_biblico',
+  devocional:                  'devocional',
+  comentario_exegetico:        'exegese',
 }
 
 const BOOKS_AT = [
@@ -44,6 +46,19 @@ const BOOKS_NT = [
 ]
 
 const MODE_ICONS: Record<StudyModeId, React.ReactNode> = {
+  estudo_de_salmos_sabedoria: (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M9 18V5l12-2v13"/>
+      <circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/>
+    </svg>
+  ),
+  estudo_de_profecias: (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M12 2L2 7l10 5 10-5-10-5z"/>
+      <path d="M2 17l10 5 10-5"/>
+      <path d="M12 12v10"/>
+    </svg>
+  ),
   exegese_biblica: (
     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
       <path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
@@ -91,32 +106,39 @@ const MODE_ICONS: Record<StudyModeId, React.ReactNode> = {
 }
 
 const MODE_VISUALS: Record<StudyModeId, { color: string; bg: string; border: string }> = {
-  devocional:           { color: '#BE3455', bg: 'rgba(190,52,85,0.08)', border: 'rgba(190,52,85,0.18)' },
-  sermao:               { color: '#7C3AED', bg: 'rgba(124,58,237,0.08)', border: 'rgba(124,58,237,0.18)' },
-  estudo_biblico:       { color: '#2563EB', bg: 'rgba(37,99,235,0.08)', border: 'rgba(37,99,235,0.18)' },
-  estudo_doutrinario:   { color: '#4F46E5', bg: 'rgba(79,70,229,0.08)', border: 'rgba(79,70,229,0.18)' },
-  estudo_tematico:      { color: '#0F766E', bg: 'rgba(15,118,110,0.08)', border: 'rgba(15,118,110,0.18)' },
-  exegese_biblica:      { color: '#0F766E', bg: 'rgba(15,118,110,0.08)', border: 'rgba(15,118,110,0.18)' },
-  estudo_de_carta:      { color: '#475569', bg: 'rgba(71,85,105,0.08)', border: 'rgba(71,85,105,0.18)' },
-  comentario_exegetico: { color: '#B45309', bg: 'rgba(180,83,9,0.08)', border: 'rgba(180,83,9,0.18)' },
+  devocional:                  { color: '#BE3455', bg: 'rgba(190,52,85,0.08)',  border: 'rgba(190,52,85,0.18)' },
+  sermao:                      { color: '#7C3AED', bg: 'rgba(124,58,237,0.08)', border: 'rgba(124,58,237,0.18)' },
+  estudo_biblico:               { color: '#2563EB', bg: 'rgba(37,99,235,0.08)',  border: 'rgba(37,99,235,0.18)' },
+  estudo_de_salmos_sabedoria:  { color: '#6D28D9', bg: 'rgba(109,40,217,0.08)', border: 'rgba(109,40,217,0.18)' },
+  estudo_de_profecias:         { color: '#B45309', bg: 'rgba(180,83,9,0.08)',   border: 'rgba(180,83,9,0.18)' },
+  estudo_doutrinario:          { color: '#4F46E5', bg: 'rgba(79,70,229,0.08)',  border: 'rgba(79,70,229,0.18)' },
+  estudo_tematico:             { color: '#0F766E', bg: 'rgba(15,118,110,0.08)', border: 'rgba(15,118,110,0.18)' },
+  exegese_biblica:             { color: '#0F766E', bg: 'rgba(15,118,110,0.08)', border: 'rgba(15,118,110,0.18)' },
+  estudo_de_carta:             { color: '#475569', bg: 'rgba(71,85,105,0.08)',  border: 'rgba(71,85,105,0.18)' },
+  comentario_exegetico:        { color: '#B45309', bg: 'rgba(180,83,9,0.08)',   border: 'rgba(180,83,9,0.18)' },
 }
 
+// Ordem da biblioteca (inclui estudo_biblico no final para backward compat)
 const SECTION_ORDER: StudyModeId[] = [
   'devocional',
   'sermao',
-  'estudo_biblico',
+  'estudo_de_salmos_sabedoria',
+  'estudo_de_profecias',
   'estudo_doutrinario',
   'estudo_tematico',
   'exegese_biblica',
   'estudo_de_carta',
   'comentario_exegetico',
+  'estudo_biblico',  // legado — mantido para projetos existentes
 ]
 
+// Ordem do modal de criação (estudo_biblico removido — substituído pelos novos modos)
 const MODE_ORDER: StudyModeId[] = [
   'exegese_biblica',
   'estudo_de_carta',
+  'estudo_de_salmos_sabedoria',
+  'estudo_de_profecias',
   'sermao',
-  'estudo_biblico',
   'estudo_doutrinario',
   'estudo_tematico',
   'devocional',
