@@ -133,7 +133,7 @@ async function fetchFromApiBible(book: string, passageRef: string, version: stri
   const apiKey = process.env.BIBLE_API_KEY
   const bibleId = process.env[`BIBLE_ID_${version.toUpperCase()}`]
 
-  if (!apiKey || !bibleId) return []
+  if (!apiKey || !bibleId) throw new Error(`Tradução ${version} não disponível localmente. Use ACF ou configure BIBLE_API_KEY.`)
 
   const query = encodeURIComponent(`${book} ${passageRef}`)
   const url = `https://api.scripture.api.bible/v1/bibles/${bibleId}/search?query=${query}&limit=50`

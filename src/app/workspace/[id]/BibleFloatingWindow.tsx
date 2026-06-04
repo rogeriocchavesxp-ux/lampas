@@ -168,7 +168,7 @@ export default function BibleFloatingWindow({ book, passageRef, testament, proje
   const [viewMode,   setViewMode]   = useState<ViewMode>('pt')
 
   // Bible — Portuguese
-  const [version,  setVersion]  = useState<Version>('ARA')
+  const [version,  setVersion]  = useState<Version>('ACF')
   const [verses,   setVerses]   = useState<Verse[]>([])
   const [loading,  setLoading]  = useState(false)
   const [error,    setError]    = useState<string | null>(null)

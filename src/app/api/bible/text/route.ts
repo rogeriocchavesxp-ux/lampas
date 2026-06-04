@@ -8,14 +8,19 @@ export async function POST(req: Request) {
     return Response.json({ error: 'Referência incompleta' }, { status: 400 })
   }
 
-  const verses = await fetchBibleText(book, passageRef, version)
+  try {
+    const verses = await fetchBibleText(book, passageRef, version)
 
-  if (!verses.length) {
-    return Response.json(
-      { error: `Nenhum versículo encontrado para ${book} ${passageRef} (${version})` },
-      { status: 404 }
-    )
+    if (!verses.length) {
+      return Response.json(
+        { error: `Nenhum versículo encontrado para ${book} ${passageRef} (${version})` },
+        { status: 404 }
+      )
+    }
+
+    return Response.json({ verses, version })
+  } catch (e) {
+    const msg = e instanceof Error ? e.message : 'Erro ao buscar texto bíblico'
+    return Response.json({ error: msg }, { status: 503 })
   }
-
-  return Response.json({ verses, version })
 }
