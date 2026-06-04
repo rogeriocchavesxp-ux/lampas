@@ -143,7 +143,7 @@ const SECTION_ORDER: StudyModeId[] = [
 
 // ── 4 modos da tela de criação ────────────────────────────────────────────
 
-type UiModeId = 'exegetico' | 'sermao' | 'devocional' | 'doutrinario'
+type UiModeId = 'exegetico' | 'sermao' | 'devocional' | 'doutrinario' | 'conhecimento'
 
 const UI_MODES: Array<{
   id: UiModeId; emoji: string; label: string
@@ -161,6 +161,9 @@ const UI_MODES: Array<{
   { id: 'doutrinario', emoji: '📚', label: 'Estudo Doutrinário', color: '#1E40AF',
     tagline: 'Da doutrina à compreensão',
     description: 'Para investigação teológica sistemática e rastreamento de temas bíblicos.' },
+  { id: 'conhecimento', emoji: '🧠', label: 'Base de Conhecimento', color: '#B45309',
+    tagline: 'Seu repositório teológico pessoal',
+    description: 'Organize livros, artigos, sermões e insights para reutilizar em qualquer estudo.' },
 ]
 
 // Detecção automática de gênero literário pelo livro
@@ -346,10 +349,11 @@ export default function DashboardClient({ user, projects: initialProjects, profi
     setTitleEdited(false)
     setForm(createInitialForm())
     switch (uid) {
-      case 'sermao':     setSelectedMode('sermao'); break
-      case 'devocional': setSelectedMode('devocional'); break
+      case 'sermao':      setSelectedMode('sermao'); break
+      case 'devocional':  setSelectedMode('devocional'); break
       case 'doutrinario': setSelectedMode('estudo_doutrinario'); break
-      case 'exegetico':  setSelectedMode(null); break
+      case 'exegetico':   setSelectedMode(null); break
+      case 'conhecimento': setSelectedMode(null); break
     }
   }
 
@@ -515,14 +519,6 @@ export default function DashboardClient({ user, projects: initialProjects, profi
                 : `${projects.length} ${projects.length === 1 ? 'estudo' : 'estudos'}`}
             </p>
           </div>
-          <button onClick={() => router.push('/knowledge')} style={{
-            background: '#FFFFFF', color: '#B45309', border: '1px solid #FDE68A',
-            borderRadius: '8px', padding: '0.58rem 0.9rem', fontWeight: '650',
-            cursor: 'pointer', fontSize: '0.88rem', fontFamily: 'inherit',
-            flexShrink: 0,
-          }}>
-            🧠 Base
-          </button>
           <button onClick={openModal} style={{
             background: 'var(--accent)', color: '#FFFFFF', border: 'none',
             borderRadius: '8px', padding: '0.58rem 1.05rem', fontWeight: '650',
@@ -744,7 +740,11 @@ export default function DashboardClient({ user, projects: initialProjects, profi
                     Cancelar
                   </button>
                   <button
-                    onClick={() => selectedUiMode && setModalStep('form')}
+                    onClick={() => {
+                      if (!selectedUiMode) return
+                      if (selectedUiMode === 'conhecimento') { closeModal(); router.push('/knowledge') }
+                      else setModalStep('form')
+                    }}
                     disabled={!selectedUiMode}
                     style={{
                       flex: 2, padding: '0.6rem',
