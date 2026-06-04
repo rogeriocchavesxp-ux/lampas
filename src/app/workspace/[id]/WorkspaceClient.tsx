@@ -521,16 +521,64 @@ export default function WorkspaceClient({ user, project, initialSections }: Prop
           </div>
         </div>
 
+        {/* ── Separador + Texto Bíblico (ação principal) ───────────── */}
+        <div style={{ width: '1px', height: '18px', background: 'var(--border-subtle)', margin: '0 0.6rem', flexShrink: 0 }} />
+
+        <button
+          onClick={() => setBibleOpen(o => !o)}
+          title="Abrir Texto Bíblico"
+          style={{
+            flexShrink: 0,
+            background: bibleOpen
+              ? 'linear-gradient(135deg, #C9921A 0%, #D97706 100%)'
+              : 'transparent',
+            border: `1.5px solid ${bibleOpen ? '#C9921A' : '#C9921A55'}`,
+            color: bibleOpen ? '#FFFFFF' : '#C9921A',
+            borderRadius: '7px',
+            padding: '0.28rem 0.85rem',
+            fontSize: '0.75rem',
+            fontWeight: 700,
+            letterSpacing: '0.02em',
+            cursor: 'pointer',
+            fontFamily: 'inherit',
+            transition: 'all 0.15s',
+            display: 'flex', alignItems: 'center', gap: '0.38rem',
+            boxShadow: bibleOpen
+              ? '0 1px 6px rgba(201,146,26,0.35)'
+              : '0 0 0 3px rgba(201,146,26,0)',
+          }}
+          onMouseEnter={e => {
+            if (!bibleOpen) {
+              e.currentTarget.style.background = 'rgba(201,146,26,0.09)'
+              e.currentTarget.style.borderColor = '#C9921A'
+              e.currentTarget.style.boxShadow = '0 0 0 3px rgba(201,146,26,0.12)'
+            }
+          }}
+          onMouseLeave={e => {
+            if (!bibleOpen) {
+              e.currentTarget.style.background = 'transparent'
+              e.currentTarget.style.borderColor = '#C9921A55'
+              e.currentTarget.style.boxShadow = '0 0 0 3px rgba(201,146,26,0)'
+            }
+          }}
+        >
+          <BookOpen size={13} strokeWidth={2} />
+          Texto Bíblico
+        </button>
+
+        <div style={{ width: '1px', height: '18px', background: 'var(--border-subtle)', margin: '0 0.6rem', flexShrink: 0 }} />
+
+        {/* ── Botões secundários ─────────────────────────────────────── */}
         <button
           onClick={() => setSideBySide(o => !o)}
           title="Mostrar exegese e trabalho lado a lado"
           style={{
-            marginLeft: '0.5rem', flexShrink: 0,
+            flexShrink: 0,
             background: sideBySide ? 'rgba(0,0,0,0.05)' : 'transparent',
             border: `1px solid ${sideBySide ? 'var(--border)' : 'var(--border-subtle)'}`,
             color: sideBySide ? 'var(--text-secondary)' : 'var(--text-muted)',
             borderRadius: '5px', padding: '0.2rem 0.55rem',
-            fontSize: '0.73rem', fontWeight: '700', letterSpacing: '0.04em',
+            fontSize: '0.7rem', fontWeight: 600, letterSpacing: '0.03em',
             cursor: 'pointer', fontFamily: 'inherit', transition: 'all 0.15s',
           }}
           onMouseEnter={e => { if (!sideBySide) { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.color = 'var(--text-secondary)' } }}
@@ -542,12 +590,12 @@ export default function WorkspaceClient({ user, project, initialSections }: Prop
         <button
           onClick={() => setFocusMode(o => !o)}
           style={{
-            marginLeft: '0.5rem', flexShrink: 0,
+            marginLeft: '0.35rem', flexShrink: 0,
             background: focusMode ? 'rgba(0,0,0,0.05)' : 'transparent',
             border: `1px solid ${focusMode ? 'var(--border)' : 'var(--border-subtle)'}`,
             color: focusMode ? 'var(--text-secondary)' : 'var(--text-muted)',
             borderRadius: '5px', padding: '0.2rem 0.55rem',
-            fontSize: '0.73rem', fontWeight: '700', letterSpacing: '0.04em',
+            fontSize: '0.7rem', fontWeight: 600, letterSpacing: '0.03em',
             cursor: 'pointer', fontFamily: 'inherit', transition: 'all 0.15s',
           }}
         >
@@ -555,33 +603,14 @@ export default function WorkspaceClient({ user, project, initialSections }: Prop
         </button>
 
         <button
-          onClick={() => setBibleOpen(o => !o)}
-          title="Abrir Texto Bíblico"
-          style={{
-            marginLeft: '0.5rem', flexShrink: 0,
-            background: bibleOpen ? 'rgba(217,119,6,0.08)' : 'transparent',
-            border: `1px solid ${bibleOpen ? '#D97706' : 'var(--border-subtle)'}`,
-            color: bibleOpen ? '#D97706' : 'var(--text-muted)',
-            borderRadius: '5px', padding: '0.2rem 0.55rem',
-            fontSize: '0.73rem', fontWeight: '700', letterSpacing: '0.04em',
-            cursor: 'pointer', fontFamily: 'inherit', transition: 'all 0.15s',
-            display: 'flex', alignItems: 'center', gap: '0.3rem',
-          }}
-          onMouseEnter={e => { if (!bibleOpen) { e.currentTarget.style.borderColor = '#D97706'; e.currentTarget.style.color = '#D97706' } }}
-          onMouseLeave={e => { if (!bibleOpen) { e.currentTarget.style.borderColor = 'var(--border-subtle)'; e.currentTarget.style.color = 'var(--text-muted)' } }}
-        >
-          <BookOpen size={11} strokeWidth={2} /> Texto
-        </button>
-
-        <button
           onClick={() => setAiOpen(o => !o)}
           style={{
-            marginLeft: '0.5rem', flexShrink: 0,
+            marginLeft: '0.35rem', flexShrink: 0,
             background: aiOpen ? 'var(--ai-subtle)' : 'transparent',
             border: `1px solid ${aiOpen ? 'var(--ai)' : 'var(--border-subtle)'}`,
             color: aiOpen ? 'var(--ai)' : 'var(--text-muted)',
             borderRadius: '5px', padding: '0.2rem 0.55rem',
-            fontSize: '0.73rem', fontWeight: '700', letterSpacing: '0.04em',
+            fontSize: '0.7rem', fontWeight: 600, letterSpacing: '0.03em',
             cursor: 'pointer', fontFamily: 'inherit', transition: 'all 0.15s',
           }}
           onMouseEnter={e => { if (!aiOpen) { e.currentTarget.style.borderColor = 'var(--ai)'; e.currentTarget.style.color = 'var(--ai)' } }}
