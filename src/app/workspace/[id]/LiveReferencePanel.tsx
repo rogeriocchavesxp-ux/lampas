@@ -26,6 +26,23 @@ const REFERENCE_SOURCES = [
   { id: 'colagens', label: 'Colagens', slugs: ['colagens'] },
 ]
 
+// Strip HTML tags produced by the RichEditor (Tiptap) for plain-text display
+function htmlToText(value: string): string {
+  if (!value) return ''
+  const decoded = value
+    .replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&amp;/g, '&')
+    .replace(/&quot;/g, '"').replace(/&#39;/g, "'").replace(/&nbsp;/g, ' ')
+  if (!/<\/?[a-z][\s\S]*>/i.test(decoded.trim())) return value.trim()
+  return decoded
+    .replace(/<(br|hr)\s*\/?>/gi, '\n')
+    .replace(/<\/(p|div|h[1-6]|li|blockquote)>/gi, '\n')
+    .replace(/<li[^>]*>/gi, '• ')
+    .replace(/<[^>]+>/g, '')
+    .replace(/[ \t]+\n/g, '\n')
+    .replace(/\n{3,}/g, '\n\n')
+    .trim()
+}
+
 function getCards(section: Section | undefined): Record<string, string> {
   const content = section?.content as Record<string, unknown> | null
   if (content && typeof content === 'object' && 'cards' in content) return content.cards as Record<string, string>
@@ -50,7 +67,7 @@ function buildBlocks(savedSections: Section[]): ReferenceBlock[] {
             id: `colagem:${item.id}`,
             label: source.label,
             title: item.title,
-            content: item.content,
+            content: htmlToText(item.content),
             source: [item.author, item.work, item.page && `p. ${item.page}`].filter(Boolean).join(' · ') || item.category,
           })
         })
@@ -63,13 +80,13 @@ function buildBlocks(savedSections: Section[]): ReferenceBlock[] {
       if (!def) continue
 
       def.cards?.forEach(card => {
-        const content = cards[card.id]?.trim()
-        if (!content) return
+        const raw = cards[card.id]?.trim()
+        if (!raw) return
         blocks.push({
           id: `${slug}:${card.id}`,
           label: source.label,
           title: card.title,
-          content,
+          content: htmlToText(raw),
           source: def.shortTitle,
         })
       })
