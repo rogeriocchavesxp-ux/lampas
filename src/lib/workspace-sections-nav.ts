@@ -2515,6 +2515,152 @@ export const WORKSPACE_SECTIONS_NAV: SectionNav[] = [
     ]
   },
   {
+    "slug": "nr_personagens",
+    "title": "Personagens e Caracterização",
+    "shortTitle": "Personagens",
+    "module": "inventio",
+    "group": "nr_personagens_grp",
+    "groupLabel": "Personagens e Caracterização",
+    "order": 700,
+    "cards": [
+      {
+        "id": "personagem_central",
+        "title": "Personagem central"
+      },
+      {
+        "id": "personagens_secundarios",
+        "title": "Personagens secundários"
+      },
+      {
+        "id": "desenvolvimento_personagem",
+        "title": "Desenvolvimento e mudança"
+      },
+      {
+        "id": "caracterizacao_indireta",
+        "title": "Caracterização indireta"
+      }
+    ]
+  },
+  {
+    "slug": "nr_enredo",
+    "title": "Enredo e Tensão Narrativa",
+    "shortTitle": "Enredo",
+    "module": "inventio",
+    "group": "nr_enredo_grp",
+    "groupLabel": "Enredo e Tensão",
+    "order": 701,
+    "cards": [
+      {
+        "id": "exposicao",
+        "title": "Exposição"
+      },
+      {
+        "id": "complicacao_conflito",
+        "title": "Complicação e conflito"
+      },
+      {
+        "id": "climax_virada",
+        "title": "Clímax e virada"
+      },
+      {
+        "id": "resolucao_lacunas",
+        "title": "Resolução e lacunas"
+      }
+    ]
+  },
+  {
+    "slug": "nr_cenario",
+    "title": "Cenário, Tempo e Espaço",
+    "shortTitle": "Cenário",
+    "module": "inventio",
+    "group": "nr_cenario_grp",
+    "groupLabel": "Cenário e Tempo",
+    "order": 702,
+    "cards": [
+      {
+        "id": "lugares",
+        "title": "Lugares e simbolismo geográfico"
+      },
+      {
+        "id": "tempo_narrativo",
+        "title": "Tempo e ritmo narrativo"
+      },
+      {
+        "id": "movimento_espacial",
+        "title": "Movimento espacial"
+      }
+    ]
+  },
+  {
+    "slug": "nr_narrador",
+    "title": "Narrador e Ponto de Vista",
+    "shortTitle": "Narrador",
+    "module": "inventio",
+    "group": "nr_narrador_grp",
+    "groupLabel": "Narrador e Perspectiva",
+    "order": 703,
+    "cards": [
+      {
+        "id": "onisciencia",
+        "title": "Onisciência e limitação"
+      },
+      {
+        "id": "ponto_de_vista",
+        "title": "Ponto de vista e julgamento"
+      },
+      {
+        "id": "vida_interior",
+        "title": "Acesso à vida interior"
+      }
+    ]
+  },
+  {
+    "slug": "nr_dialogo",
+    "title": "Diálogo e Discurso",
+    "shortTitle": "Diálogo",
+    "module": "inventio",
+    "group": "nr_dialogo_grp",
+    "groupLabel": "Diálogo e Discurso",
+    "order": 704,
+    "cards": [
+      {
+        "id": "funcao_dialogo",
+        "title": "Função do diálogo"
+      },
+      {
+        "id": "silencio_omissao",
+        "title": "Silêncio e omissão"
+      },
+      {
+        "id": "ironia_dramatica",
+        "title": "Ironia dramática"
+      }
+    ]
+  },
+  {
+    "slug": "nr_teologia",
+    "title": "Teologia Narrativa",
+    "shortTitle": "Teologia",
+    "module": "inventio",
+    "group": "nr_teologia_grp",
+    "groupLabel": "Teologia Narrativa",
+    "order": 705,
+    "cards": [
+      {
+        "id": "deus_na_narrativa",
+        "title": "Deus na narrativa"
+      },
+      {
+        "id": "condicao_humana",
+        "title": "A condição humana"
+      },
+      {
+        "id": "grande_narrativa",
+        "title": "Conexão com a grande narrativa"
+      }
+    ]
+  },
+  {
     "slug": "pt_tema",
     "title": "I. Tema e Problema",
     "shortTitle": "Tema e Problema",
