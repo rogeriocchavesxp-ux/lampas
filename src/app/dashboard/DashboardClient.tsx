@@ -288,10 +288,22 @@ export default function DashboardClient({ user, projects: initialProjects, profi
   const [deleteTarget,     setDeleteTarget]     = useState<Project | null>(null)
   const [deleteConfirming, setDeleteConfirming] = useState(false)
 
-  // All sections start collapsed
+  // All library sections start collapsed
   const [collapsedSections, setCollapsedSections] = useState<Set<StudyModeId>>(
     () => new Set(SECTION_ORDER),
   )
+
+  // Analytics sections — all collapsed by default
+  const [collapsedAnalytics, setCollapsedAnalytics] = useState(
+    () => new Set(['distribuicao', 'genero', 'recente', 'mapa', 'todos']),
+  )
+  function toggleAnalytics(key: string) {
+    setCollapsedAnalytics(prev => {
+      const next = new Set(prev)
+      if (next.has(key)) next.delete(key); else next.add(key)
+      return next
+    })
+  }
 
   const modeConfig = selectedMode ? STUDY_MODE_REGISTRY[selectedMode] : null
 
@@ -611,132 +623,136 @@ export default function DashboardClient({ user, projects: initialProjects, profi
             {/* ── Distribuição + Livros ── */}
             {projects.length >= 2 && (
               <section>
-                <DashLabel>Distribuição</DashLabel>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginTop: '0.85rem' }}>
-
-                  <div style={{ background: 'var(--surface)', border: '1px solid var(--border-subtle)', borderRadius: '12px', padding: '1.25rem' }}>
-                    <p style={{ fontSize: '0.68rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.09em', color: 'var(--text-muted)', margin: '0 0 1rem' }}>Por Gênero</p>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '1.25rem' }}>
-                      <DonutChart data={genreDistribution.map(g => ({ label: g.label, value: g.count, color: g.color }))} />
-                      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '0.42rem' }}>
-                        {genreDistribution.slice(0, 6).map(g => (
-                          <div key={g.id} style={{ display: 'flex', alignItems: 'center', gap: '0.45rem' }}>
-                            <div style={{ width: 7, height: 7, borderRadius: '50%', background: g.color, flexShrink: 0 }} />
-                            <span style={{ flex: 1, fontSize: '0.7rem', color: 'var(--text-secondary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{g.label}</span>
-                            <span style={{ fontSize: '0.66rem', color: 'var(--text-muted)', fontWeight: 600, flexShrink: 0 }}>{Math.round(g.count / projects.length * 100)}%</span>
-                          </div>
-                        ))}
+                <CollapseHeader label="Distribuição" collapsed={collapsedAnalytics.has('distribuicao')} onToggle={() => toggleAnalytics('distribuicao')} />
+                {!collapsedAnalytics.has('distribuicao') && (
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginTop: '0.85rem' }}>
+                    <div style={{ background: 'var(--surface)', border: '1px solid var(--border-subtle)', borderRadius: '12px', padding: '1.25rem' }}>
+                      <p style={{ fontSize: '0.68rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.09em', color: 'var(--text-muted)', margin: '0 0 1rem' }}>Por Gênero</p>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '1.25rem' }}>
+                        <DonutChart data={genreDistribution.map(g => ({ label: g.label, value: g.count, color: g.color }))} />
+                        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '0.42rem' }}>
+                          {genreDistribution.slice(0, 6).map(g => (
+                            <div key={g.id} style={{ display: 'flex', alignItems: 'center', gap: '0.45rem' }}>
+                              <div style={{ width: 7, height: 7, borderRadius: '50%', background: g.color, flexShrink: 0 }} />
+                              <span style={{ flex: 1, fontSize: '0.7rem', color: 'var(--text-secondary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{g.label}</span>
+                              <span style={{ fontSize: '0.66rem', color: 'var(--text-muted)', fontWeight: 600, flexShrink: 0 }}>{Math.round(g.count / projects.length * 100)}%</span>
+                            </div>
+                          ))}
+                        </div>
                       </div>
                     </div>
-                  </div>
-
-                  <div style={{ background: 'var(--surface)', border: '1px solid var(--border-subtle)', borderRadius: '12px', padding: '1.25rem' }}>
-                    <p style={{ fontSize: '0.68rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.09em', color: 'var(--text-muted)', margin: '0 0 1rem' }}>Livros Mais Estudados</p>
-                    {topBooks.length === 0 ? (
-                      <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', margin: 0 }}>Nenhum livro registrado ainda.</p>
-                    ) : (
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.7rem' }}>
-                        {topBooks.map(([book, count], idx) => (
-                          <div key={book}>
-                            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.2rem' }}>
-                              <span style={{ fontSize: '0.78rem', color: 'var(--text-primary)', fontWeight: 500 }}>{book}</span>
-                              <span style={{ fontSize: '0.68rem', color: 'var(--text-muted)' }}>{count}</span>
+                    <div style={{ background: 'var(--surface)', border: '1px solid var(--border-subtle)', borderRadius: '12px', padding: '1.25rem' }}>
+                      <p style={{ fontSize: '0.68rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.09em', color: 'var(--text-muted)', margin: '0 0 1rem' }}>Livros Mais Estudados</p>
+                      {topBooks.length === 0 ? (
+                        <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', margin: 0 }}>Nenhum livro registrado ainda.</p>
+                      ) : (
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.7rem' }}>
+                          {topBooks.map(([book, count], idx) => (
+                            <div key={book}>
+                              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.2rem' }}>
+                                <span style={{ fontSize: '0.78rem', color: 'var(--text-primary)', fontWeight: 500 }}>{book}</span>
+                                <span style={{ fontSize: '0.68rem', color: 'var(--text-muted)' }}>{count}</span>
+                              </div>
+                              <div style={{ height: 4, background: 'var(--surface-2)', borderRadius: 2 }}>
+                                <div style={{ height: 4, width: `${(count / (topBooks[0]?.[1] ?? 1)) * 100}%`, background: 'var(--accent)', borderRadius: 2, opacity: 1 - idx * 0.12 }} />
+                              </div>
                             </div>
-                            <div style={{ height: 4, background: 'var(--surface-2)', borderRadius: 2 }}>
-                              <div style={{ height: 4, width: `${(count / (topBooks[0]?.[1] ?? 1)) * 100}%`, background: 'var(--accent)', borderRadius: 2, opacity: 1 - idx * 0.12 }} />
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    )}
+                          ))}
+                        </div>
+                      )}
+                    </div>
                   </div>
-                </div>
+                )}
               </section>
             )}
 
             {/* ── Por Gênero ── */}
             {genreDistribution.length >= 2 && (
               <section>
-                <DashLabel>Por Gênero</DashLabel>
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '0.75rem', marginTop: '0.85rem' }}>
-                  {genreDistribution.map(g => {
-                    const max = genreDistribution[0]?.count ?? 1
-                    return (
-                      <div key={g.id} style={{ background: 'var(--surface)', border: '1px solid var(--border-subtle)', borderRadius: '10px', padding: '0.9rem 1rem' }}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '0.55rem' }}>
-                          <span style={{ fontSize: '0.8rem', fontWeight: 600, color: g.color }}>{g.label}</span>
-                          <span style={{ fontSize: '0.68rem', color: 'var(--text-muted)' }}>{g.count}</span>
+                <CollapseHeader label="Por Gênero" collapsed={collapsedAnalytics.has('genero')} onToggle={() => toggleAnalytics('genero')} />
+                {!collapsedAnalytics.has('genero') && (
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '0.75rem', marginTop: '0.85rem' }}>
+                    {genreDistribution.map(g => {
+                      const max = genreDistribution[0]?.count ?? 1
+                      return (
+                        <div key={g.id} style={{ background: 'var(--surface)', border: '1px solid var(--border-subtle)', borderRadius: '10px', padding: '0.9rem 1rem' }}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '0.55rem' }}>
+                            <span style={{ fontSize: '0.8rem', fontWeight: 600, color: g.color }}>{g.label}</span>
+                            <span style={{ fontSize: '0.68rem', color: 'var(--text-muted)' }}>{g.count}</span>
+                          </div>
+                          <div style={{ height: 5, background: 'var(--surface-2)', borderRadius: 3 }}>
+                            <div style={{ height: 5, width: `${Math.round((g.count / max) * 100)}%`, background: g.color, borderRadius: 3, opacity: 0.75 }} />
+                          </div>
                         </div>
-                        <div style={{ height: 5, background: 'var(--surface-2)', borderRadius: 3 }}>
-                          <div style={{ height: 5, width: `${Math.round((g.count / max) * 100)}%`, background: g.color, borderRadius: 3, opacity: 0.75 }} />
-                        </div>
-                      </div>
-                    )
-                  })}
-                </div>
+                      )
+                    })}
+                  </div>
+                )}
               </section>
             )}
 
             {/* ── Atividade Recente ── */}
             <section>
-              <DashLabel>Atividade Recente</DashLabel>
-              <div style={{ background: 'var(--surface)', border: '1px solid var(--border-subtle)', borderRadius: '12px', overflow: 'hidden', marginTop: '0.85rem' }}>
-                {projects.slice(0, 8).map((p, i) => {
-                  const mode   = getModeConfig(p.study_mode ?? p.project_type)
-                  const visual = MODE_VISUALS[mode.id as StudyModeId]
-                  const isPassage = mode.passageBased
-                  const ref = isPassage && p.book && p.book !== '—'
-                    ? `${p.book} ${p.passage_ref}`
-                    : p.passage_ref && p.passage_ref !== '—' ? p.passage_ref : null
-                  return (
-                    <div
-                      key={p.id}
-                      onClick={() => router.push(`/workspace/${p.id}`)}
-                      style={{
-                        display: 'flex', alignItems: 'center', gap: '0.85rem',
-                        padding: '0.8rem 1.1rem',
-                        borderBottom: i < Math.min(projects.length, 8) - 1 ? '1px solid var(--border-subtle)' : 'none',
-                        cursor: 'pointer', transition: 'background 0.1s',
-                      }}
-                      onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = 'rgba(0,0,0,0.02)' }}
-                      onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'transparent' }}
-                    >
-                      <div style={{ width: 28, height: 28, borderRadius: '50%', background: visual?.bg ?? 'var(--surface-2)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: visual?.color ?? 'var(--text-muted)', flexShrink: 0 }}>
-                        {isValidElement<{ width?: number; height?: number }>(MODE_ICONS[mode.id as StudyModeId])
-                          ? cloneElement(MODE_ICONS[mode.id as StudyModeId] as React.ReactElement<{ width?: number; height?: number }>, { width: 12, height: 12 })
-                          : MODE_ICONS[mode.id as StudyModeId]}
-                      </div>
-                      <div style={{ flex: 1, minWidth: 0 }}>
-                        <div style={{ fontSize: '0.82rem', fontWeight: 600, color: 'var(--text-primary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{p.title}</div>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', marginTop: '0.1rem' }}>
-                          <span style={{ fontSize: '0.68rem', color: visual?.color ?? 'var(--text-muted)', fontWeight: 500 }}>{mode.name}</span>
-                          {ref && <><span style={{ fontSize: '0.6rem', color: 'var(--border)' }}>·</span><span style={{ fontSize: '0.68rem', color: 'var(--text-muted)', fontStyle: 'italic', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{ref}</span></>}
+              <CollapseHeader label="Atividade Recente" collapsed={collapsedAnalytics.has('recente')} onToggle={() => toggleAnalytics('recente')} />
+              {!collapsedAnalytics.has('recente') && (
+                <div style={{ background: 'var(--surface)', border: '1px solid var(--border-subtle)', borderRadius: '12px', overflow: 'hidden', marginTop: '0.85rem' }}>
+                  {projects.slice(0, 8).map((p, i) => {
+                    const mode   = getModeConfig(p.study_mode ?? p.project_type)
+                    const visual = MODE_VISUALS[mode.id as StudyModeId]
+                    const isPassage = mode.passageBased
+                    const ref = isPassage && p.book && p.book !== '—'
+                      ? `${p.book} ${p.passage_ref}`
+                      : p.passage_ref && p.passage_ref !== '—' ? p.passage_ref : null
+                    return (
+                      <div
+                        key={p.id}
+                        onClick={() => router.push(`/workspace/${p.id}`)}
+                        style={{
+                          display: 'flex', alignItems: 'center', gap: '0.85rem',
+                          padding: '0.8rem 1.1rem',
+                          borderBottom: i < Math.min(projects.length, 8) - 1 ? '1px solid var(--border-subtle)' : 'none',
+                          cursor: 'pointer', transition: 'background 0.1s',
+                        }}
+                        onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = 'rgba(0,0,0,0.02)' }}
+                        onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'transparent' }}
+                      >
+                        <div style={{ width: 28, height: 28, borderRadius: '50%', background: visual?.bg ?? 'var(--surface-2)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: visual?.color ?? 'var(--text-muted)', flexShrink: 0 }}>
+                          {isValidElement<{ width?: number; height?: number }>(MODE_ICONS[mode.id as StudyModeId])
+                            ? cloneElement(MODE_ICONS[mode.id as StudyModeId] as React.ReactElement<{ width?: number; height?: number }>, { width: 12, height: 12 })
+                            : MODE_ICONS[mode.id as StudyModeId]}
+                        </div>
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                          <div style={{ fontSize: '0.82rem', fontWeight: 600, color: 'var(--text-primary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{p.title}</div>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', marginTop: '0.1rem' }}>
+                            <span style={{ fontSize: '0.68rem', color: visual?.color ?? 'var(--text-muted)', fontWeight: 500 }}>{mode.name}</span>
+                            {ref && <><span style={{ fontSize: '0.6rem', color: 'var(--border)' }}>·</span><span style={{ fontSize: '0.68rem', color: 'var(--text-muted)', fontStyle: 'italic', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{ref}</span></>}
+                          </div>
+                        </div>
+                        <div style={{ textAlign: 'right', flexShrink: 0 }}>
+                          <div style={{ fontSize: '0.68rem', color: 'var(--text-muted)' }}>{formatDate(p.updated_at)}</div>
+                          {p.status === 'completed' && (
+                            <div style={{ fontSize: '0.58rem', fontWeight: 700, color: '#10B981', background: 'rgba(16,185,129,0.1)', padding: '0.08rem 0.4rem', borderRadius: '99px', marginTop: '0.15rem', display: 'inline-block' }}>Concluído</div>
+                          )}
                         </div>
                       </div>
-                      <div style={{ textAlign: 'right', flexShrink: 0 }}>
-                        <div style={{ fontSize: '0.68rem', color: 'var(--text-muted)' }}>{formatDate(p.updated_at)}</div>
-                        {p.status === 'completed' && (
-                          <div style={{ fontSize: '0.58rem', fontWeight: 700, color: '#10B981', background: 'rgba(16,185,129,0.1)', padding: '0.08rem 0.4rem', borderRadius: '99px', marginTop: '0.15rem', display: 'inline-block' }}>Concluído</div>
-                        )}
-                      </div>
-                    </div>
-                  )
-                })}
-              </div>
+                    )
+                  })}
+                </div>
+              )}
             </section>
 
             {/* ── Mapa Bíblico ── */}
             {studiedBooks.size > 0 && (
               <section>
-                <DashLabel>Mapa Bíblico</DashLabel>
-                <BibleMap studiedBooks={studiedBooks} />
+                <CollapseHeader label="Mapa Bíblico" collapsed={collapsedAnalytics.has('mapa')} onToggle={() => toggleAnalytics('mapa')} />
+                {!collapsedAnalytics.has('mapa') && <BibleMap studiedBooks={studiedBooks} />}
               </section>
             )}
 
             {/* ── Todos os Estudos ── */}
             <section>
-              <DashLabel>Todos os Estudos</DashLabel>
-              <div style={{ marginTop: '0.85rem', border: '1px solid var(--border-subtle)', borderRadius: '10px', overflow: 'hidden', background: 'var(--surface)' }}>
+              <CollapseHeader label="Todos os Estudos" collapsed={collapsedAnalytics.has('todos')} onToggle={() => toggleAnalytics('todos')} />
+              {!collapsedAnalytics.has('todos') && <div style={{ marginTop: '0.85rem', border: '1px solid var(--border-subtle)', borderRadius: '10px', overflow: 'hidden', background: 'var(--surface)' }}>
                 {libraryModes.map((modeId, idx) => {
                   const mode         = STUDY_MODE_REGISTRY[modeId]
                   const visual       = modeVisual(modeId)
@@ -777,7 +793,7 @@ export default function DashboardClient({ user, projects: initialProjects, profi
                     </div>
                   )
                 })}
-              </div>
+              </div>}
             </section>
 
           </div>
@@ -1373,6 +1389,31 @@ function ProjectCard({
         )}
       </div>
     </div>
+  )
+}
+
+function CollapseHeader({ label, collapsed, onToggle }: { label: string; collapsed: boolean; onToggle: () => void }) {
+  return (
+    <button
+      onClick={onToggle}
+      style={{
+        width: '100%', background: 'none', border: 'none', cursor: 'pointer',
+        display: 'flex', alignItems: 'center', gap: '0.6rem',
+        padding: '0.1rem 0', fontFamily: 'inherit',
+      }}
+    >
+      <svg
+        width="9" height="9" viewBox="0 0 24 24" fill="none"
+        stroke="var(--text-muted)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"
+        style={{ transform: collapsed ? 'rotate(-90deg)' : 'rotate(0deg)', transition: 'transform 0.15s', flexShrink: 0 }}
+      >
+        <path d="M6 9l6 6 6-6"/>
+      </svg>
+      <span style={{ fontSize: '0.68rem', fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--text-muted)', whiteSpace: 'nowrap' }}>
+        {label}
+      </span>
+      <div style={{ flex: 1, height: '1px', background: 'var(--border-subtle)' }} />
+    </button>
   )
 }
 
