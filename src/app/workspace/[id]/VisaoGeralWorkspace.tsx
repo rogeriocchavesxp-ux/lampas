@@ -60,7 +60,7 @@ const CY      = 270
 const RADIUS  = 205
 const PANEL_W = 300
 
-// ── Node definitions — 8 nós a 45° exatos ─────────────────────────────────────
+// ── Node definitions ──────────────────────────────────────────────────────────
 
 type NodeKind = 'cls' | 'card'
 
@@ -73,16 +73,103 @@ interface NodeDef {
   cardIds?: string[]
 }
 
-const NODES: NodeDef[] = [
-  { key: 'personagens', label: 'Personagens',  icon: '👤', angle: -90,  color: '#D97706', bg: '#FFFBEB', kind: 'cls',  clsTypes: ['personagem', 'cargo'] },
-  { key: 'lugares',     label: 'Lugares',       icon: '📍', angle: -45,  color: '#059669', bg: '#F0FDF4', kind: 'cls',  clsTypes: ['lugar'] },
-  { key: 'temas',       label: 'Temas',          icon: '📖', angle: 0,    color: '#2563EB', bg: '#EFF6FF', kind: 'cls',  clsTypes: ['tema'] },
-  { key: 'termos',      label: 'Termos-Chave',  icon: '🔑', angle: 45,   color: '#EA580C', bg: '#FFF7ED', kind: 'cls',  clsTypes: ['termo_chave', 'repeticao'] },
-  { key: 'grande_ideia',label: 'Grande Ideia',  icon: '💡', angle: 90,   color: '#D97706', bg: '#FEFCE8', kind: 'card', cardIds: ['preparar_grande_ideia_inicial'] },
-  { key: 'estrutura',   label: 'Estrutura',      icon: '⊞',  angle: 135,  color: '#4F46E5', bg: '#EEF2FF', kind: 'card', cardIds: ['preparar_estrutura_percebida'] },
-  { key: 'climax',      label: 'Clímax',         icon: '✦',  angle: 180,  color: '#7C3AED', bg: '#F5F3FF', kind: 'card', cardIds: ['preparar_climax'] },
-  { key: 'movimento',   label: 'Movimento',      icon: '⟶', angle: -135, color: '#475569', bg: '#F8FAFC', kind: 'card', cardIds: ['preparar_movimento_narrativo', 'preparar_fluxo_argumentativo'] },
-]
+// ── Nós por modo de estudo ────────────────────────────────────────────────────
+// 8 nós → 45° · 7 nós → ~51.4° · 6 nós → 60°
+
+const MODE_NODES_MAP: Record<string, NodeDef[]> = {
+  exegese_biblica: [
+    { key: 'personagens',  label: 'Personagens',  icon: '👤', angle: -90,  color: '#D97706', bg: '#FFFBEB', kind: 'cls',  clsTypes: ['personagem', 'cargo'] },
+    { key: 'lugares',      label: 'Lugares',       icon: '📍', angle: -45,  color: '#059669', bg: '#F0FDF4', kind: 'cls',  clsTypes: ['lugar'] },
+    { key: 'temas',        label: 'Temas',          icon: '📖', angle: 0,    color: '#2563EB', bg: '#EFF6FF', kind: 'cls',  clsTypes: ['tema'] },
+    { key: 'termos',       label: 'Termos-Chave',  icon: '🔑', angle: 45,   color: '#EA580C', bg: '#FFF7ED', kind: 'cls',  clsTypes: ['termo_chave', 'repeticao'] },
+    { key: 'grande_ideia', label: 'Grande Ideia',  icon: '💡', angle: 90,   color: '#D97706', bg: '#FEFCE8', kind: 'card', cardIds: ['preparar_grande_ideia_inicial'] },
+    { key: 'estrutura',    label: 'Estrutura',      icon: '⊞',  angle: 135,  color: '#4F46E5', bg: '#EEF2FF', kind: 'card', cardIds: ['preparar_estrutura_percebida'] },
+    { key: 'climax',       label: 'Clímax',         icon: '✦',  angle: 180,  color: '#7C3AED', bg: '#F5F3FF', kind: 'card', cardIds: ['preparar_climax'] },
+    { key: 'movimento',    label: 'Movimento',      icon: '⟶', angle: -135, color: '#475569', bg: '#F8FAFC', kind: 'card', cardIds: ['preparar_movimento_narrativo', 'preparar_fluxo_argumentativo'] },
+  ],
+  sermao: [
+    { key: 'vg_assunto',    label: 'Assunto',       icon: '📌', angle: -90,  color: '#7C3AED', bg: '#F5F3FF', kind: 'card', cardIds: ['vg_assunto'] },
+    { key: 'vg_tema',       label: 'Tema Central',  icon: '🎯', angle: -45,  color: '#6D28D9', bg: '#EDE9FE', kind: 'card', cardIds: ['vg_tema'] },
+    { key: 'vg_movimento',  label: 'Movimento',     icon: '⟶', angle: 0,    color: '#4F46E5', bg: '#EEF2FF', kind: 'card', cardIds: ['vg_movimento'] },
+    { key: 'vg_divisoes',   label: 'Divisões',      icon: '⊞',  angle: 45,   color: '#4338CA', bg: '#EEF2FF', kind: 'card', cardIds: ['vg_divisoes'] },
+    { key: 'vg_climax',     label: 'Clímax',        icon: '✦',  angle: 90,   color: '#7C3AED', bg: '#F5F3FF', kind: 'card', cardIds: ['vg_climax'] },
+    { key: 'vg_verdade',    label: 'Verdade',       icon: '💡', angle: 135,  color: '#D97706', bg: '#FFFBEB', kind: 'card', cardIds: ['vg_verdade'] },
+    { key: 'vg_cristo',     label: 'Cristo',        icon: '✚',  angle: 180,  color: '#BE3455', bg: '#FFF1F2', kind: 'card', cardIds: ['vg_cristo'] },
+    { key: 'vg_aplicacoes', label: 'Aplicações',    icon: '🎯', angle: -135, color: '#059669', bg: '#F0FDF4', kind: 'card', cardIds: ['vg_aplicacoes'] },
+  ],
+  devocional: [
+    { key: 'vg_deus',         label: 'Revela Deus',   icon: '✦',  angle: -90,  color: '#9A3412', bg: '#FFF7ED', kind: 'card', cardIds: ['vg_deus'] },
+    { key: 'vg_homem',        label: 'Revela o Homem',icon: '👤', angle: -39,  color: '#BE3455', bg: '#FFF1F2', kind: 'card', cardIds: ['vg_homem'] },
+    { key: 'vg_promessas',    label: 'Promessas',     icon: '🙏', angle: 13,   color: '#059669', bg: '#F0FDF4', kind: 'card', cardIds: ['vg_promessas'] },
+    { key: 'vg_advertencias', label: 'Advertências',  icon: '⚠',  angle: 64,   color: '#D97706', bg: '#FFFBEB', kind: 'card', cardIds: ['vg_advertencias'] },
+    { key: 'vg_pecados',      label: 'Pecados',       icon: '✖',  angle: 116,  color: '#DC2626', bg: '#FEF2F2', kind: 'card', cardIds: ['vg_pecados'] },
+    { key: 'vg_exemplos',     label: 'Exemplos',      icon: '⬆',  angle: 167,  color: '#4F46E5', bg: '#EEF2FF', kind: 'card', cardIds: ['vg_exemplos'] },
+    { key: 'vg_aplicacao',    label: 'Aplicação',     icon: '🎯', angle: 219,  color: '#0369A1', bg: '#EFF6FF', kind: 'card', cardIds: ['vg_aplicacao'] },
+  ],
+  estudo_biblico: [
+    { key: 'vg_tema',        label: 'Tema Principal', icon: '📖', angle: -90,  color: '#0369A1', bg: '#EFF6FF', kind: 'card', cardIds: ['vg_tema'] },
+    { key: 'vg_estrutura',   label: 'Estrutura',      icon: '⊞',  angle: -39,  color: '#2563EB', bg: '#EFF6FF', kind: 'card', cardIds: ['vg_estrutura'] },
+    { key: 'vg_personagens', label: 'Personagens',    icon: '👤', angle: 13,   color: '#D97706', bg: '#FFFBEB', kind: 'cls',  clsTypes: ['personagem', 'cargo'] },
+    { key: 'vg_perguntas',   label: 'Perguntas',      icon: '❓', angle: 64,   color: '#7C3AED', bg: '#F5F3FF', kind: 'card', cardIds: ['vg_perguntas'] },
+    { key: 'vg_verdades',    label: 'Verdades',       icon: '💡', angle: 116,  color: '#D97706', bg: '#FFFBEB', kind: 'card', cardIds: ['vg_verdades'] },
+    { key: 'vg_aplicacoes',  label: 'Aplicações',     icon: '🎯', angle: 167,  color: '#059669', bg: '#F0FDF4', kind: 'card', cardIds: ['vg_aplicacoes'] },
+    { key: 'vg_topicos',     label: 'Para Discussão', icon: '💬', angle: 219,  color: '#475569', bg: '#F8FAFC', kind: 'card', cardIds: ['vg_topicos'] },
+  ],
+  estudo_doutrinario: [
+    { key: 'vg_definicao',     label: 'Definição',       icon: '📖', angle: -90, color: '#1E40AF', bg: '#EFF6FF', kind: 'card', cardIds: ['vg_definicao'] },
+    { key: 'vg_questao',       label: 'Questão Central', icon: '❓', angle: -30, color: '#2563EB', bg: '#EFF6FF', kind: 'card', cardIds: ['vg_questao'] },
+    { key: 'vg_passagens',     label: 'Passagens',       icon: '📜', angle: 30,  color: '#059669', bg: '#F0FDF4', kind: 'card', cardIds: ['vg_passagens'] },
+    { key: 'vg_doutrinas',     label: 'Doutrinas Rel.',  icon: '⊞',  angle: 90,  color: '#4F46E5', bg: '#EEF2FF', kind: 'card', cardIds: ['vg_doutrinas'] },
+    { key: 'vg_controversias', label: 'Controvérsias',   icon: '⚡', angle: 150, color: '#D97706', bg: '#FFFBEB', kind: 'card', cardIds: ['vg_controversias'] },
+    { key: 'vg_implicacoes',   label: 'Implicações',     icon: '🎯', angle: 210, color: '#7C3AED', bg: '#F5F3FF', kind: 'card', cardIds: ['vg_implicacoes'] },
+  ],
+  estudo_tematico: [
+    { key: 'vg_definicao',  label: 'Definição',         icon: '📖', angle: -90, color: '#065F46', bg: '#F0FDF4', kind: 'card', cardIds: ['vg_definicao'] },
+    { key: 'vg_textos',     label: 'Textos Principais', icon: '📜', angle: -30, color: '#059669', bg: '#F0FDF4', kind: 'card', cardIds: ['vg_textos'] },
+    { key: 'vg_canonico',   label: 'Desenv. Canônico',  icon: '⟶', angle: 30,  color: '#0F766E', bg: '#F0FDF4', kind: 'card', cardIds: ['vg_canonico'] },
+    { key: 'vg_aliancas',   label: 'Alianças',          icon: '🤝', angle: 90,  color: '#0369A1', bg: '#EFF6FF', kind: 'card', cardIds: ['vg_aliancas'] },
+    { key: 'vg_cristo',     label: 'Relação c/ Cristo', icon: '✚',  angle: 150, color: '#BE3455', bg: '#FFF1F2', kind: 'card', cardIds: ['vg_cristo'] },
+    { key: 'vg_aplicacoes', label: 'Aplicações',        icon: '🎯', angle: 210, color: '#7C3AED', bg: '#F5F3FF', kind: 'card', cardIds: ['vg_aplicacoes'] },
+  ],
+  estudo_de_carta: [
+    { key: 'vg_autor',         label: 'Autor',           icon: '✍',  angle: -90,  color: '#6D28D9', bg: '#F5F3FF', kind: 'card', cardIds: ['vg_autor'] },
+    { key: 'vg_destinatarios', label: 'Destinatários',   icon: '📬', angle: -45,  color: '#7C3AED', bg: '#EDE9FE', kind: 'card', cardIds: ['vg_destinatarios'] },
+    { key: 'vg_contexto',      label: 'Contexto Hist.',  icon: '📅', angle: 0,    color: '#4F46E5', bg: '#EEF2FF', kind: 'card', cardIds: ['vg_contexto'] },
+    { key: 'vg_proposito',     label: 'Propósito',       icon: '🎯', angle: 45,   color: '#2563EB', bg: '#EFF6FF', kind: 'card', cardIds: ['vg_proposito'] },
+    { key: 'vg_estrutura',     label: 'Estrutura Geral', icon: '⊞',  angle: 90,   color: '#0369A1', bg: '#EFF6FF', kind: 'card', cardIds: ['vg_estrutura'] },
+    { key: 'vg_temas',         label: 'Temas',           icon: '📖', angle: 135,  color: '#059669', bg: '#F0FDF4', kind: 'card', cardIds: ['vg_temas'] },
+    { key: 'vg_argumento',     label: 'Argumento',       icon: '⟶', angle: 180,  color: '#D97706', bg: '#FFFBEB', kind: 'card', cardIds: ['vg_argumento'] },
+    { key: 'vg_blocos',        label: 'Grandes Blocos',  icon: '▦',  angle: -135, color: '#475569', bg: '#F8FAFC', kind: 'card', cardIds: ['vg_blocos'] },
+  ],
+  comentario_exegetico: [
+    { key: 'vg_estrutura',  label: 'Estrutura',          icon: '⊞',  angle: -90, color: '#F97316', bg: '#FFF7ED', kind: 'card', cardIds: ['preparar_estrutura_percebida'] },
+    { key: 'vg_fluxo',      label: 'Fluxo Arg.',         icon: '⟶', angle: -30, color: '#EA580C', bg: '#FFF7ED', kind: 'card', cardIds: ['preparar_fluxo_argumentativo'] },
+    { key: 'vg_termos',     label: 'Termos Relevantes',  icon: '🔑', angle: 30,  color: '#D97706', bg: '#FFFBEB', kind: 'cls',  clsTypes: ['termo_chave', 'repeticao'] },
+    { key: 'vg_questoes',   label: 'Questões Interp.',   icon: '❓', angle: 90,  color: '#B45309', bg: '#FEF3C7', kind: 'card', cardIds: ['vg_questoes'] },
+    { key: 'vg_conexoes',   label: 'Conexões Canônicas', icon: '🔗', angle: 150, color: '#92400E', bg: '#FEF3C7', kind: 'card', cardIds: ['vg_conexoes'] },
+    { key: 'vg_teologia',   label: 'Teologia',           icon: '📖', angle: 210, color: '#78350F', bg: '#FEF3C7', kind: 'card', cardIds: ['vg_teologia'] },
+  ],
+}
+
+// ── Prompt de IA por modo (para o botão "Organizar com IA" em cada nó) ────────
+
+function buildVGNodePrompt(project: Project, node: NodeDef): string {
+  const isPassage = project.book !== '—'
+  const ref = isPassage ? `${project.book} ${project.passage_ref}` : project.passage_ref
+  const mode = project.study_mode ?? 'exegese_biblica'
+
+  const prompts: Record<string, string> = {
+    exegese_biblica:     `Analise ${ref} e liste os principais elementos de "${node.label}" na passagem, com breve nota exegética sobre cada um.`,
+    sermao:              `Analisando ${ref} para pregação, desenvolva "${node.label}" com foco no potencial homilético do texto.`,
+    devocional:          `Lendo ${ref} devocionalmente, desenvolva "${node.label}" como reflexão espiritual formativa.`,
+    estudo_biblico:      `Para um estudo bíblico sobre ${ref}, desenvolva "${node.label}" de forma didática e participativa.`,
+    estudo_doutrinario:  `Sobre a doutrina "${ref}", desenvolva "${node.label}" com precisão teológica reformada.`,
+    estudo_tematico:     `Para o estudo temático sobre "${ref}", desenvolva "${node.label}" rastreando sua progressão canônica.`,
+    estudo_de_carta:     `Para o estudo de ${ref}, desenvolva "${node.label}" em seu contexto epistolar e argumentativo.`,
+    comentario_exegetico:`Para um comentário exegético de ${ref}, desenvolva "${node.label}" com rigor analítico.`,
+  }
+  return prompts[mode] ?? prompts.exegese_biblica
+}
 
 function nodeXY(angle: number, r = RADIUS) {
   const rad = (angle * Math.PI) / 180
@@ -109,6 +196,17 @@ export default function VisaoGeralWorkspace({
 }: Props) {
   const supabase    = useMemo(() => createClient(), [])
   const wrapRef     = useRef<HTMLDivElement>(null)
+
+  // Nós adaptativos ao modo de estudo
+  const nodes = useMemo<NodeDef[]>(
+    () => MODE_NODES_MAP[project.study_mode ?? ''] ?? MODE_NODES_MAP.exegese_biblica,
+    [project.study_mode],
+  )
+
+  // Nó central: para modos temáticos (sem perícope), mostra o tema/doutrina
+  const isPassageMode = project.book !== '—'
+  const centerTitle   = isPassageMode ? project.book : 'Tema'
+  const centerSub     = isPassageMode ? project.passage_ref : project.passage_ref
 
   const [mode,         setMode]        = useState<'visual' | 'structured'>('visual')
   const [activePanel,  setActivePanel] = useState<string | null>(null)
@@ -202,7 +300,7 @@ export default function VisaoGeralWorkspace({
   const getCount = (node: NodeDef): number =>
     node.kind === 'cls' ? getClsItems(node).length : (getCardText(node) ? 1 : 0)
 
-  const totalItems = NODES.reduce((s, n) => s + getCount(n), 0)
+  const totalItems = nodes.reduce((s, n) => s + getCount(n), 0)
 
   // ── Save card ──────────────────────────────────────────────────────────────
   const saveCard = useCallback(async (cardId: string, value: string) => {
@@ -244,7 +342,7 @@ export default function VisaoGeralWorkspace({
 
   // ── Abre o painel de detalhe para um termo (batched com outros setState) ───
   function openTermDetail(c: Classification) {
-    const node = NODES.find(n => n.clsTypes?.includes(c.type))
+    const node = nodes.find(n => n.clsTypes?.includes(c.type))
     if (node) setActivePanel(node.key)
     setDictSaved(false)
     setActiveItem(c)
@@ -403,7 +501,7 @@ export default function VisaoGeralWorkspace({
   const scale        = Math.min(1, (canvasAreaW - 8) / CW)
   const scaledH      = CH * scale
 
-  const activeNode = NODES.find(n => n.key === activePanel) ?? null
+  const activeNode = nodes.find(n => n.key === activePanel) ?? null
 
   // ── Render ─────────────────────────────────────────────────────────────────
   return (
@@ -477,7 +575,7 @@ export default function VisaoGeralWorkspace({
                   width={CW} height={CH} viewBox={`0 0 ${CW} ${CH}`}
                 >
                   <defs>
-                    {NODES.map(node => {
+                    {nodes.map(node => {
                       const { x: nx, y: ny } = nodeXY(node.angle)
                       return (
                         <linearGradient key={`g-${node.key}`} id={`grad-${node.key}`}
@@ -488,7 +586,7 @@ export default function VisaoGeralWorkspace({
                         </linearGradient>
                       )
                     })}
-                    {NODES.map(node => {
+                    {nodes.map(node => {
                       const { x: nx, y: ny } = nodeXY(node.angle)
                       return (
                         <linearGradient key={`ga-${node.key}`} id={`grad-active-${node.key}`}
@@ -501,7 +599,7 @@ export default function VisaoGeralWorkspace({
                     })}
                   </defs>
 
-                  {NODES.map(node => {
+                  {nodes.map(node => {
                     const { x: nx, y: ny } = nodeXY(node.angle)
                     const isHov = hoveredNode === node.key
                     const isAct = activePanel === node.key
@@ -557,13 +655,25 @@ export default function VisaoGeralWorkspace({
                     e.currentTarget.style.transform = 'translate(-50%, -50%) scale(1)'
                   }}
                 >
-                  <div style={{ fontSize: '1.35rem', marginBottom: '6px', lineHeight: 1 }}>📖</div>
-                  <div style={{ fontSize: '0.9rem', fontWeight: 700, color: '#0F172A', letterSpacing: '-0.02em', lineHeight: 1.2 }}>
-                    {project.book}
+                  <div style={{ fontSize: '1.35rem', marginBottom: '6px', lineHeight: 1 }}>
+                    {isPassageMode ? '📖' : '📚'}
                   </div>
-                  <div style={{ fontSize: '0.73rem', color: '#64748B', marginTop: '3px', letterSpacing: '0.01em' }}>
-                    {project.passage_ref}
+                  <div style={{
+                    fontSize: isPassageMode ? '0.9rem' : '0.75rem',
+                    fontWeight: 700, color: '#0F172A', letterSpacing: '-0.02em', lineHeight: 1.2,
+                    maxWidth: '150px', textAlign: 'center',
+                    overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: isPassageMode ? 'nowrap' : 'normal',
+                    WebkitLineClamp: isPassageMode ? undefined : 3,
+                    display: isPassageMode ? undefined : '-webkit-box',
+                    WebkitBoxOrient: isPassageMode ? undefined : 'vertical',
+                  }}>
+                    {centerTitle}
                   </div>
+                  {centerSub && (
+                    <div style={{ fontSize: '0.73rem', color: '#64748B', marginTop: '3px', letterSpacing: '0.01em' }}>
+                      {centerSub}
+                    </div>
+                  )}
                   {onOpenBible && (
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '3px', marginTop: '8px', fontSize: '0.6rem', color: '#94A3B8', letterSpacing: '0.04em', textTransform: 'uppercase' }}>
                       <BookOpen size={9} strokeWidth={2} /> abrir
@@ -579,7 +689,7 @@ export default function VisaoGeralWorkspace({
                 </button>
 
                 {/* ── Outer nodes ── */}
-                {NODES.map(node => {
+                {nodes.map(node => {
                   const { x: nx, y: ny } = nodeXY(node.angle)
                   const count   = getCount(node)
                   const hasData = count > 0
@@ -1034,7 +1144,7 @@ export default function VisaoGeralWorkspace({
                       </button>
                     )}
                     <button
-                      onClick={() => onAskAI(`Analise ${project.book} ${project.passage_ref} e liste os principais elementos de "${activeNode.label}" na passagem, com breve nota sobre cada um.`)}
+                      onClick={() => onAskAI(buildVGNodePrompt(project, activeNode))}
                       style={{
                         display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '5px',
                         background: 'transparent', border: '1px solid #E2E8F0',
@@ -1055,7 +1165,7 @@ export default function VisaoGeralWorkspace({
           {/* ── Bottom bar ── */}
           <div style={{ marginTop: '0.9rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '8px' }}>
             <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap' }}>
-              {NODES.filter(n => getCount(n) > 0).map(n => (
+              {nodes.filter(n => getCount(n) > 0).map(n => (
                 <button key={n.key} onClick={() => setActivePanel(n.key === activePanel ? null : n.key)}
                   style={{
                     display: 'flex', alignItems: 'center', gap: '4px',
