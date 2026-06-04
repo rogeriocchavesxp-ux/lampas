@@ -1029,7 +1029,7 @@ export default function WorkspaceClient({ user, project, initialSections }: Prop
                                                 </div>
                                                 {groupSub && (
                                                   <div style={{
-                                                    fontSize: '0.67rem', color: 'var(--text-muted)',
+                                                    fontSize: '0.58rem', color: 'var(--text-muted)',
                                                     marginTop: '0.04rem', lineHeight: 1.15,
                                                     overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
                                                   }}>
