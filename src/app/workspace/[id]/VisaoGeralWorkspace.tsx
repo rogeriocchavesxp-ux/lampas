@@ -67,14 +67,163 @@ type NodeKind = 'cls' | 'card'
 interface NodeDef {
   key: string; label: string; icon: string
   angle: number          // 0 = direita, -90 = topo, em sentido horário
+  radius?: number
   color: string; bg: string
   kind: NodeKind
   clsTypes?: ClassType[]
   cardIds?: string[]
 }
 
+const EPISTLE_BOOKS = new Set([
+  'Romanos', '1 Coríntios', '2 Coríntios', 'Gálatas', 'Efésios', 'Filipenses',
+  'Colossenses', '1 Tessalonicenses', '2 Tessalonicenses', '1 Timóteo', '2 Timóteo',
+  'Tito', 'Filemom', 'Hebreus', 'Tiago', '1 Pedro', '2 Pedro', '1 João', '2 João',
+  '3 João', 'Judas',
+])
+
+function isEpistleBook(book: string): boolean {
+  return EPISTLE_BOOKS.has(book.trim())
+}
+
+function cardDef(id: string, title: string, placeholder: string, aiTrigger: string) {
+  return { id, title, placeholder, aiTrigger }
+}
+
+const VG_CARD_DEFS: Record<string, SectionDef['cards'][number]> = {
+  vg_autor: cardDef(
+    'vg_autor',
+    'Autor',
+    'Identifique o autor da carta, sua autoridade, relação com os destinatários e elementos biográficos relevantes para a perícope.',
+    'Identifique o autor desta carta e explique como sua autoridade, relação pastoral e contexto moldam a interpretação da passagem.',
+  ),
+  vg_destinatarios: cardDef(
+    'vg_destinatarios',
+    'Destinatários',
+    'Descreva os destinatários originais: comunidade, situação espiritual, pressões, conflitos e necessidades pastorais.',
+    'Descreva os destinatários originais desta carta, sua situação histórica, espiritual e pastoral, e como isso afeta a leitura da passagem.',
+  ),
+  vg_contexto: cardDef(
+    'vg_contexto',
+    'Contexto histórico',
+    'Registre o pano de fundo histórico, social, religioso e pastoral que ilumina a passagem dentro da carta.',
+    'Explique o contexto histórico, social, religioso e pastoral desta carta que é indispensável para interpretar a passagem.',
+  ),
+  vg_proposito: cardDef(
+    'vg_proposito',
+    'Propósito',
+    'Defina o propósito da carta e como a perícope contribui para essa intenção comunicativa.',
+    'Identifique o propósito explícito ou implícito da carta e mostre como esta passagem contribui para ele.',
+  ),
+  vg_estrutura: cardDef(
+    'vg_estrutura',
+    'Estrutura geral',
+    'Esboce a estrutura geral da carta e localize a perícope dentro do fluxo do documento.',
+    'Apresente a estrutura geral da carta e situe esta passagem dentro do desenvolvimento do argumento.',
+  ),
+  vg_temas: cardDef(
+    'vg_temas',
+    'Temas',
+    'Liste os temas centrais da carta e destaque quais deles aparecem ou sustentam esta perícope.',
+    'Identifique os temas principais da carta e explique quais são decisivos para compreender esta passagem.',
+  ),
+  vg_argumento: cardDef(
+    'vg_argumento',
+    'Argumento',
+    'Descreva o argumento da carta e o papel da passagem na progressão lógica, pastoral ou teológica.',
+    'Descreva o argumento central da carta e explique como esta passagem participa desse movimento argumentativo.',
+  ),
+  vg_blocos: cardDef(
+    'vg_blocos',
+    'Grandes blocos',
+    'Divida a carta em grandes blocos e indique o bloco ao qual a passagem pertence.',
+    'Divida a carta em grandes blocos literários/argumentativos e localize esta passagem dentro deles.',
+  ),
+  vg_assunto: cardDef(
+    'vg_assunto',
+    'Assunto',
+    'Defina o assunto do sermão em termos simples: sobre o que o texto fala e qual eixo conduz a pregação.',
+    'Defina o assunto do sermão a partir desta passagem, sem perder a intenção do texto.',
+  ),
+  vg_tema: cardDef(
+    'vg_tema',
+    'Tema central',
+    'Formule o tema central que organizará a mensagem, ainda subordinado à exegese da passagem.',
+    'Formule o tema central para a pregação, derivado da passagem e coerente com seu contexto bíblico.',
+  ),
+  vg_movimento: cardDef(
+    'vg_movimento',
+    'Movimento',
+    'Descreva o movimento do texto e como ele conduzirá o movimento da mensagem.',
+    'Descreva o movimento textual e homilético desta passagem, do início ao clímax e à resposta pastoral.',
+  ),
+  vg_divisoes: cardDef(
+    'vg_divisoes',
+    'Divisões',
+    'Liste divisões pregáveis que nasçam da estrutura e do argumento do texto.',
+    'Proponha divisões homiléticas fiéis ao fluxo do texto e úteis para uma pregação expositiva.',
+  ),
+  vg_climax: cardDef(
+    'vg_climax',
+    'Clímax',
+    'Identifique o ponto de maior peso textual, teológico e pastoral da mensagem.',
+    'Identifique o clímax textual e homilético desta passagem e explique como conduzir a congregação até ele.',
+  ),
+  vg_verdade: cardDef(
+    'vg_verdade',
+    'Verdade',
+    'Expresse a verdade bíblica que deve ser proclamada, crida e obedecida.',
+    'Formule a verdade central que esta passagem proclama e que o sermão deve comunicar.',
+  ),
+  vg_cristo: cardDef(
+    'vg_cristo',
+    'Cristo',
+    'Explique como a pessoa e obra de Cristo fundamentam, cumprem ou iluminam a mensagem sem forçar conexões.',
+    'Mostre como esta passagem aponta para Cristo, sua obra e o evangelho, evitando moralismo e alegorização.',
+  ),
+  vg_aplicacoes: cardDef(
+    'vg_aplicacoes',
+    'Aplicações',
+    'Desenvolva aplicações pastorais específicas: fé, arrependimento, consolo, obediência e missão.',
+    'Sugira aplicações pastorais específicas e evangélicas para a congregação a partir desta passagem.',
+  ),
+  vg_regra_principal: cardDef(
+    'vg_regra_principal',
+    'Regra principal',
+    'Defina a regra hermenêutica e homilética que deve governar o sermão para manter fidelidade ao texto.',
+    'Estabeleça a regra principal para pregar esta passagem com fidelidade: o que o sermão deve preservar e o que deve evitar.',
+  ),
+}
+
 // ── Nós por modo de estudo ────────────────────────────────────────────────────
 // 8 nós → 45° · 7 nós → ~51.4° · 6 nós → 60°
+
+const CARTA_BASE_NODES: NodeDef[] = [
+  { key: 'vg_autor',         label: 'Autor',           icon: '✍',  angle: -90,  color: '#6D28D9', bg: '#F5F3FF', kind: 'card', cardIds: ['vg_autor'] },
+  { key: 'vg_destinatarios', label: 'Destinatários',   icon: '📬', angle: -45,  color: '#7C3AED', bg: '#EDE9FE', kind: 'card', cardIds: ['vg_destinatarios'] },
+  { key: 'vg_contexto',      label: 'Contexto Hist.',  icon: '📅', angle: 0,    color: '#4F46E5', bg: '#EEF2FF', kind: 'card', cardIds: ['vg_contexto'] },
+  { key: 'vg_proposito',     label: 'Propósito',       icon: '🎯', angle: 45,   color: '#2563EB', bg: '#EFF6FF', kind: 'card', cardIds: ['vg_proposito'] },
+  { key: 'vg_estrutura',     label: 'Estrutura Geral', icon: '⊞',  angle: 90,   color: '#0369A1', bg: '#EFF6FF', kind: 'card', cardIds: ['vg_estrutura'] },
+  { key: 'vg_temas',         label: 'Temas',           icon: '📖', angle: 135,  color: '#059669', bg: '#F0FDF4', kind: 'card', cardIds: ['vg_temas'] },
+  { key: 'vg_argumento',     label: 'Argumento',       icon: '⟶', angle: 180,  color: '#D97706', bg: '#FFFBEB', kind: 'card', cardIds: ['vg_argumento'] },
+  { key: 'vg_blocos',        label: 'Grandes Blocos',  icon: '▦',  angle: -135, color: '#475569', bg: '#F8FAFC', kind: 'card', cardIds: ['vg_blocos'] },
+]
+
+const SERMAO_NODES: NodeDef[] = [
+  { key: 'vg_assunto',    label: 'Assunto',       icon: '📌', angle: -90,  color: '#7C3AED', bg: '#F5F3FF', kind: 'card', cardIds: ['vg_assunto'] },
+  { key: 'vg_tema',       label: 'Tema Central',  icon: '🎯', angle: -45,  color: '#6D28D9', bg: '#EDE9FE', kind: 'card', cardIds: ['vg_tema'] },
+  { key: 'vg_movimento',  label: 'Movimento',     icon: '⟶', angle: 0,    color: '#4F46E5', bg: '#EEF2FF', kind: 'card', cardIds: ['vg_movimento'] },
+  { key: 'vg_divisoes',   label: 'Divisões',      icon: '⊞',  angle: 45,   color: '#4338CA', bg: '#EEF2FF', kind: 'card', cardIds: ['vg_divisoes'] },
+  { key: 'vg_climax',     label: 'Clímax',        icon: '✦',  angle: 90,   color: '#7C3AED', bg: '#F5F3FF', kind: 'card', cardIds: ['vg_climax'] },
+  { key: 'vg_verdade',    label: 'Verdade',       icon: '💡', angle: 135,  color: '#D97706', bg: '#FFFBEB', kind: 'card', cardIds: ['vg_verdade'] },
+  { key: 'vg_cristo',     label: 'Cristo',        icon: '✚',  angle: 180,  color: '#BE3455', bg: '#FFF1F2', kind: 'card', cardIds: ['vg_cristo'] },
+  { key: 'vg_aplicacoes', label: 'Aplicações',    icon: '🎯', angle: -135, color: '#059669', bg: '#F0FDF4', kind: 'card', cardIds: ['vg_aplicacoes'] },
+]
+
+const SERMAO_EPISTOLAR_NODES: NodeDef[] = [
+  ...CARTA_BASE_NODES.map((node, index) => ({ ...node, key: `sermao_${node.key}`, angle: -112.5 + index * 45, radius: 170 })),
+  ...SERMAO_NODES.map((node, index) => ({ ...node, key: `sermao_${node.key}`, angle: -90 + index * 45, radius: 240 })),
+  { key: 'sermao_vg_regra_principal', label: 'Regra Principal', icon: '⚖', angle: 247.5, radius: 240, color: '#0F766E', bg: '#F0FDFA', kind: 'card', cardIds: ['vg_regra_principal'] },
+]
 
 const MODE_NODES_MAP: Record<string, NodeDef[]> = {
   exegese_biblica: [
@@ -87,16 +236,7 @@ const MODE_NODES_MAP: Record<string, NodeDef[]> = {
     { key: 'climax',       label: 'Clímax',         icon: '✦',  angle: 180,  color: '#7C3AED', bg: '#F5F3FF', kind: 'card', cardIds: ['preparar_climax'] },
     { key: 'movimento',    label: 'Movimento',      icon: '⟶', angle: -135, color: '#475569', bg: '#F8FAFC', kind: 'card', cardIds: ['preparar_movimento_narrativo', 'preparar_fluxo_argumentativo'] },
   ],
-  sermao: [
-    { key: 'vg_assunto',    label: 'Assunto',       icon: '📌', angle: -90,  color: '#7C3AED', bg: '#F5F3FF', kind: 'card', cardIds: ['vg_assunto'] },
-    { key: 'vg_tema',       label: 'Tema Central',  icon: '🎯', angle: -45,  color: '#6D28D9', bg: '#EDE9FE', kind: 'card', cardIds: ['vg_tema'] },
-    { key: 'vg_movimento',  label: 'Movimento',     icon: '⟶', angle: 0,    color: '#4F46E5', bg: '#EEF2FF', kind: 'card', cardIds: ['vg_movimento'] },
-    { key: 'vg_divisoes',   label: 'Divisões',      icon: '⊞',  angle: 45,   color: '#4338CA', bg: '#EEF2FF', kind: 'card', cardIds: ['vg_divisoes'] },
-    { key: 'vg_climax',     label: 'Clímax',        icon: '✦',  angle: 90,   color: '#7C3AED', bg: '#F5F3FF', kind: 'card', cardIds: ['vg_climax'] },
-    { key: 'vg_verdade',    label: 'Verdade',       icon: '💡', angle: 135,  color: '#D97706', bg: '#FFFBEB', kind: 'card', cardIds: ['vg_verdade'] },
-    { key: 'vg_cristo',     label: 'Cristo',        icon: '✚',  angle: 180,  color: '#BE3455', bg: '#FFF1F2', kind: 'card', cardIds: ['vg_cristo'] },
-    { key: 'vg_aplicacoes', label: 'Aplicações',    icon: '🎯', angle: -135, color: '#059669', bg: '#F0FDF4', kind: 'card', cardIds: ['vg_aplicacoes'] },
-  ],
+  sermao: SERMAO_NODES,
   devocional: [
     { key: 'vg_deus',         label: 'Revela Deus',   icon: '✦',  angle: -90,  color: '#9A3412', bg: '#FFF7ED', kind: 'card', cardIds: ['vg_deus'] },
     { key: 'vg_homem',        label: 'Revela o Homem',icon: '👤', angle: -39,  color: '#BE3455', bg: '#FFF1F2', kind: 'card', cardIds: ['vg_homem'] },
@@ -150,16 +290,7 @@ const MODE_NODES_MAP: Record<string, NodeDef[]> = {
     { key: 'vg_cristo',     label: 'Relação c/ Cristo', icon: '✚',  angle: 150, color: '#BE3455', bg: '#FFF1F2', kind: 'card', cardIds: ['vg_cristo'] },
     { key: 'vg_aplicacoes', label: 'Aplicações',        icon: '🎯', angle: 210, color: '#7C3AED', bg: '#F5F3FF', kind: 'card', cardIds: ['vg_aplicacoes'] },
   ],
-  estudo_de_carta: [
-    { key: 'vg_autor',         label: 'Autor',           icon: '✍',  angle: -90,  color: '#6D28D9', bg: '#F5F3FF', kind: 'card', cardIds: ['vg_autor'] },
-    { key: 'vg_destinatarios', label: 'Destinatários',   icon: '📬', angle: -45,  color: '#7C3AED', bg: '#EDE9FE', kind: 'card', cardIds: ['vg_destinatarios'] },
-    { key: 'vg_contexto',      label: 'Contexto Hist.',  icon: '📅', angle: 0,    color: '#4F46E5', bg: '#EEF2FF', kind: 'card', cardIds: ['vg_contexto'] },
-    { key: 'vg_proposito',     label: 'Propósito',       icon: '🎯', angle: 45,   color: '#2563EB', bg: '#EFF6FF', kind: 'card', cardIds: ['vg_proposito'] },
-    { key: 'vg_estrutura',     label: 'Estrutura Geral', icon: '⊞',  angle: 90,   color: '#0369A1', bg: '#EFF6FF', kind: 'card', cardIds: ['vg_estrutura'] },
-    { key: 'vg_temas',         label: 'Temas',           icon: '📖', angle: 135,  color: '#059669', bg: '#F0FDF4', kind: 'card', cardIds: ['vg_temas'] },
-    { key: 'vg_argumento',     label: 'Argumento',       icon: '⟶', angle: 180,  color: '#D97706', bg: '#FFFBEB', kind: 'card', cardIds: ['vg_argumento'] },
-    { key: 'vg_blocos',        label: 'Grandes Blocos',  icon: '▦',  angle: -135, color: '#475569', bg: '#F8FAFC', kind: 'card', cardIds: ['vg_blocos'] },
-  ],
+  estudo_de_carta: CARTA_BASE_NODES,
   comentario_exegetico: [
     { key: 'vg_estrutura',  label: 'Estrutura',          icon: '⊞',  angle: -90, color: '#F97316', bg: '#FFF7ED', kind: 'card', cardIds: ['preparar_estrutura_percebida'] },
     { key: 'vg_fluxo',      label: 'Fluxo Arg.',         icon: '⟶', angle: -30, color: '#EA580C', bg: '#FFF7ED', kind: 'card', cardIds: ['preparar_fluxo_argumentativo'] },
@@ -176,6 +307,15 @@ function buildVGNodePrompt(project: Project, node: NodeDef): string {
   const isPassage = project.book !== '—'
   const ref = isPassage ? `${project.book} ${project.passage_ref}` : project.passage_ref
   const mode = project.study_mode ?? 'exegese_biblica'
+  const cardId = node.cardIds?.[0]
+  const cardMeta = cardId ? VG_CARD_DEFS[cardId] : null
+  if (mode === 'sermao' && isEpistleBook(project.book) && cardMeta) {
+    return `${cardMeta.aiTrigger}
+
+Contexto: ${ref}.
+Modo: Sermão expositivo em texto epistolar.
+Diretriz: use a base interpretativa da carta antes de formular implicações homiléticas.`
+  }
 
   const prompts: Record<string, string> = {
     exegese_biblica:            `Analise ${ref} e liste os principais elementos de "${node.label}" na passagem, com breve nota exegética sobre cada um.`,
@@ -190,6 +330,30 @@ function buildVGNodePrompt(project: Project, node: NodeDef): string {
     comentario_exegetico:       `Para um comentário exegético de ${ref}, desenvolva "${node.label}" com rigor analítico.`,
   }
   return prompts[mode] ?? prompts.exegese_biblica
+}
+
+function getOverviewNodes(project: Project): NodeDef[] {
+  if (project.study_mode === 'sermao' && isEpistleBook(project.book)) {
+    return SERMAO_EPISTOLAR_NODES
+  }
+  return MODE_NODES_MAP[project.study_mode ?? ''] ?? MODE_NODES_MAP.exegese_biblica
+}
+
+function createOverviewSectionDef(sectionDef: SectionDef, nodes: NodeDef[], project: Project): SectionDef {
+  if (project.study_mode !== 'sermao' && project.study_mode !== 'estudo_de_carta') return sectionDef
+
+  const cards = nodes
+    .filter(node => node.kind === 'card')
+    .flatMap(node => node.cardIds ?? [])
+    .filter((cardId, index, all) => all.indexOf(cardId) === index)
+    .map(cardId => VG_CARD_DEFS[cardId] ?? cardDef(
+      cardId,
+      nodes.find(node => node.cardIds?.includes(cardId))?.label ?? cardId,
+      `Descreva este campo da visão geral da passagem.`,
+      `Desenvolva este campo da visão geral da passagem com fidelidade ao texto bíblico.`,
+    ))
+
+  return cards.length > 0 ? { ...sectionDef, cards } : sectionDef
 }
 
 function nodeXY(angle: number, r = RADIUS) {
@@ -221,8 +385,12 @@ export default function VisaoGeralWorkspace({
 
   // Nós adaptativos ao modo de estudo
   const nodes = useMemo<NodeDef[]>(
-    () => MODE_NODES_MAP[project.study_mode ?? ''] ?? MODE_NODES_MAP.exegese_biblica,
-    [project.study_mode],
+    () => getOverviewNodes(project),
+    [project.study_mode, project.book],
+  )
+  const effectiveSectionDef = useMemo(
+    () => createOverviewSectionDef(sectionDef, nodes, project),
+    [sectionDef, nodes, project],
   )
 
   // Nó central: para modos temáticos (sem perícope), mostra o tema/doutrina
@@ -701,7 +869,7 @@ export default function VisaoGeralWorkspace({
 
       {/* ── Structured ─────────────────────────────────────────────────────── */}
       {mode === 'structured' && (
-        <SectionWorkspace sectionDef={sectionDef} project={project} userId={userId}
+        <SectionWorkspace sectionDef={effectiveSectionDef} project={project} userId={userId}
           existingSection={existingSection} onUpdate={onUpdate} onAskAI={onAskAI} />
       )}
 
@@ -725,7 +893,7 @@ export default function VisaoGeralWorkspace({
                 >
                   <defs>
                     {nodes.map(node => {
-                      const { x: nx, y: ny } = nodeXY(node.angle)
+                      const { x: nx, y: ny } = nodeXY(node.angle, node.radius ?? RADIUS)
                       return (
                         <linearGradient key={`g-${node.key}`} id={`grad-${node.key}`}
                           x1={CX} y1={CY} x2={nx} y2={ny} gradientUnits="userSpaceOnUse"
@@ -736,7 +904,7 @@ export default function VisaoGeralWorkspace({
                       )
                     })}
                     {nodes.map(node => {
-                      const { x: nx, y: ny } = nodeXY(node.angle)
+                      const { x: nx, y: ny } = nodeXY(node.angle, node.radius ?? RADIUS)
                       return (
                         <linearGradient key={`ga-${node.key}`} id={`grad-active-${node.key}`}
                           x1={CX} y1={CY} x2={nx} y2={ny} gradientUnits="userSpaceOnUse"
@@ -749,7 +917,7 @@ export default function VisaoGeralWorkspace({
                   </defs>
 
                   {nodes.map(node => {
-                    const { x: nx, y: ny } = nodeXY(node.angle)
+                    const { x: nx, y: ny } = nodeXY(node.angle, node.radius ?? RADIUS)
                     const isHov = hoveredNode === node.key
                     const isAct = activePanel === node.key
                     const hasData = getCount(node) > 0
@@ -839,7 +1007,7 @@ export default function VisaoGeralWorkspace({
 
                 {/* ── Outer nodes ── */}
                 {nodes.map(node => {
-                  const { x: nx, y: ny } = nodeXY(node.angle)
+                  const { x: nx, y: ny } = nodeXY(node.angle, node.radius ?? RADIUS)
                   const count   = getCount(node)
                   const hasData = count > 0
                   const isAct   = activePanel === node.key
@@ -1235,6 +1403,7 @@ export default function VisaoGeralWorkspace({
                   {/* Card textarea */}
                   {activeNode.kind === 'card' && (() => {
                     const cardId = activeNode.cardIds![0]
+                    const cardMeta = VG_CARD_DEFS[cardId]
                     const draft  = cardDraft[cardId] ?? cards[cardId] ?? ''
                     const saved  = draft === (cards[cardId] ?? '')
                     return (
@@ -1242,7 +1411,7 @@ export default function VisaoGeralWorkspace({
                         <textarea
                           value={draft}
                           onChange={e => setCardDraft(p => ({ ...p, [cardId]: e.target.value }))}
-                          placeholder={`Descreva ${activeNode.label.toLowerCase()} da passagem…`}
+                          placeholder={cardMeta?.placeholder ?? `Descreva ${activeNode.label.toLowerCase()} da passagem…`}
                           rows={7}
                           style={{
                             width: '100%', resize: 'vertical', fontFamily: 'inherit',
@@ -1688,4 +1857,3 @@ export default function VisaoGeralWorkspace({
     </div>
   )
 }
-

@@ -3,6 +3,34 @@ import { createServiceClient } from '@/lib/supabase/service'
 import { PLANS, type PlanId } from '@/lib/plans'
 import { createMercadoPagoSubscription } from '@/lib/mercadopago'
 
+type CurrentSubscription = {
+  id: string
+  plan: string
+  status: string
+  provider: string | null
+  mercado_pago_preapproval_id: string | null
+  mercado_pago_init_point: string | null
+  gateway_raw: Record<string, unknown> | null
+}
+
+function getRequestedPlan(sub: CurrentSubscription | null): PlanId | null {
+  if (!sub) return null
+  if (sub.plan !== 'free' && PLANS[sub.plan as PlanId]) return sub.plan as PlanId
+
+  const requestedPlan = sub.gateway_raw?.requested_plan
+  if (typeof requestedPlan === 'string' && PLANS[requestedPlan as PlanId]) {
+    return requestedPlan as PlanId
+  }
+
+  const externalReference = sub.gateway_raw?.external_reference
+  if (typeof externalReference === 'string') {
+    const planId = externalReference.split(':')[2]
+    if (PLANS[planId as PlanId]) return planId as PlanId
+  }
+
+  return null
+}
+
 export async function POST(req: Request) {
   const supabase = await createClient()
   const service = createServiceClient()
@@ -17,18 +45,19 @@ export async function POST(req: Request) {
 
   const { data: current } = await service
     .from('subscriptions')
-    .select('id, plan, status, provider, mercado_pago_preapproval_id, mercado_pago_init_point')
+    .select('id, plan, status, provider, mercado_pago_preapproval_id, mercado_pago_init_point, gateway_raw')
     .eq('user_id', user.id)
-    .maybeSingle()
+    .maybeSingle() as { data: CurrentSubscription | null }
 
   const activeStatuses = ['authorized', 'active']
   if (current && current.plan === planId && activeStatuses.includes(String(current.status))) {
     return Response.json({ error: 'Este plano já está ativo para sua conta.' }, { status: 409 })
   }
 
+  const requestedPlan = getRequestedPlan(current)
   if (
     current?.provider === 'mercado_pago' &&
-    current.plan === planId &&
+    requestedPlan === planId &&
     current.status === 'pending' &&
     current.mercado_pago_init_point
   ) {
@@ -63,7 +92,7 @@ export async function POST(req: Request) {
       currency: 'BRL',
       billing_interval: 'monthly',
       next_payment_at: mpSub.next_payment_date ?? null,
-      gateway_raw: mpSub,
+      gateway_raw: { ...mpSub, requested_plan: planId },
       updated_at: now,
     }, { onConflict: 'user_id' })
     .select('id')
