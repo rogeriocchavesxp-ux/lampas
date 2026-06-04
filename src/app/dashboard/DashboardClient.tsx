@@ -329,8 +329,12 @@ export default function DashboardClient({ user, projects: initialProjects, profi
     try {
       const { data, error } = await supabase.from('projects').insert(payload).select().single()
       if (error) {
-        console.error('[Lampas] Erro ao criar projeto', error.code, error.message)
-        setCreateError('Não foi possível criar o projeto. Tente novamente.')
+        console.error('[Lampas] Erro ao criar projeto', error.code, error.message, error.details)
+        const msg = error.code === '23514' ? 'Erro de validação dos dados do projeto.'
+          : error.code === '23502' ? 'Campo obrigatório ausente.'
+          : error.code === '42501' ? 'Sem permissão para criar projeto.'
+          : `Erro ${error.code ?? 'desconhecido'}: ${error.message}`
+        setCreateError(msg)
         return
       }
       if (data) {
