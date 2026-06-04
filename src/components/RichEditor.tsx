@@ -95,6 +95,7 @@ export default function RichEditor({
   }, [hlOpen])
 
   const editor = useEditor({ // eslint-disable-line @typescript-eslint/no-use-before-define
+    immediatelyRender: true,
     extensions: [
       StarterKit.configure({ codeBlock: false }),
       Underline,
