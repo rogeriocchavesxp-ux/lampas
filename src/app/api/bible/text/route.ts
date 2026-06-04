@@ -1,4 +1,4 @@
-import { fetchBibleText } from '@/lib/bible-text'
+import { fetchBibleText, VersionUnavailableError } from '@/lib/bible-text'
 
 export async function POST(req: Request) {
   const body = await req.json() as { book?: string; passageRef?: string; version?: string }
@@ -20,7 +20,10 @@ export async function POST(req: Request) {
 
     return Response.json({ verses, version })
   } catch (e) {
+    if (e instanceof VersionUnavailableError) {
+      return Response.json({ error: e.message, type: 'unavailable' }, { status: 503 })
+    }
     const msg = e instanceof Error ? e.message : 'Erro ao buscar texto bíblico'
-    return Response.json({ error: msg }, { status: 503 })
+    return Response.json({ error: msg }, { status: 500 })
   }
 }

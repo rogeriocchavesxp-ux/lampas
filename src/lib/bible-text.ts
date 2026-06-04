@@ -5,6 +5,15 @@ export interface BibleVerse {
   t: string
 }
 
+export class VersionUnavailableError extends Error {
+  readonly version: string
+  constructor(version: string) {
+    super(`A tradução ${version} não está disponível no momento.`)
+    this.name = 'VersionUnavailableError'
+    this.version = version
+  }
+}
+
 // Versões hospedadas estaticamente no Supabase (domínio público)
 const STATIC_VERSIONS = new Set(['ACF', 'acf'])
 
@@ -133,7 +142,7 @@ async function fetchFromApiBible(book: string, passageRef: string, version: stri
   const apiKey = process.env.BIBLE_API_KEY
   const bibleId = process.env[`BIBLE_ID_${version.toUpperCase()}`]
 
-  if (!apiKey || !bibleId) throw new Error(`Tradução ${version} não disponível localmente. Use ACF ou configure BIBLE_API_KEY.`)
+  if (!apiKey || !bibleId) throw new VersionUnavailableError(version)
 
   const query = encodeURIComponent(`${book} ${passageRef}`)
   const url = `https://api.scripture.api.bible/v1/bibles/${bibleId}/search?query=${query}&limit=50`

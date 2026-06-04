@@ -71,6 +71,8 @@ const HCOLOR_ORDER: HColor[] = ['yellow', 'blue', 'green', 'purple', 'orange', '
 const VERSIONS = ['ARA', 'NAA', 'ACF', 'NVI', 'NTLH'] as const
 type Version = typeof VERSIONS[number]
 
+const LOCALLY_AVAILABLE = new Set<Version>(['ACF'])
+
 const VIEW_MODES: { id: ViewMode; label: string }[] = [
   { id: 'pt',          label: 'Português'  },
   { id: 'orig',        label: 'Original'   },
@@ -168,11 +170,12 @@ export default function BibleFloatingWindow({ book, passageRef, testament, proje
   const [viewMode,   setViewMode]   = useState<ViewMode>('pt')
 
   // Bible — Portuguese
-  const [version,  setVersion]  = useState<Version>('ACF')
-  const [verses,   setVerses]   = useState<Verse[]>([])
-  const [loading,  setLoading]  = useState(false)
-  const [error,    setError]    = useState<string | null>(null)
-  const [copied,   setCopied]   = useState(false)
+  const [version,        setVersion]        = useState<Version>('ACF')
+  const [verses,         setVerses]         = useState<Verse[]>([])
+  const [loading,        setLoading]        = useState(false)
+  const [error,          setError]          = useState<string | null>(null)
+  const [copied,         setCopied]         = useState(false)
+  const [fallbackNotice, setFallbackNotice] = useState<string | null>(null)
 
   // Bible — Original
   const [origVerses,  setOrigVerses]  = useState<OriginalVerse[]>([])
@@ -221,16 +224,24 @@ export default function BibleFloatingWindow({ book, passageRef, testament, proje
   }, [projectId])
 
   // ── Fetch Portuguese ──────────────────────────────────────────────────────
-  const fetchText = useCallback(async (v: Version, force = false) => {
+  const fetchText = useCallback(async (v: Version, force = false, isFallback = false) => {
     const k = bibk(book, passageRef, v)
-    if (!force) { const c = rb(k); if (c) { setVerses(c); setError(null); return } }
+    if (!force && !isFallback) { const c = rb(k); if (c) { setVerses(c); setError(null); setFallbackNotice(null); return } }
     setLoading(true); setError(null)
     try {
       const res  = await fetch('/api/bible/text', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ book, passageRef, version: v }) })
-      const data = await res.json() as { verses?: Verse[]; error?: string }
-      if (!res.ok || !data.verses) throw new Error(data.error ?? 'Erro')
+      const data = await res.json() as { verses?: Verse[]; error?: string; type?: string }
+      if (!res.ok || !data.verses) {
+        if (data.type === 'unavailable' && v !== 'ACF') {
+          setFallbackNotice(`${v} não disponível — exibindo ACF`)
+          fetchText('ACF', force, true)
+          return
+        }
+        throw new Error(data.error ?? 'Erro ao carregar o texto')
+      }
+      if (!isFallback) setFallbackNotice(null)
       wb(k, data.verses); setVerses(data.verses)
-    } catch (e) { setError(e instanceof Error ? e.message : 'Erro') }
+    } catch (e) { setError(e instanceof Error ? e.message : 'Erro ao carregar o texto') }
     finally { setLoading(false) }
   }, [book, passageRef])
 
@@ -567,9 +578,34 @@ export default function BibleFloatingWindow({ book, passageRef, testament, proje
 
             <div style={{ display: 'flex', gap: '3px', flexShrink: 0 }} onMouseDown={e => e.stopPropagation()}>
               {/* Version — only show when in pt or side mode */}
-              {(viewMode === 'pt' || viewMode === 'side') && VERSIONS.map(v => (
-                <button key={v} onClick={() => setVersion(v)} disabled={loading} style={{ background: version === v ? accent : 'transparent', color: version === v ? '#FFF' : 'var(--text-muted)', border: `1px solid ${version === v ? accent : 'var(--border)'}`, borderRadius: '5px', padding: '0.13rem 0.38rem', fontSize: '0.58rem', fontWeight: 600, cursor: loading ? 'wait' : 'pointer', fontFamily: 'inherit', transition: 'all 0.12s' }}>{v}</button>
-              ))}
+              {(viewMode === 'pt' || viewMode === 'side') && VERSIONS.map(v => {
+                const available = LOCALLY_AVAILABLE.has(v)
+                const active    = version === v
+                return (
+                  <button
+                    key={v}
+                    onClick={() => { if (available) setVersion(v) }}
+                    disabled={loading || !available}
+                    title={available ? undefined : 'Tradução não disponível no momento'}
+                    style={{
+                      background:      active ? accent : 'transparent',
+                      color:           !available ? 'var(--border)' : active ? '#FFF' : 'var(--text-muted)',
+                      border:          `1px solid ${active ? accent : available ? 'var(--border)' : 'var(--border-subtle)'}`,
+                      borderRadius:    '5px',
+                      padding:         '0.13rem 0.38rem',
+                      fontSize:        '0.58rem',
+                      fontWeight:      600,
+                      cursor:          !available ? 'not-allowed' : loading ? 'wait' : 'pointer',
+                      fontFamily:      'inherit',
+                      transition:      'all 0.12s',
+                      textDecoration:  !available ? 'line-through' : 'none',
+                      opacity:         !available ? 0.4 : 1,
+                    }}
+                  >
+                    {v}
+                  </button>
+                )
+              })}
               <button onClick={() => setPanelOpen(o => !o)} style={{ background: panelOpen ? 'var(--surface-2)' : 'transparent', border: `1px solid ${panelOpen ? 'var(--border)' : 'transparent'}`, borderRadius: '5px', cursor: 'pointer', color: totalAnns > 0 ? accent : 'var(--text-muted)', padding: '0.13rem 0.38rem', display: 'flex', alignItems: 'center', gap: '0.22rem', fontSize: '0.58rem', fontWeight: 600, fontFamily: 'inherit' }}>
                 <Layers size={9} strokeWidth={1.75} />{totalAnns > 0 && totalAnns}
               </button>
@@ -599,6 +635,11 @@ export default function BibleFloatingWindow({ book, passageRef, testament, proje
           {/* PORTUGUÊS */}
           {viewMode === 'pt' && (
             <div style={{ padding: '1.15rem 1.25rem 1.5rem' }}>
+              {fallbackNotice && !loading && (
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.7rem', color: 'var(--text-muted)', background: 'var(--surface)', border: '1px solid var(--border-subtle)', borderRadius: '6px', padding: '0.35rem 0.65rem', marginBottom: '0.75rem', fontStyle: 'italic' }}>
+                  <span style={{ opacity: 0.6 }}>ℹ</span> {fallbackNotice}
+                </div>
+              )}
               {loading && <div style={{ display: 'flex', flexDirection: 'column', gap: '0.55rem' }}>{[100, 82, 93].map((w, i) => (<div key={i} style={{ height: '11px', borderRadius: '3px', background: 'var(--border)', width: `${w}%`, animation: 'pulse 1.5s ease-in-out infinite', animationDelay: `${i * 0.1}s` }} />))}</div>}
               {!loading && error && <div style={{ padding: '0.75rem', borderRadius: '8px', background: 'rgba(239,68,68,0.06)', border: '1px solid rgba(239,68,68,0.2)', color: 'var(--error)', fontSize: '0.82rem' }}>{error}</div>}
               {!loading && !error && verses.length > 0 && (
