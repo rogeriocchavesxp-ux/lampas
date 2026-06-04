@@ -46,6 +46,7 @@ import {
   STUDY_MODE_REGISTRY,
   type NavPhase,
 } from '@/lib/study-modes'
+import pkg from '../../../../package.json'
 
 interface Props {
   user: User
@@ -1155,6 +1156,18 @@ export default function WorkspaceClient({ user, project, initialSections }: Prop
                   </div>
                 )
               })}
+
+              {/* ── Version footer ── */}
+              <div style={{
+                marginTop: 'auto',
+                padding: '0.6rem 1rem 0.4rem',
+                borderTop: '1px solid var(--border-subtle)',
+                textAlign: 'center',
+              }}>
+                <span style={{ fontSize: '0.58rem', color: 'var(--text-muted)', fontWeight: 500, letterSpacing: '0.04em' }}>
+                  v{pkg.version}
+                </span>
+              </div>
             </>
           )}
         </nav>

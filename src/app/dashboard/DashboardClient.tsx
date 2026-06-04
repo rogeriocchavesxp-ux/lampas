@@ -12,6 +12,7 @@ import {
   type StudyModeId,
   type StudyModeConfig,
 } from '@/lib/study-modes'
+import pkg from '../../../package.json'
 
 const LEGACY_TYPE: Record<StudyModeId, string> = {
   exegese_biblica:             'exegese',
@@ -453,13 +454,19 @@ export default function DashboardClient({ user, projects: initialProjects, profi
       }}>
         <div style={{ display: 'flex', flexDirection: 'column', gap: '1px' }}>
           <LampasLogo height={30} />
-          <span style={{
-            fontSize: '0.58rem', color: 'var(--text-muted)',
-            letterSpacing: '0.08em', textTransform: 'uppercase',
-            fontWeight: 500, lineHeight: 1, paddingLeft: '38px',
-          }}>
-            Estude. Interprete. Comunique.
-          </span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem', paddingLeft: '38px' }}>
+            <span style={{
+              fontSize: '0.58rem', color: 'var(--text-muted)',
+              letterSpacing: '0.08em', textTransform: 'uppercase',
+              fontWeight: 500, lineHeight: 1,
+            }}>
+              Estude. Interprete. Comunique.
+            </span>
+            <span style={{ fontSize: '0.52rem', color: 'var(--border)', lineHeight: 1 }}>·</span>
+            <span style={{ fontSize: '0.58rem', color: 'var(--text-muted)', fontWeight: 600, lineHeight: 1, letterSpacing: '0.04em' }}>
+              v{pkg.version}
+            </span>
+          </div>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
           <span style={{ color: 'var(--text-muted)', fontSize: '0.82rem' }}>{user.email}</span>
@@ -508,6 +515,14 @@ export default function DashboardClient({ user, projects: initialProjects, profi
                 : `${projects.length} ${projects.length === 1 ? 'estudo' : 'estudos'}`}
             </p>
           </div>
+          <button onClick={() => router.push('/knowledge')} style={{
+            background: '#FFFFFF', color: '#B45309', border: '1px solid #FDE68A',
+            borderRadius: '8px', padding: '0.58rem 0.9rem', fontWeight: '650',
+            cursor: 'pointer', fontSize: '0.88rem', fontFamily: 'inherit',
+            flexShrink: 0,
+          }}>
+            🧠 Base
+          </button>
           <button onClick={openModal} style={{
             background: 'var(--accent)', color: '#FFFFFF', border: 'none',
             borderRadius: '8px', padding: '0.58rem 1.05rem', fontWeight: '650',

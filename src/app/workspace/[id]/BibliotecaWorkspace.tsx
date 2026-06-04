@@ -4,6 +4,7 @@ import { useState, useEffect, useMemo, useCallback } from 'react'
 import type { Project } from '@/types/database'
 import { createClient } from '@/lib/supabase/client'
 import { Search, Plus, BookOpen, Sparkles, X, Check, Edit2, Trash2, Clock, Eye, FileText, Bookmark, Quote } from 'lucide-react'
+import { KNOWLEDGE_TYPES, type KnowledgeItemType } from '@/lib/knowledge-base'
 
 // ── Types ──────────────────────────────────────────────────────────────────────
 
@@ -56,6 +57,18 @@ interface BookNote {
   note_text: string
   note_type: 'annotation' | 'bookmark' | 'citation'
   created_at: string
+  updated_at: string
+}
+
+interface RelatedKnowledgeItem {
+  id: string
+  item_type: KnowledgeItemType
+  title: string
+  summary: string | null
+  authors: string[]
+  bible_references: string[]
+  doctrines: string[]
+  themes: string[]
   updated_at: string
 }
 
@@ -160,6 +173,7 @@ export default function BibliotecaWorkspace({ project, userId, onAskAI }: Props)
   const [noteDraft,   setNoteDraft]   = useState('')
   const [noteType,    setNoteType]    = useState<'annotation' | 'bookmark' | 'citation'>('annotation')
   const [editingNote, setEditingNote] = useState<string | null>(null)
+  const [relatedKnowledge, setRelatedKnowledge] = useState<RelatedKnowledgeItem[]>([])
 
   // ── Load ────────────────────────────────────────────────────────────────────
   const loadBooks = useCallback(async () => {
@@ -173,6 +187,34 @@ export default function BibliotecaWorkspace({ project, userId, onAskAI }: Props)
   }, [supabase])
 
   useEffect(() => { loadBooks() }, [loadBooks])
+
+  useEffect(() => {
+    let mounted = true
+    if (!project.book || project.book === '—') {
+      setRelatedKnowledge([])
+      return () => { mounted = false }
+    }
+
+    async function loadRelatedKnowledge() {
+      try {
+        const { data } = await supabase
+          .from('knowledge_items')
+          .select('id,item_type,title,summary,authors,bible_references,doctrines,themes,updated_at')
+          .eq('user_id', userId)
+          .contains('bible_references', [project.book])
+          .order('updated_at', { ascending: false })
+          .limit(6)
+
+        if (mounted) setRelatedKnowledge((data ?? []) as RelatedKnowledgeItem[])
+      } catch {
+        if (mounted) setRelatedKnowledge([])
+      }
+    }
+
+    void loadRelatedKnowledge()
+
+    return () => { mounted = false }
+  }, [project.book, project.passage_ref, supabase, userId])
 
   async function loadPassages(bookId: string) {
     setPassLoading(true)
@@ -489,6 +531,46 @@ export default function BibliotecaWorkspace({ project, userId, onAskAI }: Props)
                 </div>
               ))}
             </div>
+            {relatedKnowledge.length > 0 && (
+              <div style={{ width: '100%', maxWidth: '420px', background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: '12px', padding: '16px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '10px' }}>
+                  <div style={{ fontSize: '0.6rem', fontWeight: 800, color: '#B45309', textTransform: 'uppercase', letterSpacing: '0.09em' }}>
+                    Conhecimento relacionado
+                  </div>
+                  <button onClick={() => { window.location.href = '/knowledge' }} style={{ background: 'transparent', border: 'none', color: '#B45309', fontSize: '0.66rem', fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>
+                    Abrir base →
+                  </button>
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '7px' }}>
+                  {relatedKnowledge.map(item => {
+                    const cfg = KNOWLEDGE_TYPES[item.item_type]
+                    return (
+                      <button
+                        key={item.id}
+                        onClick={() => onAskAI([
+                          `Use este item da Base de Conhecimento no estudo de ${project.book} ${project.passage_ref}.`,
+                          `Tipo: ${cfg.label}`,
+                          `Título: ${item.title}`,
+                          item.authors.length ? `Autores: ${item.authors.join(', ')}` : '',
+                          item.summary ? `Resumo: ${item.summary}` : '',
+                          item.doctrines.length ? `Doutrinas: ${item.doctrines.join(', ')}` : '',
+                          item.themes.length ? `Temas: ${item.themes.join(', ')}` : '',
+                        ].filter(Boolean).join('\n'))}
+                        style={{ width: '100%', textAlign: 'left', background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '8px', padding: '8px 10px', cursor: 'pointer', fontFamily: 'inherit' }}
+                      >
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '7px' }}>
+                          <span>{cfg.icon}</span>
+                          <div style={{ minWidth: 0 }}>
+                            <div style={{ fontSize: '0.78rem', color: '#1E293B', fontWeight: 700, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{item.title}</div>
+                            <div style={{ fontSize: '0.64rem', color: '#94A3B8', marginTop: '1px' }}>{cfg.label}{item.authors[0] ? ` · ${item.authors[0]}` : ''}</div>
+                          </div>
+                        </div>
+                      </button>
+                    )
+                  })}
+                </div>
+              </div>
+            )}
           </div>
         )}
 
