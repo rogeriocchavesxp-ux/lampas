@@ -103,6 +103,7 @@ export async function createMercadoPagoSubscription({
       external_reference: externalReference,
       payer_email: email,
       back_url: `${appUrl()}/billing/return`,
+      notification_url: `${appUrl()}/api/billing/webhook`,
       status: 'pending',
       auto_recurring: {
         frequency: 1,
