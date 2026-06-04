@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useMemo, cloneElement, isValidElement } from 'react'
+import { useState, useMemo, useEffect, cloneElement, isValidElement } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { LampasLogo } from '@/components/LampasLogo'
@@ -140,19 +140,63 @@ const SECTION_ORDER: StudyModeId[] = [
   'estudo_biblico',  // legado — mantido para projetos existentes
 ]
 
-// Ordem do modal de criação (estudo_biblico removido — substituído pelos novos modos)
-const MODE_ORDER: StudyModeId[] = [
-  'exegese_biblica',
-  'estudo_de_carta',
-  'estudo_de_salmos_sabedoria',
-  'estudo_de_profecias',
-  'estudo_narrativas',
-  'sermao',
-  'estudo_doutrinario',
-  'estudo_tematico',
-  'devocional',
-  'comentario_exegetico',
+// ── 4 modos da tela de criação ────────────────────────────────────────────
+
+type UiModeId = 'exegetico' | 'sermao' | 'devocional' | 'doutrinario'
+
+const UI_MODES: Array<{
+  id: UiModeId; emoji: string; label: string
+  tagline: string; description: string; color: string
+}> = [
+  { id: 'exegetico',   emoji: '📖', label: 'Estudo Exegético',   color: '#0F766E',
+    tagline: 'O que o texto diz, quer dizer e significa',
+    description: 'O Lampas detecta automaticamente o gênero literário e ativa o método adequado — carta, poesia, profecia ou narrativa.' },
+  { id: 'sermao',      emoji: '🎙', label: 'Sermão',             color: '#7C3AED',
+    tagline: 'Do texto ao púlpito',
+    description: 'Para pastores e pregadores que transformam exegese em proclamação expositiva.' },
+  { id: 'devocional',  emoji: '❤️', label: 'Devocional',         color: '#BE3455',
+    tagline: 'Do texto ao coração',
+    description: 'Para meditação pessoal, formação espiritual e grupos familiares.' },
+  { id: 'doutrinario', emoji: '📚', label: 'Estudo Doutrinário', color: '#1E40AF',
+    tagline: 'Da doutrina à compreensão',
+    description: 'Para investigação teológica sistemática e rastreamento de temas bíblicos.' },
 ]
+
+// Detecção automática de gênero literário pelo livro
+const EPISTLE_BOOKS_DETECT = new Set([
+  'Romanos', '1 Coríntios', '2 Coríntios', 'Gálatas', 'Efésios', 'Filipenses',
+  'Colossenses', '1 Tessalonicenses', '2 Tessalonicenses', '1 Timóteo', '2 Timóteo',
+  'Tito', 'Filemom', 'Hebreus', 'Tiago', '1 Pedro', '2 Pedro', '1 João', '2 João',
+  '3 João', 'Judas',
+])
+const POETRY_BOOKS_DETECT = new Set([
+  'Jó', 'Salmos', 'Provérbios', 'Eclesiastes', 'Cântico dos Cânticos', 'Lamentações',
+])
+const PROPHECY_BOOKS_DETECT = new Set([
+  'Isaías', 'Jeremias', 'Ezequiel', 'Daniel', 'Oséias', 'Joel', 'Amós', 'Obadias',
+  'Miquéias', 'Naum', 'Habacuque', 'Sofonias', 'Ageu', 'Zacarias', 'Malaquias', 'Apocalipse',
+])
+const NARRATIVE_BOOKS_DETECT = new Set([
+  'Gênesis', 'Êxodo', 'Levítico', 'Números', 'Deuteronômio', 'Josué', 'Juízes',
+  'Rute', '1 Samuel', '2 Samuel', '1 Reis', '2 Reis', '1 Crônicas', '2 Crônicas',
+  'Esdras', 'Neemias', 'Ester', 'Jonas', 'Mateus', 'Marcos', 'Lucas', 'João', 'Atos',
+])
+
+function detectStudyMode(book: string): StudyModeId {
+  if (EPISTLE_BOOKS_DETECT.has(book))   return 'estudo_de_carta'
+  if (POETRY_BOOKS_DETECT.has(book))    return 'estudo_de_salmos_sabedoria'
+  if (PROPHECY_BOOKS_DETECT.has(book))  return 'estudo_de_profecias'
+  if (NARRATIVE_BOOKS_DETECT.has(book)) return 'estudo_narrativas'
+  return 'exegese_biblica'
+}
+
+const DETECTED_LABEL: Partial<Record<StudyModeId, string>> = {
+  estudo_de_carta:            'Epístola',
+  estudo_de_salmos_sabedoria: 'Salmos e Sabedoria',
+  estudo_de_profecias:        'Profecia',
+  estudo_narrativas:          'Narrativa',
+  exegese_biblica:            'Texto Bíblico',
+}
 
 // ── Helpers ───────────────────────────────────────────────────────────────
 
@@ -219,13 +263,14 @@ export default function DashboardClient({ user, projects: initialProjects, profi
   const [projects, setProjects] = useState<Project[]>(initialProjects)
 
   // Modal state
-  const [showNew,       setShowNew]      = useState(false)
-  const [modalStep,     setModalStep]    = useState<'mode' | 'form'>('mode')
-  const [selectedMode,  setSelectedMode] = useState<StudyModeId | null>(null)
-  const [creating,      setCreating]     = useState(false)
-  const [createError,   setCreateError]  = useState<string | null>(null)
-  const [titleEdited,   setTitleEdited]  = useState(false)
-  const [form,          setForm]         = useState<ProjectForm>(createInitialForm())
+  const [showNew,        setShowNew]       = useState(false)
+  const [modalStep,      setModalStep]     = useState<'mode' | 'form'>('mode')
+  const [selectedUiMode, setSelectedUiMode]= useState<UiModeId | null>(null)
+  const [selectedMode,   setSelectedMode]  = useState<StudyModeId | null>(null)
+  const [creating,       setCreating]      = useState(false)
+  const [createError,    setCreateError]   = useState<string | null>(null)
+  const [titleEdited,    setTitleEdited]   = useState(false)
+  const [form,           setForm]          = useState<ProjectForm>(createInitialForm())
 
   // Delete state
   const [deleteTarget,     setDeleteTarget]     = useState<Project | null>(null)
@@ -283,6 +328,7 @@ export default function DashboardClient({ user, projects: initialProjects, profi
 
   function openModal() {
     setModalStep('mode')
+    setSelectedUiMode(null)
     setSelectedMode(null)
     setCreating(false)
     setCreateError(null)
@@ -293,12 +339,24 @@ export default function DashboardClient({ user, projects: initialProjects, profi
 
   function closeModal() { setShowNew(false) }
 
-  function selectMode(modeId: StudyModeId) {
-    setSelectedMode(modeId)
+  function selectUiMode(uid: UiModeId) {
+    setSelectedUiMode(uid)
     setCreateError(null)
     setTitleEdited(false)
     setForm(createInitialForm())
+    switch (uid) {
+      case 'sermao':     setSelectedMode('sermao'); break
+      case 'devocional': setSelectedMode('devocional'); break
+      case 'doutrinario': setSelectedMode('estudo_doutrinario'); break
+      case 'exegetico':  setSelectedMode(null); break
+    }
   }
+
+  // Detecção automática de gênero ao escolher o livro no modo exegético
+  useEffect(() => {
+    if (selectedUiMode !== 'exegetico' || !form.book) return
+    setSelectedMode(detectStudyMode(form.book))
+  }, [selectedUiMode, form.book])
 
   function updatePassageForm(patch: Partial<typeof form>) {
     setForm(current => {
@@ -330,16 +388,16 @@ export default function DashboardClient({ user, projects: initialProjects, profi
     e.preventDefault()
     setCreateError(null)
 
-    if (!selectedMode || !modeConfig) return
+    if (!selectedMode || !selectedUiMode) return
 
-    const isPassage = modeConfig.passageBased
+    const isPassage     = selectedUiMode !== 'doutrinario'
     const generatedTitle = isPassage ? buildReferenceTitle(form.book, form.passage_ref) : form.topic.trim()
-    const projectTitle = form.title.trim() || generatedTitle
+    const projectTitle  = form.title.trim() || generatedTitle
 
     if (isPassage && !form.testament)          { setCreateError('Escolha o testamento.'); return }
     if (isPassage && !form.book)               { setCreateError('Selecione o livro.'); return }
-    if (isPassage && !form.passage_ref.trim()) { setCreateError(`${modeConfig.passageLabel} é obrigatório.`); return }
-    if (!isPassage && !form.topic.trim())      { setCreateError(`${modeConfig.topicLabel} é obrigatório.`); return }
+    if (isPassage && !form.passage_ref.trim()) { setCreateError('Passagem é obrigatória.'); return }
+    if (!isPassage && !form.topic.trim())      { setCreateError('Doutrina ou tema é obrigatório.'); return }
     if (!projectTitle)                         { setCreateError('Informe os dados do estudo para gerar o título.'); return }
 
     const payload = {
@@ -611,29 +669,28 @@ export default function DashboardClient({ user, projects: initialProjects, profi
                 <div style={{ marginBottom: '1.5rem' }}>
                   <h2 style={{ marginBottom: '0.3rem', fontSize: '1.15rem' }}>Novo Estudo</h2>
                   <p style={{ color: 'var(--text-muted)', fontSize: '0.84rem' }}>
-                    Escolha o modo de estudo
+                    O que você quer fazer?
                   </p>
                 </div>
 
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.65rem', marginBottom: '1.5rem' }}>
-                  {MODE_ORDER.map(modeId => {
-                    const mode   = STUDY_MODE_REGISTRY[modeId]
-                    const active = selectedMode === modeId
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem', marginBottom: '1.5rem' }}>
+                  {UI_MODES.map(uiMode => {
+                    const active = selectedUiMode === uiMode.id
                     return (
                       <button
-                        key={modeId}
-                        onClick={() => selectMode(modeId)}
+                        key={uiMode.id}
+                        onClick={() => selectUiMode(uiMode.id)}
                         style={{
-                          textAlign: 'left', padding: '0.9rem 1rem',
-                          background: active ? `${mode.color}08` : 'var(--surface-2)',
-                          border: `1.5px solid ${active ? mode.color : 'var(--border-subtle)'}`,
-                          borderRadius: '10px', cursor: 'pointer', fontFamily: 'inherit',
+                          textAlign: 'left', padding: '1rem 1.1rem',
+                          background: active ? `${uiMode.color}0A` : 'var(--surface-2)',
+                          border: `1.5px solid ${active ? uiMode.color : 'var(--border-subtle)'}`,
+                          borderRadius: '12px', cursor: 'pointer', fontFamily: 'inherit',
                           transition: 'all 0.13s',
                         }}
                         onMouseEnter={e => {
                           if (!active) {
-                            e.currentTarget.style.borderColor = `${mode.color}60`
-                            e.currentTarget.style.background  = `${mode.color}05`
+                            e.currentTarget.style.borderColor = `${uiMode.color}50`
+                            e.currentTarget.style.background  = `${uiMode.color}05`
                           }
                         }}
                         onMouseLeave={e => {
@@ -643,24 +700,19 @@ export default function DashboardClient({ user, projects: initialProjects, profi
                           }
                         }}
                       >
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.55rem', marginBottom: '0.4rem' }}>
-                          <span style={{ color: mode.color, display: 'flex', alignItems: 'center', flexShrink: 0 }}>
-                            {MODE_ICONS[modeId]}
-                          </span>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem' }}>
+                          <span style={{ fontSize: '1.25rem', lineHeight: 1, flexShrink: 0 }}>{uiMode.emoji}</span>
                           <span style={{
-                            fontSize: '0.88rem', fontWeight: 700,
-                            color: active ? mode.color : 'var(--text-primary)',
-                            transition: 'color 0.13s',
+                            fontSize: '0.92rem', fontWeight: 700,
+                            color: active ? uiMode.color : 'var(--text-primary)',
+                            transition: 'color 0.13s', lineHeight: 1.2,
                           }}>
-                            {mode.name}
+                            {uiMode.label}
                           </span>
-                          {active && <span style={{ marginLeft: 'auto', color: mode.color, fontSize: '0.75rem' }}>✓</span>}
+                          {active && <span style={{ marginLeft: 'auto', color: uiMode.color, fontSize: '0.8rem', flexShrink: 0 }}>✓</span>}
                         </div>
-                        <p style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', lineHeight: 1.45, margin: '0 0 0.25rem' }}>
-                          {mode.tagline}
-                        </p>
-                        <p style={{ fontSize: '0.67rem', color: 'var(--text-muted)', margin: 0, lineHeight: 1.4 }}>
-                          {mode.audience}
+                        <p style={{ fontSize: '0.73rem', color: 'var(--text-muted)', lineHeight: 1.5, margin: 0 }}>
+                          {uiMode.description}
                         </p>
                       </button>
                     )
@@ -677,144 +729,181 @@ export default function DashboardClient({ user, projects: initialProjects, profi
                     Cancelar
                   </button>
                   <button
-                    onClick={() => selectedMode && setModalStep('form')}
-                    disabled={!selectedMode}
+                    onClick={() => selectedUiMode && setModalStep('form')}
+                    disabled={!selectedUiMode}
                     style={{
                       flex: 2, padding: '0.6rem',
-                      background: selectedMode ? (modeConfig?.color ?? 'var(--accent)') : 'var(--surface-3)',
-                      color: selectedMode ? '#FFF' : 'var(--text-muted)',
+                      background: selectedUiMode
+                        ? (UI_MODES.find(m => m.id === selectedUiMode)?.color ?? 'var(--accent)')
+                        : 'var(--surface-3)',
+                      color: selectedUiMode ? '#FFF' : 'var(--text-muted)',
                       border: 'none', borderRadius: '8px',
-                      fontWeight: '600', cursor: selectedMode ? 'pointer' : 'not-allowed',
+                      fontWeight: '600', cursor: selectedUiMode ? 'pointer' : 'not-allowed',
                       fontFamily: 'inherit', fontSize: '0.88rem', transition: 'background 0.15s',
                     }}
                   >
-                    {selectedMode ? `Continuar com ${modeConfig?.name} →` : 'Escolha um modo'}
+                    {selectedUiMode
+                      ? `Continuar com ${UI_MODES.find(m => m.id === selectedUiMode)?.label} →`
+                      : 'Escolha o tipo de estudo'}
                   </button>
                 </div>
               </div>
             )}
 
             {/* Step 2: Details form */}
-            {modalStep === 'form' && modeConfig && (
+            {modalStep === 'form' && selectedUiMode && (
               <div style={{ padding: '1.75rem 1.75rem 1.5rem' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1.4rem' }}>
-                  <button
-                    onClick={() => { setModalStep('mode'); setCreateError(null) }}
-                    style={{
-                      background: 'none', border: 'none', cursor: 'pointer',
-                      color: 'var(--text-muted)', padding: '0.2rem', fontSize: '0.9rem',
-                    }}
-                    title="Voltar"
-                  >←</button>
-                  <span style={{ color: modeConfig.color }}>{MODE_ICONS[modeConfig.id]}</span>
-                  <h2 style={{ margin: 0, fontSize: '1.1rem' }}>{modeConfig.name}</h2>
-                </div>
+                {(() => {
+                  const uiMode        = UI_MODES.find(m => m.id === selectedUiMode)!
+                  const isPassage     = selectedUiMode !== 'doutrinario'
+                  const detectedLabel = selectedMode ? DETECTED_LABEL[selectedMode] : null
+                  const canSubmit     = isPassage
+                    ? (selectedMode && form.book && form.passage_ref.trim() && form.testament)
+                    : form.topic.trim()
+                  const titlePlaceholder = isPassage
+                    ? buildReferenceTitle(form.book, form.passage_ref)
+                    : form.topic.trim()
 
-                <form onSubmit={handleCreate} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                  {modeConfig.passageBased ? (
+                  return (
                     <>
-                      <FormField label="Testamento">
-                        <div style={{ display: 'flex', gap: '0.5rem' }}>
-                          {(['AT', 'NT'] as const).map(t => (
-                            <button key={t} type="button"
-                              onClick={() => updatePassageForm({ testament: t, book: '' })}
-                              style={{
-                                flex: 1, padding: '0.55rem',
-                                background: form.testament === t ? 'var(--accent-subtle)' : 'var(--surface-2)',
-                                border: `1px solid ${form.testament === t ? 'var(--accent)' : 'var(--border)'}`,
-                                borderRadius: '6px',
-                                color: form.testament === t ? 'var(--accent)' : 'var(--text-secondary)',
-                                cursor: 'pointer', fontSize: '0.88rem', fontWeight: '600', fontFamily: 'inherit',
-                              }}
-                            >
-                              {t === 'NT' ? 'Novo Testamento' : 'Antigo Testamento'}
-                            </button>
-                          ))}
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1.4rem' }}>
+                        <button
+                          onClick={() => { setModalStep('mode'); setCreateError(null) }}
+                          style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)', padding: '0.2rem', fontSize: '0.9rem' }}
+                          title="Voltar"
+                        >←</button>
+                        <span style={{ fontSize: '1.2rem', lineHeight: 1 }}>{uiMode.emoji}</span>
+                        <h2 style={{ margin: 0, fontSize: '1.1rem', color: uiMode.color }}>{uiMode.label}</h2>
+                      </div>
+
+                      <form onSubmit={handleCreate} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                        {isPassage ? (
+                          <>
+                            <FormField label="Testamento">
+                              <div style={{ display: 'flex', gap: '0.5rem' }}>
+                                {(['AT', 'NT'] as const).map(t => (
+                                  <button key={t} type="button"
+                                    onClick={() => updatePassageForm({ testament: t, book: '' })}
+                                    style={{
+                                      flex: 1, padding: '0.55rem',
+                                      background: form.testament === t ? `${uiMode.color}12` : 'var(--surface-2)',
+                                      border: `1px solid ${form.testament === t ? uiMode.color : 'var(--border)'}`,
+                                      borderRadius: '6px',
+                                      color: form.testament === t ? uiMode.color : 'var(--text-secondary)',
+                                      cursor: 'pointer', fontSize: '0.88rem', fontWeight: '600', fontFamily: 'inherit',
+                                    }}
+                                  >
+                                    {t === 'NT' ? 'Novo Testamento' : 'Antigo Testamento'}
+                                  </button>
+                                ))}
+                              </div>
+                            </FormField>
+
+                            <FormField label="Livro">
+                              <select
+                                value={form.book}
+                                onChange={e => updatePassageForm({ book: e.target.value })}
+                                disabled={!form.testament}
+                                required
+                              >
+                                <option value="">{form.testament ? 'Selecione o livro' : 'Escolha o testamento primeiro'}</option>
+                                {(form.testament === 'NT' ? BOOKS_NT : form.testament === 'AT' ? BOOKS_AT : []).map(b => (
+                                  <option key={b} value={b}>{b}</option>
+                                ))}
+                              </select>
+                            </FormField>
+
+                            {/* Badge de gênero detectado (apenas para exegético) */}
+                            {selectedUiMode === 'exegetico' && detectedLabel && (
+                              <div style={{
+                                display: 'flex', alignItems: 'center', gap: '0.5rem',
+                                background: `${uiMode.color}08`,
+                                border: `1px solid ${uiMode.color}30`,
+                                borderRadius: '8px', padding: '0.5rem 0.85rem',
+                              }}>
+                                <span style={{ fontSize: '0.7rem', fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase', color: uiMode.color }}>
+                                  Gênero detectado
+                                </span>
+                                <span style={{ fontSize: '0.78rem', color: uiMode.color, fontWeight: 600 }}>·</span>
+                                <span style={{ fontSize: '0.78rem', color: uiMode.color, fontWeight: 600 }}>{detectedLabel}</span>
+                                <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)', marginLeft: 'auto' }}>
+                                  O método é ajustado automaticamente
+                                </span>
+                              </div>
+                            )}
+
+                            <FormField label="Passagem">
+                              <input
+                                value={form.passage_ref}
+                                onChange={e => updatePassageForm({ passage_ref: e.target.value })}
+                                placeholder="Ex: 1.13–23"
+                                required
+                              />
+                            </FormField>
+                          </>
+                        ) : (
+                          <FormField label="Doutrina ou Tema">
+                            <input
+                              value={form.topic}
+                              onChange={e => updateTopic(e.target.value)}
+                              placeholder="Ex: A justificação pela fé · A eleição soberana"
+                              required
+                            />
+                          </FormField>
+                        )}
+
+                        {titlePlaceholder && (
+                          <FormField label="Título do Projeto">
+                            <input
+                              value={form.title}
+                              onChange={e => updateTitle(e.target.value)}
+                              placeholder={titlePlaceholder}
+                            />
+                            <p style={{ margin: '0.45rem 0 0', color: 'var(--text-muted)', fontSize: '0.76rem', lineHeight: 1.45 }}>
+                              Gerado automaticamente. Você pode alterar a qualquer momento.
+                            </p>
+                          </FormField>
+                        )}
+
+                        {createError && (
+                          <div style={{
+                            color: '#DC2626', background: 'rgba(220,38,38,0.06)',
+                            border: '1px solid rgba(220,38,38,0.2)',
+                            borderRadius: '7px', padding: '0.6rem 0.85rem',
+                            fontSize: '0.84rem', lineHeight: 1.4,
+                          }}>
+                            {createError}
+                          </div>
+                        )}
+
+                        <div style={{ display: 'flex', gap: '0.75rem', marginTop: '0.5rem' }}>
+                          <button type="button" onClick={closeModal} style={{
+                            flex: 1, padding: '0.65rem', background: 'transparent',
+                            border: '1px solid var(--border)', borderRadius: '8px',
+                            color: 'var(--text-secondary)', cursor: 'pointer',
+                            fontFamily: 'inherit', fontSize: '0.9rem',
+                          }}>
+                            Cancelar
+                          </button>
+                          <button type="submit" disabled={creating || !canSubmit} style={{
+                            flex: 2, padding: '0.65rem',
+                            background: (creating || !canSubmit) ? 'var(--surface-3)' : uiMode.color,
+                            color: (creating || !canSubmit) ? 'var(--text-muted)' : '#FFFFFF',
+                            border: 'none', borderRadius: '8px',
+                            fontWeight: '600',
+                            cursor: creating ? 'wait' : !canSubmit ? 'not-allowed' : 'pointer',
+                            fontFamily: 'inherit', fontSize: '0.9rem', transition: 'background 0.15s',
+                          }}>
+                            {creating ? 'Criando…'
+                              : !isPassage ? 'Iniciar estudo →'
+                              : !form.book ? 'Selecione um livro'
+                              : `Iniciar ${detectedLabel ?? uiMode.label} →`}
+                          </button>
                         </div>
-                      </FormField>
-
-                      <FormField label="Livro">
-                        <select
-                          value={form.book}
-                          onChange={e => updatePassageForm({ book: e.target.value })}
-                          disabled={!form.testament}
-                          required
-                        >
-                          <option value="">{form.testament ? 'Selecione o livro' : 'Escolha o testamento primeiro'}</option>
-                          {(form.testament === 'NT' ? BOOKS_NT : form.testament === 'AT' ? BOOKS_AT : []).map(b => (
-                            <option key={b} value={b}>{b}</option>
-                          ))}
-                        </select>
-                      </FormField>
-
-                      <FormField label={modeConfig.passageLabel}>
-                        <input
-                          value={form.passage_ref}
-                          onChange={e => updatePassageForm({ passage_ref: e.target.value })}
-                          placeholder="Ex: 39.1-23"
-                          required
-                        />
-                      </FormField>
+                      </form>
                     </>
-                  ) : (
-                    <FormField label={modeConfig.topicLabel}>
-                      <input
-                        value={form.topic}
-                        onChange={e => updateTopic(e.target.value)}
-                        placeholder={modeConfig.titlePlaceholder}
-                        required
-                      />
-                    </FormField>
-                  )}
-
-                  {canShowGeneratedTitle && (
-                    <FormField label="Título do Projeto">
-                      <input
-                        value={form.title}
-                        onChange={e => updateTitle(e.target.value)}
-                        placeholder={generatedProjectTitle}
-                      />
-                      <p style={{
-                        margin: '0.45rem 0 0', color: 'var(--text-muted)',
-                        fontSize: '0.76rem', lineHeight: 1.45,
-                      }}>
-                        O título inicial é gerado automaticamente a partir {modeConfig.passageBased ? 'da referência bíblica' : 'do tema informado'}.
-                        Você poderá alterá-lo a qualquer momento durante o estudo.
-                      </p>
-                    </FormField>
-                  )}
-
-                  {createError && (
-                    <div style={{
-                      color: '#DC2626', background: 'rgba(220,38,38,0.06)',
-                      border: '1px solid rgba(220,38,38,0.2)',
-                      borderRadius: '7px', padding: '0.6rem 0.85rem',
-                      fontSize: '0.84rem', lineHeight: 1.4,
-                    }}>
-                      {createError}
-                    </div>
-                  )}
-
-                  <div style={{ display: 'flex', gap: '0.75rem', marginTop: '0.5rem' }}>
-                    <button type="button" onClick={closeModal} style={{
-                      flex: 1, padding: '0.65rem', background: 'transparent',
-                      border: '1px solid var(--border)', borderRadius: '8px',
-                      color: 'var(--text-secondary)', cursor: 'pointer',
-                      fontFamily: 'inherit', fontSize: '0.9rem',
-                    }}>
-                      Cancelar
-                    </button>
-                    <button type="submit" disabled={creating} style={{
-                      flex: 2, padding: '0.65rem',
-                      background: creating ? 'var(--surface-3)' : modeConfig.color,
-                      color: '#FFFFFF', border: 'none', borderRadius: '8px',
-                      fontWeight: '600', cursor: creating ? 'wait' : 'pointer',
-                      fontFamily: 'inherit', fontSize: '0.9rem', transition: 'background 0.15s',
-                    }}>
-                      {creating ? 'Criando…' : `Criar ${modeConfig.name}`}
-                    </button>
-                  </div>
-                </form>
+                  )
+                })()}
               </div>
             )}
           </div>
