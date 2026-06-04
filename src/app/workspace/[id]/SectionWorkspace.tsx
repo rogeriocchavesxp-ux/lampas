@@ -93,6 +93,7 @@ export default function SectionWorkspace({
     const next = { ...latestContent.current, [cardId]: value }
     setCardContent(next)
     latestContent.current = next
+    setEditingCards(prev => new Set([...prev, cardId]))
     if (saveTimer.current) clearTimeout(saveTimer.current)
     saveTimer.current = setTimeout(() => performSave(next), 1500)
   }
