@@ -8,7 +8,9 @@ import MarkdownRenderer from '@/components/MarkdownRenderer'
 import RichEditor from '@/components/RichEditor'
 import { ChevronDown, ChevronUp, MoreHorizontal } from 'lucide-react'
 import ResearchGuidePanel from './ResearchGuidePanel'
+import CardHelpTooltip from './CardHelpTooltip'
 import { getResearchGuide } from '@/lib/research-guides'
+import { getCardHelp } from '@/lib/card-help'
 
 type CardState = 'idle' | 'generating' | 'saving' | 'saved'
 
@@ -443,14 +445,22 @@ export default function SectionWorkspace({
                   transition: 'background 0.2s',
                 }} />
 
-                {/* Title */}
-                <span style={{
-                  fontSize: '0.92rem', fontWeight: '500',
-                  color: expanded ? 'var(--text-primary)' : 'var(--text-secondary)',
-                  flex: 1, letterSpacing: '-0.01em',
-                  transition: 'color 0.15s',
-                }}>
-                  {card.title}
+                {/* Title + help */}
+                <span style={{ flex: 1, display: 'flex', alignItems: 'center', minWidth: 0 }}>
+                  <span style={{
+                    fontSize: '0.92rem', fontWeight: '500',
+                    color: expanded ? 'var(--text-primary)' : 'var(--text-secondary)',
+                    letterSpacing: '-0.01em',
+                    transition: 'color 0.15s',
+                  }}>
+                    {card.title}
+                  </span>
+                  {(() => {
+                    const help = getCardHelp(card.id)
+                    return help
+                      ? <CardHelpTooltip help={help} />
+                      : null
+                  })()}
                 </span>
 
                 {/* State label (generating/saved) */}
