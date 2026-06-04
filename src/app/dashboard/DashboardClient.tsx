@@ -180,9 +180,12 @@ interface Props {
   profile: Profile | null
 }
 
-export default function DashboardClient({ user, projects, profile }: Props) {
+export default function DashboardClient({ user, projects: initialProjects, profile }: Props) {
   const router  = useRouter()
   const supabase = useMemo(() => createClient(), [])
+
+  // Local projects list — allows optimistic removal on delete
+  const [projects, setProjects] = useState<Project[]>(initialProjects)
 
   // Modal state
   const [showNew,       setShowNew]      = useState(false)
@@ -192,6 +195,10 @@ export default function DashboardClient({ user, projects, profile }: Props) {
   const [createError,   setCreateError]  = useState<string | null>(null)
   const [titleEdited,   setTitleEdited]  = useState(false)
   const [form,          setForm]         = useState<ProjectForm>(createInitialForm())
+
+  // Delete state
+  const [deleteTarget,     setDeleteTarget]     = useState<Project | null>(null)
+  const [deleteConfirming, setDeleteConfirming] = useState(false)
 
   // All sections start collapsed
   const [collapsedSections, setCollapsedSections] = useState<Set<StudyModeId>>(
@@ -213,6 +220,21 @@ export default function DashboardClient({ user, projects, profile }: Props) {
 
   // Top 3 most recently updated — server already sorts by updated_at desc
   const recentProjects = useMemo(() => projects.slice(0, 3), [projects])
+
+  async function handleDeleteConfirm() {
+    if (!deleteTarget) return
+    setDeleteConfirming(true)
+    try {
+      const res = await fetch(`/api/projects/${deleteTarget.id}`, { method: 'DELETE' })
+      if (!res.ok) throw new Error('Falha ao excluir')
+      setProjects(prev => prev.filter(p => p.id !== deleteTarget.id))
+      setDeleteTarget(null)
+    } catch {
+      // keep modal open so user can retry
+    } finally {
+      setDeleteConfirming(false)
+    }
+  }
 
   // Modes with at least 1 project, in display order
   const libraryModes = useMemo(
@@ -402,6 +424,7 @@ export default function DashboardClient({ user, projects, profile }: Props) {
                     key={p.id}
                     project={p}
                     onClick={() => router.push(`/workspace/${p.id}`)}
+                    onDelete={() => setDeleteTarget(p)}
                   />
                 ))}
               </div>
@@ -498,6 +521,7 @@ export default function DashboardClient({ user, projects, profile }: Props) {
                               project={p}
                               mode={mode}
                               onClick={() => router.push(`/workspace/${p.id}`)}
+                              onDelete={() => setDeleteTarget(p)}
                             />
                           ))}
                         </div>
@@ -745,6 +769,80 @@ export default function DashboardClient({ user, projects, profile }: Props) {
           </div>
         </div>
       )}
+
+      {/* ── Delete confirmation modal ── */}
+      {deleteTarget && (
+        <div
+          onClick={e => { if (e.target === e.currentTarget && !deleteConfirming) setDeleteTarget(null) }}
+          style={{
+            position: 'fixed', inset: 0, background: 'rgba(15,23,42,0.5)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            zIndex: 60, padding: '1rem',
+          }}
+        >
+          <div style={{
+            background: 'var(--surface)', borderRadius: '14px', border: '1px solid var(--border)',
+            width: '100%', maxWidth: '400px', padding: '1.75rem',
+            animation: 'fadeIn 0.15s ease-out',
+            boxShadow: '0 8px 32px rgba(15,23,42,0.15)',
+          }}>
+            <h3 style={{ fontSize: '1rem', fontWeight: 700, marginBottom: '0.35rem', color: 'var(--text-primary)' }}>
+              Excluir estudo?
+            </h3>
+            <p style={{ fontSize: '0.84rem', color: 'var(--text-muted)', marginBottom: '1.25rem' }}>
+              Esta ação não poderá ser desfeita.
+            </p>
+
+            {/* Project info */}
+            <div style={{
+              background: 'var(--surface-2)', borderRadius: '9px',
+              padding: '0.85rem 1rem', marginBottom: '1.5rem',
+              border: '1px solid var(--border-subtle)',
+            }}>
+              <div style={{ fontWeight: 600, fontSize: '0.92rem', color: 'var(--text-primary)', marginBottom: '0.3rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                {deleteTarget.title}
+              </div>
+              <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)', display: 'flex', flexDirection: 'column', gap: '0.15rem' }}>
+                <span>{getModeConfig(deleteTarget.study_mode ?? deleteTarget.project_type).name}</span>
+                {deleteTarget.book && deleteTarget.book !== '—' && (
+                  <span style={{ fontStyle: 'italic' }}>{deleteTarget.book} {deleteTarget.passage_ref}</span>
+                )}
+                <span>Modificado {formatDate(deleteTarget.updated_at)} · Criado {formatDate(deleteTarget.created_at)}</span>
+              </div>
+            </div>
+
+            <div style={{ display: 'flex', gap: '0.6rem' }}>
+              <button
+                onClick={() => setDeleteTarget(null)}
+                disabled={deleteConfirming}
+                style={{
+                  flex: 1, padding: '0.65rem',
+                  background: 'var(--surface-2)', color: 'var(--text-secondary)',
+                  border: '1px solid var(--border)', borderRadius: '8px',
+                  fontWeight: 600, cursor: deleteConfirming ? 'not-allowed' : 'pointer',
+                  fontFamily: 'inherit', fontSize: '0.88rem', transition: 'background 0.12s',
+                }}
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={handleDeleteConfirm}
+                disabled={deleteConfirming}
+                style={{
+                  flex: 1, padding: '0.65rem',
+                  background: deleteConfirming ? 'var(--surface-3)' : '#EF4444',
+                  color: '#FFFFFF',
+                  border: 'none', borderRadius: '8px',
+                  fontWeight: 600, cursor: deleteConfirming ? 'wait' : 'pointer',
+                  fontFamily: 'inherit', fontSize: '0.88rem', transition: 'background 0.12s',
+                }}
+              >
+                {deleteConfirming ? 'Excluindo…' : 'Excluir estudo'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
@@ -766,7 +864,7 @@ function ShelfLabel({ children }: { children: React.ReactNode }) {
   )
 }
 
-function RecentCard({ project, onClick }: { project: Project; onClick: () => void }) {
+function RecentCard({ project, onClick, onDelete }: { project: Project; onClick: () => void; onDelete: () => void }) {
   const mode   = getModeConfig(project.study_mode ?? project.project_type)
   const visual = MODE_VISUALS[mode.id as StudyModeId]
   const isPassage = mode.passageBased
@@ -775,10 +873,14 @@ function RecentCard({ project, onClick }: { project: Project; onClick: () => voi
     : project.passage_ref && project.passage_ref !== '—'
       ? project.passage_ref
       : null
+  const [menuOpen, setMenuOpen] = useState(false)
+  const [hovered,  setHovered]  = useState(false)
 
   return (
     <div
       onClick={onClick}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => { setHovered(false); setMenuOpen(false) }}
       style={{
         background: '#fff',
         border: '1px solid rgba(226,232,240,0.9)',
@@ -789,15 +891,16 @@ function RecentCard({ project, onClick }: { project: Project; onClick: () => voi
         display: 'flex',
         alignItems: 'center',
         gap: '1rem',
+        position: 'relative',
         boxShadow: `inset 3px 0 0 ${visual.color}20`,
       }}
-      onMouseEnter={e => {
-        e.currentTarget.style.boxShadow = `inset 3px 0 0 ${visual.color}, 0 2px 14px rgba(15,23,42,0.07)`
-        e.currentTarget.style.borderColor = 'rgba(203,213,225,0.9)'
+      onMouseOver={e => {
+        (e.currentTarget as HTMLElement).style.boxShadow = `inset 3px 0 0 ${visual.color}, 0 2px 14px rgba(15,23,42,0.07)`;
+        (e.currentTarget as HTMLElement).style.borderColor = 'rgba(203,213,225,0.9)'
       }}
-      onMouseLeave={e => {
-        e.currentTarget.style.boxShadow = `inset 3px 0 0 ${visual.color}20`
-        e.currentTarget.style.borderColor = 'rgba(226,232,240,0.9)'
+      onMouseOut={e => {
+        (e.currentTarget as HTMLElement).style.boxShadow = `inset 3px 0 0 ${visual.color}20`;
+        (e.currentTarget as HTMLElement).style.borderColor = 'rgba(226,232,240,0.9)'
       }}
     >
       {/* Mode icon badge */}
@@ -839,6 +942,36 @@ function RecentCard({ project, onClick }: { project: Project; onClick: () => voi
         </div>
       </div>
 
+      {/* ⋮ menu */}
+      <div style={{ position: 'relative', flexShrink: 0 }} onClick={e => e.stopPropagation()}>
+        <button
+          onClick={() => setMenuOpen(o => !o)}
+          style={{
+            background: menuOpen ? 'var(--surface-2)' : 'transparent',
+            border: 'none', cursor: 'pointer',
+            color: 'var(--text-muted)', padding: '0.2rem 0.3rem',
+            borderRadius: '5px', display: 'flex', alignItems: 'center',
+            opacity: hovered || menuOpen ? 1 : 0,
+            transition: 'opacity 0.15s, background 0.12s',
+          }}
+        >
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <circle cx="12" cy="5" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="12" cy="19" r="1"/>
+          </svg>
+        </button>
+        {menuOpen && (
+          <div style={{
+            position: 'absolute', right: 0, top: 'calc(100% + 4px)', zIndex: 20,
+            background: '#FFF', border: '1px solid var(--border)', borderRadius: '10px',
+            boxShadow: '0 4px 20px rgba(0,0,0,0.08)', padding: '0.3rem', minWidth: '140px',
+          }}>
+            <button onClick={() => { setMenuOpen(false); onDelete() }} style={{ display: 'block', width: '100%', textAlign: 'left', background: 'transparent', border: 'none', cursor: 'pointer', fontFamily: 'inherit', fontSize: '0.82rem', color: '#EF4444', padding: '0.4rem 0.65rem', borderRadius: '7px', transition: 'background 0.1s' }} onMouseEnter={e => { e.currentTarget.style.background = '#FEF2F2' }} onMouseLeave={e => { e.currentTarget.style.background = 'transparent' }}>
+              Excluir
+            </button>
+          </div>
+        )}
+      </div>
+
       {/* Arrow */}
       <svg width="13" height="13" viewBox="0 0 24 24" fill="none"
         stroke="var(--text-muted)" strokeWidth="2.5"
@@ -851,11 +984,12 @@ function RecentCard({ project, onClick }: { project: Project; onClick: () => voi
 }
 
 function ProjectCard({
-  project, mode, onClick,
+  project, mode, onClick, onDelete,
 }: {
   project: Project
   mode: StudyModeConfig
   onClick: () => void
+  onDelete: () => void
 }) {
   const visual = modeVisual(mode.id as StudyModeId)
   const isCompleted = project.status === 'completed'
@@ -865,10 +999,14 @@ function ProjectCard({
     : project.passage_ref && project.passage_ref !== '—'
       ? project.passage_ref
       : null
+  const [menuOpen, setMenuOpen] = useState(false)
+  const [hovered,  setHovered]  = useState(false)
 
   return (
     <div
       onClick={onClick}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => { setHovered(false); setMenuOpen(false) }}
       style={{
         background: '#fff',
         border: '1px solid rgba(226,232,240,0.9)',
@@ -879,14 +1017,15 @@ function ProjectCard({
         display: 'flex',
         alignItems: 'center',
         gap: '0.9rem',
+        position: 'relative',
       }}
-      onMouseEnter={e => {
-        e.currentTarget.style.boxShadow = `0 1px 12px rgba(15,23,42,0.07)`
-        e.currentTarget.style.borderColor = 'rgba(203,213,225,0.9)'
+      onMouseOver={e => {
+        (e.currentTarget as HTMLElement).style.boxShadow = '0 1px 12px rgba(15,23,42,0.07)';
+        (e.currentTarget as HTMLElement).style.borderColor = 'rgba(203,213,225,0.9)'
       }}
-      onMouseLeave={e => {
-        e.currentTarget.style.boxShadow = 'none'
-        e.currentTarget.style.borderColor = 'rgba(226,232,240,0.9)'
+      onMouseOut={e => {
+        (e.currentTarget as HTMLElement).style.boxShadow = 'none';
+        (e.currentTarget as HTMLElement).style.borderColor = 'rgba(226,232,240,0.9)'
       }}
     >
       <div style={{ flex: 1, minWidth: 0 }}>
@@ -920,6 +1059,36 @@ function ProjectCard({
       }}>
         {statusLabel(project.status)}
       </span>
+
+      {/* ⋮ menu */}
+      <div style={{ position: 'relative', flexShrink: 0 }} onClick={e => e.stopPropagation()}>
+        <button
+          onClick={() => setMenuOpen(o => !o)}
+          style={{
+            background: menuOpen ? 'var(--surface-2)' : 'transparent',
+            border: 'none', cursor: 'pointer',
+            color: 'var(--text-muted)', padding: '0.2rem 0.3rem',
+            borderRadius: '5px', display: 'flex', alignItems: 'center',
+            opacity: hovered || menuOpen ? 1 : 0,
+            transition: 'opacity 0.15s, background 0.12s',
+          }}
+        >
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <circle cx="12" cy="5" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="12" cy="19" r="1"/>
+          </svg>
+        </button>
+        {menuOpen && (
+          <div style={{
+            position: 'absolute', right: 0, top: 'calc(100% + 4px)', zIndex: 20,
+            background: '#FFF', border: '1px solid var(--border)', borderRadius: '10px',
+            boxShadow: '0 4px 20px rgba(0,0,0,0.08)', padding: '0.3rem', minWidth: '140px',
+          }}>
+            <button onClick={() => { setMenuOpen(false); onDelete() }} style={{ display: 'block', width: '100%', textAlign: 'left', background: 'transparent', border: 'none', cursor: 'pointer', fontFamily: 'inherit', fontSize: '0.82rem', color: '#EF4444', padding: '0.4rem 0.65rem', borderRadius: '7px', transition: 'background 0.1s' }} onMouseEnter={e => { e.currentTarget.style.background = '#FEF2F2' }} onMouseLeave={e => { e.currentTarget.style.background = 'transparent' }}>
+              Excluir
+            </button>
+          </div>
+        )}
+      </div>
     </div>
   )
 }

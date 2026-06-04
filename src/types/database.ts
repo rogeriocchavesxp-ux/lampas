@@ -37,6 +37,7 @@ export interface Project {
   meta?: Record<string, unknown> // dados extras por modo (tema, doutrina, etc.)
   created_at: string
   updated_at: string
+  deleted_at?: string | null
 }
 
 export interface Section {
