@@ -7,6 +7,8 @@ import type { SectionDef } from '@/lib/workspace-sections'
 import MarkdownRenderer from '@/components/MarkdownRenderer'
 import RichEditor from '@/components/RichEditor'
 import { ChevronDown, ChevronUp, MoreHorizontal } from 'lucide-react'
+import ResearchGuidePanel from './ResearchGuidePanel'
+import { getResearchGuide } from '@/lib/research-guides'
 
 type CardState = 'idle' | 'generating' | 'saving' | 'saved'
 
@@ -343,6 +345,14 @@ export default function SectionWorkspace({
           </div>
         )}
       </div>
+
+      {/* ── Research guide ────────────────────────────────────────────────── */}
+      {(() => {
+        const guide = getResearchGuide(sectionDef.slug)
+        return guide
+          ? <ResearchGuidePanel guide={guide} onAskAI={onAskAI} accentColor={moduleColor} />
+          : null
+      })()}
 
       {/* ── Cards ─────────────────────────────────────────────────────────── */}
       <div>
