@@ -405,6 +405,7 @@ export default function WorkspaceClient({ user, project, initialSections }: Prop
         background: 'var(--surface)',
         display: 'flex', alignItems: 'center',
         padding: '0 1rem 0 0.75rem',
+        position: 'relative',
       }}>
         <button
           onClick={() => router.push('/dashboard')}
@@ -521,14 +522,15 @@ export default function WorkspaceClient({ user, project, initialSections }: Prop
           </div>
         </div>
 
-        {/* ── Separador + Texto Bíblico (ação principal) ───────────── */}
-        <div style={{ width: '1px', height: '18px', background: 'var(--border-subtle)', margin: '0 0.6rem', flexShrink: 0 }} />
-
+        {/* ── Texto Bíblico — centrado absolutamente ────────────────── */}
         <button
           onClick={() => setBibleOpen(o => !o)}
           title="Abrir Texto Bíblico"
           style={{
-            flexShrink: 0,
+            position: 'absolute',
+            left: '50%',
+            transform: 'translateX(-50%)',
+            zIndex: 1,
             background: bibleOpen
               ? 'linear-gradient(135deg, #C9921A 0%, #D97706 100%)'
               : 'transparent',
@@ -546,6 +548,7 @@ export default function WorkspaceClient({ user, project, initialSections }: Prop
             boxShadow: bibleOpen
               ? '0 1px 6px rgba(201,146,26,0.35)'
               : '0 0 0 3px rgba(201,146,26,0)',
+            whiteSpace: 'nowrap',
           }}
           onMouseEnter={e => {
             if (!bibleOpen) {
@@ -565,8 +568,6 @@ export default function WorkspaceClient({ user, project, initialSections }: Prop
           <BookOpen size={13} strokeWidth={2} />
           Texto Bíblico
         </button>
-
-        <div style={{ width: '1px', height: '18px', background: 'var(--border-subtle)', margin: '0 0.6rem', flexShrink: 0 }} />
 
         {/* ── Botões secundários ─────────────────────────────────────── */}
         <button
