@@ -789,12 +789,12 @@ export default function WorkspaceClient({ user, project, initialSections }: Prop
             /* ── Sidebar expanded ────────────────────────────────── */
             <>
               <div style={{
-                padding: '0.7rem 0.72rem 0.62rem',
+                padding: '0.58rem 0.7rem 0.5rem',
                 borderBottom: '1px solid var(--border-subtle)',
                 display: 'flex', alignItems: 'center', justifyContent: 'space-between',
                 flexShrink: 0,
               }}>
-                <LampasLogo height={34} />
+                <LampasLogo height={26} />
                 <button
                   onClick={() => { setSidebarCollapsed(true); localStorage.setItem('lampas_sidebar_c', '1') }}
                   title="Recolher menu"
@@ -844,16 +844,16 @@ export default function WorkspaceClient({ user, project, initialSections }: Prop
                     >
                       {/* Numbered circle — journey node */}
                       <div style={{
-                        width: '17px', height: '17px', borderRadius: '50%',
+                        width: '20px', height: '20px', borderRadius: '50%',
                         background: phaseOpen ? phase.color : `${phase.color}18`,
-                        border: `1px solid ${phaseOpen ? phase.color : phase.color + '55'}`,
-                        flexShrink: 0,
+                        border: `1.5px solid ${phaseOpen ? phase.color : phase.color + '55'}`,
+                        flexShrink: 0, marginTop: '1px',
                         display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        boxShadow: phaseOpen ? `0 0 0 2px ${phase.color}12` : 'none',
+                        boxShadow: phaseOpen ? `0 0 0 3px ${phase.color}15` : 'none',
                         transition: 'all 0.2s',
                       }}>
                         <span style={{
-                          fontSize: '0.54rem', fontWeight: 800, lineHeight: 1,
+                          fontSize: '0.6rem', fontWeight: 700, lineHeight: 1,
                           color: phaseOpen ? '#FFFFFF' : phase.color,
                           userSelect: 'none',
                         }}>
@@ -862,10 +862,10 @@ export default function WorkspaceClient({ user, project, initialSections }: Prop
                       </div>
 
                       <div style={{ flex: 1, minWidth: 0 }}>
-                        {/* Main title — large and prominent */}
+                        {/* Main title */}
                         <div style={{
-                          fontSize: '0.78rem', fontWeight: 750,
-                          letterSpacing: '0.04em', lineHeight: 1.1,
+                          fontSize: '0.82rem', fontWeight: 700,
+                          letterSpacing: '0.03em', lineHeight: 1.15,
                           color: phaseOpen ? phase.color : 'var(--text-primary)',
                           transition: 'color 0.15s',
                         }}>
@@ -873,8 +873,8 @@ export default function WorkspaceClient({ user, project, initialSections }: Prop
                         </div>
                         {/* Description */}
                         <div style={{
-                          fontSize: '0.58rem', color: 'var(--text-muted)',
-                          marginTop: '1px', lineHeight: 1.2, fontWeight: 400,
+                          fontSize: '0.65rem', color: 'var(--text-muted)',
+                          marginTop: '2px', lineHeight: 1.25, fontWeight: 400,
                           overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
                         }}>
                           {phase.description}
@@ -891,9 +891,9 @@ export default function WorkspaceClient({ user, project, initialSections }: Prop
                     {/* ── Phase body — left border = journey line ── */}
                     {phaseOpen && (
                       <div style={{
-                        marginLeft: '17px',
-                        borderLeft: `1px solid ${phase.color}24`,
-                        paddingBottom: '3px',
+                        marginLeft: '20px',
+                        borderLeft: `2px solid ${phase.color}22`,
+                        paddingBottom: '4px',
                       }}>
                         {phase.modes.map((mode, modeIdx) => {
                           const modeOpen = singleMode || expandedCanons.has(mode.id)
@@ -979,10 +979,10 @@ export default function WorkspaceClient({ user, project, initialSections }: Prop
                                                 border: isActive ? `1px solid ${mode.color}28` : '1px solid transparent',
                                                 cursor: 'pointer',
                                                 background: isActive ? mode.bgActive : 'transparent',
-                                                borderRadius: '7px',
+                                                borderRadius: '10px',
                                                 textAlign: 'left', fontFamily: 'inherit',
-                                                padding: '0.34rem 0.52rem',
-                                                display: 'flex', alignItems: 'center', gap: '0.42rem',
+                                                padding: '0.45rem 0.6rem',
+                                                display: 'flex', alignItems: 'center', gap: '0.5rem',
                                                 transition: 'background 0.12s, border-color 0.12s, box-shadow 0.12s',
                                                 boxShadow: isActive ? '0 1px 3px rgba(0,0,0,0.06)' : 'none',
                                               }}
@@ -1013,7 +1013,7 @@ export default function WorkspaceClient({ user, project, initialSections }: Prop
 
                                               <div style={{ flex: 1, minWidth: 0 }}>
                                                 <div style={{
-                                                  fontSize: '0.73rem', fontWeight: 650, lineHeight: 1.15,
+                                                  fontSize: '0.79rem', fontWeight: 600, lineHeight: 1.25,
                                                   color: highlight ? mode.color : 'var(--text-primary)',
                                                   transition: 'color 0.15s',
                                                   overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
@@ -1023,8 +1023,8 @@ export default function WorkspaceClient({ user, project, initialSections }: Prop
                                                 </div>
                                                 {groupSub && (
                                                   <div style={{
-                                                    fontSize: '0.58rem', color: 'var(--text-muted)',
-                                                    marginTop: '0.04rem', lineHeight: 1.15,
+                                                    fontSize: '0.64rem', color: 'var(--text-muted)',
+                                                    marginTop: '0.1rem', lineHeight: 1.25,
                                                     overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
                                                   }}>
                                                     {groupSub}
