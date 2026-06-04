@@ -1136,28 +1136,101 @@ function ProjectCard({
 }
 
 function EmptyDashboard({ onNew }: { onNew: () => void }) {
+  const router = useRouter()
+  const [starting, setStarting] = useState(false)
+
+  async function handleStartDemo() {
+    setStarting(true)
+    try {
+      const res  = await fetch('/api/projects/demo', { method: 'POST' })
+      const data = await res.json() as { id?: string; error?: string }
+      if (data.id) router.push(`/workspace/${data.id}`)
+    } catch { /* noop */ }
+    finally { setStarting(false) }
+  }
+
   return (
     <div style={{
-      textAlign: 'center', padding: '4rem 2rem',
-      background: 'var(--surface)', borderRadius: '12px',
+      borderRadius: '16px', overflow: 'hidden',
       border: '1px solid var(--border-subtle)',
     }}>
-      <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '1rem' }}>
-        <svg width="40" height="40" fill="none" viewBox="0 0 24 24" stroke="var(--border)" strokeWidth="1.5">
-          <path strokeLinecap="round" strokeLinejoin="round" d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25"/>
-        </svg>
-      </div>
-      <h3 style={{ marginBottom: '0.5rem', color: 'var(--text-secondary)' }}>Biblioteca vazia</h3>
-      <p style={{ color: 'var(--text-muted)', fontSize: '0.88rem', marginBottom: '1.5rem' }}>
-        Comece criando o seu primeiro estudo
-      </p>
-      <button onClick={onNew} style={{
-        background: 'var(--accent)', color: '#FFFFFF', border: 'none',
-        borderRadius: '8px', padding: '0.6rem 1.25rem', fontWeight: '600',
-        cursor: 'pointer', fontSize: '0.9rem', fontFamily: 'inherit',
+      {/* Hero */}
+      <div style={{
+        background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 60%, #1a2540 100%)',
+        padding: '3rem 2.5rem 2.5rem',
+        display: 'flex', flexDirection: 'column', alignItems: 'center',
+        textAlign: 'center', gap: '1rem',
       }}>
-        Criar primeiro estudo
-      </button>
+        <div style={{
+          width: '52px', height: '52px', borderRadius: '14px',
+          background: 'rgba(201,146,26,0.18)', border: '1.5px solid rgba(201,146,26,0.4)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          fontSize: '1.5rem', marginBottom: '0.25rem',
+        }}>📖</div>
+
+        <h2 style={{
+          margin: 0, fontSize: '1.5rem', fontWeight: 750,
+          color: '#FFFFFF', letterSpacing: '-0.02em', lineHeight: 1.2,
+        }}>
+          Bem-vindo ao Lampas
+        </h2>
+        <p style={{
+          margin: 0, fontSize: '0.92rem', color: 'rgba(255,255,255,0.55)',
+          lineHeight: 1.65, maxWidth: '420px',
+        }}>
+          Antes de criar seu próprio estudo, percorra um estudo guiado e conheça o método — do texto ao coração.
+        </p>
+
+        <div style={{
+          background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)',
+          borderRadius: '10px', padding: '0.75rem 1.25rem',
+          display: 'flex', alignItems: 'center', gap: '0.85rem',
+          marginTop: '0.25rem',
+        }}>
+          <div style={{ textAlign: 'left' }}>
+            <div style={{ fontSize: '0.65rem', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'rgba(201,146,26,0.85)', marginBottom: '0.15rem' }}>
+              Estudo guiado
+            </div>
+            <div style={{ fontSize: '0.92rem', fontWeight: 600, color: '#FFFFFF' }}>João 3.16 — Devocional</div>
+            <div style={{ fontSize: '0.74rem', color: 'rgba(255,255,255,0.4)', marginTop: '0.1rem' }}>8 etapas · Preparar → Contemplar → Responder</div>
+          </div>
+        </div>
+
+        <button
+          onClick={handleStartDemo}
+          disabled={starting}
+          style={{
+            marginTop: '0.5rem',
+            background: starting ? 'rgba(201,146,26,0.6)' : 'linear-gradient(135deg, #C9921A 0%, #D97706 100%)',
+            color: '#FFFFFF', border: 'none',
+            borderRadius: '10px', padding: '0.7rem 1.75rem',
+            fontWeight: 700, cursor: starting ? 'wait' : 'pointer',
+            fontSize: '0.92rem', fontFamily: 'inherit',
+            boxShadow: '0 4px 16px rgba(201,146,26,0.3)',
+            display: 'flex', alignItems: 'center', gap: '0.45rem',
+            transition: 'all 0.15s',
+          }}
+        >
+          {starting ? 'Criando estudo…' : '→ Iniciar estudo guiado'}
+        </button>
+      </div>
+
+      {/* Footer */}
+      <div style={{
+        background: 'var(--surface)', padding: '1rem 2.5rem',
+        display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem',
+        borderTop: '1px solid var(--border-subtle)',
+      }}>
+        <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Prefere começar direto?</span>
+        <button onClick={onNew} style={{
+          background: 'transparent', border: 'none',
+          color: 'var(--accent)', fontWeight: 600,
+          cursor: 'pointer', fontSize: '0.8rem', fontFamily: 'inherit',
+          padding: 0,
+        }}>
+          Criar meu próprio estudo
+        </button>
+      </div>
     </div>
   )
 }

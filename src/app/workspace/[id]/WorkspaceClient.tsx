@@ -178,6 +178,106 @@ function toolProgress(groupId: string): { done: number; total: number } {
   return isToolSlug(groupId) ? { done: 0, total: 1 } : { done: 0, total: 0 }
 }
 
+// ── Guided strip (onboarding demo) ────────────────────────────────────
+
+const DEMO_STEPS: { slug: string; label: string; explanation: string }[] = [
+  { slug: 'preparar_espiritual',    label: 'Oração e Entrega',     explanation: 'Antes de analisar, aproxime-se de Deus. Você não chega ao texto como especialista — chega como filho.' },
+  { slug: 'preparar_assimilacao',   label: 'Leia Devagar',         explanation: 'O primeiro contato deve ser lento. João 3.16 é o versículo mais conhecido — e por isso o mais difícil de ouvir de novo.' },
+  { slug: 'preparar_impressoes',    label: 'Primeiras Impressões', explanation: 'Anote o que chama atenção, surpreende ou incomoda. Perguntas são bem-vindas. Não filtre — o que o texto provoca agora é dado valioso.' },
+  { slug: 'preparar_visao_geral',   label: 'Visão Geral',          explanation: 'Uma frase para mapear o texto inteiro antes de ir fundo. Você vai revisitar esta ideia mais tarde — e será fascinante ver como amadurece.' },
+  { slug: 'contextual',             label: 'Contexto',             explanation: 'João 3.16 está no meio de uma conversa entre Jesus e Nicodemos, à noite. O contexto histórico transforma o peso das palavras.' },
+  { slug: 'teologico',              label: 'Mensagem',             explanation: 'O que Deus está dizendo neste texto? Aqui meditação e teologia se encontram. Qual a grande verdade revelada?' },
+  { slug: 'devocional_dispositio',  label: 'Reflexão',             explanation: 'Como este texto quer ser respondido? Não uma emoção — uma reflexão concreta sobre o que Deus está dizendo a você.' },
+  { slug: 'devocional_pronuntiatio',label: 'Compromisso',          explanation: 'O estudo termina quando você age. Um passo concreto a partir do que ouviu.' },
+]
+
+function GuidedStrip({
+  activeSlug, onNavigate, modeColor,
+}: { activeSlug: string; onNavigate: (slug: string) => void; modeColor: string }) {
+  const [dismissed, setDismissed] = useState(false)
+  const idx     = DEMO_STEPS.findIndex(s => s.slug === activeSlug)
+  const current = idx >= 0 ? DEMO_STEPS[idx] : DEMO_STEPS[0]
+  const next    = idx >= 0 && idx < DEMO_STEPS.length - 1 ? DEMO_STEPS[idx + 1] : null
+  const stepNum = Math.max(1, idx + 1)
+
+  if (dismissed) return null
+
+  return (
+    <div style={{
+      flexShrink: 0,
+      background: 'linear-gradient(90deg, rgba(201,146,26,0.08) 0%, rgba(201,146,26,0.04) 100%)',
+      borderBottom: '1px solid rgba(201,146,26,0.2)',
+      padding: '0.55rem 1.25rem',
+      display: 'flex', alignItems: 'center', gap: '0.85rem',
+    }}>
+      {/* Step badge */}
+      <div style={{
+        flexShrink: 0, display: 'flex', alignItems: 'center', gap: '0.4rem',
+        background: 'rgba(201,146,26,0.15)', border: '1px solid rgba(201,146,26,0.3)',
+        borderRadius: '20px', padding: '0.18rem 0.65rem',
+      }}>
+        <span style={{ fontSize: '0.62rem', fontWeight: 700, color: '#C9921A', letterSpacing: '0.06em', textTransform: 'uppercase' }}>
+          Guia
+        </span>
+        <span style={{ fontSize: '0.65rem', color: 'rgba(201,146,26,0.7)', fontWeight: 500 }}>
+          {stepNum}/{DEMO_STEPS.length}
+        </span>
+      </div>
+
+      {/* Progress dots */}
+      <div style={{ display: 'flex', gap: '4px', flexShrink: 0 }}>
+        {DEMO_STEPS.map((s, i) => (
+          <div key={s.slug} style={{
+            width: i === idx ? '16px' : '5px', height: '5px', borderRadius: '3px',
+            background: i < idx ? '#C9921A' : i === idx ? '#C9921A' : 'rgba(201,146,26,0.2)',
+            transition: 'all 0.2s',
+            cursor: 'pointer',
+          }}
+            onClick={() => onNavigate(s.slug)}
+            title={s.label}
+          />
+        ))}
+      </div>
+
+      {/* Current step */}
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <span style={{ fontSize: '0.72rem', fontWeight: 700, color: '#C9921A' }}>
+          {current.label}
+        </span>
+        <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)', marginLeft: '0.45rem' }}>
+          {current.explanation}
+        </span>
+      </div>
+
+      {/* Actions */}
+      {next && (
+        <button
+          onClick={() => onNavigate(next.slug)}
+          style={{
+            flexShrink: 0, background: '#C9921A', color: '#FFF', border: 'none',
+            borderRadius: '6px', padding: '0.28rem 0.8rem',
+            fontSize: '0.72rem', fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit',
+            display: 'flex', alignItems: 'center', gap: '0.3rem',
+          }}
+        >
+          {next.label} →
+        </button>
+      )}
+      <button
+        onClick={() => setDismissed(true)}
+        style={{
+          flexShrink: 0, background: 'transparent', border: 'none',
+          color: 'var(--text-muted)', cursor: 'pointer', fontSize: '0.8rem',
+          padding: '0.1rem 0.2rem', fontFamily: 'inherit',
+        }}
+        title="Fechar guia"
+      >
+        ✕
+      </button>
+    </div>
+  )
+}
+
 // ── Resize handle ─────────────────────────────────────────────────────────
 
 function ResizeHandle({ onMouseDown }: { onMouseDown: (e: React.MouseEvent) => void }) {
@@ -645,6 +745,9 @@ export default function WorkspaceClient({ user, project, initialSections }: Prop
           </>
         )}
       </header>
+
+      {/* ── Guided strip (demo projects only) ─────────────────────────── */}
+      {project.is_demo && <GuidedStrip activeSlug={activeSlug} onNavigate={navigate} modeColor={modeConfig.color} />}
 
       {/* ── Body ──────────────────────────────────────────────────────────── */}
       <div style={{ flex: 1, display: 'flex', overflow: 'hidden' }}>
