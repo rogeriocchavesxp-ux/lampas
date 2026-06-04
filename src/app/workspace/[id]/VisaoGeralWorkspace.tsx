@@ -63,16 +63,25 @@ const PANEL_W = 300
 // ── Node definitions ──────────────────────────────────────────────────────────
 
 type NodeKind = 'cls' | 'card'
+type OverviewLayerId = 'contexto_carta' | 'estrutura_texto' | 'sintese_exegetica' | 'sintese_homiletica'
 
 interface NodeDef {
   key: string; label: string; icon: string
   angle: number          // 0 = direita, -90 = topo, em sentido horário
   radius?: number
+  layer?: OverviewLayerId
   color: string; bg: string
   kind: NodeKind
   clsTypes?: ClassType[]
   cardIds?: string[]
 }
+
+const SERMAO_EPISTOLAR_LAYERS: Array<{ id: OverviewLayerId; label: string; subtitle: string; color: string }> = [
+  { id: 'contexto_carta', label: 'Contexto da Carta', subtitle: 'Quem escreveu e para quem', color: '#6D28D9' },
+  { id: 'estrutura_texto', label: 'Estrutura do Texto', subtitle: 'Como o argumento se organiza', color: '#2563EB' },
+  { id: 'sintese_exegetica', label: 'Síntese Exegética', subtitle: 'O que o texto ensina', color: '#D97706' },
+  { id: 'sintese_homiletica', label: 'Síntese Homilética', subtitle: 'Como será comunicado', color: '#059669' },
+]
 
 const EPISTLE_BOOKS = new Set([
   'Romanos', '1 Coríntios', '2 Coríntios', 'Gálatas', 'Efésios', 'Filipenses',
@@ -83,6 +92,10 @@ const EPISTLE_BOOKS = new Set([
 
 function isEpistleBook(book: string): boolean {
   return EPISTLE_BOOKS.has(book.trim())
+}
+
+function isEpistolarySermon(project: Project): boolean {
+  return project.study_mode === 'sermao' && isEpistleBook(project.book)
 }
 
 function cardDef(id: string, title: string, placeholder: string, aiTrigger: string) {
@@ -220,9 +233,26 @@ const SERMAO_NODES: NodeDef[] = [
 ]
 
 const SERMAO_EPISTOLAR_NODES: NodeDef[] = [
-  ...CARTA_BASE_NODES.map((node, index) => ({ ...node, key: `sermao_${node.key}`, angle: -112.5 + index * 45, radius: 170 })),
-  ...SERMAO_NODES.map((node, index) => ({ ...node, key: `sermao_${node.key}`, angle: -90 + index * 45, radius: 240 })),
-  { key: 'sermao_vg_regra_principal', label: 'Regra Principal', icon: '⚖', angle: 247.5, radius: 240, color: '#0F766E', bg: '#F0FDFA', kind: 'card', cardIds: ['vg_regra_principal'] },
+  { key: 'sermao_vg_autor',         label: 'Autor',           icon: '✍', angle: -90, color: '#6D28D9', bg: '#F5F3FF', kind: 'card', layer: 'contexto_carta', cardIds: ['vg_autor'] },
+  { key: 'sermao_vg_destinatarios', label: 'Destinatários',   icon: '📬', angle: 0,   color: '#7C3AED', bg: '#EDE9FE', kind: 'card', layer: 'contexto_carta', cardIds: ['vg_destinatarios'] },
+  { key: 'sermao_vg_contexto',      label: 'Contexto Hist.',  icon: '📅', angle: 90,  color: '#4F46E5', bg: '#EEF2FF', kind: 'card', layer: 'contexto_carta', cardIds: ['vg_contexto'] },
+  { key: 'sermao_vg_proposito',     label: 'Propósito',       icon: '🎯', angle: 180, color: '#2563EB', bg: '#EFF6FF', kind: 'card', layer: 'contexto_carta', cardIds: ['vg_proposito'] },
+
+  { key: 'sermao_vg_estrutura', label: 'Estrutura Geral', icon: '⊞', angle: -90, color: '#0369A1', bg: '#EFF6FF', kind: 'card', layer: 'estrutura_texto', cardIds: ['vg_estrutura'] },
+  { key: 'sermao_vg_blocos',    label: 'Grandes Blocos',  icon: '▦', angle: -30, color: '#475569', bg: '#F8FAFC', kind: 'card', layer: 'estrutura_texto', cardIds: ['vg_blocos'] },
+  { key: 'sermao_vg_divisoes',  label: 'Divisões',        icon: '⊞', angle: 30,  color: '#4338CA', bg: '#EEF2FF', kind: 'card', layer: 'estrutura_texto', cardIds: ['vg_divisoes'] },
+  { key: 'sermao_vg_movimento', label: 'Movimento',       icon: '⟶', angle: 90,  color: '#4F46E5', bg: '#EEF2FF', kind: 'card', layer: 'estrutura_texto', cardIds: ['vg_movimento'] },
+  { key: 'sermao_vg_argumento', label: 'Argumento',       icon: '⟶', angle: 150, color: '#D97706', bg: '#FFFBEB', kind: 'card', layer: 'estrutura_texto', cardIds: ['vg_argumento'] },
+  { key: 'sermao_vg_temas',     label: 'Temas',           icon: '📖', angle: 210, color: '#059669', bg: '#F0FDF4', kind: 'card', layer: 'estrutura_texto', cardIds: ['vg_temas'] },
+
+  { key: 'sermao_vg_assunto', label: 'Assunto', icon: '📌', angle: -90, color: '#7C3AED', bg: '#F5F3FF', kind: 'card', layer: 'sintese_exegetica', cardIds: ['vg_assunto'] },
+  { key: 'sermao_vg_verdade', label: 'Verdade', icon: '💡', angle: 0,   color: '#D97706', bg: '#FFFBEB', kind: 'card', layer: 'sintese_exegetica', cardIds: ['vg_verdade'] },
+  { key: 'sermao_vg_climax',  label: 'Clímax',  icon: '✦', angle: 90,  color: '#7C3AED', bg: '#F5F3FF', kind: 'card', layer: 'sintese_exegetica', cardIds: ['vg_climax'] },
+  { key: 'sermao_vg_cristo',  label: 'Cristo',  icon: '✚', angle: 180, color: '#BE3455', bg: '#FFF1F2', kind: 'card', layer: 'sintese_exegetica', cardIds: ['vg_cristo'] },
+
+  { key: 'sermao_vg_tema',             label: 'Tema Central',    icon: '🎯', angle: -90, color: '#6D28D9', bg: '#EDE9FE', kind: 'card', layer: 'sintese_homiletica', cardIds: ['vg_tema'] },
+  { key: 'sermao_vg_regra_principal',  label: 'Regra Principal', icon: '⚖', angle: 30,  color: '#0F766E', bg: '#F0FDFA', kind: 'card', layer: 'sintese_homiletica', cardIds: ['vg_regra_principal'] },
+  { key: 'sermao_vg_aplicacoes',       label: 'Aplicações',      icon: '🎯', angle: 150, color: '#059669', bg: '#F0FDF4', kind: 'card', layer: 'sintese_homiletica', cardIds: ['vg_aplicacoes'] },
 ]
 
 const MODE_NODES_MAP: Record<string, NodeDef[]> = {
@@ -333,7 +363,7 @@ Diretriz: use a base interpretativa da carta antes de formular implicações hom
 }
 
 function getOverviewNodes(project: Project): NodeDef[] {
-  if (project.study_mode === 'sermao' && isEpistleBook(project.book)) {
+  if (isEpistolarySermon(project)) {
     return SERMAO_EPISTOLAR_NODES
   }
   return MODE_NODES_MAP[project.study_mode ?? ''] ?? MODE_NODES_MAP.exegese_biblica
@@ -383,14 +413,21 @@ export default function VisaoGeralWorkspace({
   const supabase    = useMemo(() => createClient(), [])
   const wrapRef     = useRef<HTMLDivElement>(null)
 
+  const isLayeredSermon = isEpistolarySermon(project)
+
   // Nós adaptativos ao modo de estudo
-  const nodes = useMemo<NodeDef[]>(
+  const allNodes = useMemo<NodeDef[]>(
     () => getOverviewNodes(project),
     [project.study_mode, project.book],
   )
+  const [activeLayer, setActiveLayer] = useState<OverviewLayerId>('contexto_carta')
+  const nodes = useMemo<NodeDef[]>(
+    () => isLayeredSermon ? allNodes.filter(node => node.layer === activeLayer) : allNodes,
+    [allNodes, activeLayer, isLayeredSermon],
+  )
   const effectiveSectionDef = useMemo(
-    () => createOverviewSectionDef(sectionDef, nodes, project),
-    [sectionDef, nodes, project],
+    () => createOverviewSectionDef(sectionDef, allNodes, project),
+    [sectionDef, allNodes, project],
   )
 
   // Nó central: para modos temáticos (sem perícope), mostra o tema/doutrina
@@ -441,6 +478,11 @@ export default function VisaoGeralWorkspace({
     investigar?: Record<string, string>
     pregar?: Record<string, string>
   } | null>(null)
+
+  useEffect(() => {
+    setActivePanel(null)
+    setActiveItem(null)
+  }, [activeLayer])
 
   // ── Data — carrega do banco (fonte de verdade) e sincroniza localStorage ───
   useEffect(() => {
@@ -768,6 +810,7 @@ export default function VisaoGeralWorkspace({
   const scaledH      = CH * scale
 
   const activeNode = nodes.find(n => n.key === activePanel) ?? null
+  const activeLayerMeta = SERMAO_EPISTOLAR_LAYERS.find(layer => layer.id === activeLayer)
 
   // ── Render ─────────────────────────────────────────────────────────────────
   return (
@@ -830,6 +873,99 @@ export default function VisaoGeralWorkspace({
           </div>
         </div>
       </div>
+
+      {mode === 'visual' && isLayeredSermon && (
+        <div style={{
+          marginBottom: '1rem',
+          background: '#FFFFFF',
+          border: '1px solid #E2E8F0',
+          borderRadius: '12px',
+          padding: '0.55rem',
+          boxShadow: '0 1px 3px rgba(15,23,42,0.04)',
+        }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(145px, 1fr))', gap: '0.35rem' }}>
+            {SERMAO_EPISTOLAR_LAYERS.map((layer, index) => {
+              const layerNodes = allNodes.filter(node => node.layer === layer.id)
+              const filled = layerNodes.filter(node => getCount(node) > 0).length
+              const active = activeLayer === layer.id
+
+              return (
+                <button
+                  key={layer.id}
+                  onClick={() => setActiveLayer(layer.id)}
+                  style={{
+                    textAlign: 'left',
+                    border: `1px solid ${active ? layer.color + '55' : '#E2E8F0'}`,
+                    background: active ? layer.color + '0D' : '#F8FAFC',
+                    borderRadius: '9px',
+                    padding: '0.55rem 0.65rem',
+                    cursor: 'pointer',
+                    fontFamily: 'inherit',
+                    minWidth: 0,
+                    transition: 'all 0.14s',
+                  }}
+                  onMouseEnter={e => {
+                    if (active) return
+                    e.currentTarget.style.borderColor = layer.color + '35'
+                    e.currentTarget.style.background = '#FFFFFF'
+                  }}
+                  onMouseLeave={e => {
+                    if (active) return
+                    e.currentTarget.style.borderColor = '#E2E8F0'
+                    e.currentTarget.style.background = '#F8FAFC'
+                  }}
+                >
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', minWidth: 0 }}>
+                    <span style={{
+                      width: '1.15rem',
+                      height: '1.15rem',
+                      borderRadius: '999px',
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      flexShrink: 0,
+                      background: active ? layer.color : '#E2E8F0',
+                      color: active ? '#FFFFFF' : '#64748B',
+                      fontSize: '0.62rem',
+                      fontWeight: 800,
+                    }}>
+                      {index + 1}
+                    </span>
+                    <span style={{
+                      color: active ? layer.color : '#334155',
+                      fontSize: '0.72rem',
+                      fontWeight: 750,
+                      lineHeight: 1.2,
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                      whiteSpace: 'nowrap',
+                    }}>
+                      {layer.label}
+                    </span>
+                  </div>
+                  <div style={{ color: '#64748B', fontSize: '0.62rem', lineHeight: 1.35, marginTop: '0.25rem' }}>
+                    {layer.subtitle}
+                  </div>
+                  <div style={{ color: active ? layer.color : '#94A3B8', fontSize: '0.58rem', fontWeight: 700, marginTop: '0.35rem', letterSpacing: '0.04em', textTransform: 'uppercase' }}>
+                    {filled}/{layerNodes.length} preenchidos
+                  </div>
+                </button>
+              )
+            })}
+          </div>
+          <div style={{
+            marginTop: '0.55rem',
+            padding: '0.45rem 0.55rem',
+            borderRadius: '8px',
+            background: (activeLayerMeta?.color ?? '#64748B') + '0A',
+            color: activeLayerMeta?.color ?? '#64748B',
+            fontSize: '0.7rem',
+            lineHeight: 1.45,
+          }}>
+            {activeLayerMeta?.label}: {activeLayerMeta?.subtitle}. Avance pelas camadas para ir da compreensão da carta à formulação do sermão.
+          </div>
+        </div>
+      )}
 
       {/* ── Banner de fase (INVESTIGAR / COMUNICAR) ────────────────────────── */}
       {phase !== 'preparar' && (
