@@ -101,7 +101,6 @@ const MODE_VISUALS: Record<StudyModeId, { color: string; bg: string; border: str
   comentario_exegetico: { color: '#B45309', bg: 'rgba(180,83,9,0.08)', border: 'rgba(180,83,9,0.18)' },
 }
 
-// Order sections appear in the dashboard
 const SECTION_ORDER: StudyModeId[] = [
   'devocional',
   'sermao',
@@ -113,7 +112,6 @@ const SECTION_ORDER: StudyModeId[] = [
   'comentario_exegetico',
 ]
 
-// Order modes appear in the "new project" modal
 const MODE_ORDER: StudyModeId[] = [
   'exegese_biblica',
   'estudo_de_carta',
@@ -144,10 +142,6 @@ function statusLabel(s: string): string {
   return { draft: 'Em andamento', in_progress: 'Em andamento', completed: 'Concluído', archived: 'Arquivado' }[s] ?? s
 }
 
-function statusColor(s: string): string {
-  return { draft: 'var(--accent)', in_progress: 'var(--accent)', completed: 'var(--success)', archived: 'var(--text-muted)' }[s] ?? 'var(--text-muted)'
-}
-
 function modeVisual(modeId: StudyModeId) {
   return MODE_VISUALS[modeId]
 }
@@ -175,13 +169,7 @@ type ProjectForm = {
 }
 
 function createInitialForm(): ProjectForm {
-  return {
-    title: '',
-    book: '',
-    passage_ref: '',
-    topic: '',
-    testament: '',
-  }
+  return { title: '', book: '', passage_ref: '', topic: '', testament: '' }
 }
 
 // ── Component ──────────────────────────────────────────────────────────────
@@ -193,25 +181,25 @@ interface Props {
 }
 
 export default function DashboardClient({ user, projects, profile }: Props) {
-  const router = useRouter()
+  const router  = useRouter()
   const supabase = useMemo(() => createClient(), [])
 
   // Modal state
-  const [showNew,      setShowNew]     = useState(false)
-  const [modalStep,    setModalStep]   = useState<'mode' | 'form'>('mode')
-  const [selectedMode, setSelectedMode] = useState<StudyModeId | null>(null)
-  const [creating,     setCreating]    = useState(false)
-  const [createError,  setCreateError] = useState<string | null>(null)
-  const [titleEdited,  setTitleEdited] = useState(false)
-  const [form,         setForm]        = useState<ProjectForm>(createInitialForm())
+  const [showNew,       setShowNew]      = useState(false)
+  const [modalStep,     setModalStep]    = useState<'mode' | 'form'>('mode')
+  const [selectedMode,  setSelectedMode] = useState<StudyModeId | null>(null)
+  const [creating,      setCreating]     = useState(false)
+  const [createError,   setCreateError]  = useState<string | null>(null)
+  const [titleEdited,   setTitleEdited]  = useState(false)
+  const [form,          setForm]         = useState<ProjectForm>(createInitialForm())
 
-  // Dashboard filter & collapse state
-  const [activeFilter,      setActiveFilter]      = useState<StudyModeId | 'all'>('all')
-  const [collapsedSections, setCollapsedSections] = useState<Set<StudyModeId>>(new Set())
+  // All sections start collapsed
+  const [collapsedSections, setCollapsedSections] = useState<Set<StudyModeId>>(
+    () => new Set(SECTION_ORDER),
+  )
 
   const modeConfig = selectedMode ? STUDY_MODE_REGISTRY[selectedMode] : null
 
-  // Group projects by resolved study mode
   const projectsByMode = useMemo(() => {
     const map = new Map<StudyModeId, Project[]>()
     for (const p of projects) {
@@ -223,14 +211,11 @@ export default function DashboardClient({ user, projects, profile }: Props) {
     return map
   }, [projects])
 
-  // Sections visible given the active filter
-  const visibleSections = useMemo(() => {
-    if (activeFilter !== 'all') return [activeFilter]
-    return SECTION_ORDER.filter(id => (projectsByMode.get(id)?.length ?? 0) > 0)
-  }, [activeFilter, projectsByMode])
+  // Top 3 most recently updated — server already sorts by updated_at desc
+  const recentProjects = useMemo(() => projects.slice(0, 3), [projects])
 
-  // Filter pills — only modes that have at least 1 project
-  const filterModes = useMemo(
+  // Modes with at least 1 project, in display order
+  const libraryModes = useMemo(
     () => SECTION_ORDER.filter(id => (projectsByMode.get(id)?.length ?? 0) > 0),
     [projectsByMode],
   )
@@ -265,9 +250,7 @@ export default function DashboardClient({ user, projects, profile }: Props) {
   function updatePassageForm(patch: Partial<typeof form>) {
     setForm(current => {
       const next = { ...current, ...patch }
-      if (!titleEdited) {
-        next.title = buildReferenceTitle(next.book, next.passage_ref)
-      }
+      if (!titleEdited) next.title = buildReferenceTitle(next.book, next.passage_ref)
       return next
     })
   }
@@ -300,26 +283,11 @@ export default function DashboardClient({ user, projects, profile }: Props) {
     const generatedTitle = isPassage ? buildReferenceTitle(form.book, form.passage_ref) : form.topic.trim()
     const projectTitle = form.title.trim() || generatedTitle
 
-    if (isPassage && !form.testament) {
-      setCreateError('Escolha o testamento.')
-      return
-    }
-    if (isPassage && !form.book) {
-      setCreateError('Selecione o livro.')
-      return
-    }
-    if (isPassage && !form.passage_ref.trim()) {
-      setCreateError(`${modeConfig.passageLabel} é obrigatório.`)
-      return
-    }
-    if (!isPassage && !form.topic.trim()) {
-      setCreateError(`${modeConfig.topicLabel} é obrigatório.`)
-      return
-    }
-    if (!projectTitle) {
-      setCreateError('Informe os dados do estudo para gerar o título.')
-      return
-    }
+    if (isPassage && !form.testament)          { setCreateError('Escolha o testamento.'); return }
+    if (isPassage && !form.book)               { setCreateError('Selecione o livro.'); return }
+    if (isPassage && !form.passage_ref.trim()) { setCreateError(`${modeConfig.passageLabel} é obrigatório.`); return }
+    if (!isPassage && !form.topic.trim())      { setCreateError(`${modeConfig.topicLabel} é obrigatório.`); return }
+    if (!projectTitle)                         { setCreateError('Informe os dados do estudo para gerar o título.'); return }
 
     const payload = {
       user_id:           user.id,
@@ -335,29 +303,12 @@ export default function DashboardClient({ user, projects, profile }: Props) {
       meta:              isPassage ? {} : { topic: form.topic.trim() },
     }
 
-    console.log('[Lampas] Criando projeto', payload)
     setCreating(true)
-
     try {
-      const { data, error } = await supabase
-        .from('projects')
-        .insert(payload)
-        .select()
-        .single()
-
-      console.log('[Lampas] Resposta criação', { data, error })
-
-      if (error) {
-        console.error('[Lampas] Erro ao criar projeto', error)
-        setCreateError('Não foi possível criar o projeto. Tente novamente.')
-        return
-      }
-
-      if (data) {
-        router.push(`/workspace/${data.id}`)
-      }
-    } catch (err) {
-      console.error('[Lampas] Erro inesperado ao criar projeto', err)
+      const { data, error } = await supabase.from('projects').insert(payload).select().single()
+      if (error) { setCreateError('Não foi possível criar o projeto. Tente novamente.'); return }
+      if (data)  router.push(`/workspace/${data.id}`)
+    } catch {
       setCreateError('Não foi possível criar o projeto. Tente novamente.')
     } finally {
       setCreating(false)
@@ -408,165 +359,155 @@ export default function DashboardClient({ user, projects, profile }: Props) {
       </header>
 
       {/* ── Main ── */}
-      <main style={{ maxWidth: '900px', margin: '0 auto', padding: '2.25rem 1.5rem 3rem' }}>
+      <main style={{ maxWidth: '860px', margin: '0 auto', padding: '2.5rem 1.5rem 4rem' }}>
 
-        {/* Title row + new project button */}
+        {/* Title row */}
         <div style={{
-          display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between',
-          gap: '1rem', marginBottom: '1.35rem', flexWrap: 'wrap',
+          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+          gap: '1rem', marginBottom: '2.5rem',
         }}>
           <div>
             <h1 style={{
-              margin: '0 0 0.25rem',
-              fontSize: '1.7rem',
-              lineHeight: 1.1,
-              color: 'var(--text-primary)',
-              fontWeight: 750,
-            }}>Estudos</h1>
-            <p style={{ color: 'var(--text-muted)', fontSize: '0.88rem' }}>
+              margin: '0 0 0.2rem', fontSize: '1.55rem', lineHeight: 1.1,
+              color: 'var(--text-primary)', fontWeight: 750, letterSpacing: '-0.02em',
+            }}>Biblioteca</h1>
+            <p style={{ color: 'var(--text-muted)', fontSize: '0.82rem', margin: 0 }}>
               {projects.length === 0
-                ? 'Nenhum projeto ainda'
-                : `${projects.length} ${projects.length === 1 ? 'projeto' : 'projetos'} no total`}
+                ? 'Nenhum estudo ainda'
+                : `${projects.length} ${projects.length === 1 ? 'estudo' : 'estudos'}`}
             </p>
           </div>
           <button onClick={openModal} style={{
             background: 'var(--accent)', color: '#FFFFFF', border: 'none',
             borderRadius: '8px', padding: '0.58rem 1.05rem', fontWeight: '650',
             cursor: 'pointer', fontSize: '0.88rem', fontFamily: 'inherit',
-            boxShadow: '0 6px 16px rgba(59,130,246,0.16)',
+            boxShadow: '0 4px 12px rgba(59,130,246,0.18)', flexShrink: 0,
           }}>
-            + Novo Projeto
+            + Novo Estudo
           </button>
         </div>
-
-        {/* Filter bar — only when there are multiple section types */}
-        {filterModes.length > 1 && (
-          <div style={{
-            display: 'flex', gap: '0.45rem', marginBottom: '2rem',
-            flexWrap: 'wrap', alignItems: 'center',
-          }}>
-            <FilterPill
-              active={activeFilter === 'all'}
-              color="var(--accent)"
-              onClick={() => setActiveFilter('all')}
-            >
-              Todos ({projects.length})
-            </FilterPill>
-            {filterModes.map(id => {
-              const mode = STUDY_MODE_REGISTRY[id]
-              const count = projectsByMode.get(id)?.length ?? 0
-              return (
-                <FilterPill
-                  key={id}
-                  active={activeFilter === id}
-                  color={mode.color}
-                  onClick={() => setActiveFilter(id)}
-                >
-                  {mode.name} ({count})
-                </FilterPill>
-              )
-            })}
-          </div>
-        )}
 
         {/* Content */}
         {projects.length === 0 ? (
           <EmptyDashboard onNew={openModal} />
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '3rem' }}>
-            {visibleSections.map(modeId => {
-              const mode = STUDY_MODE_REGISTRY[modeId]
-              const visual = modeVisual(modeId)
-              const modeProjects = projectsByMode.get(modeId) ?? []
-              const isCollapsed = collapsedSections.has(modeId)
-              return (
-                <section key={modeId}>
-                  {/* Etiqueta de prateleira — discreta, sem competir com o conteúdo */}
-                  <div style={{
-                    display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                    marginBottom: isCollapsed ? 0 : '0.875rem',
-                  }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
-                      <span style={{ color: visual.color, display: 'flex', flexShrink: 0 }}>
-                        {modeIcon(modeId, 15)}
-                      </span>
-                      <span style={{
-                        fontSize: '1rem', fontWeight: 700,
-                        color: visual.color,
-                      }}>
-                        {mode.name}
-                      </span>
-                      <span style={{
-                        fontSize: '0.72rem', color: visual.color,
-                        fontWeight: 500, opacity: 0.5,
-                      }}>
-                        {modeProjects.length}
-                      </span>
-                    </div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
-                      {activeFilter !== modeId && (
-                        <button
-                          onClick={() => setActiveFilter(modeId)}
-                          style={{
-                            background: 'transparent', border: 'none', cursor: 'pointer',
-                            color: 'var(--text-muted)', fontSize: '0.72rem', fontFamily: 'inherit',
-                            padding: '0.15rem 0.4rem', borderRadius: '4px',
-                          }}
-                          onMouseEnter={e => { e.currentTarget.style.color = visual.color }}
-                          onMouseLeave={e => { e.currentTarget.style.color = 'var(--text-muted)' }}
-                        >
-                          Ver todos
-                        </button>
-                      )}
+
+            {/* ── Continuar Estudando ── */}
+            <section>
+              <ShelfLabel>Continuar Estudando</ShelfLabel>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', marginTop: '1rem' }}>
+                {recentProjects.map(p => (
+                  <RecentCard
+                    key={p.id}
+                    project={p}
+                    onClick={() => router.push(`/workspace/${p.id}`)}
+                  />
+                ))}
+              </div>
+            </section>
+
+            {/* ── Biblioteca ── */}
+            <section>
+              <ShelfLabel>Por Modalidade</ShelfLabel>
+              <div style={{
+                marginTop: '1rem',
+                border: '1px solid var(--border-subtle)',
+                borderRadius: '10px',
+                overflow: 'hidden',
+                background: 'var(--surface)',
+              }}>
+                {libraryModes.map((modeId, idx) => {
+                  const mode      = STUDY_MODE_REGISTRY[modeId]
+                  const visual    = modeVisual(modeId)
+                  const modeProjects = projectsByMode.get(modeId) ?? []
+                  const isCollapsed  = collapsedSections.has(modeId)
+                  const isLast       = idx === libraryModes.length - 1
+
+                  return (
+                    <div
+                      key={modeId}
+                      style={{
+                        borderBottom: isLast ? 'none' : '1px solid var(--border-subtle)',
+                      }}
+                    >
+                      {/* Category row */}
                       <button
                         onClick={() => toggleSection(modeId)}
-                        title={isCollapsed ? 'Expandir' : 'Recolher'}
                         style={{
-                          background: 'transparent', border: 'none', cursor: 'pointer',
-                          color: 'var(--text-muted)', display: 'flex', alignItems: 'center',
-                          padding: '0.15rem', borderRadius: '4px', transition: 'color 0.13s',
+                          width: '100%', display: 'flex', alignItems: 'center',
+                          gap: '0.7rem', padding: '0.85rem 1.1rem',
+                          background: isCollapsed ? 'transparent' : `${visual.color}04`,
+                          border: 'none', cursor: 'pointer', fontFamily: 'inherit',
+                          transition: 'background 0.13s',
                         }}
-                        onMouseEnter={e => { e.currentTarget.style.color = 'var(--text-secondary)' }}
-                        onMouseLeave={e => { e.currentTarget.style.color = 'var(--text-muted)' }}
+                        onMouseEnter={e => { if (isCollapsed) e.currentTarget.style.background = 'rgba(15,23,42,0.025)' }}
+                        onMouseLeave={e => { if (isCollapsed) e.currentTarget.style.background = 'transparent' }}
                       >
-                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"
-                          style={{ transform: isCollapsed ? 'rotate(-90deg)' : 'none', transition: 'transform 0.15s' }}>
+                        {/* Chevron */}
+                        <svg
+                          width="10" height="10" viewBox="0 0 24 24" fill="none"
+                          stroke={visual.color} strokeWidth="2.5"
+                          strokeLinecap="round" strokeLinejoin="round"
+                          style={{
+                            transform: isCollapsed ? 'rotate(-90deg)' : 'rotate(0deg)',
+                            transition: 'transform 0.15s',
+                            flexShrink: 0, opacity: 0.75,
+                          }}
+                        >
                           <path d="M6 9l6 6 6-6"/>
                         </svg>
+
+                        {/* Mode icon */}
+                        <span style={{ color: visual.color, display: 'flex', flexShrink: 0 }}>
+                          {modeIcon(modeId, 14)}
+                        </span>
+
+                        {/* Mode name */}
+                        <span style={{
+                          flex: 1, textAlign: 'left',
+                          fontSize: '0.88rem', fontWeight: 600,
+                          color: isCollapsed ? 'var(--text-secondary)' : visual.color,
+                          transition: 'color 0.13s',
+                        }}>
+                          {mode.name}
+                        </span>
+
+                        {/* Count badge */}
+                        <span style={{
+                          fontSize: '0.72rem', fontWeight: 500,
+                          color: 'var(--text-muted)',
+                          background: 'var(--surface-2)',
+                          padding: '0.1rem 0.45rem',
+                          borderRadius: '999px',
+                          border: '1px solid var(--border-subtle)',
+                        }}>
+                          {modeProjects.length}
+                        </span>
                       </button>
-                    </div>
-                  </div>
 
-                  {/* Divisor fino abaixo da etiqueta */}
-                  {!isCollapsed && (
-                    <div style={{
-                      height: '1px', background: 'rgba(226,232,240,0.7)',
-                      marginBottom: '0.875rem',
-                    }} />
-                  )}
-
-                  {/* Cards */}
-                  {!isCollapsed && (
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.45rem' }}>
-                      {modeProjects.length === 0 ? (
-                        <p style={{ color: 'var(--text-muted)', fontSize: '0.84rem', padding: '0.5rem 0' }}>
-                          Nenhum projeto neste modo ainda.
-                        </p>
-                      ) : (
-                        modeProjects.map(p => (
-                          <ProjectCard
-                            key={p.id}
-                            project={p}
-                            mode={mode}
-                            onClick={() => router.push(`/workspace/${p.id}`)}
-                          />
-                        ))
+                      {/* Expanded cards */}
+                      {!isCollapsed && (
+                        <div style={{
+                          display: 'flex', flexDirection: 'column', gap: '0.35rem',
+                          padding: '0 1.1rem 1rem 2.8rem',
+                        }}>
+                          {modeProjects.map(p => (
+                            <ProjectCard
+                              key={p.id}
+                              project={p}
+                              mode={mode}
+                              onClick={() => router.push(`/workspace/${p.id}`)}
+                            />
+                          ))}
+                        </div>
                       )}
                     </div>
-                  )}
-                </section>
-              )
-            })}
+                  )
+                })}
+              </div>
+            </section>
+
           </div>
         )}
       </main>
@@ -593,7 +534,7 @@ export default function DashboardClient({ user, projects, profile }: Props) {
             {modalStep === 'mode' && (
               <div style={{ padding: '1.75rem 1.75rem 1.5rem' }}>
                 <div style={{ marginBottom: '1.5rem' }}>
-                  <h2 style={{ marginBottom: '0.3rem', fontSize: '1.15rem' }}>Novo Projeto</h2>
+                  <h2 style={{ marginBottom: '0.3rem', fontSize: '1.15rem' }}>Novo Estudo</h2>
                   <p style={{ color: 'var(--text-muted)', fontSize: '0.84rem' }}>
                     Escolha o modo de estudo
                   </p>
@@ -601,7 +542,7 @@ export default function DashboardClient({ user, projects, profile }: Props) {
 
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.65rem', marginBottom: '1.5rem' }}>
                   {MODE_ORDER.map(modeId => {
-                    const mode = STUDY_MODE_REGISTRY[modeId]
+                    const mode   = STUDY_MODE_REGISTRY[modeId]
                     const active = selectedMode === modeId
                     return (
                       <button
@@ -617,13 +558,13 @@ export default function DashboardClient({ user, projects, profile }: Props) {
                         onMouseEnter={e => {
                           if (!active) {
                             e.currentTarget.style.borderColor = `${mode.color}60`
-                            e.currentTarget.style.background = `${mode.color}05`
+                            e.currentTarget.style.background  = `${mode.color}05`
                           }
                         }}
                         onMouseLeave={e => {
                           if (!active) {
                             e.currentTarget.style.borderColor = 'var(--border-subtle)'
-                            e.currentTarget.style.background = 'var(--surface-2)'
+                            e.currentTarget.style.background  = 'var(--surface-2)'
                           }
                         }}
                       >
@@ -759,10 +700,8 @@ export default function DashboardClient({ user, projects, profile }: Props) {
                         placeholder={generatedProjectTitle}
                       />
                       <p style={{
-                        margin: '0.45rem 0 0',
-                        color: 'var(--text-muted)',
-                        fontSize: '0.76rem',
-                        lineHeight: 1.45,
+                        margin: '0.45rem 0 0', color: 'var(--text-muted)',
+                        fontSize: '0.76rem', lineHeight: 1.45,
                       }}>
                         O título inicial é gerado automaticamente a partir {modeConfig.passageBased ? 'da referência bíblica' : 'do tema informado'}.
                         Você poderá alterá-lo a qualquer momento durante o estudo.
@@ -772,8 +711,7 @@ export default function DashboardClient({ user, projects, profile }: Props) {
 
                   {createError && (
                     <div style={{
-                      color: '#DC2626',
-                      background: 'rgba(220,38,38,0.06)',
+                      color: '#DC2626', background: 'rgba(220,38,38,0.06)',
                       border: '1px solid rgba(220,38,38,0.2)',
                       borderRadius: '7px', padding: '0.6rem 0.85rem',
                       fontSize: '0.84rem', lineHeight: 1.4,
@@ -813,46 +751,24 @@ export default function DashboardClient({ user, projects, profile }: Props) {
 
 // ── Sub-components ─────────────────────────────────────────────────────────
 
-function FilterPill({
-  active, color, onClick, children,
-}: {
-  active: boolean
-  color: string
-  onClick: () => void
-  children: React.ReactNode
-}) {
-  const activeBorder = color.startsWith('#') ? `${color}55` : color
-  const activeBg = color.startsWith('#') ? `${color}10` : 'var(--accent-subtle)'
-
+function ShelfLabel({ children }: { children: React.ReactNode }) {
   return (
-    <button
-      onClick={onClick}
-      style={{
-        minHeight: '32px',
-        padding: '0.35rem 0.78rem',
-        borderRadius: '999px',
-        border: `1px solid ${active ? activeBorder : 'rgba(148,163,184,0.22)'}`,
-        background: active ? activeBg : 'rgba(255,255,255,0.02)',
-        color: active ? color : 'var(--text-secondary)',
-        fontSize: '0.78rem', fontWeight: active ? 650 : 500,
-        cursor: 'pointer', fontFamily: 'inherit',
-        transition: 'all 0.13s',
-      }}
-    >
-      {children}
-    </button>
+    <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+      <span style={{
+        fontSize: '0.68rem', fontWeight: 700, letterSpacing: '0.1em',
+        textTransform: 'uppercase', color: 'var(--text-muted)',
+        whiteSpace: 'nowrap',
+      }}>
+        {children}
+      </span>
+      <div style={{ flex: 1, height: '1px', background: 'var(--border-subtle)' }} />
+    </div>
   )
 }
 
-function ProjectCard({
-  project, mode, onClick,
-}: {
-  project: Project
-  mode: StudyModeConfig
-  onClick: () => void
-}) {
-  const visual = modeVisual(mode.id as StudyModeId)
-  const isCompleted = project.status === 'completed'
+function RecentCard({ project, onClick }: { project: Project; onClick: () => void }) {
+  const mode   = getModeConfig(project.study_mode ?? project.project_type)
+  const visual = MODE_VISUALS[mode.id as StudyModeId]
   const isPassage = mode.passageBased
   const subtitle = isPassage && project.book && project.book !== '—'
     ? `${project.book} ${project.passage_ref}`
@@ -866,47 +782,128 @@ function ProjectCard({
       style={{
         background: '#fff',
         border: '1px solid rgba(226,232,240,0.9)',
-        borderRadius: '8px',
-        padding: '1rem 1.25rem 0.9rem',
+        borderRadius: '9px',
+        padding: '0.95rem 1.15rem',
         cursor: 'pointer',
         transition: 'box-shadow 0.15s, border-color 0.15s',
         display: 'flex',
         alignItems: 'center',
-        gap: '1.1rem',
-        // Borda esquerda colorida via box-shadow inset — não afeta layout
-        boxShadow: `inset 3px 0 0 ${visual.color}14`,
+        gap: '1rem',
+        boxShadow: `inset 3px 0 0 ${visual.color}20`,
       }}
       onMouseEnter={e => {
-        e.currentTarget.style.boxShadow = `inset 3px 0 0 ${visual.color}, 0 2px 16px rgba(15,23,42,0.07)`
+        e.currentTarget.style.boxShadow = `inset 3px 0 0 ${visual.color}, 0 2px 14px rgba(15,23,42,0.07)`
         e.currentTarget.style.borderColor = 'rgba(203,213,225,0.9)'
       }}
       onMouseLeave={e => {
-        e.currentTarget.style.boxShadow = `inset 3px 0 0 ${visual.color}14`
+        e.currentTarget.style.boxShadow = `inset 3px 0 0 ${visual.color}20`
         e.currentTarget.style.borderColor = 'rgba(226,232,240,0.9)'
       }}
     >
-      {/* Título como protagonista */}
+      {/* Mode icon badge */}
+      <div style={{
+        width: 34, height: 34, borderRadius: '8px', flexShrink: 0,
+        background: visual.bg, display: 'flex', alignItems: 'center', justifyContent: 'center',
+        color: visual.color,
+      }}>
+        {isValidElement<{ width?: number; height?: number }>(MODE_ICONS[mode.id as StudyModeId])
+          ? cloneElement(MODE_ICONS[mode.id as StudyModeId] as React.ReactElement<{ width?: number; height?: number }>, { width: 15, height: 15 })
+          : MODE_ICONS[mode.id as StudyModeId]}
+      </div>
+
       <div style={{ flex: 1, minWidth: 0 }}>
         <div style={{
-          fontWeight: 500,
-          fontSize: '0.9rem',
-          lineHeight: 1.25,
-          color: 'var(--text-primary)',
-          marginBottom: '0.25rem',
+          fontWeight: 600, fontSize: '0.9rem', lineHeight: 1.2,
+          color: 'var(--text-primary)', marginBottom: '0.2rem',
           overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
         }}>
           {project.title}
         </div>
-        {/* Metadados: referência + data */}
         <div style={{
-          display: 'flex', alignItems: 'center', gap: '0.45rem',
-          fontSize: '0.78rem', color: 'var(--text-muted)',
-          overflow: 'hidden',
+          display: 'flex', alignItems: 'center', gap: '0.4rem',
+          fontSize: '0.75rem', color: 'var(--text-muted)', overflow: 'hidden',
+        }}>
+          <span style={{ color: visual.color, fontWeight: 500, opacity: 0.85, flexShrink: 0 }}>
+            {mode.name}
+          </span>
+          {subtitle && (
+            <>
+              <span style={{ opacity: 0.35, flexShrink: 0 }}>·</span>
+              <span style={{ fontStyle: 'italic', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                {subtitle}
+              </span>
+            </>
+          )}
+          <span style={{ opacity: 0.35, flexShrink: 0 }}>·</span>
+          <span style={{ flexShrink: 0 }}>{formatDate(project.updated_at)}</span>
+        </div>
+      </div>
+
+      {/* Arrow */}
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none"
+        stroke="var(--text-muted)" strokeWidth="2.5"
+        strokeLinecap="round" strokeLinejoin="round"
+        style={{ flexShrink: 0, opacity: 0.4 }}>
+        <path d="M9 18l6-6-6-6"/>
+      </svg>
+    </div>
+  )
+}
+
+function ProjectCard({
+  project, mode, onClick,
+}: {
+  project: Project
+  mode: StudyModeConfig
+  onClick: () => void
+}) {
+  const visual = modeVisual(mode.id as StudyModeId)
+  const isCompleted = project.status === 'completed'
+  const isPassage   = mode.passageBased
+  const subtitle = isPassage && project.book && project.book !== '—'
+    ? `${project.book} ${project.passage_ref}`
+    : project.passage_ref && project.passage_ref !== '—'
+      ? project.passage_ref
+      : null
+
+  return (
+    <div
+      onClick={onClick}
+      style={{
+        background: '#fff',
+        border: '1px solid rgba(226,232,240,0.9)',
+        borderRadius: '7px',
+        padding: '0.7rem 1rem',
+        cursor: 'pointer',
+        transition: 'box-shadow 0.15s, border-color 0.15s',
+        display: 'flex',
+        alignItems: 'center',
+        gap: '0.9rem',
+      }}
+      onMouseEnter={e => {
+        e.currentTarget.style.boxShadow = `0 1px 12px rgba(15,23,42,0.07)`
+        e.currentTarget.style.borderColor = 'rgba(203,213,225,0.9)'
+      }}
+      onMouseLeave={e => {
+        e.currentTarget.style.boxShadow = 'none'
+        e.currentTarget.style.borderColor = 'rgba(226,232,240,0.9)'
+      }}
+    >
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <div style={{
+          fontWeight: 500, fontSize: '0.88rem', lineHeight: 1.25,
+          color: 'var(--text-primary)', marginBottom: '0.18rem',
+          overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+        }}>
+          {project.title}
+        </div>
+        <div style={{
+          display: 'flex', alignItems: 'center', gap: '0.4rem',
+          fontSize: '0.75rem', color: 'var(--text-muted)', overflow: 'hidden',
         }}>
           {subtitle && (
             <span style={{
-              overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
-              fontStyle: 'italic',
+              overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontStyle: 'italic',
             }}>
               {subtitle}
             </span>
@@ -916,17 +913,13 @@ function ProjectCard({
         </div>
       </div>
 
-      {/* Status — discreto, último na hierarquia */}
-      <div style={{ flexShrink: 0, textAlign: 'right' }}>
-        <span style={{
-          fontSize: '0.7rem',
-          fontWeight: isCompleted ? 600 : 400,
-          color: isCompleted ? '#16a34a' : 'var(--text-muted)',
-          opacity: isCompleted ? 1 : 0.75,
-        }}>
-          {statusLabel(project.status)}
-        </span>
-      </div>
+      <span style={{
+        fontSize: '0.7rem', fontWeight: isCompleted ? 600 : 400, flexShrink: 0,
+        color: isCompleted ? '#16a34a' : 'var(--text-muted)',
+        opacity: isCompleted ? 1 : 0.75,
+      }}>
+        {statusLabel(project.status)}
+      </span>
     </div>
   )
 }
@@ -943,9 +936,9 @@ function EmptyDashboard({ onNew }: { onNew: () => void }) {
           <path strokeLinecap="round" strokeLinejoin="round" d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25"/>
         </svg>
       </div>
-      <h3 style={{ marginBottom: '0.5rem', color: 'var(--text-secondary)' }}>Nenhum estudo ainda</h3>
+      <h3 style={{ marginBottom: '0.5rem', color: 'var(--text-secondary)' }}>Biblioteca vazia</h3>
       <p style={{ color: 'var(--text-muted)', fontSize: '0.88rem', marginBottom: '1.5rem' }}>
-        Comece escolhendo um modo de estudo
+        Comece criando o seu primeiro estudo
       </p>
       <button onClick={onNew} style={{
         background: 'var(--accent)', color: '#FFFFFF', border: 'none',
