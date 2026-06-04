@@ -317,7 +317,7 @@ export default function DashboardClient({ user, projects: initialProjects, profi
       book:              isPassage ? form.book : '—',
       passage_ref:       isPassage ? form.passage_ref.trim() : form.topic.trim(),
       testament:         isPassage ? form.testament : 'AT',
-      original_language: isPassage ? (form.testament === 'AT' ? 'hebraico' : 'grego') : '—',
+      original_language: isPassage ? (form.testament === 'AT' ? 'hebraico' : 'grego') : 'hebraico',
       bible_version:     'NAA',
       status:            'draft',
       study_mode:        selectedMode,
@@ -328,8 +328,15 @@ export default function DashboardClient({ user, projects: initialProjects, profi
     setCreating(true)
     try {
       const { data, error } = await supabase.from('projects').insert(payload).select().single()
-      if (error) { setCreateError('Não foi possível criar o projeto. Tente novamente.'); return }
-      if (data)  router.push(`/workspace/${data.id}`)
+      if (error) {
+        console.error('[Lampas] Erro ao criar projeto', error.code, error.message)
+        setCreateError('Não foi possível criar o projeto. Tente novamente.')
+        return
+      }
+      if (data) {
+        setProjects(prev => [data as Project, ...prev])
+        router.push(`/workspace/${data.id}`)
+      }
     } catch {
       setCreateError('Não foi possível criar o projeto. Tente novamente.')
     } finally {
