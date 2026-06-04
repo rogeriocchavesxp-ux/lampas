@@ -31,6 +31,7 @@ import LiveReferencePanel from './LiveReferencePanel'
 import AIPanel from './AIPanel'
 import BibleFloatingWindow from './BibleFloatingWindow'
 import VisaoGeralWorkspace from './VisaoGeralWorkspace'
+import EnviarParaSermaModal from './EnviarParaSermaModal'
 import DicionarioWorkspace from './DicionarioWorkspace'
 import BibliotecaWorkspace from './BibliotecaWorkspace'
 import {
@@ -254,6 +255,7 @@ export default function WorkspaceClient({ user, project, initialSections }: Prop
   const [focusMode, setFocusMode] = useState(false)
   const [sideBySide, setSideBySide] = useState(false)
   const [bibleOpen, setBibleOpen] = useState(false)
+  const [enviarParaSermaOpen, setEnviarParaSermaOpen] = useState(false)
 
   const sidebarWidthRef = useRef(264)
   const referenceWidthRef = useRef(280)
@@ -587,6 +589,31 @@ export default function WorkspaceClient({ user, project, initialSections }: Prop
         >
           IA
         </button>
+
+        {/* Botão exclusivo do Estudo de Carta */}
+        {project.study_mode === 'estudo_de_carta' && (
+          <>
+            <div style={{ width: '1px', height: '14px', background: 'var(--border-subtle)', margin: '0 0.4rem', flexShrink: 0 }} />
+            <button
+              onClick={() => setEnviarParaSermaOpen(true)}
+              style={{
+                flexShrink: 0,
+                background: 'transparent',
+                border: '1px solid rgba(124,58,237,0.35)',
+                color: '#7C3AED',
+                borderRadius: '5px', padding: '0.2rem 0.6rem',
+                fontSize: '0.73rem', fontWeight: 700, letterSpacing: '0.03em',
+                cursor: 'pointer', fontFamily: 'inherit', transition: 'all 0.15s',
+                display: 'flex', alignItems: 'center', gap: '0.3rem',
+              }}
+              onMouseEnter={e => { e.currentTarget.style.background = 'rgba(124,58,237,0.06)' }}
+              onMouseLeave={e => { e.currentTarget.style.background = 'transparent' }}
+              title="Transferir este estudo de carta para um projeto de Sermão"
+            >
+              → Sermão
+            </button>
+          </>
+        )}
       </header>
 
       {/* ── Body ──────────────────────────────────────────────────────────── */}
@@ -1213,6 +1240,16 @@ export default function WorkspaceClient({ user, project, initialSections }: Prop
           projectId={project.id}
           userId={user.id}
           onClose={() => setBibleOpen(false)}
+        />
+      )}
+
+      {/* ── Enviar para Sermão (exclusivo Estudo de Carta) ─────────── */}
+      {enviarParaSermaOpen && project.study_mode === 'estudo_de_carta' && (
+        <EnviarParaSermaModal
+          project={project}
+          sections={sections}
+          userId={user.id}
+          onClose={() => setEnviarParaSermaOpen(false)}
         />
       )}
     </div>
