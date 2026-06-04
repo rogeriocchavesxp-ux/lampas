@@ -282,7 +282,8 @@ export default function BillingClient({
           {PLAN_ORDER.map(planId => {
             const plan   = PLANS[planId]
             const isCurrent = planId === currentPlan
-            const isPopular = plan.badge === 'Popular'
+            const isPopular = plan.badge === 'Mais popular'
+            const isPremium = planId === 'avancado'
             const price  = billingInterval === 'annual' ? plan.priceAnnual : plan.priceMonthly
             const monthlyEquiv = billingInterval === 'annual' && plan.priceAnnual > 0
               ? Math.round(plan.priceAnnual / 12)
@@ -292,8 +293,8 @@ export default function BillingClient({
               <div
                 key={planId}
                 style={{
-                  border: `1.5px solid ${isCurrent ? GOLD : isPopular ? 'rgba(184,146,42,0.35)' : BORDER}`,
-                  background: isCurrent ? 'rgba(184,146,42,0.05)' : 'var(--surface)',
+                  border: `1.5px solid ${isCurrent ? GOLD : isPremium ? GOLD : isPopular ? 'rgba(184,146,42,0.35)' : BORDER}`,
+                  background: isCurrent ? 'rgba(184,146,42,0.05)' : isPremium && !isCurrent ? 'rgba(184,146,42,0.04)' : 'var(--surface)',
                   borderRadius: '10px',
                   padding: '1.5rem',
                   display: 'flex',
@@ -305,7 +306,7 @@ export default function BillingClient({
                 {/* Badges */}
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                   <div>
-                    {isPopular && !isCurrent && (
+                    {plan.badge && !isCurrent && (
                       <div style={{
                         fontSize: '0.6rem',
                         fontWeight: 900,
@@ -314,7 +315,7 @@ export default function BillingClient({
                         letterSpacing: '0.12em',
                         marginBottom: '0.3rem',
                       }}>
-                        Popular
+                        {plan.badge}
                       </div>
                     )}
                     {isCurrent && (
@@ -331,6 +332,12 @@ export default function BillingClient({
                     )}
                     <div style={{ fontSize: '1.05rem', fontWeight: 700, color: 'var(--text-primary)' }}>
                       {plan.name}
+                    </div>
+                    <div style={{ fontSize: '0.72rem', color: MUTED, marginTop: '0.2rem' }}>
+                      {planId === 'free' && 'Experimente sem compromisso'}
+                      {planId === 'iniciante' && 'Para quem está começando'}
+                      {planId === 'intermediario' && 'Pesquisa exegética completa'}
+                      {planId === 'avancado' && 'Ambiente ministerial completo'}
                     </div>
                   </div>
                 </div>
@@ -355,18 +362,35 @@ export default function BillingClient({
                           {formatPrice(price)} cobrado anualmente
                         </div>
                       )}
+                      {isPremium && billingInterval === 'monthly' && (
+                        <div style={{ fontSize: '0.7rem', color: MUTED, marginTop: '0.25rem' }}>
+                          menos de R$ 3 por dia · IA sem limite
+                        </div>
+                      )}
                     </>
                   )}
                 </div>
 
                 {/* Features */}
                 <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '0.45rem' }}>
-                  {plan.features.map(f => (
-                    <div key={f} style={{ display: 'flex', gap: '0.5rem', alignItems: 'baseline' }}>
-                      <span style={{ color: GOLD, fontSize: '0.65rem', flexShrink: 0 }}>✦</span>
-                      <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', lineHeight: 1.4 }}>{f}</span>
-                    </div>
-                  ))}
+                  {plan.features.map((f, i) => {
+                    const isExclusive = isPremium
+                    return (
+                      <div key={f} style={{ display: 'flex', gap: '0.5rem', alignItems: 'baseline' }}>
+                        <span style={{ color: isExclusive ? GOLD : 'var(--text-muted)', fontSize: '0.65rem', flexShrink: 0 }}>
+                          {isExclusive ? '★' : '✦'}
+                        </span>
+                        <span style={{
+                          fontSize: '0.8rem',
+                          color: isExclusive ? 'var(--text-primary)' : 'var(--text-secondary)',
+                          lineHeight: 1.4,
+                          fontWeight: isExclusive ? 500 : 400,
+                        }}>
+                          {f}
+                        </span>
+                      </div>
+                    )
+                  })}
                 </div>
 
                 {/* CTA */}
@@ -404,10 +428,10 @@ export default function BillingClient({
                     onClick={() => handleCheckout(planId)}
                     disabled={!!loading}
                     style={{
-                      background: isPopular ? GOLD : 'transparent',
-                      border: `1px solid ${isPopular ? GOLD : BORDER}`,
+                      background: isPremium ? GOLD : isPopular ? 'rgba(184,146,42,0.12)' : 'transparent',
+                      border: `1px solid ${isPremium || isPopular ? GOLD : BORDER}`,
                       borderRadius: '7px',
-                      color: isPopular ? '#000' : 'var(--text-secondary)',
+                      color: isPremium ? '#000' : isPopular ? GOLD : 'var(--text-secondary)',
                       cursor: loading ? 'not-allowed' : 'pointer',
                       fontFamily: 'inherit',
                       fontSize: '0.82rem',
@@ -418,19 +442,19 @@ export default function BillingClient({
                       transition: 'all 0.15s',
                     }}
                     onMouseEnter={e => {
-                      if (!loading && !isPopular) {
+                      if (!loading && !isPremium && !isPopular) {
                         e.currentTarget.style.borderColor = GOLD
                         e.currentTarget.style.color = GOLD
                       }
                     }}
                     onMouseLeave={e => {
-                      if (!isPopular) {
+                      if (!isPremium && !isPopular) {
                         e.currentTarget.style.borderColor = BORDER
                         e.currentTarget.style.color = 'var(--text-secondary)'
                       }
                     }}
                   >
-                    {loading === planId ? 'Aguarde...' : 'Assinar'}
+                    {loading === planId ? 'Aguarde...' : isPremium ? 'Assinar Premium' : 'Assinar'}
                   </button>
                 )}
               </div>
