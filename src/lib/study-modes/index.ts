@@ -240,10 +240,10 @@ const SERMAO: StudyModeConfig = {
         color: '#7C3AED', bgActive: 'rgba(124,58,237,0.08)',
         groups: [
           { id: 'pregar_visao_geral', label: 'Visão Geral' },
-          { id: 'sermao_dispositio',   label: 'Estrutura' },
-          { id: 'sermao_elocutio',     label: 'Linguagem' },
+          { id: 'sermao_dispositio',   label: 'Organização homilética' },
+          { id: 'sermao_elocutio',     label: 'Forma de comunicação' },
           { id: 'sermao_memoria',      label: 'Internalização' },
-          { id: 'sermao_pronuntiatio', label: 'Execução da Pregação' },
+          { id: 'sermao_pronuntiatio', label: 'Execução da pregação' },
         ],
       }],
     },
