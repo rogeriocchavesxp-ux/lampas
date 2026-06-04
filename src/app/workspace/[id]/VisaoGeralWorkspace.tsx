@@ -70,6 +70,7 @@ interface NodeDef {
   angle: number          // 0 = direita, -90 = topo, em sentido horário
   radius?: number
   layer?: OverviewLayerId
+  sectionSlug?: string
   color: string; bg: string
   kind: NodeKind
   clsTypes?: ClassType[]
@@ -286,13 +287,11 @@ const MODE_NODES_MAP: Record<string, NodeDef[]> = {
     { key: 'vg_topicos',     label: 'Para Discussão', icon: '💬', angle: 219,  color: '#475569', bg: '#F8FAFC', kind: 'card', cardIds: ['vg_topicos'] },
   ],
   estudo_de_salmos_sabedoria: [
-    { key: 'ss_tipo',      label: 'Tipo de Poema',     icon: '📜', angle: -90,  color: '#6D28D9', bg: '#F5F3FF', kind: 'card', cardIds: ['vg_tipo'] },
-    { key: 'ss_paralel',   label: 'Paralelismo',        icon: '⇌',  angle: -39,  color: '#7C3AED', bg: '#EDE9FE', kind: 'card', cardIds: ['vg_paralelismo'] },
-    { key: 'ss_estrutura', label: 'Estrutura',          icon: '⊞',  angle: 13,   color: '#8B5CF6', bg: '#EDE9FE', kind: 'card', cardIds: ['vg_estrutura'] },
-    { key: 'ss_imagens',   label: 'Imagens',            icon: '🎨', angle: 64,   color: '#6D28D9', bg: '#F5F3FF', kind: 'card', cardIds: ['vg_imagens'] },
-    { key: 'ss_movimento', label: 'Movimento Emocional',icon: '⟶', angle: 116,  color: '#D97706', bg: '#FFFBEB', kind: 'card', cardIds: ['vg_movimento'] },
-    { key: 'ss_tema',      label: 'Tema Central',       icon: '💡', angle: 167,  color: '#B45309', bg: '#FEF3C7', kind: 'card', cardIds: ['vg_tema'] },
-    { key: 'ss_adoracao',  label: 'Adoração / Resposta',icon: '🙏', angle: 219,  color: '#059669', bg: '#F0FDF4', kind: 'card', cardIds: ['vg_adoracao'] },
+    { key: 'ss_paralel',   label: 'Paralelismo', icon: '⇌', angle: -90, color: '#7C3AED', bg: '#EDE9FE', kind: 'card', sectionSlug: 'ss_paralelismo' },
+    { key: 'ss_estrutura', label: 'Estrutura',   icon: '⊞', angle: -18, color: '#2563EB', bg: '#EFF6FF', kind: 'card', sectionSlug: 'ss_estrutura' },
+    { key: 'ss_imagens',   label: 'Imagística',  icon: '🎨', angle: 54,  color: '#6D28D9', bg: '#F5F3FF', kind: 'card', sectionSlug: 'ss_imagistica' },
+    { key: 'ss_temas',     label: 'Temas',       icon: '💡', angle: 126, color: '#B45309', bg: '#FEF3C7', kind: 'card', sectionSlug: 'ss_temas_sabedoria' },
+    { key: 'ss_teologia',  label: 'Teologia',    icon: '🙏', angle: 198, color: '#059669', bg: '#F0FDF4', kind: 'card', sectionSlug: 'ss_teologia_adoracao' },
   ],
   estudo_de_profecias: [
     { key: 'pf_contexto',  label: 'Contexto Hist.',    icon: '📅', angle: -90,  color: '#B45309', bg: '#FEF3C7', kind: 'card', cardIds: ['vg_contexto'] },
@@ -399,6 +398,7 @@ interface Props {
   userId: string
   existingSection: Section | undefined
   allVGSections?: Section[]
+  allSections?: Section[]
   onUpdate: (s: Section) => void
   onAskAI: (prompt: string) => void
   onOpenBible?: () => void
@@ -408,7 +408,7 @@ interface Props {
 // ── Component ─────────────────────────────────────────────────────────────────
 
 export default function VisaoGeralWorkspace({
-  sectionDef, project, userId, existingSection, allVGSections, onUpdate, onAskAI, onOpenBible, onNavigate,
+  sectionDef, project, userId, existingSection, allVGSections, allSections = [], onUpdate, onAskAI, onOpenBible, onNavigate,
 }: Props) {
   const supabase    = useMemo(() => createClient(), [])
   const wrapRef     = useRef<HTMLDivElement>(null)
@@ -563,18 +563,35 @@ export default function VisaoGeralWorkspace({
   )
 
   // ── Node data helpers ──────────────────────────────────────────────────────
+  const getLinkedSection = (node: NodeDef): Section | undefined =>
+    node.sectionSlug ? allSections.find(section => section.slug === node.sectionSlug) : undefined
+
+  const getLinkedCards = (node: NodeDef): Record<string, string> => {
+    const section = getLinkedSection(node)
+    return (section?.content as { cards?: Record<string, string> } | null)?.cards ?? {}
+  }
+
   const getClsItems = (node: NodeDef): Classification[] =>
     node.kind === 'cls' && node.clsTypes
       ? cls.filter(c => node.clsTypes!.includes(c.type))
       : []
 
   const getCardText = (node: NodeDef): string =>
-    node.kind === 'card' && node.cardIds
+    node.sectionSlug
+      ? Object.values(getLinkedCards(node)).map(value => value?.trim()).filter(Boolean).join('\n\n')
+      : node.kind === 'card' && node.cardIds
       ? node.cardIds.map(id => cards[id]?.trim()).filter(Boolean).join('\n\n')
       : ''
 
   const getCount = (node: NodeDef): number =>
-    node.kind === 'cls' ? getClsItems(node).length : (getCardText(node) ? 1 : 0)
+    node.sectionSlug
+      ? Object.values(getLinkedCards(node)).filter(value => value?.trim()).length
+      : node.kind === 'cls' ? getClsItems(node).length : (getCardText(node) ? 1 : 0)
+
+  const getNodeSummary = (node: NodeDef): string => {
+    const text = getCardText(node).replace(/\s+/g, ' ').trim()
+    return text.length > 220 ? `${text.slice(0, 220)}...` : text
+  }
 
   const totalItems = nodes.reduce((s, n) => s + getCount(n), 0)
 
@@ -1538,6 +1555,87 @@ export default function VisaoGeralWorkspace({
 
                   {/* Card textarea */}
                   {activeNode.kind === 'card' && (() => {
+                    if (activeNode.sectionSlug) {
+                      const linkedSection = getLinkedSection(activeNode)
+                      const linkedCards = getLinkedCards(activeNode)
+                      const filledEntries = Object.entries(linkedCards)
+                        .map(([key, value]) => [key, value?.trim() ?? ''] as const)
+                        .filter(([, value]) => Boolean(value))
+                      const summary = getNodeSummary(activeNode)
+
+                      return (
+                        <div style={{ padding: '8px 6px' }}>
+                          <div style={{
+                            background: activeNode.bg,
+                            border: `1px solid ${activeNode.color}24`,
+                            borderRadius: '9px',
+                            padding: '0.65rem 0.75rem',
+                            marginBottom: '0.65rem',
+                          }}>
+                            <div style={{ fontSize: '0.6rem', fontWeight: 800, color: activeNode.color, letterSpacing: '0.07em', textTransform: 'uppercase', marginBottom: '0.25rem' }}>
+                              Fonte da verdade
+                            </div>
+                            <div style={{ fontSize: '0.78rem', color: '#334155', lineHeight: 1.45 }}>
+                              Este nó representa a seção {linkedSection ? `"${linkedSection.title}"` : 'correspondente'} da barra lateral.
+                            </div>
+                          </div>
+
+                          {filledEntries.length > 0 ? (
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.45rem' }}>
+                              <div style={{ fontSize: '0.72rem', color: '#64748B', lineHeight: 1.55 }}>
+                                {summary}
+                              </div>
+                              <div style={{ borderTop: '1px solid #F1F5F9', paddingTop: '0.45rem', display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
+                                {filledEntries.slice(0, 4).map(([key, value]) => (
+                                  <div key={key} style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '7px', padding: '0.45rem 0.55rem' }}>
+                                    <div style={{ fontSize: '0.58rem', fontWeight: 800, color: '#94A3B8', letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: '0.2rem' }}>
+                                      {key.replaceAll('_', ' ')}
+                                    </div>
+                                    <div style={{ fontSize: '0.72rem', color: '#475569', lineHeight: 1.45, overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>
+                                      {value}
+                                    </div>
+                                  </div>
+                                ))}
+                                {filledEntries.length > 4 && (
+                                  <div style={{ fontSize: '0.66rem', color: activeNode.color, fontWeight: 700 }}>
+                                    + {filledEntries.length - 4} campo{filledEntries.length - 4 !== 1 ? 's' : ''} preenchido{filledEntries.length - 4 !== 1 ? 's' : ''}
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                          ) : (
+                            <div style={{ padding: '1rem 0.4rem', textAlign: 'center' }}>
+                              <div style={{ fontSize: '0.78rem', color: '#94A3B8', lineHeight: 1.45 }}>
+                                Esta seção ainda não possui conteúdo.
+                              </div>
+                              <div style={{ fontSize: '0.68rem', color: activeNode.color, marginTop: '0.3rem' }}>
+                                Abra a seção para preencher os campos reais do estudo.
+                              </div>
+                            </div>
+                          )}
+
+                          <button
+                            onClick={() => activeNode.sectionSlug && onNavigate?.(activeNode.sectionSlug)}
+                            style={{
+                              marginTop: '0.75rem',
+                              width: '100%',
+                              background: activeNode.color,
+                              color: '#FFFFFF',
+                              border: 'none',
+                              borderRadius: '8px',
+                              padding: '0.55rem',
+                              fontSize: '0.74rem',
+                              fontWeight: 700,
+                              cursor: 'pointer',
+                              fontFamily: 'inherit',
+                            }}
+                          >
+                            Abrir seção
+                          </button>
+                        </div>
+                      )
+                    }
+
                     const cardId = activeNode.cardIds![0]
                     const cardMeta = VG_CARD_DEFS[cardId]
                     const draft  = cardDraft[cardId] ?? cards[cardId] ?? ''
@@ -1598,7 +1696,10 @@ export default function VisaoGeralWorkspace({
                       </button>
                     )}
                     <button
-                      onClick={() => onAskAI(buildVGNodePrompt(project, activeNode))}
+                      onClick={() => {
+                        if (activeNode.sectionSlug) onNavigate?.(activeNode.sectionSlug)
+                        else onAskAI(buildVGNodePrompt(project, activeNode))
+                      }}
                       style={{
                         display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '5px',
                         background: 'transparent', border: '1px solid #E2E8F0',
@@ -1608,7 +1709,9 @@ export default function VisaoGeralWorkspace({
                       onMouseEnter={e => { e.currentTarget.style.borderColor = '#8B5CF6'; e.currentTarget.style.color = '#7C3AED' }}
                       onMouseLeave={e => { e.currentTarget.style.borderColor = '#E2E8F0'; e.currentTarget.style.color = '#64748B' }}
                     >
-                      <Sparkles size={11} strokeWidth={1.75} /> Organizar com IA
+                      {activeNode.sectionSlug
+                        ? <><BookOpen size={11} strokeWidth={1.75} /> Abrir seção</>
+                        : <><Sparkles size={11} strokeWidth={1.75} /> Organizar com IA</>}
                     </button>
                   </div>
                 )}
