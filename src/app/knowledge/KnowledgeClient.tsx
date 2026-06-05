@@ -355,24 +355,41 @@ export default function KnowledgeClient({ userId, initialItems, initialDashboard
             </div>
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: '190px 1fr', gap: '1rem', alignItems: 'start' }}>
-
-            {/* Seletor de tipo */}
-            <div style={{ border: '1px solid #E2E8F0', borderRadius: '8px', background: '#F8FAFC', padding: '0.55rem', position: 'sticky', top: 0 }}>
+          {/* ── Seletor de tipo — barra horizontal de abas ── */}
+          {!creatingChildOf && (
+            <div style={{ display: 'flex', gap: '0.35rem', overflowX: 'auto', paddingBottom: '0.1rem', marginBottom: '1rem', scrollbarWidth: 'none' }}>
               {TYPE_ORDER.map(type => {
                 const cfg = KNOWLEDGE_TYPES[type]
                 const active = draft.item_type === type
                 return (
-                  <button key={type} onClick={() => setDraft(prev => ({ ...prev, item_type: type }))}
-                    style={{ width: '100%', display: 'flex', alignItems: 'center', gap: '0.5rem', border: `1px solid ${active ? cfg.color + '55' : 'transparent'}`, background: active ? cfg.bg : 'transparent', color: active ? cfg.color : '#64748B', borderRadius: '7px', padding: '0.45rem 0.55rem', cursor: 'pointer', fontFamily: 'inherit', fontSize: '0.76rem', fontWeight: 700, textAlign: 'left' }}>
-                    <span>{cfg.icon}</span>{cfg.label}
+                  <button
+                    key={type}
+                    onClick={() => setDraft(prev => ({ ...prev, item_type: type }))}
+                    style={{
+                      flexShrink: 0,
+                      display: 'inline-flex', alignItems: 'center', gap: '0.38rem',
+                      border: `1.5px solid ${active ? cfg.color : '#E2E8F0'}`,
+                      background: active ? cfg.bg : '#FFFFFF',
+                      color: active ? cfg.color : '#64748B',
+                      borderRadius: '999px',
+                      padding: '0.38rem 0.85rem',
+                      cursor: 'pointer', fontFamily: 'inherit',
+                      fontSize: '0.78rem', fontWeight: active ? 800 : 600,
+                      transition: 'all 0.12s',
+                    }}
+                    onMouseEnter={e => { if (!active) { e.currentTarget.style.borderColor = cfg.color + '60'; e.currentTarget.style.color = cfg.color } }}
+                    onMouseLeave={e => { if (!active) { e.currentTarget.style.borderColor = '#E2E8F0'; e.currentTarget.style.color = '#64748B' } }}
+                  >
+                    <span style={{ fontSize: '0.9rem', lineHeight: 1 }}>{cfg.icon}</span>
+                    {cfg.label}
                   </button>
                 )
               })}
             </div>
+          )}
 
-            {/* Campos */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem' }}>
+          {/* Campos — largura total */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem' }}>
 
               {/* ── Campos básicos — comuns a todos os tipos ── */}
               <section style={{ border: '1px solid #E2E8F0', borderRadius: '8px', padding: '1rem' }}>
@@ -489,7 +506,6 @@ export default function KnowledgeClient({ userId, initialItems, initialDashboard
               )}
 
             </div>
-          </div>
         </div>
       </div>
     )
