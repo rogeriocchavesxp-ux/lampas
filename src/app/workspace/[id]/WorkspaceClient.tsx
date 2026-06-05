@@ -516,91 +516,40 @@ export default function WorkspaceClient({ user, project, initialSections }: Prop
         padding: '0 1rem 0 0.75rem',
         position: 'relative',
       }}>
-        <button
-          onClick={() => router.push('/dashboard')}
-          style={{
-            background: 'transparent', border: 'none', cursor: 'pointer',
-            color: 'var(--text-muted)', fontSize: '0.78rem',
-            padding: '0.2rem 0.6rem 0.2rem 0.3rem', borderRadius: '4px',
-            fontFamily: 'inherit', display: 'flex', alignItems: 'center',
-            gap: '0.3rem', flexShrink: 0,
-          }}
-          onMouseEnter={e => e.currentTarget.style.color = 'var(--text-secondary)'}
-          onMouseLeave={e => e.currentTarget.style.color = 'var(--text-muted)'}
-        >
-          ←
-        </button>
-
-        <div style={{ width: '1px', height: '14px', background: 'var(--border-subtle)', marginRight: '0.6rem', flexShrink: 0 }} />
-
-        <div style={{ flex: 1, minWidth: 0, display: 'flex', alignItems: 'baseline', gap: '0.45rem', overflow: 'hidden' }}>
-          {editingTitle ? (
-            <input
-              ref={titleInputRef}
-              value={titleDraft}
-              onChange={e => setTitleDraft(e.target.value)}
-              onBlur={commitTitle}
-              onKeyDown={e => {
-                if (e.key === 'Enter') { e.preventDefault(); void commitTitle() }
-                if (e.key === 'Escape') cancelTitle()
-              }}
-              style={{
-                background: 'var(--surface-2)',
-                border: '1px solid var(--accent)',
-                borderRadius: '4px',
-                color: 'var(--text-primary)',
-                fontFamily: 'inherit',
-                fontSize: '0.86rem',
-                fontWeight: 600,
-                outline: 'none',
-                padding: '0.1rem 0.4rem',
-                minWidth: '160px',
-                maxWidth: '360px',
-                flexShrink: 1,
-              }}
-            />
-          ) : (
+        {/* Título compacto — visível apenas quando sidebar colapsada */}
+        {(sidebarCollapsed || focusMode) && (
+          <>
             <button
-              onClick={startTitleEdit}
-              title="Editar título do estudo"
+              onClick={() => router.push('/dashboard')}
               style={{
-                background: 'transparent', border: 'none', cursor: 'text',
-                display: 'inline-flex', alignItems: 'center', gap: '0.3rem',
-                padding: '0.15rem 0.35rem', borderRadius: '4px',
-                marginLeft: '-0.35rem', flexShrink: 1, minWidth: 0,
-                fontFamily: 'inherit',
+                background: 'transparent', border: 'none', cursor: 'pointer',
+                color: 'var(--text-muted)', fontSize: '0.78rem',
+                padding: '0.2rem 0.4rem 0.2rem 0.3rem', borderRadius: '4px',
+                fontFamily: 'inherit', flexShrink: 0,
               }}
-              onMouseEnter={e => {
-                e.currentTarget.style.background = 'rgba(0,0,0,0.05)'
-                const icon = e.currentTarget.querySelector('.edit-icon') as HTMLElement
-                if (icon) icon.style.opacity = '1'
-              }}
-              onMouseLeave={e => {
-                e.currentTarget.style.background = 'transparent'
-                const icon = e.currentTarget.querySelector('.edit-icon') as HTMLElement
-                if (icon) icon.style.opacity = '0'
-              }}
-            >
-              <span style={{
-                fontWeight: 600, fontSize: '0.86rem', color: 'var(--text-primary)',
-                overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
-              }}>
-                {titleValue}
-              </span>
-              <span className="edit-icon" style={{
-                fontSize: '0.7rem', color: 'var(--text-muted)',
-                opacity: 0, transition: 'opacity 0.12s', flexShrink: 0,
-              }}>✎</span>
-            </button>
-          )}
-          <span style={{
-            fontSize: '0.68rem', color: 'var(--text-muted)', flexShrink: 0,
-            background: 'var(--surface-2)', border: '1px solid var(--border-subtle)',
-            borderRadius: '3px', padding: '0.05rem 0.35rem',
-          }}>
-            {project.original_language}
-          </span>
-        </div>
+              onMouseEnter={e => e.currentTarget.style.color = 'var(--text-secondary)'}
+              onMouseLeave={e => e.currentTarget.style.color = 'var(--text-muted)'}
+            >←</button>
+            <span style={{
+              fontSize: '0.83rem', fontWeight: 600, color: 'var(--text-primary)',
+              overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+              maxWidth: '240px', flexShrink: 1,
+            }}>
+              {titleValue}
+            </span>
+            <span style={{
+              fontSize: '0.64rem', color: 'var(--text-muted)', flexShrink: 0,
+              background: 'var(--surface-2)', border: '1px solid var(--border-subtle)',
+              borderRadius: '3px', padding: '0.03rem 0.3rem',
+            }}>
+              {project.original_language}
+            </span>
+            <div style={{ width: '1px', height: '14px', background: 'var(--border-subtle)', margin: '0 0.3rem', flexShrink: 0 }} />
+          </>
+        )}
+
+        {/* Spacer — empurra os controles para a direita */}
+        <div style={{ flex: 1 }} />
 
         {/* Mode badge */}
         <span style={{
@@ -798,26 +747,110 @@ export default function WorkspaceClient({ user, project, initialSections }: Prop
             /* ── Sidebar expanded ────────────────────────────────── */
             <>
               <div style={{
-                padding: '0.58rem 0.65rem 0.48rem',
+                padding: '0.55rem 0.65rem 0.52rem',
                 borderBottom: '1px solid var(--border-subtle)',
-                display: 'flex', alignItems: 'center', justifyContent: 'space-between',
                 flexShrink: 0,
               }}>
-                <LampasLogo height={26} />
-                <button
-                  onClick={() => { setSidebarCollapsed(true); localStorage.setItem('lampas_sidebar_c', '1') }}
-                  title="Recolher menu"
-                  style={{
-                    background: 'transparent', border: 'none', cursor: 'pointer',
-                    color: 'var(--text-muted)', padding: '0.2rem',
-                    borderRadius: '5px', fontFamily: 'inherit',
-                    display: 'flex', alignItems: 'center',
-                  }}
-                  onMouseEnter={e => e.currentTarget.style.color = 'var(--text-secondary)'}
-                  onMouseLeave={e => e.currentTarget.style.color = 'var(--text-muted)'}
-                >
-                  <ChevronRight size={14} />
-                </button>
+                {/* Linha 1 — Marca */}
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
+                  <LampasLogo height={30} />
+                  <button
+                    onClick={() => { setSidebarCollapsed(true); localStorage.setItem('lampas_sidebar_c', '1') }}
+                    title="Recolher menu"
+                    style={{
+                      background: 'transparent', border: 'none', cursor: 'pointer',
+                      color: 'var(--text-muted)', padding: '0.2rem',
+                      borderRadius: '5px', fontFamily: 'inherit',
+                      display: 'flex', alignItems: 'center',
+                    }}
+                    onMouseEnter={e => e.currentTarget.style.color = 'var(--text-secondary)'}
+                    onMouseLeave={e => e.currentTarget.style.color = 'var(--text-muted)'}
+                  >
+                    <ChevronRight size={14} />
+                  </button>
+                </div>
+
+                {/* Linha 2 — Estudo atual */}
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.3rem', minWidth: 0 }}>
+                  <button
+                    onClick={() => router.push('/dashboard')}
+                    style={{
+                      background: 'transparent', border: 'none', cursor: 'pointer',
+                      color: 'var(--text-muted)', fontSize: '0.78rem',
+                      padding: '0.1rem 0.3rem 0.1rem 0', borderRadius: '4px',
+                      fontFamily: 'inherit', flexShrink: 0,
+                    }}
+                    onMouseEnter={e => e.currentTarget.style.color = 'var(--text-secondary)'}
+                    onMouseLeave={e => e.currentTarget.style.color = 'var(--text-muted)'}
+                    title="Voltar ao painel"
+                  >←</button>
+
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    {editingTitle ? (
+                      <input
+                        ref={titleInputRef}
+                        value={titleDraft}
+                        onChange={e => setTitleDraft(e.target.value)}
+                        onBlur={commitTitle}
+                        onKeyDown={e => {
+                          if (e.key === 'Enter') { e.preventDefault(); void commitTitle() }
+                          if (e.key === 'Escape') cancelTitle()
+                        }}
+                        style={{
+                          width: '100%', boxSizing: 'border-box',
+                          background: 'var(--surface-2)',
+                          border: '1px solid var(--accent)',
+                          borderRadius: '4px',
+                          color: 'var(--text-primary)',
+                          fontFamily: 'inherit',
+                          fontSize: '0.78rem', fontWeight: 600,
+                          outline: 'none',
+                          padding: '0.1rem 0.35rem',
+                        }}
+                      />
+                    ) : (
+                      <button
+                        onClick={startTitleEdit}
+                        title="Editar título do estudo"
+                        style={{
+                          width: '100%', background: 'transparent', border: 'none', cursor: 'text',
+                          display: 'flex', alignItems: 'center', gap: '0.25rem',
+                          padding: '0.1rem 0.3rem', borderRadius: '4px',
+                          marginLeft: '-0.3rem', fontFamily: 'inherit', textAlign: 'left',
+                        }}
+                        onMouseEnter={e => {
+                          e.currentTarget.style.background = 'rgba(0,0,0,0.05)'
+                          const icon = e.currentTarget.querySelector('.sb-edit-icon') as HTMLElement
+                          if (icon) icon.style.opacity = '1'
+                        }}
+                        onMouseLeave={e => {
+                          e.currentTarget.style.background = 'transparent'
+                          const icon = e.currentTarget.querySelector('.sb-edit-icon') as HTMLElement
+                          if (icon) icon.style.opacity = '0'
+                        }}
+                      >
+                        <span style={{
+                          fontWeight: 600, fontSize: '0.78rem', color: 'var(--text-primary)',
+                          overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+                        }}>
+                          {titleValue}
+                        </span>
+                        <span className="sb-edit-icon" style={{
+                          fontSize: '0.65rem', color: 'var(--text-muted)',
+                          opacity: 0, transition: 'opacity 0.12s', flexShrink: 0,
+                        }}>✎</span>
+                      </button>
+                    )}
+                  </div>
+
+                  <span style={{
+                    fontSize: '0.62rem', color: 'var(--text-muted)', flexShrink: 0,
+                    background: 'var(--surface-2)', border: '1px solid var(--border-subtle)',
+                    borderRadius: '3px', padding: '0.03rem 0.3rem',
+                  }}>
+                    {project.original_language}
+                  </span>
+                </div>
               </div>
 
               {navPhases.map((phase, phaseIdx) => {
