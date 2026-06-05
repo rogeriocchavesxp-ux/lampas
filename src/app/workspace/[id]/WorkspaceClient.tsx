@@ -38,6 +38,7 @@ import {
   Heart, BookOpen, FileText, Crosshair, Landmark, Languages, GraduationCap,
   Sparkles, BookMarked, Flame, MessageSquareText, Layers, Book, Library,
   BookCopy, Link2, Paperclip, ChevronDown, ChevronRight, ChevronUp,
+  MapPin, Network, TrendingUp,
   type LucideIcon,
 } from 'lucide-react'
 import { LampasLogo, LampasMarkIcon } from '@/components/LampasLogo'
@@ -66,6 +67,10 @@ const NAV_GROUP_IDS = new Set(NAV_PHASES.flatMap(ph => ph.modes.flatMap(m => m.g
 // PHASE_DESCRIPTIONS removido — descrição agora vive em NavPhase.description
 
 const GROUP_SUBTITLES: Record<string, string> = {
+  // Investigar — Estudo de Carta
+  ec_ocasiao_grp:   'Contexto e motivo da escrita',
+  ec_estrutura_grp: 'Organização e fluxo da carta',
+  ec_argumento_grp: 'Desenvolvimento da mensagem',
   // Investigar
   contextual: 'Histórico, literário e canônico',
   textual:    'Texto original e estrutura',
@@ -106,6 +111,10 @@ const GROUP_ICONS: Record<string, LucideIcon> = {
   preparar_visao_geral:      Crosshair,
   investigar_visao_geral:    Crosshair,
   pregar_visao_geral:     Crosshair,
+  // Investigar — Estudo de Carta
+  ec_ocasiao_grp:            MapPin,
+  ec_estrutura_grp:          Network,
+  ec_argumento_grp:          TrendingUp,
   // Investigar
   contextual:                Landmark,
   textual:                   Languages,
