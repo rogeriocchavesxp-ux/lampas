@@ -59,6 +59,12 @@ interface Props {
 
 const TYPE_ORDER: KnowledgeItemType[] = ['book', 'article', 'podcast', 'lecture', 'course', 'site', 'video', 'personal_document']
 
+const BLOCK_DEFS: Record<string, { label: string; icon: string }> = {
+  metadata:  { label: 'Metadados Especializados', icon: '📋' },
+  content:   { label: 'Estrutura do Conteúdo',    icon: '📝' },
+  relations: { label: 'Relações e Entidades',      icon: '🔗' },
+}
+
 const EMPTY_ITEM: Omit<KnowledgeItem, 'id' | 'user_id' | 'query_count' | 'created_at' | 'updated_at'> = {
   item_type: 'book',
   title: '',
@@ -120,6 +126,9 @@ export default function KnowledgeClient({ userId, initialItems, initialDashboard
   const [draft, setDraft] = useState({ ...EMPTY_ITEM })
   const [saving, setSaving] = useState(false)
   const [toast, setToast] = useState('')
+  const [activeBlocks,    setActiveBlocks]    = useState<string[]>([])
+  const [collapsedBlocks, setCollapsedBlocks] = useState<Set<string>>(new Set())
+  const [showBlockPicker, setShowBlockPicker] = useState(false)
 
   const selected = items.find(item => item.id === selectedId) ?? null
   const currentDraftType = KNOWLEDGE_TYPES[draft.item_type]
@@ -160,6 +169,9 @@ export default function KnowledgeClient({ userId, initialItems, initialDashboard
 
   function openCreate(type: KnowledgeItemType = 'book') {
     setDraft({ ...EMPTY_ITEM, item_type: type })
+    setActiveBlocks([])
+    setCollapsedBlocks(new Set())
+    setShowBlockPicker(false)
     setEditing(true)
     setSelectedId('')
   }
@@ -187,8 +199,31 @@ export default function KnowledgeClient({ userId, initialItems, initialDashboard
       institutions: item.institutions ?? [],
       books_mentioned: item.books_mentioned ?? [],
     })
+    // Auto-expõe blocos que já têm conteúdo salvo
+    const typeCfg = KNOWLEDGE_TYPES[item.item_type]
+    const blocks: string[] = []
+    if (typeCfg.metadataFields.length > 0 && Object.values(item.metadata ?? {}).some(v => v)) blocks.push('metadata')
+    if (typeCfg.contentFields.length > 0 && Object.values(item.content ?? {}).some(v => v)) blocks.push('content')
+    if ([item.authors, item.doctrines, item.themes, item.bible_references, item.people, item.institutions, item.books_mentioned, item.tags].some(arr => arr.length > 0)) blocks.push('relations')
+    setActiveBlocks(blocks)
+    setCollapsedBlocks(new Set())
+    setShowBlockPicker(false)
     setSelectedId(item.id)
     setEditing(true)
+  }
+
+  function addBlock(id: string) {
+    setActiveBlocks(prev => [...prev, id])
+    setShowBlockPicker(false)
+  }
+
+  function removeBlock(id: string) {
+    setActiveBlocks(prev => prev.filter(b => b !== id))
+    setCollapsedBlocks(prev => { const n = new Set(prev); n.delete(id); return n })
+  }
+
+  function toggleCollapse(id: string) {
+    setCollapsedBlocks(prev => { const n = new Set(prev); n.has(id) ? n.delete(id) : n.add(id); return n })
   }
 
   async function saveItem() {
@@ -249,102 +284,178 @@ export default function KnowledgeClient({ userId, initialItems, initialDashboard
     setTimeout(() => setToast(''), 2500)
   }
 
-  const rightContent = editing ? (
-    <div style={{ flex: 1, overflowY: 'auto', padding: '1.25rem 1.5rem 4rem', background: '#FFFFFF' }}>
-      <div style={{ maxWidth: '860px' }}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '1rem', marginBottom: '1.25rem' }}>
-          <div>
-            <div style={{ fontSize: '0.7rem', fontWeight: 800, color: currentDraftType.color, textTransform: 'uppercase', letterSpacing: '0.07em' }}>
-              {selected ? 'Editar item' : 'Novo item'} · {currentDraftType.label}
+  const rightContent = editing ? (() => {
+    const availableForType = (
+      [
+        ...(currentDraftType.metadataFields.length > 0 ? ['metadata'] : []),
+        ...(currentDraftType.contentFields.length > 0  ? ['content']  : []),
+        'relations',
+      ] as string[]
+    ).filter(id => !activeBlocks.includes(id))
+
+    return (
+      <div style={{ flex: 1, overflowY: 'auto', padding: '1.25rem 1.5rem 4rem', background: '#FFFFFF' }}>
+        <div style={{ maxWidth: '780px' }}>
+
+          {/* Header */}
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '1rem', marginBottom: '1.25rem' }}>
+            <div>
+              <div style={{ fontSize: '0.7rem', fontWeight: 800, color: currentDraftType.color, textTransform: 'uppercase', letterSpacing: '0.07em' }}>
+                {selected ? 'Editar item' : 'Novo item'} · {currentDraftType.label}
+              </div>
+              <h1 style={{ margin: '0.15rem 0 0', color: '#0F172A', fontSize: '1.35rem', letterSpacing: '-0.02em' }}>Base de Conhecimento</h1>
             </div>
-            <h1 style={{ margin: '0.15rem 0 0', color: '#0F172A', fontSize: '1.35rem', letterSpacing: '-0.02em' }}>Base de Conhecimento</h1>
-          </div>
-          <div style={{ display: 'flex', gap: '0.45rem' }}>
-            <button onClick={() => { setEditing(false); if (selected) setSelectedId(selected.id) }} style={{ border: '1px solid #E2E8F0', background: '#FFFFFF', borderRadius: '7px', padding: '0.5rem 0.75rem', cursor: 'pointer', fontFamily: 'inherit', color: '#64748B' }}>Cancelar</button>
-            <button onClick={saveItem} disabled={saving || !draft.title.trim()} style={{ border: 'none', background: currentDraftType.color, color: '#FFFFFF', borderRadius: '7px', padding: '0.5rem 0.9rem', cursor: saving ? 'wait' : 'pointer', fontFamily: 'inherit', fontWeight: 750, opacity: !draft.title.trim() ? 0.5 : 1 }}>
-              {saving ? 'Salvando...' : 'Salvar'}
-            </button>
-          </div>
-        </div>
-
-        <div style={{ display: 'grid', gridTemplateColumns: '220px 1fr', gap: '1rem', alignItems: 'start' }}>
-          <div style={{ border: '1px solid #E2E8F0', borderRadius: '8px', background: '#F8FAFC', padding: '0.55rem' }}>
-            {TYPE_ORDER.map(type => {
-              const cfg = KNOWLEDGE_TYPES[type]
-              const active = draft.item_type === type
-              return (
-                <button key={type} onClick={() => setDraft(prev => ({ ...prev, item_type: type }))}
-                  style={{ width: '100%', display: 'flex', alignItems: 'center', gap: '0.5rem', border: `1px solid ${active ? cfg.color + '55' : 'transparent'}`, background: active ? cfg.bg : 'transparent', color: active ? cfg.color : '#64748B', borderRadius: '7px', padding: '0.45rem 0.55rem', cursor: 'pointer', fontFamily: 'inherit', fontSize: '0.76rem', fontWeight: 700, textAlign: 'left' }}>
-                  <span>{cfg.icon}</span>{cfg.label}
-                </button>
-              )
-            })}
+            <div style={{ display: 'flex', gap: '0.45rem' }}>
+              <button onClick={() => { setEditing(false); setShowBlockPicker(false); if (selected) setSelectedId(selected.id) }} style={{ border: '1px solid #E2E8F0', background: '#FFFFFF', borderRadius: '7px', padding: '0.5rem 0.75rem', cursor: 'pointer', fontFamily: 'inherit', color: '#64748B' }}>Cancelar</button>
+              <button onClick={saveItem} disabled={saving || !draft.title.trim()} style={{ border: 'none', background: currentDraftType.color, color: '#FFFFFF', borderRadius: '7px', padding: '0.5rem 0.9rem', cursor: saving ? 'wait' : 'pointer', fontFamily: 'inherit', fontWeight: 750, opacity: !draft.title.trim() ? 0.5 : 1 }}>
+                {saving ? 'Salvando...' : 'Salvar'}
+              </button>
+            </div>
           </div>
 
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-            <section style={{ border: '1px solid #E2E8F0', borderRadius: '8px', padding: '1rem' }}>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
-                <Field label="Título" value={draft.title} onChange={v => setDraft(p => ({ ...p, title: v }))} />
-                <Field label="Subtítulo" value={draft.subtitle ?? ''} onChange={v => setDraft(p => ({ ...p, subtitle: v }))} />
-                <Field label="Categoria" value={draft.category ?? ''} onChange={v => setDraft(p => ({ ...p, category: v }))} />
-                <Field label="Subcategoria" value={draft.subcategory ?? ''} onChange={v => setDraft(p => ({ ...p, subcategory: v }))} />
-                <Field label="URL/Fonte" value={draft.source_url ?? ''} onChange={v => setDraft(p => ({ ...p, source_url: v }))} />
-                <div>
-                  <label style={labelStyle}>Status</label>
-                  <select value={draft.status} onChange={e => setDraft(p => ({ ...p, status: e.target.value as KnowledgeStatus }))} style={inputStyle}>
-                    {Object.entries(KNOWLEDGE_STATUSES).map(([key, value]) => <option key={key} value={key}>{value.label}</option>)}
-                  </select>
+          <div style={{ display: 'grid', gridTemplateColumns: '190px 1fr', gap: '1rem', alignItems: 'start' }}>
+
+            {/* Seletor de tipo */}
+            <div style={{ border: '1px solid #E2E8F0', borderRadius: '8px', background: '#F8FAFC', padding: '0.55rem', position: 'sticky', top: 0 }}>
+              {TYPE_ORDER.map(type => {
+                const cfg = KNOWLEDGE_TYPES[type]
+                const active = draft.item_type === type
+                return (
+                  <button key={type} onClick={() => setDraft(prev => ({ ...prev, item_type: type }))}
+                    style={{ width: '100%', display: 'flex', alignItems: 'center', gap: '0.5rem', border: `1px solid ${active ? cfg.color + '55' : 'transparent'}`, background: active ? cfg.bg : 'transparent', color: active ? cfg.color : '#64748B', borderRadius: '7px', padding: '0.45rem 0.55rem', cursor: 'pointer', fontFamily: 'inherit', fontSize: '0.76rem', fontWeight: 700, textAlign: 'left' }}>
+                    <span>{cfg.icon}</span>{cfg.label}
+                  </button>
+                )
+              })}
+            </div>
+
+            {/* Campos */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem' }}>
+
+              {/* ── Informações Básicas — sempre visível ── */}
+              <section style={{ border: '1px solid #E2E8F0', borderRadius: '8px', padding: '1rem' }}>
+                <SectionTitle title="Informações Básicas" />
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
+                  <Field label="Título" value={draft.title} onChange={v => setDraft(p => ({ ...p, title: v }))} />
+                  <Field label="Subtítulo" value={draft.subtitle ?? ''} onChange={v => setDraft(p => ({ ...p, subtitle: v }))} />
+                  <Field label="Categoria" value={draft.category ?? ''} onChange={v => setDraft(p => ({ ...p, category: v }))} />
+                  <Field label="Subcategoria" value={draft.subcategory ?? ''} onChange={v => setDraft(p => ({ ...p, subcategory: v }))} />
+                  <Field label="URL / Fonte" value={draft.source_url ?? ''} onChange={v => setDraft(p => ({ ...p, source_url: v }))} />
+                  <div>
+                    <label style={labelStyle}>Status</label>
+                    <select value={draft.status} onChange={e => setDraft(p => ({ ...p, status: e.target.value as KnowledgeStatus }))} style={inputStyle}>
+                      {Object.entries(KNOWLEDGE_STATUSES).map(([key, value]) => <option key={key} value={key}>{value.label}</option>)}
+                    </select>
+                  </div>
                 </div>
-              </div>
-              <div style={{ marginTop: '0.75rem' }}>
+              </section>
+
+              {/* ── Captura Inicial — sempre visível ── */}
+              <section style={{ border: '1px solid #E2E8F0', borderRadius: '8px', padding: '1rem' }}>
+                <SectionTitle title="Captura Inicial" />
                 <label style={labelStyle}>Resumo</label>
-                <textarea value={draft.summary ?? ''} onChange={e => setDraft(p => ({ ...p, summary: e.target.value }))} rows={4} style={textareaStyle} />
-              </div>
-            </section>
+                <textarea
+                  value={draft.summary ?? ''}
+                  onChange={e => setDraft(p => ({ ...p, summary: e.target.value }))}
+                  rows={5}
+                  style={{ ...textareaStyle, resize: 'vertical' }}
+                  placeholder="Registre a ideia central, o que chamou atenção e por que este conteúdo importa."
+                />
+              </section>
 
-            <section style={{ border: '1px solid #E2E8F0', borderRadius: '8px', padding: '1rem' }}>
-              <SectionTitle title="Metadados especializados" />
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
-                {currentDraftType.metadataFields.map(field => (
-                  <Field
-                    key={field.key}
-                    label={field.label}
-                    type={field.type}
-                    value={draft.metadata?.[field.key] ?? ''}
-                    onChange={v => setDraft(p => ({ ...p, metadata: { ...p.metadata, [field.key]: v } }))}
-                  />
-                ))}
-              </div>
-            </section>
+              {/* ── Blocos dinâmicos ── */}
+              {activeBlocks.map(blockId => {
+                const collapsed = collapsedBlocks.has(blockId)
+                const def = BLOCK_DEFS[blockId]
+                return (
+                  <section key={blockId} style={{ border: '1px solid #E2E8F0', borderRadius: '8px', overflow: 'hidden' }}>
+                    <div
+                      onClick={() => toggleCollapse(blockId)}
+                      style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0.6rem 0.85rem', background: '#F8FAFC', cursor: 'pointer', userSelect: 'none' as const }}
+                    >
+                      <div style={{ fontSize: '0.72rem', fontWeight: 850, color: '#334155', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                        {def.icon} {def.label}
+                      </div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                        <span style={{ fontSize: '0.65rem', color: '#94A3B8' }}>{collapsed ? '▸' : '▾'}</span>
+                        <button
+                          onClick={e => { e.stopPropagation(); removeBlock(blockId) }}
+                          style={{ border: 'none', background: 'transparent', color: '#CBD5E1', cursor: 'pointer', fontFamily: 'inherit', fontSize: '1rem', lineHeight: 1, padding: '0 0.1rem' }}
+                          title="Remover bloco"
+                        >×</button>
+                      </div>
+                    </div>
+                    {!collapsed && (
+                      <div style={{ padding: '1rem' }}>
+                        {blockId === 'metadata' && (
+                          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
+                            {currentDraftType.metadataFields.map(field => (
+                              <Field key={field.key} label={field.label} type={field.type} value={draft.metadata?.[field.key] ?? ''} onChange={v => setDraft(p => ({ ...p, metadata: { ...p.metadata, [field.key]: v } }))} />
+                            ))}
+                          </div>
+                        )}
+                        {blockId === 'content' && (
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                            {currentDraftType.contentFields.map(field => (
+                              <div key={field.key}>
+                                <label style={labelStyle}>{field.label}</label>
+                                <textarea value={draft.content?.[field.key] ?? ''} onChange={e => setDraft(p => ({ ...p, content: { ...p.content, [field.key]: e.target.value } }))} rows={field.rows ?? 3} style={textareaStyle} />
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                        {blockId === 'relations' && (
+                          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
+                            <ListField label="Autores" value={draft.authors} onChange={v => setDraft(p => ({ ...p, authors: v }))} />
+                            <ListField label="Doutrinas" value={draft.doctrines} onChange={v => setDraft(p => ({ ...p, doctrines: v }))} />
+                            <ListField label="Temas" value={draft.themes} onChange={v => setDraft(p => ({ ...p, themes: v }))} />
+                            <ListField label="Textos bíblicos" value={draft.bible_references} onChange={v => setDraft(p => ({ ...p, bible_references: v }))} />
+                            <ListField label="Pessoas" value={draft.people} onChange={v => setDraft(p => ({ ...p, people: v }))} />
+                            <ListField label="Instituições" value={draft.institutions} onChange={v => setDraft(p => ({ ...p, institutions: v }))} />
+                            <ListField label="Livros citados" value={draft.books_mentioned} onChange={v => setDraft(p => ({ ...p, books_mentioned: v }))} />
+                            <ListField label="Tags" value={draft.tags} onChange={v => setDraft(p => ({ ...p, tags: v }))} />
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </section>
+                )
+              })}
 
-            <section style={{ border: '1px solid #E2E8F0', borderRadius: '8px', padding: '1rem' }}>
-              <SectionTitle title="Estrutura do conteúdo" />
-              {currentDraftType.contentFields.map(field => (
-                <div key={field.key} style={{ marginBottom: '0.75rem' }}>
-                  <label style={labelStyle}>{field.label}</label>
-                  <textarea value={draft.content?.[field.key] ?? ''} onChange={e => setDraft(p => ({ ...p, content: { ...p.content, [field.key]: e.target.value } }))} rows={field.rows ?? 3} style={textareaStyle} />
+              {/* ── Adicionar bloco ── */}
+              {availableForType.length > 0 && (
+                <div style={{ position: 'relative' }}>
+                  <button
+                    onClick={() => setShowBlockPicker(v => !v)}
+                    style={{ width: '100%', border: '1.5px dashed #CBD5E1', background: 'transparent', borderRadius: '8px', padding: '0.6rem', cursor: 'pointer', fontFamily: 'inherit', fontSize: '0.8rem', color: '#64748B', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.35rem', fontWeight: 600 }}
+                  >
+                    <span style={{ fontSize: '1rem', lineHeight: 1 }}>+</span> Adicionar bloco
+                  </button>
+                  {showBlockPicker && (
+                    <div style={{ position: 'absolute', bottom: 'calc(100% + 6px)', left: 0, zIndex: 50, minWidth: '240px', background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: '9px', boxShadow: '0 8px 24px rgba(0,0,0,0.1)', overflow: 'hidden' }}>
+                      {availableForType.map(blockId => {
+                        const def = BLOCK_DEFS[blockId]
+                        return (
+                          <button key={blockId} onClick={() => addBlock(blockId)}
+                            style={{ width: '100%', display: 'flex', alignItems: 'center', gap: '0.55rem', border: 'none', background: 'transparent', padding: '0.65rem 0.9rem', cursor: 'pointer', fontFamily: 'inherit', fontSize: '0.82rem', color: '#334155', textAlign: 'left' }}
+                            onMouseEnter={e => { e.currentTarget.style.background = '#F8FAFC' }}
+                            onMouseLeave={e => { e.currentTarget.style.background = 'transparent' }}
+                          >
+                            <span>{def.icon}</span> {def.label}
+                          </button>
+                        )
+                      })}
+                    </div>
+                  )}
                 </div>
-              ))}
-            </section>
+              )}
 
-            <section style={{ border: '1px solid #E2E8F0', borderRadius: '8px', padding: '1rem' }}>
-              <SectionTitle title="Relações e entidades" />
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
-                <ListField label="Autores" value={draft.authors} onChange={v => setDraft(p => ({ ...p, authors: v }))} />
-                <ListField label="Doutrinas" value={draft.doctrines} onChange={v => setDraft(p => ({ ...p, doctrines: v }))} />
-                <ListField label="Temas" value={draft.themes} onChange={v => setDraft(p => ({ ...p, themes: v }))} />
-                <ListField label="Textos bíblicos" value={draft.bible_references} onChange={v => setDraft(p => ({ ...p, bible_references: v }))} />
-                <ListField label="Pessoas" value={draft.people} onChange={v => setDraft(p => ({ ...p, people: v }))} />
-                <ListField label="Instituições" value={draft.institutions} onChange={v => setDraft(p => ({ ...p, institutions: v }))} />
-                <ListField label="Livros citados" value={draft.books_mentioned} onChange={v => setDraft(p => ({ ...p, books_mentioned: v }))} />
-                <ListField label="Tags" value={draft.tags} onChange={v => setDraft(p => ({ ...p, tags: v }))} />
-              </div>
-            </section>
+            </div>
           </div>
         </div>
       </div>
-    </div>
-  ) : items.length === 0 ? (
+    )
+  })() : items.length === 0 ? (
     <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '2.5rem 2rem' }}>
       <div style={{ maxWidth: '520px', width: '100%' }}>
         <div style={{ textAlign: 'center', marginBottom: '1.75rem' }}>
