@@ -344,6 +344,31 @@ export default function KnowledgeClient({ userId, initialItems, initialDashboard
         </div>
       </div>
     </div>
+  ) : items.length === 0 ? (
+    <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '2.5rem 2rem' }}>
+      <div style={{ maxWidth: '520px', width: '100%' }}>
+        <div style={{ textAlign: 'center', marginBottom: '1.75rem' }}>
+          <Brain size={36} strokeWidth={1.2} style={{ margin: '0 auto 0.65rem', color: '#B45309' }} />
+          <div style={{ fontSize: '1.1rem', fontWeight: 750, color: '#0F172A', letterSpacing: '-0.02em' }}>O que você quer capturar?</div>
+          <div style={{ marginTop: '0.35rem', fontSize: '0.82rem', color: '#64748B' }}>Escolha o tipo para começar a construir sua base de conhecimento.</div>
+        </div>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '0.65rem' }}>
+          {TYPE_ORDER.map(type => {
+            const cfg = KNOWLEDGE_TYPES[type]
+            return (
+              <button key={type} onClick={() => openCreate(type)}
+                style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.45rem', border: `1px solid ${cfg.color}30`, background: cfg.bg, borderRadius: '10px', padding: '1.1rem 0.5rem', cursor: 'pointer', fontFamily: 'inherit', transition: 'border-color 0.14s' }}
+                onMouseEnter={e => { e.currentTarget.style.borderColor = cfg.color + '70' }}
+                onMouseLeave={e => { e.currentTarget.style.borderColor = cfg.color + '30' }}
+              >
+                <span style={{ fontSize: '1.4rem' }}>{cfg.icon}</span>
+                <span style={{ fontSize: '0.72rem', fontWeight: 700, color: cfg.color }}>{cfg.label}</span>
+              </button>
+            )
+          })}
+        </div>
+      </div>
+    </div>
   ) : selected ? (
     <DetailView item={selected} onEdit={() => openEdit(selected)} onDelete={() => deleteItem(selected)} onAsk={askAI} />
   ) : (
@@ -376,9 +401,11 @@ export default function KnowledgeClient({ userId, initialItems, initialDashboard
             <div style={{ fontSize: '0.68rem', color: '#64748B' }}>Segundo cérebro teológico e ministerial</div>
           </div>
         </div>
-        <button onClick={() => openCreate()} style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', border: 'none', background: '#B45309', color: '#FFFFFF', borderRadius: '8px', padding: '0.5rem 0.85rem', fontSize: '0.8rem', fontWeight: 750, cursor: 'pointer', fontFamily: 'inherit' }}>
-          <Plus size={14} /> Novo conhecimento
-        </button>
+        {items.length > 0 && (
+          <button onClick={() => openCreate()} style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', border: 'none', background: '#B45309', color: '#FFFFFF', borderRadius: '8px', padding: '0.5rem 0.85rem', fontSize: '0.8rem', fontWeight: 750, cursor: 'pointer', fontFamily: 'inherit' }}>
+            <Plus size={14} /> Novo conhecimento
+          </button>
+        )}
       </header>
 
       <div style={{ flex: 1, minHeight: 0, display: 'grid', gridTemplateColumns: '330px 1fr' }}>
