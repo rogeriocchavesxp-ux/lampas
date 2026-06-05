@@ -143,6 +143,18 @@ export default function KnowledgePanel({ userId }: Props) {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open])
 
+  // Escuta evento global para abrir o painel em modo de criação
+  useEffect(() => {
+    const handler = () => {
+      setOpen(true)
+      setMinimized(false)
+      setView('create')
+      setDraft({ ...EMPTY_DRAFT })
+    }
+    window.addEventListener('lampas:kb-open-create', handler)
+    return () => window.removeEventListener('lampas:kb-open-create', handler)
+  }, [])
+
   const loadItems = useCallback(async () => {
     setLoading(true)
     const { data } = await supabase

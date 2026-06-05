@@ -365,6 +365,9 @@ export default function WorkspaceClient({ user, project, initialSections }: Prop
   const [sideBySide, setSideBySide] = useState(false)
   const [bibleOpen, setBibleOpen] = useState(false)
   const [enviarParaSermaOpen, setEnviarParaSermaOpen] = useState(false)
+  const [enviarTargetMode, setEnviarTargetMode] = useState<'sermao' | 'devocional'>('sermao')
+  const [enviarDropdownOpen, setEnviarDropdownOpen] = useState(false)
+  const enviarDropdownRef = useRef<HTMLDivElement>(null)
 
   const sidebarWidthRef = useRef(264)
   const referenceWidthRef = useRef(280)
@@ -383,6 +386,18 @@ export default function WorkspaceClient({ user, project, initialSections }: Prop
     if (aw) setAiWidth(Number(aw))
     if (sc) setSidebarCollapsed(sc === '1')
   }, [])
+
+  // Fecha dropdown "Enviar" ao clicar fora
+  useEffect(() => {
+    if (!enviarDropdownOpen) return
+    const handler = (e: MouseEvent) => {
+      if (enviarDropdownRef.current && !enviarDropdownRef.current.contains(e.target as Node)) {
+        setEnviarDropdownOpen(false)
+      }
+    }
+    window.addEventListener('mousedown', handler)
+    return () => window.removeEventListener('mousedown', handler)
+  }, [enviarDropdownOpen])
 
   // Persiste contexto do workspace para o painel global da Base de Conhecimento
   useEffect(() => {
@@ -691,28 +706,82 @@ export default function WorkspaceClient({ user, project, initialSections }: Prop
             IA
           </button>
 
-          {project.study_mode === 'estudo_de_carta' && (
-            <>
-              <div style={{ width: '1px', height: '14px', background: 'var(--border-subtle)', flexShrink: 0 }} />
+          {/* Dropdown "Enviar ▼" — disponível em todos os modos */}
+          <>
+            <div style={{ width: '1px', height: '14px', background: 'var(--border-subtle)', flexShrink: 0 }} />
+            <div ref={enviarDropdownRef} style={{ position: 'relative' }}>
               <button
-                onClick={() => setEnviarParaSermaOpen(true)}
+                onClick={() => setEnviarDropdownOpen(o => !o)}
                 style={{
-                  background: 'transparent',
-                  border: '1px solid rgba(124,58,237,0.35)',
+                  background: enviarDropdownOpen ? 'rgba(124,58,237,0.06)' : 'transparent',
+                  border: `1px solid ${enviarDropdownOpen ? 'rgba(124,58,237,0.5)' : 'rgba(124,58,237,0.35)'}`,
                   color: '#7C3AED',
                   borderRadius: '5px', padding: '0.2rem 0.6rem',
                   fontSize: '0.73rem', fontWeight: 700, letterSpacing: '0.03em',
                   cursor: 'pointer', fontFamily: 'inherit', transition: 'all 0.15s',
                   display: 'flex', alignItems: 'center', gap: '0.3rem',
                 }}
-                onMouseEnter={e => { e.currentTarget.style.background = 'rgba(124,58,237,0.06)' }}
-                onMouseLeave={e => { e.currentTarget.style.background = 'transparent' }}
-                title="Transferir base exegética deste estudo para um projeto de Sermão"
+                onMouseEnter={e => { if (!enviarDropdownOpen) e.currentTarget.style.background = 'rgba(124,58,237,0.06)' }}
+                onMouseLeave={e => { if (!enviarDropdownOpen) e.currentTarget.style.background = 'transparent' }}
+                title="Enviar conteúdo para outro fluxo"
               >
-                Enviar para Sermão
+                Enviar
+                <span style={{ fontSize: '0.6rem', opacity: 0.7 }}>▼</span>
               </button>
-            </>
-          )}
+
+              {enviarDropdownOpen && (
+                <div style={{
+                  position: 'absolute', top: 'calc(100% + 6px)', right: 0,
+                  background: 'var(--surface)', border: '1px solid var(--border)',
+                  borderRadius: '9px', boxShadow: '0 8px 24px rgba(0,0,0,0.1)',
+                  minWidth: '190px', overflow: 'hidden', zIndex: 200,
+                }}>
+                  {([
+                    { icon: '📖', label: 'Sermão',               mode: 'sermao'    as const },
+                    { icon: '❤️', label: 'Devocional',            mode: 'devocional' as const },
+                  ] as const).map(opt => (
+                    <button
+                      key={opt.mode}
+                      onClick={() => {
+                        setEnviarTargetMode(opt.mode)
+                        setEnviarParaSermaOpen(true)
+                        setEnviarDropdownOpen(false)
+                      }}
+                      style={{
+                        width: '100%', display: 'flex', alignItems: 'center', gap: '0.55rem',
+                        border: 'none', background: 'transparent', padding: '0.6rem 0.85rem',
+                        cursor: 'pointer', fontFamily: 'inherit', fontSize: '0.8rem',
+                        color: 'var(--text-primary)', textAlign: 'left',
+                        borderBottom: '1px solid var(--border-subtle)',
+                      }}
+                      onMouseEnter={e => { e.currentTarget.style.background = 'var(--surface-2)' }}
+                      onMouseLeave={e => { e.currentTarget.style.background = 'transparent' }}
+                    >
+                      <span>{opt.icon}</span>
+                      <span style={{ fontWeight: 600 }}>{opt.label}</span>
+                    </button>
+                  ))}
+                  <button
+                    onClick={() => {
+                      setEnviarDropdownOpen(false)
+                      window.dispatchEvent(new CustomEvent('lampas:kb-open-create'))
+                    }}
+                    style={{
+                      width: '100%', display: 'flex', alignItems: 'center', gap: '0.55rem',
+                      border: 'none', background: 'transparent', padding: '0.6rem 0.85rem',
+                      cursor: 'pointer', fontFamily: 'inherit', fontSize: '0.8rem',
+                      color: 'var(--text-primary)', textAlign: 'left',
+                    }}
+                    onMouseEnter={e => { e.currentTarget.style.background = 'var(--surface-2)' }}
+                    onMouseLeave={e => { e.currentTarget.style.background = 'transparent' }}
+                  >
+                    <span>🧠</span>
+                    <span style={{ fontWeight: 600 }}>Base de Conhecimento</span>
+                  </button>
+                </div>
+              )}
+            </div>
+          </>
         </div>
       </header>
 
@@ -1429,12 +1498,13 @@ export default function WorkspaceClient({ user, project, initialSections }: Prop
         />
       )}
 
-      {/* ── Enviar para Sermão (exclusivo Estudo de Carta) ─────────── */}
-      {enviarParaSermaOpen && project.study_mode === 'estudo_de_carta' && (
+      {/* ── Modal Enviar ──────────────────────────────────────────── */}
+      {enviarParaSermaOpen && (
         <EnviarParaSermaModal
           project={project}
           sections={sections}
           userId={user.id}
+          targetMode={enviarTargetMode}
           onClose={() => setEnviarParaSermaOpen(false)}
         />
       )}

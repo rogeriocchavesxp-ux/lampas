@@ -27,14 +27,17 @@ interface Props {
   sections: Section[]
   userId: string
   onClose: () => void
+  targetMode?: 'sermao' | 'devocional'
 }
 
-export default function EnviarParaSermaModal({ project, sections, userId, onClose }: Props) {
+export default function EnviarParaSermaModal({ project, sections, userId, onClose, targetMode = 'sermao' }: Props) {
   const router   = useRouter()
   const supabase = useMemo(() => createClient(), [])
 
+  const modeLabel = targetMode === 'devocional' ? 'Devocional' : 'Sermão'
+
   const [destination,      setDestination]      = useState<'new' | 'existing'>('new')
-  const [title,            setTitle]            = useState(`Sermão em ${project.book} ${project.passage_ref}`)
+  const [title,            setTitle]            = useState(`${modeLabel} em ${project.book} ${project.passage_ref}`)
   const [existingProjects, setExistingProjects] = useState<Project[]>([])
   const [selectedProject,  setSelectedProject]  = useState<string | null>(null)
   const [loadingExisting,  setLoadingExisting]  = useState(false)
@@ -58,7 +61,7 @@ export default function EnviarParaSermaModal({ project, sections, userId, onClos
       .from('projects')
       .select('id, title, book, passage_ref, study_mode')
       .eq('user_id', userId)
-      .eq('study_mode', 'sermao')
+      .eq('study_mode', targetMode)
       .is('deleted_at', null)
       .order('updated_at', { ascending: false })
       .then(({ data }) => {
@@ -111,15 +114,15 @@ export default function EnviarParaSermaModal({ project, sections, userId, onClos
           .from('projects')
           .insert({
             user_id:           userId,
-            title:             title.trim() || `Sermão em ${project.book} ${project.passage_ref}`,
+            title:             title.trim() || `${modeLabel} em ${project.book} ${project.passage_ref}`,
             book:              project.book,
             passage_ref:       project.passage_ref,
             testament:         project.testament,
             original_language: project.original_language,
             bible_version:     project.bible_version ?? 'ACF',
             status:            'draft',
-            study_mode:        'sermao',
-            project_type:      'sermao',
+            study_mode:        targetMode,
+            project_type:      targetMode,
             meta:              {},
           })
           .select()
@@ -167,7 +170,7 @@ export default function EnviarParaSermaModal({ project, sections, userId, onClos
       setCreatedProjectId(selectedProject)
       setStep('done')
     } catch (err) {
-      console.error('[Lampas] Erro ao enviar para Sermão', err)
+      console.error(`[Lampas] Erro ao enviar para ${modeLabel}`, err)
       setError('Não foi possível transferir o estudo. Tente novamente.')
     } finally {
       setLoading(false)
@@ -208,7 +211,7 @@ export default function EnviarParaSermaModal({ project, sections, userId, onClos
                 color: '#10B981', fontSize: '0.85rem', fontWeight: 700, flexShrink: 0,
               }}>✓</div>
               <div style={{ fontSize: '1rem', fontWeight: 700, color: '#0F172A' }}>
-                Conteúdo transferido para o Sermão
+                Conteúdo transferido para o {modeLabel}
               </div>
             </div>
 
@@ -260,7 +263,7 @@ export default function EnviarParaSermaModal({ project, sections, userId, onClos
                   fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit', fontSize: '0.88rem',
                 }}
               >
-                Abrir Sermão →
+                Abrir {modeLabel} →
               </button>
             </div>
           </div>
@@ -345,7 +348,7 @@ export default function EnviarParaSermaModal({ project, sections, userId, onClos
             {/* Cabeçalho */}
             <div style={{ marginBottom: '1.5rem' }}>
               <div style={{ fontSize: '1.05rem', fontWeight: 700, color: '#0F172A', letterSpacing: '-0.02em', marginBottom: '0.3rem' }}>
-                Enviar para Sermão
+                Enviar para {modeLabel}
               </div>
               <p style={{ fontSize: '0.82rem', color: '#64748B', lineHeight: 1.5, margin: 0 }}>
                 Este estudo de carta será usado como base exegética e preparatória de um sermão.
@@ -492,7 +495,7 @@ export default function EnviarParaSermaModal({ project, sections, userId, onClos
                   fontFamily: 'inherit', fontSize: '0.88rem', transition: 'background 0.15s',
                 }}
               >
-                {loading ? 'Transferindo…' : 'Enviar para Sermão →'}
+                {loading ? 'Transferindo…' : `Enviar para ${modeLabel} →`}
               </button>
             </div>
           </div>
