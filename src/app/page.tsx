@@ -66,6 +66,20 @@ export default function HomePage() {
         </div>
       </section>
 
+      {/* ── Vinheta ── */}
+      <section className="lp-vinheta">
+        <div className="lp-video-wrap lp-vinheta-wrap">
+          <iframe
+            src="https://www.youtube.com/embed/yT5goMji1W8?rel=0&modestbranding=1"
+            title="Lampas — Vinheta"
+            frameBorder="0"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+            allowFullScreen
+            className="lp-video"
+          />
+        </div>
+      </section>
+
       {/* ── Demo ── */}
       <section className="lp-demo" id="demo">
         <div className="lp-inner">
@@ -599,6 +613,20 @@ export default function HomePage() {
         .ws-bar-w72  { width: 72%;  }
         .ws-bar-w88  { width: 88%;  }
         .ws-bar-w55  { width: 55%;  }
+
+        /* ── Vinheta ─────────────────────────────────────── */
+        .lp-vinheta {
+          background: #0b1220;
+          padding: 4rem 2rem;
+          display: flex;
+          justify-content: center;
+        }
+
+        .lp-vinheta-wrap {
+          max-width: 960px;
+          box-shadow: 0 16px 64px rgba(0,0,0,0.45);
+          border: 1px solid rgba(255,255,255,0.07);
+        }
 
         /* ── Demo / Video ───────────────────────────────── */
         .lp-demo {
