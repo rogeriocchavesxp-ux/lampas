@@ -384,6 +384,20 @@ export default function WorkspaceClient({ user, project, initialSections }: Prop
     if (sc) setSidebarCollapsed(sc === '1')
   }, [])
 
+  // Persiste contexto do workspace para o painel global da Base de Conhecimento
+  useEffect(() => {
+    try {
+      localStorage.setItem('lampas_kb_context', JSON.stringify({
+        book: project.book,
+        passageRef: project.passage_ref,
+        projectId: project.id,
+      }))
+    } catch {}
+    return () => {
+      try { localStorage.removeItem('lampas_kb_context') } catch {}
+    }
+  }, [project.book, project.passage_ref, project.id])
+
   const startSidebarResize = useCallback((e: React.MouseEvent) => {
     e.preventDefault()
     const startX = e.clientX; const startW = sidebarWidthRef.current
