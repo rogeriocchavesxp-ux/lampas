@@ -59,10 +59,16 @@ interface Props {
 
 const TYPE_ORDER: KnowledgeItemType[] = ['book', 'article', 'podcast', 'lecture', 'course', 'site', 'video', 'personal_document']
 
-const BLOCK_DEFS: Record<string, { label: string; icon: string }> = {
-  metadata:  { label: 'Metadados Especializados', icon: '📋' },
-  content:   { label: 'Estrutura do Conteúdo',    icon: '📝' },
-  relations: { label: 'Relações e Entidades',      icon: '🔗' },
+// Rótulos das seções fixas por tipo
+const TYPE_SECTION_LABELS: Record<KnowledgeItemType, { metadata: string; content: string }> = {
+  book:              { metadata: 'Obra',      content: 'Conteúdo do Livro' },
+  article:           { metadata: 'Artigo',    content: 'Conteúdo do Artigo' },
+  podcast:           { metadata: 'Episódio',  content: 'Conteúdo do Episódio' },
+  lecture:           { metadata: 'Evento',    content: 'Conteúdo da Palestra' },
+  course:            { metadata: 'Curso',     content: 'Conteúdo do Curso' },
+  site:              { metadata: 'Fonte',     content: 'Conteúdo do Site' },
+  video:             { metadata: 'Vídeo',     content: 'Conteúdo do Vídeo' },
+  personal_document: { metadata: 'Documento', content: 'Conteúdo do Documento' },
 }
 
 const EMPTY_ITEM: Omit<KnowledgeItem, 'id' | 'user_id' | 'query_count' | 'created_at' | 'updated_at'> = {
@@ -199,11 +205,8 @@ export default function KnowledgeClient({ userId, initialItems, initialDashboard
       institutions: item.institutions ?? [],
       books_mentioned: item.books_mentioned ?? [],
     })
-    // Auto-expõe blocos que já têm conteúdo salvo
-    const typeCfg = KNOWLEDGE_TYPES[item.item_type]
+    // Auto-expõe relações se o item já tiver dados relacionais
     const blocks: string[] = []
-    if (typeCfg.metadataFields.length > 0 && Object.values(item.metadata ?? {}).some(v => v)) blocks.push('metadata')
-    if (typeCfg.contentFields.length > 0 && Object.values(item.content ?? {}).some(v => v)) blocks.push('content')
     if ([item.authors, item.doctrines, item.themes, item.bible_references, item.people, item.institutions, item.books_mentioned, item.tags].some(arr => arr.length > 0)) blocks.push('relations')
     setActiveBlocks(blocks)
     setCollapsedBlocks(new Set())
@@ -285,13 +288,8 @@ export default function KnowledgeClient({ userId, initialItems, initialDashboard
   }
 
   const rightContent = editing ? (() => {
-    const availableForType = (
-      [
-        ...(currentDraftType.metadataFields.length > 0 ? ['metadata'] : []),
-        ...(currentDraftType.contentFields.length > 0  ? ['content']  : []),
-        'relations',
-      ] as string[]
-    ).filter(id => !activeBlocks.includes(id))
+    const hasRelations = activeBlocks.includes('relations')
+    const typeLabels   = TYPE_SECTION_LABELS[draft.item_type]
 
     return (
       <div style={{ flex: 1, overflowY: 'auto', padding: '1.25rem 1.5rem 4rem', background: '#FFFFFF' }}>
@@ -332,9 +330,9 @@ export default function KnowledgeClient({ userId, initialItems, initialDashboard
             {/* Campos */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem' }}>
 
-              {/* ── Informações Básicas — sempre visível ── */}
+              {/* ── Campos básicos — comuns a todos os tipos ── */}
               <section style={{ border: '1px solid #E2E8F0', borderRadius: '8px', padding: '1rem' }}>
-                <SectionTitle title="Informações Básicas" />
+                <SectionTitle title="Campos Básicos" />
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
                   <Field label="Título" value={draft.title} onChange={v => setDraft(p => ({ ...p, title: v }))} />
                   <Field label="Subtítulo" value={draft.subtitle ?? ''} onChange={v => setDraft(p => ({ ...p, subtitle: v }))} />
@@ -348,82 +346,83 @@ export default function KnowledgeClient({ userId, initialItems, initialDashboard
                     </select>
                   </div>
                 </div>
+                <div style={{ marginTop: '0.75rem' }}>
+                  <label style={labelStyle}>Resumo</label>
+                  <textarea
+                    value={draft.summary ?? ''}
+                    onChange={e => setDraft(p => ({ ...p, summary: e.target.value }))}
+                    rows={4}
+                    style={{ ...textareaStyle, resize: 'vertical' }}
+                    placeholder="Registre a ideia central e por que este conteúdo importa."
+                  />
+                </div>
               </section>
 
-              {/* ── Captura Inicial — sempre visível ── */}
-              <section style={{ border: '1px solid #E2E8F0', borderRadius: '8px', padding: '1rem' }}>
-                <SectionTitle title="Captura Inicial" />
-                <label style={labelStyle}>Resumo</label>
-                <textarea
-                  value={draft.summary ?? ''}
-                  onChange={e => setDraft(p => ({ ...p, summary: e.target.value }))}
-                  rows={5}
-                  style={{ ...textareaStyle, resize: 'vertical' }}
-                  placeholder="Registre a ideia central, o que chamou atenção e por que este conteúdo importa."
-                />
-              </section>
+              {/* ── Metadados do tipo (Obra / Episódio / Evento…) — automático ── */}
+              {currentDraftType.metadataFields.length > 0 && (
+                <section style={{ border: `1px solid ${currentDraftType.color}25`, borderRadius: '8px', padding: '1rem' }}>
+                  <SectionTitle title={typeLabels.metadata} color={currentDraftType.color} />
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
+                    {currentDraftType.metadataFields.map(field => (
+                      <Field key={field.key} label={field.label} type={field.type} value={draft.metadata?.[field.key] ?? ''} onChange={v => setDraft(p => ({ ...p, metadata: { ...p.metadata, [field.key]: v } }))} />
+                    ))}
+                  </div>
+                </section>
+              )}
 
-              {/* ── Blocos dinâmicos ── */}
-              {activeBlocks.map(blockId => {
-                const collapsed = collapsedBlocks.has(blockId)
-                const def = BLOCK_DEFS[blockId]
-                return (
-                  <section key={blockId} style={{ border: '1px solid #E2E8F0', borderRadius: '8px', overflow: 'hidden' }}>
-                    <div
-                      onClick={() => toggleCollapse(blockId)}
-                      style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0.6rem 0.85rem', background: '#F8FAFC', cursor: 'pointer', userSelect: 'none' as const }}
-                    >
-                      <div style={{ fontSize: '0.72rem', fontWeight: 850, color: '#334155', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-                        {def.icon} {def.label}
+              {/* ── Conteúdo do tipo (Livro / Episódio / Palestra…) — automático ── */}
+              {currentDraftType.contentFields.length > 0 && (
+                <section style={{ border: `1px solid ${currentDraftType.color}25`, borderRadius: '8px', padding: '1rem' }}>
+                  <SectionTitle title={typeLabels.content} color={currentDraftType.color} />
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                    {currentDraftType.contentFields.map(field => (
+                      <div key={field.key}>
+                        <label style={labelStyle}>{field.label}</label>
+                        <textarea value={draft.content?.[field.key] ?? ''} onChange={e => setDraft(p => ({ ...p, content: { ...p.content, [field.key]: e.target.value } }))} rows={field.rows ?? 3} style={textareaStyle} />
                       </div>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                        <span style={{ fontSize: '0.65rem', color: '#94A3B8' }}>{collapsed ? '▸' : '▾'}</span>
-                        <button
-                          onClick={e => { e.stopPropagation(); removeBlock(blockId) }}
-                          style={{ border: 'none', background: 'transparent', color: '#CBD5E1', cursor: 'pointer', fontFamily: 'inherit', fontSize: '1rem', lineHeight: 1, padding: '0 0.1rem' }}
-                          title="Remover bloco"
-                        >×</button>
+                    ))}
+                  </div>
+                </section>
+              )}
+
+              {/* ── Relações e Entidades — bloco opcional ── */}
+              {hasRelations && (
+                <section style={{ border: '1px solid #E2E8F0', borderRadius: '8px', overflow: 'hidden' }}>
+                  <div
+                    onClick={() => toggleCollapse('relations')}
+                    style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0.6rem 0.85rem', background: '#F8FAFC', cursor: 'pointer', userSelect: 'none' as const }}
+                  >
+                    <div style={{ fontSize: '0.72rem', fontWeight: 850, color: '#334155', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                      🔗 Relações e Entidades
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                      <span style={{ fontSize: '0.65rem', color: '#94A3B8' }}>{collapsedBlocks.has('relations') ? '▸' : '▾'}</span>
+                      <button
+                        onClick={e => { e.stopPropagation(); removeBlock('relations') }}
+                        style={{ border: 'none', background: 'transparent', color: '#CBD5E1', cursor: 'pointer', fontFamily: 'inherit', fontSize: '1rem', lineHeight: 1, padding: '0 0.1rem' }}
+                        title="Remover bloco"
+                      >×</button>
+                    </div>
+                  </div>
+                  {!collapsedBlocks.has('relations') && (
+                    <div style={{ padding: '1rem' }}>
+                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
+                        <ListField label="Autores" value={draft.authors} onChange={v => setDraft(p => ({ ...p, authors: v }))} />
+                        <ListField label="Doutrinas" value={draft.doctrines} onChange={v => setDraft(p => ({ ...p, doctrines: v }))} />
+                        <ListField label="Temas" value={draft.themes} onChange={v => setDraft(p => ({ ...p, themes: v }))} />
+                        <ListField label="Textos bíblicos" value={draft.bible_references} onChange={v => setDraft(p => ({ ...p, bible_references: v }))} />
+                        <ListField label="Pessoas" value={draft.people} onChange={v => setDraft(p => ({ ...p, people: v }))} />
+                        <ListField label="Instituições" value={draft.institutions} onChange={v => setDraft(p => ({ ...p, institutions: v }))} />
+                        <ListField label="Livros citados" value={draft.books_mentioned} onChange={v => setDraft(p => ({ ...p, books_mentioned: v }))} />
+                        <ListField label="Tags" value={draft.tags} onChange={v => setDraft(p => ({ ...p, tags: v }))} />
                       </div>
                     </div>
-                    {!collapsed && (
-                      <div style={{ padding: '1rem' }}>
-                        {blockId === 'metadata' && (
-                          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
-                            {currentDraftType.metadataFields.map(field => (
-                              <Field key={field.key} label={field.label} type={field.type} value={draft.metadata?.[field.key] ?? ''} onChange={v => setDraft(p => ({ ...p, metadata: { ...p.metadata, [field.key]: v } }))} />
-                            ))}
-                          </div>
-                        )}
-                        {blockId === 'content' && (
-                          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-                            {currentDraftType.contentFields.map(field => (
-                              <div key={field.key}>
-                                <label style={labelStyle}>{field.label}</label>
-                                <textarea value={draft.content?.[field.key] ?? ''} onChange={e => setDraft(p => ({ ...p, content: { ...p.content, [field.key]: e.target.value } }))} rows={field.rows ?? 3} style={textareaStyle} />
-                              </div>
-                            ))}
-                          </div>
-                        )}
-                        {blockId === 'relations' && (
-                          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
-                            <ListField label="Autores" value={draft.authors} onChange={v => setDraft(p => ({ ...p, authors: v }))} />
-                            <ListField label="Doutrinas" value={draft.doctrines} onChange={v => setDraft(p => ({ ...p, doctrines: v }))} />
-                            <ListField label="Temas" value={draft.themes} onChange={v => setDraft(p => ({ ...p, themes: v }))} />
-                            <ListField label="Textos bíblicos" value={draft.bible_references} onChange={v => setDraft(p => ({ ...p, bible_references: v }))} />
-                            <ListField label="Pessoas" value={draft.people} onChange={v => setDraft(p => ({ ...p, people: v }))} />
-                            <ListField label="Instituições" value={draft.institutions} onChange={v => setDraft(p => ({ ...p, institutions: v }))} />
-                            <ListField label="Livros citados" value={draft.books_mentioned} onChange={v => setDraft(p => ({ ...p, books_mentioned: v }))} />
-                            <ListField label="Tags" value={draft.tags} onChange={v => setDraft(p => ({ ...p, tags: v }))} />
-                          </div>
-                        )}
-                      </div>
-                    )}
-                  </section>
-                )
-              })}
+                  )}
+                </section>
+              )}
 
-              {/* ── Adicionar bloco ── */}
-              {availableForType.length > 0 && (
+              {/* ── Adicionar bloco (só Relações se ainda não adicionado) ── */}
+              {!hasRelations && (
                 <div style={{ position: 'relative' }}>
                   <button
                     onClick={() => setShowBlockPicker(v => !v)}
@@ -432,19 +431,14 @@ export default function KnowledgeClient({ userId, initialItems, initialDashboard
                     <span style={{ fontSize: '1rem', lineHeight: 1 }}>+</span> Adicionar bloco
                   </button>
                   {showBlockPicker && (
-                    <div style={{ position: 'absolute', bottom: 'calc(100% + 6px)', left: 0, zIndex: 50, minWidth: '240px', background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: '9px', boxShadow: '0 8px 24px rgba(0,0,0,0.1)', overflow: 'hidden' }}>
-                      {availableForType.map(blockId => {
-                        const def = BLOCK_DEFS[blockId]
-                        return (
-                          <button key={blockId} onClick={() => addBlock(blockId)}
-                            style={{ width: '100%', display: 'flex', alignItems: 'center', gap: '0.55rem', border: 'none', background: 'transparent', padding: '0.65rem 0.9rem', cursor: 'pointer', fontFamily: 'inherit', fontSize: '0.82rem', color: '#334155', textAlign: 'left' }}
-                            onMouseEnter={e => { e.currentTarget.style.background = '#F8FAFC' }}
-                            onMouseLeave={e => { e.currentTarget.style.background = 'transparent' }}
-                          >
-                            <span>{def.icon}</span> {def.label}
-                          </button>
-                        )
-                      })}
+                    <div style={{ position: 'absolute', bottom: 'calc(100% + 6px)', left: 0, zIndex: 50, minWidth: '220px', background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: '9px', boxShadow: '0 8px 24px rgba(0,0,0,0.1)', overflow: 'hidden' }}>
+                      <button onClick={() => addBlock('relations')}
+                        style={{ width: '100%', display: 'flex', alignItems: 'center', gap: '0.55rem', border: 'none', background: 'transparent', padding: '0.65rem 0.9rem', cursor: 'pointer', fontFamily: 'inherit', fontSize: '0.82rem', color: '#334155', textAlign: 'left' }}
+                        onMouseEnter={e => { e.currentTarget.style.background = '#F8FAFC' }}
+                        onMouseLeave={e => { e.currentTarget.style.background = 'transparent' }}
+                      >
+                        🔗 Relações e Entidades
+                      </button>
                     </div>
                   )}
                 </div>
@@ -637,8 +631,8 @@ function ListField({ label, value, onChange }: { label: string; value: string[];
   )
 }
 
-function SectionTitle({ title }: { title: string }) {
-  return <div style={{ fontSize: '0.72rem', color: '#0F172A', fontWeight: 850, marginBottom: '0.75rem', letterSpacing: '-0.01em' }}>{title}</div>
+function SectionTitle({ title, color = '#0F172A' }: { title: string; color?: string }) {
+  return <div style={{ fontSize: '0.72rem', color, fontWeight: 850, marginBottom: '0.75rem', letterSpacing: '-0.01em' }}>{title}</div>
 }
 
 function DetailView({ item, onEdit, onDelete, onAsk }: { item: KnowledgeItem; onEdit: () => void; onDelete: () => void; onAsk: (prompt: string, item: KnowledgeItem) => void }) {
