@@ -764,7 +764,7 @@ export default function WorkspaceClient({ user, project, initialSections }: Prop
             /* ── Sidebar expanded ────────────────────────────────── */
             <>
               <div style={{
-                padding: '0.45rem 0.55rem 0.45rem 0.65rem',
+                padding: '1.1rem 0.55rem 1.4rem 0.65rem',
                 borderBottom: '1px solid var(--border-subtle)',
                 flexShrink: 0,
               }}>
