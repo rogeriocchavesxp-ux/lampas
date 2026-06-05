@@ -348,6 +348,15 @@ const MODE_NODES_MAP: Record<string, NodeDef[]> = {
     { key: 'vg_aplicacoes', label: 'Aplicações',        icon: '🎯', angle: 210, color: '#7C3AED', bg: '#F5F3FF', kind: 'card', cardIds: ['vg_aplicacoes'] },
   ],
   estudo_de_carta: CARTA_BASE_NODES,
+  estudo_narrativas: [
+    { key: 'nr_personagens', label: 'Personagens',  icon: '👤', angle: -90,  color: '#92400E', bg: '#FEF3C7', kind: 'cls',  clsTypes: ['personagem', 'cargo'] },
+    { key: 'nr_enredo',      label: 'Enredo',       icon: '⟶', angle: -38,  color: '#B45309', bg: '#FEF3C7', kind: 'card', sectionSlug: 'nr_enredo', sectionCardId: 'climax_virada' },
+    { key: 'nr_cenario',     label: 'Cenário',      icon: '📍', angle: 13,   color: '#92400E', bg: '#FEF3C7', kind: 'card', sectionSlug: 'nr_cenario' },
+    { key: 'nr_narrador',    label: 'Narrador',     icon: '✍',  angle: 64,   color: '#78350F', bg: '#FEF3C7', kind: 'card', sectionSlug: 'nr_narrador' },
+    { key: 'nr_dialogo',     label: 'Diálogo',      icon: '💬', angle: 116,  color: '#B45309', bg: '#FEF3C7', kind: 'card', sectionSlug: 'nr_dialogo' },
+    { key: 'nr_teologia',    label: 'Teologia',     icon: '✚',  angle: 167,  color: '#D97706', bg: '#FFFBEB', kind: 'card', sectionSlug: 'nr_teologia' },
+    { key: 'nr_tensao',      label: 'Tensão',       icon: '⚡', angle: 219,  color: '#92400E', bg: '#FEF3C7', kind: 'card', sectionSlug: 'nr_enredo', sectionCardId: 'complicacao_conflito' },
+  ],
   comentario_exegetico: [
     { key: 'vg_estrutura',  label: 'Estrutura',          icon: '⊞',  angle: -90, color: '#F97316', bg: '#FFF7ED', kind: 'card', sectionSlug: 'estrutura_literaria' },
     { key: 'vg_fluxo',      label: 'Fluxo Arg.',         icon: '⟶', angle: -30, color: '#EA580C', bg: '#FFF7ED', kind: 'card', sectionSlug: 'estrutura_literaria', sectionCardId: 'fluxo_argumentativo' },
@@ -383,6 +392,7 @@ Diretriz: use a base interpretativa da carta antes de formular implicações hom
     estudo_de_profecias:        `Para a análise profética de ${ref}, desenvolva "${node.label}" considerando o contexto histórico, o oráculo e seu cumprimento canônico.`,
     estudo_doutrinario:         `Sobre a doutrina "${ref}", desenvolva "${node.label}" com precisão teológica reformada.`,
     estudo_tematico:            `Para o estudo temático sobre "${ref}", desenvolva "${node.label}" rastreando sua progressão canônica.`,
+    estudo_narrativas:          `Para a análise narrativa de ${ref}, desenvolva "${node.label}" com atenção à caracterização, enredo, cenário e teologia narrativa.`,
     estudo_de_carta:            `Para o estudo de ${ref}, desenvolva "${node.label}" em seu contexto epistolar e argumentativo.`,
     comentario_exegetico:       `Para um comentário exegético de ${ref}, desenvolva "${node.label}" com rigor analítico.`,
   }

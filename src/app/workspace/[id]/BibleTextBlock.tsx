@@ -86,7 +86,7 @@ const HCOLORS: Record<HColor, { bg: string; dot: string }> = {
 }
 const HCOLOR_ORDER: HColor[] = ['yellow', 'blue', 'green', 'purple', 'orange', 'red']
 
-const VERSIONS = ['ARA', 'NAA', 'ACF', 'NVI', 'NTLH'] as const
+const VERSIONS = ['ARA', 'ACF', 'NVI', 'NTLH'] as const
 type Version = typeof VERSIONS[number]
 
 // ── Send targets ──────────────────────────────────────────────────────────────

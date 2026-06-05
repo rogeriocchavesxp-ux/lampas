@@ -460,7 +460,7 @@ export default function DashboardClient({ user, projects: initialProjects, profi
       passage_ref:       isPassage ? form.passage_ref.trim() : form.topic.trim(),
       testament:         isPassage ? form.testament : 'AT',
       original_language: isPassage ? (form.testament === 'AT' ? 'hebraico' : 'grego') : 'hebraico',
-      bible_version:     'NAA',
+      bible_version:     'ACF',
       status:            'draft',
       study_mode:        selectedMode,
       project_type:      LEGACY_TYPE[selectedMode] ?? 'exegese',

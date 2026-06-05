@@ -74,7 +74,7 @@ const HCOLORS: Record<HColor, { bg: string; dot: string }> = {
   orange: { bg: '#FFEDD5', dot: '#F97316' }, red:    { bg: '#FEE2E2', dot: '#EF4444' },
 }
 const HCOLOR_ORDER: HColor[] = ['yellow', 'blue', 'green', 'purple', 'orange', 'red']
-const VERSIONS = ['ARA', 'NAA', 'ACF', 'NVI', 'NTLH'] as const
+const VERSIONS = ['ARA', 'ACF', 'NVI', 'NTLH'] as const
 type Version = typeof VERSIONS[number]
 
 const LOCALLY_AVAILABLE = new Set<Version>(['ACF'])

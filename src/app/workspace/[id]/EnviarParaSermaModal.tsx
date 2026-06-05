@@ -116,7 +116,7 @@ export default function EnviarParaSermaModal({ project, sections, userId, onClos
             passage_ref:       project.passage_ref,
             testament:         project.testament,
             original_language: project.original_language,
-            bible_version:     project.bible_version ?? 'NAA',
+            bible_version:     project.bible_version ?? 'ACF',
             status:            'draft',
             study_mode:        'sermao',
             project_type:      'sermao',
