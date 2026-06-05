@@ -523,13 +523,16 @@ export default function WorkspaceClient({ user, project, initialSections }: Prop
 
       {/* ── Topbar ────────────────────────────────────────────────────────── */}
       <header style={{
-        height: '46px', flexShrink: 0,
+        height: '54px', flexShrink: 0,
         borderBottom: '1px solid var(--border-subtle)',
         background: 'var(--surface)',
         display: 'flex', alignItems: 'center',
-        padding: '0 1rem 0 0.75rem',
+        padding: '0 1rem 0 0.9rem',
         position: 'relative',
+        gap: '0.75rem',
       }}>
+        <LampasLogo height={46} />
+        <div style={{ width: '1px', height: '20px', background: 'var(--border-subtle)', flexShrink: 0 }} />
         {/* Título compacto — visível apenas quando sidebar colapsada */}
         {(sidebarCollapsed || focusMode) && (
           <>
@@ -761,30 +764,11 @@ export default function WorkspaceClient({ user, project, initialSections }: Prop
             /* ── Sidebar expanded ────────────────────────────────── */
             <>
               <div style={{
-                padding: '0.55rem 0.65rem 0.52rem',
+                padding: '0.45rem 0.55rem 0.45rem 0.65rem',
                 borderBottom: '1px solid var(--border-subtle)',
                 flexShrink: 0,
               }}>
-                {/* Linha 1 — Marca */}
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
-                  <LampasLogo height={30} />
-                  <button
-                    onClick={() => { setSidebarCollapsed(true); localStorage.setItem('lampas_sidebar_c', '1') }}
-                    title="Recolher menu"
-                    style={{
-                      background: 'transparent', border: 'none', cursor: 'pointer',
-                      color: 'var(--text-muted)', padding: '0.2rem',
-                      borderRadius: '5px', fontFamily: 'inherit',
-                      display: 'flex', alignItems: 'center',
-                    }}
-                    onMouseEnter={e => e.currentTarget.style.color = 'var(--text-secondary)'}
-                    onMouseLeave={e => e.currentTarget.style.color = 'var(--text-muted)'}
-                  >
-                    <ChevronRight size={14} />
-                  </button>
-                </div>
-
-                {/* Linha 2 — Estudo atual */}
+                {/* Estudo atual + colapsar */}
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.3rem', minWidth: 0 }}>
                   <button
                     onClick={() => router.push('/dashboard')}
@@ -864,6 +848,21 @@ export default function WorkspaceClient({ user, project, initialSections }: Prop
                   }}>
                     {project.original_language}
                   </span>
+
+                  <button
+                    onClick={() => { setSidebarCollapsed(true); localStorage.setItem('lampas_sidebar_c', '1') }}
+                    title="Recolher menu"
+                    style={{
+                      background: 'transparent', border: 'none', cursor: 'pointer',
+                      color: 'var(--text-muted)', padding: '0.15rem',
+                      borderRadius: '4px', fontFamily: 'inherit',
+                      display: 'flex', alignItems: 'center', flexShrink: 0, marginLeft: 'auto',
+                    }}
+                    onMouseEnter={e => e.currentTarget.style.color = 'var(--text-secondary)'}
+                    onMouseLeave={e => e.currentTarget.style.color = 'var(--text-muted)'}
+                  >
+                    <ChevronRight size={13} />
+                  </button>
                 </div>
               </div>
 
