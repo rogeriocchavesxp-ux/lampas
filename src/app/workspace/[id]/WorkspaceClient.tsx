@@ -522,84 +522,57 @@ export default function WorkspaceClient({ user, project, initialSections }: Prop
     <div style={{ height: '100vh', display: 'flex', flexDirection: 'column', background: 'var(--background)' }}>
 
       {/* ── Topbar ────────────────────────────────────────────────────────── */}
+      {/* Grid 1fr auto 1fr garante centro real no viewport, independente dos pesos laterais */}
       <header style={{
         height: '54px', flexShrink: 0,
         borderBottom: '1px solid var(--border-subtle)',
         background: 'var(--surface)',
-        display: 'flex', alignItems: 'center',
+        display: 'grid',
+        gridTemplateColumns: '1fr auto 1fr',
+        alignItems: 'center',
         padding: '0 1rem 0 0.9rem',
-        position: 'relative',
-        gap: '0.75rem',
       }}>
-        <LampasLogo height={46} />
-        <div style={{ width: '1px', height: '20px', background: 'var(--border-subtle)', flexShrink: 0 }} />
-        {/* Título compacto — visível apenas quando sidebar colapsada */}
-        {(sidebarCollapsed || focusMode) && (
-          <>
-            <button
-              onClick={() => router.push('/dashboard')}
-              style={{
-                background: 'transparent', border: 'none', cursor: 'pointer',
-                color: 'var(--text-muted)', fontSize: '0.78rem',
-                padding: '0.2rem 0.4rem 0.2rem 0.3rem', borderRadius: '4px',
-                fontFamily: 'inherit', flexShrink: 0,
-              }}
-              onMouseEnter={e => e.currentTarget.style.color = 'var(--text-secondary)'}
-              onMouseLeave={e => e.currentTarget.style.color = 'var(--text-muted)'}
-            >←</button>
-            <span style={{
-              fontSize: '0.83rem', fontWeight: 600, color: 'var(--text-primary)',
-              overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
-              maxWidth: '240px', flexShrink: 1,
-            }}>
-              {titleValue}
-            </span>
-            <span style={{
-              fontSize: '0.64rem', color: 'var(--text-muted)', flexShrink: 0,
-              background: 'var(--surface-2)', border: '1px solid var(--border-subtle)',
-              borderRadius: '3px', padding: '0.03rem 0.3rem',
-            }}>
-              {project.original_language}
-            </span>
-            <div style={{ width: '1px', height: '14px', background: 'var(--border-subtle)', margin: '0 0.3rem', flexShrink: 0 }} />
-          </>
-        )}
 
-        {/* Spacer — empurra os controles para a direita */}
-        <div style={{ flex: 1 }} />
-
-        {/* Mode badge */}
-        <span style={{
-          fontSize: '0.64rem', fontWeight: 700, letterSpacing: '0.04em',
-          color: modeConfig.color,
-          background: `${modeConfig.color}12`,
-          border: `1px solid ${modeConfig.color}30`,
-          borderRadius: '4px', padding: '0.1rem 0.45rem',
-          flexShrink: 0, whiteSpace: 'nowrap',
-        }}>
-          {modeConfig.name}
-        </span>
-
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem', flexShrink: 0, marginLeft: '0.25rem' }}>
-          <span style={{ fontSize: '0.68rem', color: 'var(--text-muted)' }}>{pct}%</span>
-          <div style={{ width: '56px', height: '2px', background: 'var(--border)', borderRadius: '1px', overflow: 'hidden' }}>
-            <div style={{
-              width: `${pct}%`, height: '100%',
-              background: activePhase?.color ?? 'var(--accent)',
-              transition: 'width 0.5s ease',
-            }} />
-          </div>
+        {/* ── Coluna esquerda: marca + título opcional ── */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', minWidth: 0 }}>
+          <LampasLogo height={46} />
+          <div style={{ width: '1px', height: '20px', background: 'var(--border-subtle)', flexShrink: 0 }} />
+          {(sidebarCollapsed || focusMode) && (
+            <>
+              <button
+                onClick={() => router.push('/dashboard')}
+                style={{
+                  background: 'transparent', border: 'none', cursor: 'pointer',
+                  color: 'var(--text-muted)', fontSize: '0.78rem',
+                  padding: '0.2rem 0.4rem 0.2rem 0.3rem', borderRadius: '4px',
+                  fontFamily: 'inherit', flexShrink: 0,
+                }}
+                onMouseEnter={e => e.currentTarget.style.color = 'var(--text-secondary)'}
+                onMouseLeave={e => e.currentTarget.style.color = 'var(--text-muted)'}
+              >←</button>
+              <span style={{
+                fontSize: '0.83rem', fontWeight: 600, color: 'var(--text-primary)',
+                overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+                flexShrink: 1,
+              }}>
+                {titleValue}
+              </span>
+              <span style={{
+                fontSize: '0.64rem', color: 'var(--text-muted)', flexShrink: 0,
+                background: 'var(--surface-2)', border: '1px solid var(--border-subtle)',
+                borderRadius: '3px', padding: '0.03rem 0.3rem',
+              }}>
+                {project.original_language}
+              </span>
+            </>
+          )}
         </div>
 
-        {/* ── Texto Bíblico — centrado absolutamente ────────────────── */}
+        {/* ── Coluna central: Texto Bíblico — centro real do viewport ── */}
         <button
           onClick={() => setBibleOpen(o => !o)}
           title="Abrir Texto Bíblico"
           style={{
-            position: 'absolute',
-            left: '50%',
-            transform: 'translateX(-50%)',
-            zIndex: 1,
             background: bibleOpen
               ? 'linear-gradient(135deg, #C9921A 0%, #D97706 100%)'
               : 'transparent',
@@ -638,92 +611,109 @@ export default function WorkspaceClient({ user, project, initialSections }: Prop
           <span>Texto Bíblico</span>
           <span style={{
             opacity: bibleOpen ? 0.75 : 0.65,
-            fontWeight: 500,
-            fontSize: '0.7rem',
-            letterSpacing: '0.01em',
-            maxWidth: '160px',
-            overflow: 'hidden',
-            textOverflow: 'ellipsis',
+            fontWeight: 500, fontSize: '0.7rem', letterSpacing: '0.01em',
+            maxWidth: '160px', overflow: 'hidden', textOverflow: 'ellipsis',
           }}>
             · {modeConfig.passageBased ? `${project.book} ${project.passage_ref}` : project.passage_ref}
           </span>
         </button>
 
-        {/* ── Botões secundários ─────────────────────────────────────── */}
-        <button
-          onClick={() => setSideBySide(o => !o)}
-          title="Mostrar exegese e trabalho lado a lado"
-          style={{
-            flexShrink: 0,
-            background: sideBySide ? 'rgba(0,0,0,0.05)' : 'transparent',
-            border: `1px solid ${sideBySide ? 'var(--border)' : 'var(--border-subtle)'}`,
-            color: sideBySide ? 'var(--text-secondary)' : 'var(--text-muted)',
-            borderRadius: '5px', padding: '0.2rem 0.55rem',
-            fontSize: '0.7rem', fontWeight: 600, letterSpacing: '0.03em',
-            cursor: 'pointer', fontFamily: 'inherit', transition: 'all 0.15s',
-          }}
-          onMouseEnter={e => { if (!sideBySide) { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.color = 'var(--text-secondary)' } }}
-          onMouseLeave={e => { if (!sideBySide) { e.currentTarget.style.borderColor = 'var(--border-subtle)'; e.currentTarget.style.color = 'var(--text-muted)' } }}
-        >
-          ⊞ Lado a Lado
-        </button>
+        {/* ── Coluna direita: controles — alinhados à direita ── */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', justifyContent: 'flex-end' }}>
 
-        <button
-          onClick={() => setFocusMode(o => !o)}
-          style={{
-            marginLeft: '0.35rem', flexShrink: 0,
-            background: focusMode ? 'rgba(0,0,0,0.05)' : 'transparent',
-            border: `1px solid ${focusMode ? 'var(--border)' : 'var(--border-subtle)'}`,
-            color: focusMode ? 'var(--text-secondary)' : 'var(--text-muted)',
-            borderRadius: '5px', padding: '0.2rem 0.55rem',
-            fontSize: '0.7rem', fontWeight: 600, letterSpacing: '0.03em',
-            cursor: 'pointer', fontFamily: 'inherit', transition: 'all 0.15s',
-          }}
-        >
-          {focusMode ? 'Sair' : 'Foco'}
-        </button>
+          {/* Mode badge */}
+          <span style={{
+            fontSize: '0.64rem', fontWeight: 700, letterSpacing: '0.04em',
+            color: modeConfig.color,
+            background: `${modeConfig.color}12`,
+            border: `1px solid ${modeConfig.color}30`,
+            borderRadius: '4px', padding: '0.1rem 0.45rem',
+            whiteSpace: 'nowrap',
+          }}>
+            {modeConfig.name}
+          </span>
 
-        <button
-          onClick={() => setAiOpen(o => !o)}
-          style={{
-            marginLeft: '0.35rem', flexShrink: 0,
-            background: aiOpen ? 'var(--ai-subtle)' : 'transparent',
-            border: `1px solid ${aiOpen ? 'var(--ai)' : 'var(--border-subtle)'}`,
-            color: aiOpen ? 'var(--ai)' : 'var(--text-muted)',
-            borderRadius: '5px', padding: '0.2rem 0.55rem',
-            fontSize: '0.7rem', fontWeight: 600, letterSpacing: '0.03em',
-            cursor: 'pointer', fontFamily: 'inherit', transition: 'all 0.15s',
-          }}
-          onMouseEnter={e => { if (!aiOpen) { e.currentTarget.style.borderColor = 'var(--ai)'; e.currentTarget.style.color = 'var(--ai)' } }}
-          onMouseLeave={e => { if (!aiOpen) { e.currentTarget.style.borderColor = 'var(--border-subtle)'; e.currentTarget.style.color = 'var(--text-muted)' } }}
-        >
-          IA
-        </button>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+            <span style={{ fontSize: '0.68rem', color: 'var(--text-muted)' }}>{pct}%</span>
+            <div style={{ width: '56px', height: '2px', background: 'var(--border)', borderRadius: '1px', overflow: 'hidden' }}>
+              <div style={{
+                width: `${pct}%`, height: '100%',
+                background: activePhase?.color ?? 'var(--accent)',
+                transition: 'width 0.5s ease',
+              }} />
+            </div>
+          </div>
 
-        {/* Botão exclusivo do Estudo de Carta */}
-        {project.study_mode === 'estudo_de_carta' && (
-          <>
-            <div style={{ width: '1px', height: '14px', background: 'var(--border-subtle)', margin: '0 0.4rem', flexShrink: 0 }} />
-            <button
-              onClick={() => setEnviarParaSermaOpen(true)}
-              style={{
-                flexShrink: 0,
-                background: 'transparent',
-                border: '1px solid rgba(124,58,237,0.35)',
-                color: '#7C3AED',
-                borderRadius: '5px', padding: '0.2rem 0.6rem',
-                fontSize: '0.73rem', fontWeight: 700, letterSpacing: '0.03em',
-                cursor: 'pointer', fontFamily: 'inherit', transition: 'all 0.15s',
-                display: 'flex', alignItems: 'center', gap: '0.3rem',
-              }}
-              onMouseEnter={e => { e.currentTarget.style.background = 'rgba(124,58,237,0.06)' }}
-              onMouseLeave={e => { e.currentTarget.style.background = 'transparent' }}
-              title="Transferir base exegética deste estudo para um projeto de Sermão"
-            >
-              Enviar para Sermão
-            </button>
-          </>
-        )}
+          <button
+            onClick={() => setSideBySide(o => !o)}
+            title="Mostrar exegese e trabalho lado a lado"
+            style={{
+              background: sideBySide ? 'rgba(0,0,0,0.05)' : 'transparent',
+              border: `1px solid ${sideBySide ? 'var(--border)' : 'var(--border-subtle)'}`,
+              color: sideBySide ? 'var(--text-secondary)' : 'var(--text-muted)',
+              borderRadius: '5px', padding: '0.2rem 0.55rem',
+              fontSize: '0.7rem', fontWeight: 600, letterSpacing: '0.03em',
+              cursor: 'pointer', fontFamily: 'inherit', transition: 'all 0.15s',
+            }}
+            onMouseEnter={e => { if (!sideBySide) { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.color = 'var(--text-secondary)' } }}
+            onMouseLeave={e => { if (!sideBySide) { e.currentTarget.style.borderColor = 'var(--border-subtle)'; e.currentTarget.style.color = 'var(--text-muted)' } }}
+          >
+            ⊞ Lado a Lado
+          </button>
+
+          <button
+            onClick={() => setFocusMode(o => !o)}
+            style={{
+              background: focusMode ? 'rgba(0,0,0,0.05)' : 'transparent',
+              border: `1px solid ${focusMode ? 'var(--border)' : 'var(--border-subtle)'}`,
+              color: focusMode ? 'var(--text-secondary)' : 'var(--text-muted)',
+              borderRadius: '5px', padding: '0.2rem 0.55rem',
+              fontSize: '0.7rem', fontWeight: 600, letterSpacing: '0.03em',
+              cursor: 'pointer', fontFamily: 'inherit', transition: 'all 0.15s',
+            }}
+          >
+            {focusMode ? 'Sair' : 'Foco'}
+          </button>
+
+          <button
+            onClick={() => setAiOpen(o => !o)}
+            style={{
+              background: aiOpen ? 'var(--ai-subtle)' : 'transparent',
+              border: `1px solid ${aiOpen ? 'var(--ai)' : 'var(--border-subtle)'}`,
+              color: aiOpen ? 'var(--ai)' : 'var(--text-muted)',
+              borderRadius: '5px', padding: '0.2rem 0.55rem',
+              fontSize: '0.7rem', fontWeight: 600, letterSpacing: '0.03em',
+              cursor: 'pointer', fontFamily: 'inherit', transition: 'all 0.15s',
+            }}
+            onMouseEnter={e => { if (!aiOpen) { e.currentTarget.style.borderColor = 'var(--ai)'; e.currentTarget.style.color = 'var(--ai)' } }}
+            onMouseLeave={e => { if (!aiOpen) { e.currentTarget.style.borderColor = 'var(--border-subtle)'; e.currentTarget.style.color = 'var(--text-muted)' } }}
+          >
+            IA
+          </button>
+
+          {project.study_mode === 'estudo_de_carta' && (
+            <>
+              <div style={{ width: '1px', height: '14px', background: 'var(--border-subtle)', flexShrink: 0 }} />
+              <button
+                onClick={() => setEnviarParaSermaOpen(true)}
+                style={{
+                  background: 'transparent',
+                  border: '1px solid rgba(124,58,237,0.35)',
+                  color: '#7C3AED',
+                  borderRadius: '5px', padding: '0.2rem 0.6rem',
+                  fontSize: '0.73rem', fontWeight: 700, letterSpacing: '0.03em',
+                  cursor: 'pointer', fontFamily: 'inherit', transition: 'all 0.15s',
+                  display: 'flex', alignItems: 'center', gap: '0.3rem',
+                }}
+                onMouseEnter={e => { e.currentTarget.style.background = 'rgba(124,58,237,0.06)' }}
+                onMouseLeave={e => { e.currentTarget.style.background = 'transparent' }}
+                title="Transferir base exegética deste estudo para um projeto de Sermão"
+              >
+                Enviar para Sermão
+              </button>
+            </>
+          )}
+        </div>
       </header>
 
       {/* ── Guided strip (demo projects only) ─────────────────────────── */}
