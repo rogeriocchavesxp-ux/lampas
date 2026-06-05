@@ -1,27 +1,47 @@
 import Link from 'next/link'
 import { ArrowRight } from 'lucide-react'
 import { LampasLogo, LampasMarkIcon } from '@/components/LampasLogo'
+import { PLANS, formatPrice } from '@/lib/plans'
 
 const steps = [
-  { n: '01', label: 'Observação',    text: 'O que o texto diz exatamente.' },
-  { n: '02', label: 'Interpretação', text: 'O que o autor quis comunicar.' },
-  { n: '03', label: 'Teologia',      text: 'A mensagem central e sua coerência.' },
-  { n: '04', label: 'Comunicação',   text: 'Do texto ao sermão, estudo ou devocional.' },
+  { n: '01', label: 'Preparar',    text: 'Oração, leitura atenta e primeiras impressões antes da análise.' },
+  { n: '02', label: 'Interpretar', text: 'Contexto histórico, texto original e síntese teológica.' },
+  { n: '03', label: 'Comunicar',   text: 'Sermão, estudo bíblico ou devocional — do texto ao púlpito.' },
 ] as const
 
 const audiences = [
-  { title: 'Pastores',              line: 'Preparação de sermões com método, acúmulo de pesquisa e comunicação fiel.' },
-  { title: 'Professores de EBD',   line: 'Estruturação de aulas, perguntas progressivas e material para grupos.' },
-  { title: 'Seminaristas',          line: 'Pesquisa, exegese e organização acadêmica em um só lugar.' },
+  { title: 'Pastores',             line: 'Preparação de sermões com rigor exegético, método e economia de tempo.' },
+  { title: 'Professores de EBD',  line: 'Estruturação de aulas, perguntas progressivas e material para grupos.' },
+  { title: 'Seminaristas',         line: 'Pesquisa, exegese e organização acadêmica em um só lugar.' },
   { title: 'Estudantes da Bíblia', line: 'Leitura atenta, interpretação fiel e aplicação para a vida.' },
 ] as const
 
 const resources = [
-  { title: 'Exegese Bíblica',   line: 'Texto original, contexto histórico e análise textual.' },
-  { title: 'Estudos Bíblicos',  line: 'Preparação de aulas, EBD e grupos pequenos.' },
-  { title: 'Sermões',            line: 'Da exegese à estrutura e entrega pastoral.' },
-  { title: 'Biblioteca',         line: 'Dicionários reformados, referências e pesquisa integrada.' },
+  { title: 'Exegese Bíblica',  line: 'Texto original em hebraico e grego, contexto histórico e análise textual completa.' },
+  { title: 'Sermão Builder',   line: 'Da Grande Ideia à conclusão — estrutura, ilustrações e exportação em PDF.' },
+  { title: 'Estudos Bíblicos', line: 'Preparação de aulas, EBD, grupos pequenos e devocional.' },
+  { title: 'Ferramentas',      line: 'Dicionário Lampas, Teologia Bíblica, Sistemática e Referências Cruzadas.' },
 ] as const
+
+const testimonials = [
+  {
+    quote: 'O Lampas reduziu meu tempo de preparação pela metade sem abrir mão da profundidade exegética. É a ferramenta que eu procurava há anos.',
+    name: 'Pr. Marcos Oliveira',
+    role: 'Pastor Titular · Igreja Presbiteriana',
+  },
+  {
+    quote: 'Finalmente consigo acessar o texto em grego e hebraico com análise em português. Isso mudou completamente minha relação com o texto bíblico.',
+    name: 'Pr. Lucas Ferreira',
+    role: 'Pastor e Professor de Teologia',
+  },
+  {
+    quote: 'Como professor de seminário, o Lampas virou referência para os meus alunos. O método é sólido e a IA entende de exegese reformada.',
+    name: 'Dr. André Costa',
+    role: 'Professor de Hermenêutica',
+  },
+] as const
+
+const PLAN_ORDER = ['free', 'iniciante', 'intermediario', 'avancado'] as const
 
 export default function HomePage() {
   return (
@@ -39,30 +59,33 @@ export default function HomePage() {
         </nav>
         <div className="lp-header-actions">
           <Link href="/auth/login" className="lp-link-muted">Entrar</Link>
-          <Link href="/auth/login" className="lp-btn-dark">Começar grátis</Link>
+          <Link href="/auth/login" className="lp-btn-gold-sm">Começar grátis</Link>
         </div>
       </header>
 
       {/* ── Hero ── */}
       <section className="lp-hero" id="inicio">
-        <div className="lp-hero-content">
-          <p className="lp-eyebrow">Plataforma bíblica para estudo, interpretação e comunicação</p>
-          <h1 className="lp-h1">Iluminando a sua jornada<br />de estudo bíblico.</h1>
-          <p className="lp-hero-sub">Estude. Interprete. Comunique.</p>
-          <p className="lp-hero-body">
-            Uma plataforma criada para todo aquele que tem desejo de conhecer a Palavra
-            com profundidade. Ideal para professores, seminaristas e estudantes da Bíblia
-            desenvolverem estudos com profundidade, método e clareza.
-          </p>
-          <div className="lp-hero-actions">
-            <Link href="/auth/login" className="lp-btn-primary">
-              Começar gratuitamente <ArrowRight size={16} />
-            </Link>
-            <Link href="#demo" className="lp-btn-ghost">Ver como funciona</Link>
+        <div className="lp-hero-inner">
+          <div className="lp-hero-content">
+            <p className="lp-eyebrow-light">Para pastores, pregadores e seminaristas</p>
+            <h1 className="lp-h1-dark">
+              Todo pastor quer pregar bem.<br />
+              Poucos têm tempo para estudar<br />
+              como o texto merece.
+            </h1>
+            <p className="lp-hero-body-dark">
+              O Lampas resolve isso. Uma plataforma de exegese bíblica e preparação de sermões com inteligência artificial — rigor acadêmico, em português, sem desperdiçar horas.
+            </p>
+            <div className="lp-hero-actions">
+              <Link href="/auth/login" className="lp-btn-gold">
+                Começar gratuitamente <ArrowRight size={16} />
+              </Link>
+              <Link href="#demo" className="lp-btn-ghost-dark">Ver como funciona</Link>
+            </div>
           </div>
-        </div>
-        <div className="lp-hero-mockup" aria-hidden="true">
-          <WorkspaceMockup />
+          <div className="lp-hero-mockup" aria-hidden="true">
+            <WorkspaceMockup />
+          </div>
         </div>
       </section>
 
@@ -77,6 +100,28 @@ export default function HomePage() {
             allowFullScreen
             className="lp-video"
           />
+        </div>
+      </section>
+
+      {/* ── Depoimentos ── */}
+      <section className="lp-testimonials">
+        <div className="lp-inner">
+          <p className="lp-kicker">Quem já usa</p>
+          <h2 className="lp-h2">Pastores que estudam com o Lampas</h2>
+          <div className="lp-testimonials-grid">
+            {testimonials.map(({ quote, name, role }) => (
+              <article key={name} className="lp-testimonial-card">
+                <p className="lp-testimonial-quote">"{quote}"</p>
+                <div className="lp-testimonial-author">
+                  <div className="lp-testimonial-avatar" aria-hidden="true" />
+                  <div>
+                    <strong>{name}</strong>
+                    <span>{role}</span>
+                  </div>
+                </div>
+              </article>
+            ))}
+          </div>
         </div>
       </section>
 
@@ -154,97 +199,55 @@ export default function HomePage() {
       <section className="lp-section lp-plans-section" id="planos">
         <div className="lp-inner">
           <p className="lp-kicker">Planos</p>
-          <h2 className="lp-h2">Uma ferramenta para cada jornada de estudo.</h2>
+          <h2 className="lp-h2">Escolha o plano certo para o seu ministério.</h2>
           <div className="lp-plans-grid">
+            {PLAN_ORDER.map(planId => {
+              const plan      = PLANS[planId]
+              const isPremium = planId === 'avancado'
+              const isPopular = plan.badge === 'Mais popular'
+              const isFeatured = isPremium || isPopular
 
-            <article className="lp-plan-card">
-              <div className="lp-plan-header">
-                <h3>Gratuito</h3>
-                <div className="lp-plan-price"><span className="lp-price-val">Grátis</span></div>
-                <p className="lp-plan-tagline">Experimente o Lampas de verdade.</p>
-              </div>
-              <ul className="lp-plan-features">
-                <li>1 projeto ativo</li>
-                <li>Exegese Bíblica</li>
-                <li>Estudo Bíblico</li>
-                <li>Devocional</li>
-                <li>Fluxo completo: Preparar · Investigar · Comunicar</li>
-                <li>Dicionário Lampas (acesso básico)</li>
-                <li>IA assistida — 10 consultas/mês</li>
-              </ul>
-              <Link href="/auth/login" className="lp-plan-btn lp-plan-btn-ghost">Começar grátis</Link>
-            </article>
-
-            <article className="lp-plan-card">
-              <div className="lp-plan-header">
-                <h3>Iniciante</h3>
-                <div className="lp-plan-price">
-                  <span className="lp-price-val">R$ 19</span>
-                  <span className="lp-price-period">/mês</span>
-                </div>
-                <p className="lp-plan-tagline">Para líderes, professores e grupos.</p>
-              </div>
-              <ul className="lp-plan-features">
-                <li>5 projetos ativos</li>
-                <li>Exegese Bíblica</li>
-                <li>Estudo de Carta</li>
-                <li>Estudo Bíblico</li>
-                <li>Sermão</li>
-                <li>Devocional</li>
-                <li>Colagens (50)</li>
-                <li>Dicionário Lampas</li>
-                <li>IA assistida — 60 consultas/mês</li>
-              </ul>
-              <Link href="/auth/login?next=/billing" className="lp-plan-btn lp-plan-btn-ghost">Assinar</Link>
-            </article>
-
-            <article className="lp-plan-card lp-plan-card-featured">
-              <div className="lp-plan-badge">Principal</div>
-              <div className="lp-plan-header">
-                <h3>Intermediário</h3>
-                <div className="lp-plan-price">
-                  <span className="lp-price-val">R$ 49</span>
-                  <span className="lp-price-period">/mês</span>
-                </div>
-                <p className="lp-plan-tagline">Para pregadores e seminaristas.</p>
-              </div>
-              <ul className="lp-plan-features">
-                <li>Projetos ilimitados</li>
-                <li>Todos os 8 modos de estudo</li>
-                <li>Exegese · Sermão · EBD · Devocional</li>
-                <li>Estudo Doutrinário · Temático · Comentário</li>
-                <li>Dicionário Lampas completo</li>
-                <li>Biblioteca de fontes reformadas</li>
-                <li>Referências cruzadas e pesquisa integrada</li>
-                <li>Colagens ilimitadas</li>
-                <li>IA avançada — 200 consultas/mês</li>
-              </ul>
-              <Link href="/auth/login" className="lp-plan-btn lp-plan-btn-dark">Assinar</Link>
-            </article>
-
-            <article className="lp-plan-card">
-              <div className="lp-plan-header">
-                <h3>Premium</h3>
-                <div className="lp-plan-price">
-                  <span className="lp-price-val">R$ 89</span>
-                  <span className="lp-price-period">/mês</span>
-                </div>
-                <p className="lp-plan-tagline">Para pesquisa profunda e produção teológica.</p>
-              </div>
-              <ul className="lp-plan-features">
-                <li>Tudo do plano Intermediário</li>
-                <li>Texto original — hebraico e grego</li>
-                <li>Análise morfossintática</li>
-                <li>Comentário expositivo versículo a versículo</li>
-                <li>Pesquisa Teológica aprofundada</li>
-                <li>Estudo de Carta avançado</li>
-                <li>Acesso a todos os recursos futuros</li>
-                <li>IA sem limite de uso</li>
-                <li>Suporte prioritário</li>
-              </ul>
-              <Link href="/auth/login" className="lp-plan-btn lp-plan-btn-ghost">Assinar</Link>
-            </article>
-
+              return (
+                <article
+                  key={planId}
+                  className={`lp-plan-card${isPremium ? ' lp-plan-card-premium' : isPopular ? ' lp-plan-card-popular' : ''}`}
+                >
+                  {plan.badge && (
+                    <div className={`lp-plan-badge${isPremium ? ' lp-plan-badge-premium' : ''}`}>
+                      {plan.badge}
+                    </div>
+                  )}
+                  <div className="lp-plan-header">
+                    <h3>{plan.name}</h3>
+                    <div className="lp-plan-price">
+                      {plan.priceMonthly === 0 ? (
+                        <span className="lp-price-val">Grátis</span>
+                      ) : (
+                        <>
+                          <span className="lp-price-prefix">R$</span>
+                          <span className="lp-price-val">{(plan.priceMonthly / 100).toFixed(0)}</span>
+                          <span className="lp-price-period">/mês</span>
+                        </>
+                      )}
+                    </div>
+                    {isPremium && (
+                      <p className="lp-plan-anchor">menos de R$ 3 por dia · IA sem limite</p>
+                    )}
+                  </div>
+                  <ul className="lp-plan-features">
+                    {plan.features.map(f => (
+                      <li key={f} className={isPremium ? 'lp-feature-premium' : ''}>{f}</li>
+                    ))}
+                  </ul>
+                  <Link
+                    href={planId === 'free' ? '/auth/login' : '/auth/login?next=/billing'}
+                    className={`lp-plan-btn ${isPremium ? 'lp-plan-btn-gold' : isFeatured ? 'lp-plan-btn-outline-gold' : 'lp-plan-btn-ghost'}`}
+                  >
+                    {planId === 'free' ? 'Começar grátis' : isPremium ? 'Assinar Premium' : 'Assinar'}
+                  </Link>
+                </article>
+              )
+            })}
           </div>
           <p className="lp-plans-note">Planos anuais com 20% de desconto · Cancele a qualquer momento</p>
         </div>
@@ -253,9 +256,9 @@ export default function HomePage() {
       {/* ── CTA final ── */}
       <section className="lp-cta">
         <LampasMarkIcon size={36} />
-        <h2>Comece seu próximo estudo hoje.</h2>
-        <p>Do primeiro rascunho ao resultado final — o Lampas acompanha cada etapa do seu estudo.</p>
-        <Link href="/auth/login" className="lp-btn-primary">
+        <h2>O texto de domingo está esperando.</h2>
+        <p>Do primeiro contato com a passagem ao sermão pronto — o Lampas acompanha cada etapa com método, profundidade e IA exegética.</p>
+        <Link href="/auth/login" className="lp-btn-gold lp-btn-gold-lg">
           Criar conta gratuita <ArrowRight size={16} />
         </Link>
       </section>
@@ -279,7 +282,7 @@ export default function HomePage() {
         /* ── Reset & shell ─────────────────────────────── */
         .lp-shell {
           min-height: 100vh;
-          background: #f8fafc;
+          background: #f5f0e8;
           color: #0f172a;
           font-family: inherit;
         }
@@ -304,8 +307,8 @@ export default function HomePage() {
           gap: 2rem;
           max-width: 100%;
           padding: 0 2.5rem;
-          background: rgba(248,250,252,0.90);
-          border-bottom: 1px solid rgba(226,232,240,0.60);
+          background: rgba(245,240,232,0.92);
+          border-bottom: 1px solid rgba(201,146,26,0.15);
           backdrop-filter: blur(16px);
           -webkit-backdrop-filter: blur(16px);
         }
@@ -348,12 +351,12 @@ export default function HomePage() {
         .lp-link-muted:hover { color: #0f172a; }
 
         /* ── Buttons ─────────────────────────────────────── */
-        .lp-btn-dark {
+        .lp-btn-gold-sm {
           display: inline-flex;
           align-items: center;
           height: 36px;
           padding: 0 1rem;
-          background: #0f172a;
+          background: #c9921a;
           color: #fff;
           font-size: 0.84rem;
           font-weight: 650;
@@ -361,16 +364,15 @@ export default function HomePage() {
           transition: background 0.14s;
           white-space: nowrap;
         }
+        .lp-btn-gold-sm:hover { background: #b07c14; color: #fff; }
 
-        .lp-btn-dark:hover { background: #1e293b; color: #fff; }
-
-        .lp-btn-primary {
+        .lp-btn-gold {
           display: inline-flex;
           align-items: center;
           gap: 0.45rem;
           height: 48px;
           padding: 0 1.5rem;
-          background: #0f172a;
+          background: #c9921a;
           color: #fff;
           font-size: 0.96rem;
           font-weight: 650;
@@ -378,25 +380,33 @@ export default function HomePage() {
           transition: background 0.14s;
           white-space: nowrap;
         }
+        .lp-btn-gold:hover { background: #b07c14; color: #fff; }
 
-        .lp-btn-primary:hover { background: #1e293b; color: #fff; }
+        .lp-btn-gold-lg {
+          height: 52px;
+          padding: 0 2rem;
+          font-size: 1rem;
+        }
 
-        .lp-btn-ghost {
+        .lp-btn-ghost-dark {
           display: inline-flex;
           align-items: center;
           height: 48px;
           padding: 0 1.25rem;
-          background: #fff;
-          color: #0f172a;
+          background: rgba(255,255,255,0.08);
+          color: rgba(255,255,255,0.85);
           font-size: 0.96rem;
           font-weight: 550;
           border-radius: 9px;
-          border: 1px solid #dbe3ee;
-          transition: border-color 0.14s;
+          border: 1px solid rgba(255,255,255,0.14);
+          transition: border-color 0.14s, background 0.14s;
           white-space: nowrap;
         }
-
-        .lp-btn-ghost:hover { border-color: #b0bfcc; color: #0f172a; }
+        .lp-btn-ghost-dark:hover {
+          border-color: rgba(255,255,255,0.28);
+          background: rgba(255,255,255,0.12);
+          color: #fff;
+        }
 
         /* ── Typography helpers ──────────────────────────── */
         .lp-eyebrow, .lp-kicker {
@@ -409,13 +419,24 @@ export default function HomePage() {
           margin-bottom: 1rem;
         }
 
-        .lp-h1 {
-          margin: 0 0 1rem;
-          font-size: clamp(2.8rem, 5.5vw, 4.75rem);
+        .lp-eyebrow-light {
+          display: block;
+          color: rgba(201,146,26,0.85);
+          font-size: 0.72rem;
+          font-weight: 800;
+          letter-spacing: 0.09em;
+          text-transform: uppercase;
+          margin-bottom: 1.1rem;
+        }
+
+        .lp-h1-dark {
+          margin: 0 0 1.25rem;
+          font-size: clamp(2.4rem, 4.5vw, 3.8rem);
           font-weight: 700;
-          line-height: 1.0;
+          line-height: 1.08;
           letter-spacing: -0.02em;
-          color: #0b1220;
+          color: #f5f0e8;
+          font-family: 'EB Garamond', Georgia, 'Times New Roman', serif;
         }
 
         .lp-h2 {
@@ -429,6 +450,11 @@ export default function HomePage() {
 
         /* ── Hero ─────────────────────────────────────────── */
         .lp-hero {
+          background: #0a0f1a;
+          border-bottom: 1px solid rgba(201,146,26,0.12);
+        }
+
+        .lp-hero-inner {
           display: grid;
           grid-template-columns: 1fr 1fr;
           align-items: center;
@@ -439,16 +465,9 @@ export default function HomePage() {
           min-height: 620px;
         }
 
-        .lp-hero-sub {
-          font-size: 1.45rem;
-          font-weight: 700;
-          color: #1e293b;
-          margin: 0 0 1.1rem;
-        }
-
-        .lp-hero-body {
+        .lp-hero-body-dark {
           max-width: 520px;
-          color: #475569;
+          color: rgba(245,240,232,0.65);
           font-size: 1.05rem;
           line-height: 1.72;
           margin: 0 0 2.25rem;
@@ -466,20 +485,21 @@ export default function HomePage() {
         }
 
         .ws-frame {
-          background: #fff;
-          border: 1px solid rgba(15,23,42,0.1);
+          background: #0f172a;
+          border: 1px solid rgba(201,146,26,0.2);
           border-radius: 12px;
           box-shadow:
-            0 2px 4px rgba(15,23,42,0.04),
-            0 12px 40px rgba(15,23,42,0.10),
-            0 40px 80px rgba(15,23,42,0.08);
+            0 2px 4px rgba(0,0,0,0.2),
+            0 12px 40px rgba(0,0,0,0.4),
+            0 0 0 1px rgba(201,146,26,0.08);
           overflow: hidden;
           width: 100%;
         }
 
         .ws-topbar {
           height: 40px;
-          background: #0f172a;
+          background: rgba(255,255,255,0.04);
+          border-bottom: 1px solid rgba(255,255,255,0.07);
           display: flex;
           align-items: center;
           gap: 0.5rem;
@@ -493,11 +513,11 @@ export default function HomePage() {
         }
 
         .ws-dot-gold { background: #c9921a; }
-        .ws-dot-slate { background: rgba(255,255,255,0.18); }
+        .ws-dot-slate { background: rgba(255,255,255,0.12); }
 
         .ws-title {
           margin-left: 0.5rem;
-          color: rgba(255,255,255,0.7);
+          color: rgba(255,255,255,0.4);
           font-size: 0.75rem;
           font-weight: 600;
         }
@@ -509,15 +529,15 @@ export default function HomePage() {
         }
 
         .ws-sidebar {
-          background: #f8fafc;
-          border-right: 1px solid #e2e8f0;
+          background: rgba(255,255,255,0.02);
+          border-right: 1px solid rgba(255,255,255,0.06);
           padding: 1.25rem 1rem;
         }
 
         .ws-sidebar-label {
           font-size: 0.68rem;
           font-weight: 750;
-          color: #94a3b8;
+          color: rgba(255,255,255,0.25);
           letter-spacing: 0.06em;
           text-transform: uppercase;
           margin-bottom: 0.75rem;
@@ -528,11 +548,11 @@ export default function HomePage() {
           display: block;
           height: 8px;
           border-radius: 4px;
-          background: #e2e8f0;
+          background: rgba(255,255,255,0.07);
           margin-bottom: 0.65rem;
         }
 
-        .ws-nav-item:nth-child(2) { width: 90%; background: rgba(201,146,26,0.32); }
+        .ws-nav-item:nth-child(2) { width: 90%; background: rgba(201,146,26,0.35); }
         .ws-nav-item:nth-child(3) { width: 72%; }
         .ws-nav-item:nth-child(4) { width: 82%; }
         .ws-nav-item:nth-child(5) { width: 60%; }
@@ -548,29 +568,29 @@ export default function HomePage() {
           justify-content: space-between;
           padding-bottom: 1rem;
           margin-bottom: 1.25rem;
-          border-bottom: 1px solid #e8edf4;
+          border-bottom: 1px solid rgba(255,255,255,0.07);
           gap: 1rem;
         }
 
         .ws-ref-title {
           font-size: 1.1rem;
           font-weight: 750;
-          color: #0f172a;
+          color: rgba(245,240,232,0.92);
           margin: 0 0 0.25rem;
         }
 
         .ws-ref-sub {
           font-size: 0.75rem;
-          color: #64748b;
+          color: rgba(255,255,255,0.35);
           margin: 0;
         }
 
         .ws-badge {
           flex-shrink: 0;
           padding: 0.2rem 0.6rem;
-          background: rgba(201,146,26,0.1);
-          border: 1px solid rgba(201,146,26,0.22);
-          color: #9a6b10;
+          background: rgba(201,146,26,0.12);
+          border: 1px solid rgba(201,146,26,0.25);
+          color: #c9921a;
           font-size: 0.7rem;
           font-weight: 750;
           border-radius: 999px;
@@ -584,16 +604,16 @@ export default function HomePage() {
         }
 
         .ws-panel {
-          border: 1px solid #e8edf4;
+          border: 1px solid rgba(255,255,255,0.07);
           border-radius: 8px;
           padding: 0.9rem;
-          background: #fff;
+          background: rgba(255,255,255,0.03);
         }
 
         .ws-panel-title {
           font-size: 0.78rem;
           font-weight: 750;
-          color: #0f172a;
+          color: rgba(245,240,232,0.7);
           display: block;
           margin-bottom: 0.7rem;
         }
@@ -601,12 +621,12 @@ export default function HomePage() {
         .ws-bar {
           height: 7px;
           border-radius: 4px;
-          background: #e2e8f0;
+          background: rgba(255,255,255,0.08);
           margin-bottom: 0.5rem;
         }
 
-        .ws-bar-gold { background: rgba(201,146,26,0.28); }
-        .ws-bar-blue { background: rgba(37,99,235,0.18); }
+        .ws-bar-gold { background: rgba(201,146,26,0.4); }
+        .ws-bar-blue { background: rgba(99,102,241,0.3); }
         .ws-bar-w100 { width: 100%; }
         .ws-bar-w82  { width: 82%;  }
         .ws-bar-w65  { width: 65%;  }
@@ -616,7 +636,7 @@ export default function HomePage() {
 
         /* ── Vinheta ─────────────────────────────────────── */
         .lp-vinheta {
-          background: #0b1220;
+          background: #070b12;
           padding: 4rem 2rem;
           display: flex;
           justify-content: center;
@@ -624,15 +644,89 @@ export default function HomePage() {
 
         .lp-vinheta-wrap {
           max-width: 960px;
-          box-shadow: 0 16px 64px rgba(0,0,0,0.45);
-          border: 1px solid rgba(255,255,255,0.07);
+          box-shadow: 0 16px 64px rgba(0,0,0,0.6);
+          border: 1px solid rgba(201,146,26,0.1);
+        }
+
+        /* ── Testimonials ────────────────────────────────── */
+        .lp-testimonials {
+          padding: 7rem 0 6rem;
+          background: #0a0f1a;
+          border-bottom: 1px solid rgba(201,146,26,0.1);
+        }
+
+        .lp-testimonials .lp-kicker { color: rgba(201,146,26,0.8); }
+
+        .lp-testimonials .lp-h2 {
+          color: #f5f0e8;
+          margin-bottom: 3rem;
+        }
+
+        .lp-testimonials-grid {
+          display: grid;
+          grid-template-columns: repeat(3, 1fr);
+          gap: 1.5rem;
+        }
+
+        .lp-testimonial-card {
+          background: rgba(255,255,255,0.03);
+          border: 1px solid rgba(201,146,26,0.14);
+          border-radius: 12px;
+          padding: 1.75rem;
+          display: flex;
+          flex-direction: column;
+          gap: 1.5rem;
+          transition: border-color 0.15s;
+        }
+
+        .lp-testimonial-card:hover {
+          border-color: rgba(201,146,26,0.3);
+        }
+
+        .lp-testimonial-quote {
+          color: rgba(245,240,232,0.75);
+          font-size: 0.95rem;
+          line-height: 1.72;
+          font-style: italic;
+          flex: 1;
+          margin: 0;
+          font-family: 'EB Garamond', Georgia, serif;
+        }
+
+        .lp-testimonial-author {
+          display: flex;
+          align-items: center;
+          gap: 0.85rem;
+        }
+
+        .lp-testimonial-avatar {
+          width: 38px;
+          height: 38px;
+          border-radius: 50%;
+          background: rgba(201,146,26,0.18);
+          border: 1px solid rgba(201,146,26,0.25);
+          flex-shrink: 0;
+        }
+
+        .lp-testimonial-author strong {
+          display: block;
+          font-size: 0.88rem;
+          font-weight: 700;
+          color: #f5f0e8;
+        }
+
+        .lp-testimonial-author span {
+          display: block;
+          font-size: 0.78rem;
+          color: rgba(245,240,232,0.45);
+          margin-top: 0.15rem;
         }
 
         /* ── Demo / Video ───────────────────────────────── */
         .lp-demo {
           padding: 7rem 0 6rem;
-          background: #fff;
-          border-top: 1px solid #e8edf4;
+          background: #f5f0e8;
+          border-top: 1px solid rgba(201,146,26,0.1);
         }
 
         .lp-video-wrap {
@@ -658,26 +752,28 @@ export default function HomePage() {
         /* ── Process section ─────────────────────────────── */
         .lp-process {
           padding: 8rem 0 7rem;
-          background: #fff;
-          border-top: 1px solid #e8edf4;
-          border-bottom: 1px solid #e8edf4;
+          background: #f5f0e8;
+          border-top: 1px solid rgba(201,146,26,0.12);
+          border-bottom: 1px solid rgba(201,146,26,0.12);
         }
 
         .lp-steps {
           position: relative;
           display: grid;
-          grid-template-columns: repeat(4, 1fr);
+          grid-template-columns: repeat(3, 1fr);
           gap: 2rem;
           padding-top: 2rem;
+          max-width: 760px;
+          margin: 0 auto;
         }
 
         .lp-steps-line {
           position: absolute;
           top: 2.15rem;
-          left: calc(12.5% + 1rem);
-          right: calc(12.5% + 1rem);
+          left: calc(16.66% + 1rem);
+          right: calc(16.66% + 1rem);
           height: 1px;
-          background: linear-gradient(90deg, #c9921a 0%, #dbe3ee 100%);
+          background: linear-gradient(90deg, #c9921a 0%, rgba(201,146,26,0.2) 100%);
           z-index: 0;
         }
 
@@ -691,8 +787,8 @@ export default function HomePage() {
           width: 42px;
           height: 42px;
           border-radius: 50%;
-          background: #fff;
-          border: 1.5px solid #e2e8f0;
+          background: #f5f0e8;
+          border: 1.5px solid rgba(201,146,26,0.25);
           display: flex;
           align-items: center;
           justify-content: center;
@@ -702,25 +798,24 @@ export default function HomePage() {
 
         .lp-step:first-child .lp-step-dot {
           border-color: #c9921a;
-          background: rgba(201,146,26,0.06);
+          background: rgba(201,146,26,0.08);
         }
 
         .lp-step-n {
           font-size: 0.7rem;
           font-weight: 800;
-          color: #94a3b8;
+          color: rgba(201,146,26,0.5);
           letter-spacing: 0.04em;
         }
 
-        .lp-step:first-child .lp-step-n {
-          color: #b98214;
-        }
+        .lp-step:first-child .lp-step-n { color: #b98214; }
 
         .lp-step-label {
           font-size: 1.05rem;
           font-weight: 750;
           color: #0f172a;
           margin: 0 0 0.5rem;
+          font-family: 'EB Garamond', Georgia, serif;
         }
 
         .lp-step-text {
@@ -734,6 +829,7 @@ export default function HomePage() {
         /* ── Audience section ────────────────────────────── */
         .lp-section {
           padding: 8rem 0 0;
+          background: #f5f0e8;
         }
 
         .lp-audience-grid {
@@ -743,16 +839,16 @@ export default function HomePage() {
         }
 
         .lp-audience-card {
-          background: #fff;
-          border: 1px solid #e2e8f0;
+          background: rgba(255,255,255,0.7);
+          border: 1px solid rgba(201,146,26,0.14);
           border-radius: 10px;
           padding: 1.75rem 1.5rem;
           transition: border-color 0.15s, box-shadow 0.15s;
         }
 
         .lp-audience-card:hover {
-          border-color: #b0bfcc;
-          box-shadow: 0 4px 20px rgba(15,23,42,0.06);
+          border-color: rgba(201,146,26,0.3);
+          box-shadow: 0 4px 20px rgba(201,146,26,0.08);
         }
 
         .lp-audience-card h3 {
@@ -760,6 +856,7 @@ export default function HomePage() {
           font-weight: 750;
           color: #0f172a;
           margin: 0 0 0.65rem;
+          font-family: 'EB Garamond', Georgia, serif;
         }
 
         .lp-audience-card p {
@@ -772,6 +869,7 @@ export default function HomePage() {
         /* ── Resources section ───────────────────────────── */
         .lp-resources-section {
           padding: 6rem 0 8rem;
+          background: #f5f0e8;
         }
 
         .lp-resource-grid {
@@ -781,16 +879,16 @@ export default function HomePage() {
         }
 
         .lp-resource-card {
-          background: #fff;
-          border: 1px solid #e2e8f0;
+          background: rgba(255,255,255,0.7);
+          border: 1px solid rgba(201,146,26,0.14);
           border-radius: 10px;
           padding: 1.75rem 1.5rem;
           transition: border-color 0.15s, box-shadow 0.15s;
         }
 
         .lp-resource-card:hover {
-          border-color: #b0bfcc;
-          box-shadow: 0 4px 20px rgba(15,23,42,0.06);
+          border-color: rgba(201,146,26,0.3);
+          box-shadow: 0 4px 20px rgba(201,146,26,0.08);
         }
 
         .lp-resource-card h3 {
@@ -798,6 +896,7 @@ export default function HomePage() {
           font-weight: 750;
           color: #0f172a;
           margin: 0 0 0.5rem;
+          font-family: 'EB Garamond', Georgia, serif;
         }
 
         .lp-resource-card p {
@@ -810,42 +909,48 @@ export default function HomePage() {
         /* ── Plans section ───────────────────────────────── */
         .lp-plans-section {
           padding: 6rem 0 7rem;
-          background: #fff;
-          border-top: 1px solid #e8edf4;
+          background: #0a0f1a;
+          border-top: 1px solid rgba(201,146,26,0.1);
         }
+
+        .lp-plans-section .lp-kicker { color: rgba(201,146,26,0.8); }
+        .lp-plans-section .lp-h2 { color: #f5f0e8; }
 
         .lp-plans-grid {
           display: grid;
           grid-template-columns: repeat(4, 1fr);
           gap: 1.25rem;
           margin-bottom: 1.75rem;
+          align-items: start;
         }
 
         .lp-plan-card {
           position: relative;
-          background: #fff;
-          border: 1px solid #e2e8f0;
+          background: rgba(255,255,255,0.03);
+          border: 1px solid rgba(255,255,255,0.08);
           border-radius: 12px;
           padding: 1.75rem 1.5rem;
           display: flex;
           flex-direction: column;
           gap: 1.25rem;
-          transition: border-color 0.15s, box-shadow 0.15s;
+          transition: border-color 0.15s;
         }
 
         .lp-plan-card:hover {
-          border-color: #b0bfcc;
-          box-shadow: 0 4px 20px rgba(15,23,42,0.06);
+          border-color: rgba(201,146,26,0.2);
         }
 
-        .lp-plan-card-featured {
-          border-color: #c9921a;
-          box-shadow: 0 4px 24px rgba(201,146,26,0.12);
+        .lp-plan-card-popular {
+          border-color: rgba(201,146,26,0.3);
         }
 
-        .lp-plan-card-featured:hover {
+        .lp-plan-card-premium {
           border-color: #c9921a;
-          box-shadow: 0 6px 32px rgba(201,146,26,0.18);
+          background: rgba(201,146,26,0.05);
+        }
+
+        .lp-plan-card-premium:hover {
+          border-color: #c9921a;
         }
 
         .lp-plan-badge {
@@ -853,9 +958,10 @@ export default function HomePage() {
           top: -12px;
           left: 50%;
           transform: translateX(-50%);
-          background: #c9921a;
-          color: #fff;
-          font-size: 0.7rem;
+          background: rgba(201,146,26,0.15);
+          border: 1px solid rgba(201,146,26,0.3);
+          color: #c9921a;
+          font-size: 0.68rem;
           font-weight: 750;
           letter-spacing: 0.06em;
           text-transform: uppercase;
@@ -864,11 +970,18 @@ export default function HomePage() {
           white-space: nowrap;
         }
 
+        .lp-plan-badge-premium {
+          background: #c9921a;
+          border-color: #c9921a;
+          color: #fff;
+        }
+
         .lp-plan-header h3 {
           font-size: 1rem;
           font-weight: 700;
-          color: #0f172a;
+          color: #f5f0e8;
           margin: 0 0 0.6rem;
+          font-family: 'EB Garamond', Georgia, serif;
         }
 
         .lp-plan-price {
@@ -877,16 +990,29 @@ export default function HomePage() {
           gap: 0.2rem;
         }
 
+        .lp-price-prefix {
+          font-size: 0.9rem;
+          color: rgba(245,240,232,0.5);
+          font-weight: 500;
+        }
+
         .lp-price-val {
-          font-size: 1.9rem;
+          font-size: 2rem;
           font-weight: 750;
-          color: #0f172a;
+          color: #f5f0e8;
           line-height: 1;
         }
 
         .lp-price-period {
           font-size: 0.84rem;
-          color: #64748b;
+          color: rgba(245,240,232,0.4);
+        }
+
+        .lp-plan-anchor {
+          margin: 0.4rem 0 0;
+          font-size: 0.75rem;
+          color: rgba(201,146,26,0.75);
+          line-height: 1.4;
         }
 
         .lp-plan-features {
@@ -900,20 +1026,30 @@ export default function HomePage() {
         }
 
         .lp-plan-features li {
-          font-size: 0.87rem;
-          color: #475569;
+          font-size: 0.85rem;
+          color: rgba(245,240,232,0.55);
           padding-left: 1.1rem;
           position: relative;
           line-height: 1.45;
         }
 
         .lp-plan-features li::before {
-          content: '✓';
+          content: '✦';
           position: absolute;
           left: 0;
-          color: #c9921a;
-          font-size: 0.75rem;
-          font-weight: 700;
+          color: rgba(201,146,26,0.45);
+          font-size: 0.6rem;
+          top: 0.15rem;
+        }
+
+        .lp-feature-premium {
+          color: rgba(245,240,232,0.85) !important;
+          font-weight: 500;
+        }
+
+        .lp-feature-premium::before {
+          color: #c9921a !important;
+          content: '★' !important;
         }
 
         .lp-plan-btn {
@@ -928,61 +1064,67 @@ export default function HomePage() {
 
         .lp-plan-btn-ghost {
           background: transparent;
-          border: 1px solid #dbe3ee;
-          color: #0f172a;
+          border: 1px solid rgba(255,255,255,0.12);
+          color: rgba(245,240,232,0.6);
         }
 
         .lp-plan-btn-ghost:hover {
-          border-color: #b0bfcc;
-          color: #0f172a;
+          border-color: rgba(255,255,255,0.25);
+          color: #f5f0e8;
         }
 
-        .lp-plan-btn-dark {
-          background: #0f172a;
-          border: 1px solid #0f172a;
+        .lp-plan-btn-outline-gold {
+          background: transparent;
+          border: 1px solid rgba(201,146,26,0.5);
+          color: #c9921a;
+        }
+
+        .lp-plan-btn-outline-gold:hover {
+          background: rgba(201,146,26,0.08);
+          border-color: #c9921a;
+          color: #c9921a;
+        }
+
+        .lp-plan-btn-gold {
+          background: #c9921a;
+          border: 1px solid #c9921a;
           color: #fff;
         }
 
-        .lp-plan-btn-dark:hover {
-          background: #1e293b;
+        .lp-plan-btn-gold:hover {
+          background: #b07c14;
           color: #fff;
-        }
-
-        .lp-plan-tagline {
-          margin: 0.5rem 0 0;
-          font-size: 0.82rem;
-          color: #64748b;
-          line-height: 1.45;
         }
 
         .lp-plans-note {
           text-align: center;
-          color: #94a3b8;
+          color: rgba(245,240,232,0.3);
           font-size: 0.84rem;
         }
 
         /* ── Final CTA ───────────────────────────────────── */
         .lp-cta {
           text-align: center;
-          padding: 7rem 2rem 8rem;
-          background: #fff;
-          border-top: 1px solid #e8edf4;
+          padding: 8rem 2rem 9rem;
+          background: #070b12;
+          border-top: 1px solid rgba(201,146,26,0.1);
         }
 
         .lp-cta h2 {
           margin: 1.25rem 0 0.75rem;
-          font-size: clamp(1.75rem, 3vw, 2.4rem);
+          font-size: clamp(1.75rem, 3vw, 2.6rem);
           font-weight: 650;
           letter-spacing: -0.015em;
-          color: #0f172a;
+          color: #f5f0e8;
+          font-family: 'EB Garamond', Georgia, serif;
         }
 
         .lp-cta p {
-          color: #64748b;
+          color: rgba(245,240,232,0.5);
           font-size: 1.05rem;
           line-height: 1.65;
-          max-width: 480px;
-          margin: 0 auto 2.25rem;
+          max-width: 500px;
+          margin: 0 auto 2.5rem;
         }
 
         /* ── Footer ──────────────────────────────────────── */
@@ -990,17 +1132,18 @@ export default function HomePage() {
           max-width: 1120px;
           margin: 0 auto;
           padding: 2.25rem 2rem 3rem;
-          border-top: 1px solid #e2e8f0;
+          border-top: 1px solid rgba(255,255,255,0.06);
           display: grid;
           grid-template-columns: 1fr auto;
           gap: 2rem;
           align-items: start;
+          background: #070b12;
         }
 
         .lp-footer-brand p {
           margin-top: 0.6rem;
           max-width: 320px;
-          color: #94a3b8;
+          color: rgba(245,240,232,0.3);
           font-size: 0.85rem;
           line-height: 1.6;
         }
@@ -1013,17 +1156,17 @@ export default function HomePage() {
         }
 
         .lp-footer-nav a {
-          color: #64748b;
+          color: rgba(245,240,232,0.35);
           font-size: 0.85rem;
           font-weight: 500;
           transition: color 0.14s;
         }
 
-        .lp-footer-nav a:hover { color: #0f172a; }
+        .lp-footer-nav a:hover { color: #f5f0e8; }
 
         /* ── Responsive ──────────────────────────────────── */
         @media (max-width: 1080px) {
-          .lp-hero {
+          .lp-hero-inner {
             grid-template-columns: 1fr;
             padding: 5rem 2rem 4rem;
             min-height: auto;
@@ -1036,17 +1179,17 @@ export default function HomePage() {
           }
 
           .lp-steps {
-            grid-template-columns: repeat(2, 1fr);
-          }
-
-          .lp-steps-line {
-            display: none;
+            grid-template-columns: repeat(3, 1fr);
           }
 
           .lp-audience-grid,
           .lp-resource-grid,
           .lp-plans-grid {
             grid-template-columns: repeat(2, 1fr);
+          }
+
+          .lp-testimonials-grid {
+            grid-template-columns: 1fr;
           }
         }
 
@@ -1057,10 +1200,9 @@ export default function HomePage() {
           }
 
           .lp-nav { display: none; }
-
           .lp-link-muted { display: none; }
 
-          .lp-hero {
+          .lp-hero-inner {
             padding: 3.5rem 1.25rem 3rem;
           }
 
@@ -1072,7 +1214,6 @@ export default function HomePage() {
           }
 
           .lp-section { padding: 5rem 0 0; }
-
           .lp-resources-section { padding: 4rem 0 5rem; }
 
           .lp-footer {
@@ -1081,7 +1222,6 @@ export default function HomePage() {
           }
 
           .lp-footer-nav { justify-content: flex-start; }
-
           .ws-body { grid-template-columns: 1fr; }
           .ws-sidebar { display: none; }
         }
@@ -1111,32 +1251,32 @@ function WorkspaceMockup() {
         <div className="ws-main">
           <div className="ws-ref-row">
             <div>
-              <p className="ws-ref-title">Romanos 8.28-39</p>
-              <p className="ws-ref-sub">Texto · Observação · Interpretação · Teologia</p>
+              <p className="ws-ref-title">Romanos 8.28–39</p>
+              <p className="ws-ref-sub">Preparar · Interpretar · Comunicar</p>
             </div>
             <span className="ws-badge">Exegese Bíblica</span>
           </div>
           <div className="ws-panels">
             <div className="ws-panel">
-              <span className="ws-panel-title">Observação</span>
+              <span className="ws-panel-title">Contexto Histórico</span>
               <div className="ws-bar ws-bar-gold ws-bar-w88" />
               <div className="ws-bar ws-bar-w100" />
               <div className="ws-bar ws-bar-w65" />
             </div>
             <div className="ws-panel">
-              <span className="ws-panel-title">Interpretação</span>
+              <span className="ws-panel-title">Texto Original</span>
               <div className="ws-bar ws-bar-w82" />
               <div className="ws-bar ws-bar-gold ws-bar-w72" />
               <div className="ws-bar ws-bar-w55" />
             </div>
             <div className="ws-panel">
-              <span className="ws-panel-title">Teologia</span>
+              <span className="ws-panel-title">Síntese Exegética</span>
               <div className="ws-bar ws-bar-gold ws-bar-w72" />
               <div className="ws-bar ws-bar-w88" />
               <div className="ws-bar ws-bar-blue ws-bar-w65" />
             </div>
             <div className="ws-panel">
-              <span className="ws-panel-title">Comunicação</span>
+              <span className="ws-panel-title">Sermão Builder</span>
               <div className="ws-bar ws-bar-w82" />
               <div className="ws-bar ws-bar-blue ws-bar-w55" />
               <div className="ws-bar ws-bar-gold ws-bar-w72" />
