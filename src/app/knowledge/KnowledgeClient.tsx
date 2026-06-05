@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { CHILD_CONTENT, CONTAINER_TYPES, KNOWLEDGE_STATUSES, KNOWLEDGE_TYPES, type KnowledgeItemType, type KnowledgeStatus } from '@/lib/knowledge-base'
 import { ArrowLeft, Brain, Check, Link2, Plus, Search, Sparkles, Trash2, X } from 'lucide-react'
+import RichEditor, { type InsertMenuItem } from '@/components/RichEditor'
 
 type JsonRecord = Record<string, string>
 
@@ -61,6 +62,19 @@ interface Props {
 
 const TYPE_ORDER: KnowledgeItemType[] = ['book', 'article', 'podcast', 'lecture', 'course', 'site', 'video', 'personal_document']
 
+const KB_INSERT_MENU: InsertMenuItem[] = [
+  { icon: '🏷', label: 'Palavra-chave', snippet: '<p>🏷 <strong>Palavra-chave:</strong> </p>' },
+  { icon: '✝', label: 'Doutrina',       snippet: '<p>✝ <strong>Doutrina:</strong> </p>' },
+  { icon: '👤', label: 'Pessoa',         snippet: '<p>👤 <strong>Pessoa:</strong> </p>' },
+  { icon: '📚', label: 'Livro citado',   snippet: '<p>📚 <strong>Livro:</strong> </p>' },
+  { icon: '✍', label: 'Autor',          snippet: '<p>✍ <strong>Autor:</strong> </p>' },
+  { icon: '📅', label: 'Evento/Data',   snippet: '<p>📅 <strong>Evento:</strong> </p>' },
+  { icon: '❓', label: 'Pergunta',       snippet: '<p>❓ <strong>Pergunta:</strong> </p>' },
+  { icon: '👉', label: 'Aplicação',      snippet: '<p>👉 <strong>Aplicação:</strong> </p>' },
+  { icon: '❝', label: 'Citação',        snippet: '<blockquote><p></p></blockquote>' },
+  { icon: '💡', label: 'Exemplo',        snippet: '<p>💡 <strong>Exemplo:</strong> </p>' },
+]
+
 // Rótulos das seções fixas por tipo
 const TYPE_SECTION_LABELS: Record<KnowledgeItemType, { metadata: string; content: string }> = {
   book:              { metadata: 'Obra',      content: 'Conteúdo do Livro' },
@@ -96,6 +110,10 @@ const EMPTY_ITEM: Omit<KnowledgeItem, 'id' | 'user_id' | 'query_count' | 'create
   people: [],
   institutions: [],
   books_mentioned: [],
+}
+
+function isHtmlContent(value: string): boolean {
+  return /<\/?[a-z][\s\S]*>/i.test(value.trim())
 }
 
 function splitList(value: string): string[] {
@@ -409,12 +427,13 @@ export default function KnowledgeClient({ userId, initialItems, initialDashboard
                 </div>
                 <div style={{ marginTop: '0.75rem' }}>
                   <label style={labelStyle}>Resumo</label>
-                  <textarea
+                  <RichEditor
                     value={draft.summary ?? ''}
-                    onChange={e => setDraft(p => ({ ...p, summary: e.target.value }))}
-                    rows={4}
-                    style={{ ...textareaStyle, resize: 'vertical' }}
+                    onChange={v => setDraft(p => ({ ...p, summary: v }))}
                     placeholder="Registre a ideia central e por que este conteúdo importa."
+                    moduleColor={currentDraftType.color}
+                    minHeight={100}
+                    insertMenu={KB_INSERT_MENU}
                   />
                 </div>
               </section>
@@ -435,11 +454,18 @@ export default function KnowledgeClient({ userId, initialItems, initialDashboard
               {currentDraftType.contentFields.length > 0 && (
                 <section style={{ border: `1px solid ${currentDraftType.color}25`, borderRadius: '8px', padding: '1rem' }}>
                   <SectionTitle title={typeLabels.content} color={currentDraftType.color} />
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
                     {currentDraftType.contentFields.map(field => (
                       <div key={field.key}>
                         <label style={labelStyle}>{field.label}</label>
-                        <textarea value={draft.content?.[field.key] ?? ''} onChange={e => setDraft(p => ({ ...p, content: { ...p.content, [field.key]: e.target.value } }))} rows={field.rows ?? 3} style={textareaStyle} />
+                        <RichEditor
+                          value={draft.content?.[field.key] ?? ''}
+                          onChange={v => setDraft(p => ({ ...p, content: { ...p.content, [field.key]: v } }))}
+                          placeholder={field.key}
+                          moduleColor={currentDraftType.color}
+                          minHeight={(field.rows ?? 3) * 36}
+                          insertMenu={KB_INSERT_MENU}
+                        />
                       </div>
                     ))}
                   </div>
@@ -804,7 +830,11 @@ function DetailView({ item, children, parent, onEdit, onDelete, onAsk, onSelectC
         {item.summary && (
           <section style={{ ...detailSectionStyle, marginBottom: '1rem' }}>
             <SectionTitle title="Síntese" />
-            <p style={{ margin: 0, color: '#334155', fontSize: '0.92rem', lineHeight: 1.7, whiteSpace: 'pre-wrap' }}>{item.summary}</p>
+            {isHtmlContent(item.summary) ? (
+              <div className="rich-content-display" style={{ color: '#334155', fontSize: '0.92rem', lineHeight: 1.7 }} dangerouslySetInnerHTML={{ __html: item.summary }} />
+            ) : (
+              <p style={{ margin: 0, color: '#334155', fontSize: '0.92rem', lineHeight: 1.7, whiteSpace: 'pre-wrap' }}>{item.summary}</p>
+            )}
           </section>
         )}
 
@@ -857,7 +887,11 @@ function DetailView({ item, children, parent, onEdit, onDelete, onAsk, onSelectC
             {contentEntries.length > 0 ? contentEntries.map(entry => (
               <section key={entry.key} style={detailSectionStyle}>
                 <SectionTitle title={entry.label} />
-                <div style={{ color: '#334155', fontSize: '0.88rem', lineHeight: 1.7, whiteSpace: 'pre-wrap' }}>{entry.value}</div>
+                {isHtmlContent(entry.value) ? (
+                  <div className="rich-content-display" style={{ color: '#334155', fontSize: '0.88rem', lineHeight: 1.7 }} dangerouslySetInnerHTML={{ __html: entry.value }} />
+                ) : (
+                  <div style={{ color: '#334155', fontSize: '0.88rem', lineHeight: 1.7, whiteSpace: 'pre-wrap' }}>{entry.value}</div>
+                )}
               </section>
             )) : (
               <section style={detailSectionStyle}>

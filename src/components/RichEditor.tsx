@@ -10,12 +10,19 @@ import { useState, useEffect, useRef } from 'react'
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
+export interface InsertMenuItem {
+  icon: string
+  label: string
+  snippet: string  // HTML to insert at cursor
+}
+
 interface Props {
   value: string
   onChange: (html: string) => void
   placeholder?: string
   moduleColor?: string
   minHeight?: number
+  insertMenu?: InsertMenuItem[]
 }
 
 // ── Highlight color palette ───────────────────────────────────────────────────
@@ -92,12 +99,15 @@ function Sep() {
 
 export default function RichEditor({
   value, onChange, placeholder, moduleColor = 'var(--accent)', minHeight = 180,
+  insertMenu,
 }: Props) {
   const [structuralMode, setStructuralMode] = useState(false)
   const [hlOpen,         setHlOpen]         = useState(false)
+  const [insertOpen,     setInsertOpen]     = useState(false)
   const [focused,        setFocused]        = useState(false)
   const structuralRef = useRef(false)
   const hlRef         = useRef<HTMLDivElement>(null)
+  const insertRef     = useRef<HTMLDivElement>(null)
   const editorRef     = useRef<ReturnType<typeof useEditor>>(null)
 
   useEffect(() => { structuralRef.current = structuralMode }, [structuralMode])
@@ -111,6 +121,16 @@ export default function RichEditor({
     document.addEventListener('mousedown', h)
     return () => document.removeEventListener('mousedown', h)
   }, [hlOpen])
+
+  // Close insert menu on outside click
+  useEffect(() => {
+    if (!insertOpen) return
+    function h(e: MouseEvent) {
+      if (insertRef.current && !insertRef.current.contains(e.target as Node)) setInsertOpen(false)
+    }
+    document.addEventListener('mousedown', h)
+    return () => document.removeEventListener('mousedown', h)
+  }, [insertOpen])
 
   const normalizedValue = normalizeEditorContent(value || '')
 
@@ -187,6 +207,19 @@ export default function RichEditor({
         borderRadius:   '8px 8px 0 0',
         transition:     'border-color 0.15s',
       }}>
+        {/* Headings */}
+        <Btn active={editor.isActive('heading', { level: 1 })} onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()} title="Título 1">
+          <span style={{ fontSize: '0.72rem', fontWeight: 800 }}>H1</span>
+        </Btn>
+        <Btn active={editor.isActive('heading', { level: 2 })} onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()} title="Título 2">
+          <span style={{ fontSize: '0.72rem', fontWeight: 800 }}>H2</span>
+        </Btn>
+        <Btn active={editor.isActive('heading', { level: 3 })} onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()} title="Título 3">
+          <span style={{ fontSize: '0.72rem', fontWeight: 800 }}>H3</span>
+        </Btn>
+
+        <Sep />
+
         {/* Text style */}
         <Btn active={editor.isActive('bold')}          onClick={() => editor.chain().focus().toggleBold().run()}          title="Negrito (⌘B)"><strong>B</strong></Btn>
         <Btn active={editor.isActive('italic')}        onClick={() => editor.chain().focus().toggleItalic().run()}        title="Itálico (⌘I)"><em>I</em></Btn>
@@ -276,6 +309,56 @@ export default function RichEditor({
             {structuralMode ? 'EST ●' : 'EST'}
           </span>
         </Btn>
+
+        {/* Clear formatting */}
+        <Btn active={false} onClick={() => editor.chain().focus().clearNodes().unsetAllMarks().run()} title="Limpar formatação">
+          <span style={{ fontSize: '0.65rem', fontWeight: 600, textDecoration: 'line-through', color: 'var(--text-muted)' }}>A</span>
+        </Btn>
+
+        {/* Insert menu — only when items provided */}
+        {insertMenu && insertMenu.length > 0 && (
+          <>
+            <Sep />
+            <div ref={insertRef} style={{ position: 'relative' }}>
+              <Btn active={insertOpen} onClick={() => setInsertOpen(o => !o)} title="Inserir elemento">
+                <span style={{ fontSize: '0.68rem', fontWeight: 700 }}>Inserir ▾</span>
+              </Btn>
+              {insertOpen && (
+                <div style={{
+                  position: 'absolute', top: 'calc(100% + 4px)', left: 0, zIndex: 100,
+                  background: '#FFF', border: '1px solid var(--border)', borderRadius: '9px',
+                  minWidth: '196px', overflow: 'hidden',
+                  boxShadow: '0 8px 24px rgba(0,0,0,0.1)',
+                }}>
+                  {insertMenu.map((item, idx) => (
+                    <button
+                      key={idx}
+                      type="button"
+                      onMouseDown={e => {
+                        e.preventDefault()
+                        editor.chain().focus().insertContent(item.snippet).run()
+                        setInsertOpen(false)
+                      }}
+                      style={{
+                        width: '100%', display: 'flex', alignItems: 'center', gap: '0.55rem',
+                        border: 'none', background: 'transparent',
+                        padding: '0.5rem 0.85rem',
+                        cursor: 'pointer', fontFamily: 'inherit', fontSize: '0.78rem',
+                        color: 'var(--text-primary)', textAlign: 'left',
+                        borderBottom: idx < insertMenu.length - 1 ? '1px solid var(--border-subtle)' : 'none',
+                      }}
+                      onMouseEnter={e => { e.currentTarget.style.background = '#F8FAFC' }}
+                      onMouseLeave={e => { e.currentTarget.style.background = 'transparent' }}
+                    >
+                      <span style={{ fontSize: '0.9rem' }}>{item.icon}</span>
+                      <span style={{ fontWeight: 600 }}>{item.label}</span>
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+          </>
+        )}
       </div>
 
       {/* ── Editor area ── */}
@@ -330,6 +413,9 @@ export default function RichEditor({
           .rich-editor .ProseMirror em     { font-style: italic; }
           .rich-editor .ProseMirror u      { text-decoration: underline; text-underline-offset: 2px; }
           .rich-editor .ProseMirror s      { text-decoration: line-through; }
+          .rich-editor .ProseMirror h1 { font-size: 1.25rem; font-weight: 800; margin: 0.9em 0 0.3em; color: var(--text-primary); line-height: 1.25; letter-spacing: -0.02em; }
+          .rich-editor .ProseMirror h2 { font-size: 1.05rem; font-weight: 750; margin: 0.75em 0 0.25em; color: var(--text-primary); line-height: 1.3; }
+          .rich-editor .ProseMirror h3 { font-size: 0.92rem; font-weight: 700; margin: 0.6em 0 0.2em; color: var(--text-secondary); line-height: 1.35; text-transform: uppercase; letter-spacing: 0.04em; }
         `}</style>
 
         <div

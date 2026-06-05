@@ -79,6 +79,10 @@ function Badge({ children, color = '#64748B', bg = '#F1F5F9' }: { children: Reac
   )
 }
 
+function isHtmlContent(value: string): boolean {
+  return /<\/?[a-z][\s\S]*>/i.test(value.trim())
+}
+
 function isRelevant(item: KnowledgeItem, ctx: KBContext): boolean {
   if (!ctx.book && !ctx.themes?.length) return false
   const book = ctx.book?.toLowerCase() ?? ''
@@ -545,14 +549,22 @@ function DetailPane({ item, ctx, onBack, onOpenFull }: {
       {item.summary && (
         <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '7px', padding: '0.65rem 0.75rem', marginBottom: '0.7rem' }}>
           <div style={{ fontSize: '0.58rem', color: '#94A3B8', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: '0.25rem' }}>Síntese</div>
-          <div style={{ fontSize: '0.8rem', color: '#334155', lineHeight: 1.65, whiteSpace: 'pre-wrap' }}>{item.summary}</div>
+          {isHtmlContent(item.summary) ? (
+            <div className="rich-content-display" style={{ fontSize: '0.8rem', color: '#334155', lineHeight: 1.65 }} dangerouslySetInnerHTML={{ __html: item.summary }} />
+          ) : (
+            <div style={{ fontSize: '0.8rem', color: '#334155', lineHeight: 1.65, whiteSpace: 'pre-wrap' }}>{item.summary}</div>
+          )}
         </div>
       )}
 
       {contentEntries.slice(0, 4).map(entry => (
         <div key={entry.key} style={{ marginBottom: '0.65rem' }}>
           <div style={{ fontSize: '0.58rem', color: '#94A3B8', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: '0.2rem' }}>{entry.label}</div>
-          <div style={{ fontSize: '0.78rem', color: '#334155', lineHeight: 1.65, whiteSpace: 'pre-wrap' }}>{entry.value}</div>
+          {isHtmlContent(entry.value) ? (
+            <div className="rich-content-display" style={{ fontSize: '0.78rem', color: '#334155', lineHeight: 1.65 }} dangerouslySetInnerHTML={{ __html: entry.value }} />
+          ) : (
+            <div style={{ fontSize: '0.78rem', color: '#334155', lineHeight: 1.65, whiteSpace: 'pre-wrap' }}>{entry.value}</div>
+          )}
         </div>
       ))}
 
