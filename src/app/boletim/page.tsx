@@ -2,11 +2,11 @@ import Link from 'next/link'
 import type { Metadata } from 'next'
 import { LampasLogo } from '@/components/LampasLogo'
 import { createClient } from '@/lib/supabase/server'
-import MarkdownRenderer from '@/components/MarkdownRenderer'
+import { BOLETIM_EDITORIAS, BOLETIM_SOCIEDADE_SUBAREAS, inferBoletimEditorias } from '@/lib/boletim-editorial'
 
 export const metadata: Metadata = {
-  title: 'Boletim — Lampas',
-  description: 'Novidades, melhorias e atualizações da plataforma Lampas.',
+  title: 'Boletim Lampas — Cristo, Escritura e vida pública',
+  description: 'Jornal teológico-cultural reformado para interpretar a vida à luz das Escrituras.',
 }
 
 type BoletimEntry = {
@@ -18,21 +18,12 @@ type BoletimEntry = {
   tags: string[]
 }
 
-const TAG_COLORS: Record<string, { bg: string; text: string }> = {
-  feat:        { bg: '#c9921a22', text: '#a0720f' },
-  fix:         { bg: '#ef444422', text: '#b91c1c' },
-  design:      { bg: '#8b5cf622', text: '#6d28d9' },
-  performance: { bg: '#10b98122', text: '#047857' },
-  'conteúdo':  { bg: '#3b82f622', text: '#1d4ed8' },
-}
-
-const TAG_LABELS: Record<string, string> = {
-  feat:        'Novo',
-  fix:         'Correção',
-  design:      'Design',
-  performance: 'Performance',
-  'conteúdo':  'Conteúdo',
-}
+const PRACTICAL_BLOCKS = [
+  { title: 'Para Pastores', text: 'Pautas para leitura pública, cuidado pastoral, discipulado e formação da igreja.' },
+  { title: 'Para Professores', text: 'Pontes entre cosmovisão cristã, sala de aula, cultura e formação intelectual.' },
+  { title: 'Para Pregadores', text: 'Ideias para sermões, aplicações textuais e leitura cristocêntrica da vida comum.' },
+  { title: 'Para Famílias', text: 'Conversas, práticas devocionais e discernimento bíblico para a casa cristã.' },
+]
 
 function formatDate(dateStr: string) {
   return new Date(dateStr + 'T12:00:00').toLocaleDateString('pt-BR', {
@@ -40,6 +31,45 @@ function formatDate(dateStr: string) {
     month: 'long',
     year: 'numeric',
   })
+}
+
+function plainText(markdown: string) {
+  return markdown
+    .replace(/```[\s\S]*?```/g, ' ')
+    .replace(/[#*_>`~\[\]()-]/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim()
+}
+
+function readTime(markdown: string) {
+  const words = plainText(markdown).split(/\s+/).filter(Boolean).length
+  return `${Math.max(1, Math.ceil(words / 220))} min`
+}
+
+function excerpt(entry: BoletimEntry, fallback = 'Uma leitura reformada para interpretar a vida, a igreja e o mundo à luz das Escrituras.') {
+  const text = plainText(entry.content)
+  return text ? `${text.slice(0, 180)}${text.length > 180 ? '...' : ''}` : fallback
+}
+
+function editoriaFor(entry: BoletimEntry) {
+  return inferBoletimEditorias(entry.title, entry.tags)[0] ?? 'Cosmovisão'
+}
+
+function ArticleTeaser({ entry, variant = 'regular' }: { entry: BoletimEntry; variant?: 'lead' | 'regular' | 'compact' }) {
+  const category = editoriaFor(entry)
+  return (
+    <article className={`news-item news-item-${variant}`}>
+      <div className="item-kicker">{category}</div>
+      <h2 className="item-title">
+        <Link href={`/boletim/${entry.id}`}>{entry.title}</Link>
+      </h2>
+      <p className="item-subtitle">{excerpt(entry)}</p>
+      <div className="item-meta">
+        <span>Equipe Lampas</span>
+        <span>{readTime(entry.content)}</span>
+      </div>
+    </article>
+  )
 }
 
 export default async function BoletimPage() {
@@ -51,255 +81,327 @@ export default async function BoletimPage() {
     .order('release_date', { ascending: false })
 
   const entries: BoletimEntry[] = data ?? []
+  const lead = entries[0]
+  const secondary = entries.slice(1, 4)
+  const edition = lead?.version ? `Edição ${lead.version}` : 'Edição inicial'
+  const date = lead?.release_date ? formatDate(lead.release_date) : formatDate(new Date().toISOString().slice(0, 10))
+
+  const entriesBySection = BOLETIM_EDITORIAS.map(section => ({
+    section,
+    entries: entries.filter(entry => editoriaFor(entry) === section).slice(0, 3),
+  }))
 
   return (
-    <main className="bl-shell">
-
-      <header className="bl-header">
-        <Link href="/" className="bl-brand" aria-label="Lampas — página inicial">
-          <LampasLogo height={40} />
+    <main className="paper-shell">
+      <header className="topbar">
+        <Link href="/" className="brand" aria-label="Lampas — página inicial">
+          <LampasLogo height={34} />
         </Link>
-        <nav className="bl-nav" aria-label="Navegação">
+        <nav className="site-nav" aria-label="Navegação">
           <Link href="/#recursos">Recursos</Link>
           <Link href="/#planos">Planos</Link>
           <Link href="/auth/login">Entrar</Link>
         </nav>
-        <Link href="/auth/login" className="bl-cta">Começar grátis</Link>
       </header>
 
-      <div className="bl-container">
+      <div className="paper">
+        <nav className="edition-nav" aria-label="Editorias">
+          {BOLETIM_EDITORIAS.map(item => <a key={item} href={`#${item.toLowerCase().replaceAll(' ', '-')}`}>{item}</a>)}
+        </nav>
 
-        <div className="bl-page-header">
-          <p className="bl-eyebrow">Plataforma</p>
-          <h1 className="bl-title">Boletim Lampas</h1>
-          <p className="bl-subtitle">Novidades, melhorias e atualizações da plataforma.</p>
-        </div>
+        <section className="masthead">
+          <div className="masthead-rule" />
+          <p>{edition} · {date}</p>
+          <h1>Boletim Lampas</h1>
+          <h2>Cristo, Escritura e vida pública</h2>
+          <div className="masthead-rule" />
+        </section>
 
-        {entries.length === 0 ? (
-          <p className="bl-empty">Nenhuma atualização publicada ainda.</p>
+        {lead ? (
+          <section className="front-page">
+            <ArticleTeaser entry={lead} variant="lead" />
+            <div className="secondary-column">
+              {secondary.map(entry => <ArticleTeaser key={entry.id} entry={entry} variant="compact" />)}
+            </div>
+          </section>
         ) : (
-          <div className="bl-entries">
-            {entries.map((entry) => (
-              <article key={entry.id} className="bl-entry">
-                <div className="bl-entry-meta">
-                  <span className="bl-version">v{entry.version}</span>
-                  <time className="bl-date" dateTime={entry.release_date}>
-                    {formatDate(entry.release_date)}
-                  </time>
-                </div>
-
-                <h2 className="bl-entry-title">{entry.title}</h2>
-
-                {entry.tags.length > 0 && (
-                  <div className="bl-tags" aria-label="Categorias">
-                    {entry.tags.map((tag) => {
-                      const c = TAG_COLORS[tag] ?? { bg: '#0f172a14', text: '#475569' }
-                      return (
-                        <span
-                          key={tag}
-                          className="bl-tag"
-                          style={{ background: c.bg, color: c.text }}
-                        >
-                          {TAG_LABELS[tag] ?? tag}
-                        </span>
-                      )
-                    })}
-                  </div>
-                )}
-
-                {entry.content.trim() && (
-                  <div className="bl-content">
-                    <MarkdownRenderer content={entry.content} moduleColor="#c9921a" />
-                  </div>
-                )}
-              </article>
-            ))}
-          </div>
+          <section className="empty-edition">
+            <h2>A primeira edição está sendo preparada.</h2>
+            <p>Em breve, artigos sobre família, igreja, educação, cultura e vida pública sob cosmovisão cristã reformada.</p>
+          </section>
         )}
 
+        <section className="society-strip" aria-labelledby="sociedade-e-mundo-subareas">
+          <h2 id="sociedade-e-mundo-subareas">Sociedade e Mundo</h2>
+          <div>
+            {BOLETIM_SOCIEDADE_SUBAREAS.map(item => <span key={item}>{item}</span>)}
+          </div>
+        </section>
+
+        <section className="practical-blocks" aria-label="Blocos especiais">
+          {PRACTICAL_BLOCKS.map(block => (
+            <article key={block.title}>
+              <h2>{block.title}</h2>
+              <p>{block.text}</p>
+            </article>
+          ))}
+        </section>
+
+        <section className="sections">
+          {entriesBySection.map(({ section, entries: sectionEntries }) => (
+            <div key={section} id={section.toLowerCase().replaceAll(' ', '-')} className="section-row">
+              <div className="section-heading">
+                <h2>{section}</h2>
+              </div>
+              <div className="section-grid">
+                {(sectionEntries.length > 0 ? sectionEntries : entries.slice(0, 3)).map(entry => (
+                  <ArticleTeaser key={`${section}-${entry.id}`} entry={entry} />
+                ))}
+              </div>
+            </div>
+          ))}
+        </section>
       </div>
 
-      <footer className="bl-footer">
-        <LampasLogo height={32} />
-        <p>Estudo bíblico com profundidade, método e clareza.</p>
-        <nav className="bl-footer-nav" aria-label="Links do rodapé">
-          <Link href="/">Início</Link>
-          <Link href="/#planos">Planos</Link>
-          <Link href="/auth/login">Entrar</Link>
-          <Link href="mailto:contato@lampas.com.br">Contato</Link>
-        </nav>
+      <footer className="paper-footer">
+        <LampasLogo height={30} />
+        <p>Formação cristã reformada para ler a igreja, a casa, o trabalho e o mundo.</p>
       </footer>
 
       <style>{`
-        .bl-shell {
+        .paper-shell {
           min-height: 100vh;
-          background: #f5f0e8;
-          color: #0f172a;
+          background: #f3efe6;
+          color: #15110c;
           font-family: inherit;
         }
-
-        /* ── Header ─────────────────────────────── */
-        .bl-header {
+        .topbar {
           display: flex;
           align-items: center;
           justify-content: space-between;
-          padding: 1.25rem 2.5rem;
-          border-bottom: 1px solid #e0d9ce;
-          background: #f5f0e8;
-          position: sticky;
-          top: 0;
-          z-index: 50;
+          padding: 1rem clamp(1.25rem, 4vw, 3rem);
+          border-bottom: 1px solid #d8cdbd;
+          background: #f8f4ed;
         }
-        .bl-brand { display: flex; align-items: center; text-decoration: none; }
-        .bl-nav { display: flex; gap: 1.75rem; align-items: center; }
-        .bl-nav a {
-          color: #6b5d4a;
+        .brand { display: flex; text-decoration: none; }
+        .site-nav { display: flex; gap: 1.5rem; }
+        .site-nav a {
+          color: #6d6256;
           text-decoration: none;
-          font-size: 0.875rem;
-          transition: color 0.15s;
+          font-size: 0.84rem;
         }
-        .bl-nav a:hover { color: #c9921a; }
-        .bl-cta {
-          display: inline-block;
-          padding: 0.45rem 1.1rem;
-          background: #c9921a;
-          color: #fff;
-          font-size: 0.82rem;
-          font-weight: 600;
-          border-radius: 6px;
-          text-decoration: none;
-          transition: background 0.15s;
-        }
-        .bl-cta:hover { background: #b07d15; }
-
-        /* ── Container ───────────────────────────── */
-        .bl-container {
-          max-width: 720px;
+        .paper {
+          max-width: 1180px;
           margin: 0 auto;
-          padding: 4rem 1.5rem 6rem;
+          padding: 1.2rem clamp(1.1rem, 3vw, 2.4rem) 4rem;
         }
-
-        /* ── Page header ─────────────────────────── */
-        .bl-page-header { margin-bottom: 3.5rem; }
-        .bl-eyebrow {
-          font-size: 0.68rem;
-          font-weight: 700;
-          letter-spacing: 0.12em;
-          text-transform: uppercase;
-          color: #c9921a;
-          margin: 0 0 0.5rem;
-        }
-        .bl-title {
-          font-family: 'EB Garamond', Georgia, serif;
-          font-size: clamp(2rem, 5vw, 2.75rem);
-          font-weight: 500;
-          line-height: 1.15;
-          color: #0a0f1a;
-          margin: 0 0 0.75rem;
-        }
-        .bl-subtitle {
-          font-size: 1rem;
-          color: #6b5d4a;
-          line-height: 1.6;
-          margin: 0;
-        }
-
-        /* ── Entries ─────────────────────────────── */
-        .bl-entries { display: flex; flex-direction: column; }
-        .bl-entry {
-          padding: 2.5rem 0;
-          border-bottom: 1px solid #e0d9ce;
-        }
-        .bl-entry:first-child { padding-top: 0; }
-        .bl-entry:last-child { border-bottom: none; }
-
-        .bl-entry-meta {
+        .edition-nav {
           display: flex;
-          align-items: center;
-          gap: 0.75rem;
-          margin-bottom: 0.75rem;
-        }
-        .bl-version {
-          display: inline-block;
-          padding: 0.18rem 0.55rem;
-          background: #c9921a;
-          color: #fff;
-          font-size: 0.7rem;
-          font-weight: 700;
-          border-radius: 4px;
-          letter-spacing: 0.04em;
-          font-family: ui-monospace, monospace;
-        }
-        .bl-date { font-size: 0.82rem; color: #8c7a62; }
-
-        .bl-entry-title {
-          font-family: 'EB Garamond', Georgia, serif;
-          font-size: 1.5rem;
-          font-weight: 500;
-          line-height: 1.3;
-          color: #0a0f1a;
-          margin: 0 0 0.75rem;
-        }
-
-        .bl-tags {
-          display: flex;
-          flex-wrap: wrap;
-          gap: 0.4rem;
-          margin-bottom: 1.1rem;
-        }
-        .bl-tag {
-          font-size: 0.66rem;
-          font-weight: 700;
-          padding: 0.2rem 0.55rem;
-          border-radius: 3px;
-          letter-spacing: 0.05em;
-          text-transform: uppercase;
-        }
-
-        .bl-content { margin-top: 0.25rem; }
-
-        .bl-empty {
-          text-align: center;
-          padding: 4rem 0;
-          color: #8c7a62;
-          font-size: 0.95rem;
-        }
-
-        /* ── Footer ──────────────────────────────── */
-        .bl-footer {
-          background: #0a0f1a;
-          color: #f5f0e8;
-          padding: 3rem 2.5rem;
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          gap: 0.75rem;
-          text-align: center;
-        }
-        .bl-footer p { font-size: 0.83rem; color: #8c9ab0; margin: 0; }
-        .bl-footer-nav {
-          display: flex;
-          gap: 1.5rem;
           flex-wrap: wrap;
           justify-content: center;
-          margin-top: 0.25rem;
+          gap: 0.35rem 1rem;
+          padding: 0.75rem 0;
+          border-bottom: 1px solid #d8cdbd;
+          font-size: 0.75rem;
+          text-transform: uppercase;
+          letter-spacing: 0.04em;
         }
-        .bl-footer-nav a {
-          color: #8c9ab0;
-          text-decoration: none;
-          font-size: 0.82rem;
-          transition: color 0.15s;
+        .edition-nav a { color: #5b5147; text-decoration: none; }
+        .masthead {
+          text-align: center;
+          padding: 1rem 0 1.35rem;
         }
-        .bl-footer-nav a:hover { color: #f5f0e8; }
-
-        @media (max-width: 640px) {
-          .bl-header { padding: 1rem 1.25rem; }
-          .bl-nav { display: none; }
-          .bl-container { padding: 2.5rem 1.25rem 4rem; }
-          .bl-footer { padding: 2rem 1.25rem; }
+        .masthead-rule {
+          height: 3px;
+          border-top: 1px solid #15110c;
+          border-bottom: 1px solid #15110c;
+        }
+        .masthead p {
+          margin: 0.8rem 0 0.35rem;
+          color: #7a6d5d;
+          font-size: 0.78rem;
+          text-transform: uppercase;
+          letter-spacing: 0.08em;
+        }
+        .masthead h1 {
+          margin: 0;
+          font-family: Georgia, 'Times New Roman', serif;
+          font-size: clamp(2.7rem, 9vw, 6.4rem);
+          font-weight: 700;
+          line-height: 0.95;
+          letter-spacing: 0;
+        }
+        .masthead h2 {
+          margin: 0.4rem 0 0.9rem;
+          color: #5b5147;
+          font-family: Georgia, 'Times New Roman', serif;
+          font-size: clamp(1rem, 2.2vw, 1.45rem);
+          font-style: italic;
+          font-weight: 400;
+        }
+        .front-page {
+          display: grid;
+          grid-template-columns: minmax(0, 1.55fr) minmax(280px, 0.75fr);
+          gap: 1.5rem;
+          padding: 1.4rem 0;
+          border-bottom: 1px solid #d8cdbd;
+        }
+        .secondary-column {
+          display: grid;
+          gap: 1rem;
+          align-content: start;
+          border-left: 1px solid #d8cdbd;
+          padding-left: 1.25rem;
+        }
+        .news-item { min-width: 0; }
+        .item-kicker {
+          color: #9a6a1f;
+          font-size: 0.72rem;
+          font-weight: 800;
+          text-transform: uppercase;
+          letter-spacing: 0.08em;
+          margin-bottom: 0.35rem;
+        }
+        .item-title {
+          margin: 0;
+          font-family: Georgia, 'Times New Roman', serif;
+          font-size: 1.25rem;
+          line-height: 1.16;
+          letter-spacing: 0;
+        }
+        .item-title a { color: #15110c; text-decoration: none; }
+        .item-title a:hover { color: #9a6a1f; }
+        .news-item-lead .item-title {
+          font-size: clamp(2rem, 5vw, 4rem);
+          line-height: 1;
+        }
+        .news-item-compact {
+          padding-bottom: 1rem;
+          border-bottom: 1px solid #d8cdbd;
+        }
+        .news-item-compact:last-child { border-bottom: none; padding-bottom: 0; }
+        .news-item-compact .item-title { font-size: 1.08rem; }
+        .item-subtitle {
+          margin: 0.55rem 0 0;
+          color: #5b5147;
+          font-size: 0.94rem;
+          line-height: 1.55;
+        }
+        .news-item-lead .item-subtitle {
+          max-width: 720px;
+          font-size: 1.05rem;
+        }
+        .item-meta {
+          display: flex;
+          gap: 0.65rem;
+          margin-top: 0.7rem;
+          color: #7a6d5d;
+          font-size: 0.76rem;
+        }
+        .society-strip {
+          display: grid;
+          grid-template-columns: 220px 1fr;
+          gap: 1rem;
+          align-items: start;
+          padding: 1.2rem 0;
+          border-bottom: 1px solid #d8cdbd;
+        }
+        .society-strip h2,
+        .section-heading h2,
+        .practical-blocks h2 {
+          margin: 0;
+          font-family: Georgia, 'Times New Roman', serif;
+          font-size: 1.18rem;
+          letter-spacing: 0;
+        }
+        .society-strip div {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 0.45rem 0.8rem;
+        }
+        .society-strip span {
+          color: #5b5147;
+          font-size: 0.84rem;
+        }
+        .practical-blocks {
+          display: grid;
+          grid-template-columns: repeat(4, minmax(0, 1fr));
+          gap: 1rem;
+          padding: 1.25rem 0;
+          border-bottom: 1px solid #d8cdbd;
+        }
+        .practical-blocks article {
+          border-top: 2px solid #15110c;
+          padding-top: 0.65rem;
+        }
+        .practical-blocks p {
+          margin: 0.35rem 0 0;
+          color: #5b5147;
+          font-size: 0.86rem;
+          line-height: 1.48;
+        }
+        .section-row {
+          display: grid;
+          grid-template-columns: 190px 1fr;
+          gap: 1.25rem;
+          padding: 1.4rem 0;
+          border-bottom: 1px solid #d8cdbd;
+        }
+        .section-grid {
+          display: grid;
+          grid-template-columns: repeat(3, minmax(0, 1fr));
+          gap: 1.1rem;
+        }
+        .empty-edition {
+          padding: 3rem 0;
+          border-bottom: 1px solid #d8cdbd;
+          text-align: center;
+        }
+        .empty-edition h2 {
+          margin: 0 0 0.5rem;
+          font-family: Georgia, 'Times New Roman', serif;
+          font-size: 2rem;
+        }
+        .empty-edition p { margin: 0 auto; max-width: 620px; color: #5b5147; line-height: 1.6; }
+        .paper-footer {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 1rem;
+          padding: 2rem 1.25rem;
+          border-top: 1px solid #d8cdbd;
+          background: #f8f4ed;
+          color: #6d6256;
+          text-align: center;
+        }
+        .paper-footer p { margin: 0; font-size: 0.84rem; }
+        @media (max-width: 860px) {
+          .front-page,
+          .society-strip,
+          .section-row {
+            grid-template-columns: 1fr;
+          }
+          .secondary-column {
+            border-left: none;
+            border-top: 1px solid #d8cdbd;
+            padding-left: 0;
+            padding-top: 1rem;
+          }
+          .practical-blocks,
+          .section-grid {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+          }
+        }
+        @media (max-width: 620px) {
+          .site-nav { display: none; }
+          .edition-nav { justify-content: flex-start; }
+          .practical-blocks,
+          .section-grid {
+            grid-template-columns: 1fr;
+          }
+          .paper-footer { flex-direction: column; }
         }
       `}</style>
-
     </main>
   )
 }
