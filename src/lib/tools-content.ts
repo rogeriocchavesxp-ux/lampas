@@ -1,4 +1,4 @@
-export type ToolAreaId = 'sistematica' | 'biblica' | 'dicionario' | 'livros' | 'refs_cruzadas'
+export type ToolAreaId = 'sistematica' | 'biblica' | 'confissoes_catecismos' | 'dicionario' | 'livros' | 'refs_cruzadas'
 
 export interface ToolReference {
   title: string
@@ -116,6 +116,50 @@ export const TOOL_AREAS: ToolArea[] = [
       { label: 'Mapa redentivo-histórico', prompt: 'Gere um mapa redentivo-histórico com etapas, textos-chave e desenvolvimento teológico.' },
     ],
     visualization: ['Criação', 'Patriarcas', 'Êxodo', 'Reino', 'Profetas', 'Cristo', 'Igreja', 'Nova criação'],
+  },
+  {
+    id: 'confissoes_catecismos',
+    slug: 'ferramentas_confissoes_catecismos',
+    title: 'Catecismos e Confissões',
+    shortTitle: 'Catecismos',
+    subtitle: 'Camada confessional reformada',
+    objective: 'Consultar Confissões de Fé e Catecismos como camada estrutural da Base de Conhecimento, relacionando doutrinas, perguntas, capítulos e referências bíblicas.',
+    color: '#8f6b32',
+    bgActive: 'rgba(143,107,50,0.12)',
+    sections: [
+      'Confissão de Fé de Westminster',
+      'Confissão Belga',
+      'Cânones de Dort',
+      'Catecismo Maior de Westminster',
+      'Catecismo Menor de Westminster',
+      'Catecismo de Heidelberg',
+      'Justificação',
+      'Santificação',
+      'Eleição',
+      'Perseverança dos santos',
+    ],
+    capabilities: [
+      'Navegar por capítulos confessionais',
+      'Navegar por perguntas e respostas',
+      'Pesquisar por doutrina',
+      'Pesquisar por referência bíblica',
+      'Relacionar com a passagem atual',
+      'Cruzar com Dicionário Lampas',
+      'Cruzar com Estudos Doutrinários',
+    ],
+    aiRole: 'assistente confessional reformado, que consulta prioritariamente Bíblia, Confissões e Catecismos Lampas antes de recorrer ao Dicionário, Biblioteca ou modelos de IA.',
+    references: [
+      { title: 'Confissões', items: ['Confissão de Fé de Westminster', 'Confissão Belga', 'Cânones de Dort'] },
+      { title: 'Catecismos', items: ['Catecismo Maior de Westminster', 'Catecismo Menor de Westminster', 'Catecismo de Heidelberg'] },
+      { title: 'Exemplos doutrinários', items: ['Justificação: CFW XI · CMW 70-73 · CMeW 33', 'Santificação: CFW XIII · CMeW 35'] },
+    ],
+    actions: [
+      { label: 'Pesquisar doutrina', prompt: 'Pesquise esta doutrina na camada de Confissões e Catecismos Lampas. Priorize Bíblia, depois capítulos confessionais e perguntas catequéticas relacionadas.' },
+      { label: 'Relacionar com a passagem', prompt: 'Relacione a passagem atual com Confissões e Catecismos relevantes, indicando capítulos, perguntas, textos bíblicos e implicações pastorais.' },
+      { label: 'Comparar formulações', prompt: 'Compare como Westminster, a Confissão Belga, Dort e Heidelberg formulam este tema, destacando convergências e ênfases.' },
+      { label: 'Gerar guia catequético', prompt: 'Monte um guia de ensino catequético sobre este tema, com pergunta central, resposta doutrinária, textos bíblicos e aplicação.' },
+    ],
+    visualization: ['Bíblia', 'Confissões', 'Catecismos', 'Dicionário Lampas', 'Biblioteca', 'IA'],
   },
   {
     id: 'dicionario',

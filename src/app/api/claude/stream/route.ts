@@ -6,6 +6,7 @@ import { getSystemPromptForMode } from '@/lib/prompts/mode-personas'
 import { getSectionBySlug } from '@/lib/workspace-sections'
 import { getToolAreaBySlug } from '@/lib/tools-content'
 import { loadOriginalTextContext } from '@/lib/workspace-context'
+import { formatConfessionalSuggestionsAsContext, getConfessionalSuggestions } from '@/lib/confessional-lookup'
 import {
   queryKnowledgeBase,
   saveToLibrary,
@@ -53,7 +54,7 @@ export async function POST(req: Request) {
   const body = await req.json()
   const { messages, project, activeSlug, activeTitle, dictionaryQuery, generationMode } = body as {
     messages: ChatMessage[]
-    project: { id?: string; book: string; passage_ref: string; testament: string; original_language: string; study_mode?: string }
+    project: { id?: string; book: string; passage_ref: string; testament: string; original_language: string; study_mode?: string; meta?: { topic?: string } }
     activeSlug: string
     activeTitle: string
     dictionaryQuery?: string   // termo explícito quando activeSlug = ferramentas_dicionario
@@ -119,9 +120,15 @@ export async function POST(req: Request) {
   const originalTextContext = sectionDef?.group === 'textual' || ['texto_original', '_sintese_textual'].includes(activeSlug)
     ? await loadOriginalTextContext(supabase, project.id)
     : ''
+  const doctrineTopic = project.study_mode === 'estudo_doutrinario'
+    ? (project.meta?.topic ?? project.passage_ref ?? project.book)
+    : ''
+  const confessionalContext = doctrineTopic
+    ? formatConfessionalSuggestionsAsContext(await getConfessionalSuggestions(doctrineTopic, supabase))
+    : ''
 
   // Build context prefix for the current section
-  const contextNote = `[Projeto atual: ${project.book} ${project.passage_ref} (${project.original_language}) | Seção ativa: ${activeTitle}]\n${modeInstruction}${originalTextContext ? `\n\nTexto original carregado no workspace:\n${originalTextContext}` : ''}`
+  const contextNote = `[Projeto atual: ${project.book} ${project.passage_ref} (${project.original_language}) | Seção ativa: ${activeTitle}]\n${modeInstruction}${originalTextContext ? `\n\nTexto original carregado no workspace:\n${originalTextContext}` : ''}${confessionalContext ? `\n\n${confessionalContext}` : ''}`
 
   const academicSuffix = generationMode === 'academic' ? academicModeInstruction() : ''
   const systemWithContext = `${getSystemPromptForMode(project.study_mode)}\n\n---\n${contextNote}${academicSuffix}`

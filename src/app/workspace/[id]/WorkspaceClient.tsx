@@ -124,6 +124,7 @@ const GROUP_ICONS: Record<string, LucideIcon> = {
   // Ferramentas
   ferramentas_sistematica:   Layers,
   ferramentas_biblica:       Book,
+  ferramentas_confissoes_catecismos: BookMarked,
   ferramentas_dicionario:    Library,
   ferramentas_livros:        BookCopy,
   ferramentas_refs_cruzadas: Link2,

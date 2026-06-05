@@ -5,9 +5,11 @@
  * Princípio: a IA é o último recurso.
  *
  * Cadeia de consulta (em ordem):
- *   1. Dicionário Lampas  — base estruturada de termos bíblicos/teológicos
- *   2. Biblioteca Lampas  — cache persistente de respostas Q&A
- *   3. IA                 — somente se as duas camadas não respondem
+ *   1. Bíblia             — tratada no workspace e nos prompts
+ *   2. Confissões/Catecismos — camada estrutural reformada
+ *   3. Dicionário Lampas  — base estruturada de termos bíblicos/teológicos
+ *   4. Biblioteca Lampas  — cache persistente de respostas Q&A
+ *   5. IA                 — somente se as camadas locais não respondem
  *
  * O Redis (ai-cache.ts) já é consultado internamente no stream/route.ts
  * para seções de workspace. O orchestrator cuida especificamente de
@@ -18,10 +20,11 @@ import { createHash } from 'crypto'
 import type { SupabaseClient } from '@supabase/supabase-js'
 import { lookupDictionary } from './dictionary-lookup'
 import type { DictEntry } from './dictionary-lookup'
+import { formatConfessionalItems, lookupConfessionalLayer } from './confessional-lookup'
 
 // ── Tipos públicos ─────────────────────────────────────────────────────────────
 
-export type QuerySource = 'dictionary' | 'library' | 'ai'
+export type QuerySource = 'confessional' | 'dictionary' | 'library' | 'ai'
 
 export type GenerationMode =
   | 'economic'   // dict → library → AI se necessário
@@ -55,6 +58,24 @@ export function normalizeQuery(term: string): string {
 
 export function makeQueryHash(term: string): string {
   return createHash('sha256').update(normalizeQuery(term)).digest('hex').slice(0, 40)
+}
+
+// ── Lookup: Confissões e Catecismos ────────────────────────────────────────────
+
+async function fromConfessionalLayer(
+  term: string,
+  supabase: SupabaseClient,
+): Promise<OrchestratorResult | null> {
+  const result = await lookupConfessionalLayer(term, supabase)
+  if (!result.found) return null
+
+  return {
+    found: true,
+    content: formatConfessionalItems(result.items),
+    source: 'confessional',
+    trustLevel: 4,
+    entryId: result.items[0]?.id,
+  }
 }
 
 // ── Lookup: Dicionário ─────────────────────────────────────────────────────────
@@ -137,11 +158,15 @@ export async function queryKnowledgeBase(
   // Modo qualidade: pula o cache e chama IA sempre (mas ainda loga a fonte)
   if (mode === 'quality') return null
 
-  // 1. Dicionário
+  // 1. Confissões e Catecismos
+  const confessionalResult = await fromConfessionalLayer(term, supabase)
+  if (confessionalResult) return confessionalResult
+
+  // 2. Dicionário
   const dictResult = await fromDictionary(term, supabase)
   if (dictResult) return dictResult
 
-  // 2. Biblioteca
+  // 3. Biblioteca
   const libResult = await fromLibrary(term, supabase)
   if (libResult) return libResult
 
@@ -196,6 +221,7 @@ export async function saveToLibrary(
 // do stream do Claude para que o cliente não precise de alterações.
 
 const SOURCE_LABELS: Record<QuerySource, string> = {
+  confessional: 'Confissões e Catecismos Lampas',
   dictionary: 'Dicionário Lampas',
   library:    'Biblioteca Lampas',
   ai:         'IA',

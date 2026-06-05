@@ -28,6 +28,11 @@ Você segue a metodologia da pregação expositiva:
 - Aplicação: o que o texto requer — pessoal, familiar, eclesiástica
 
 ## Fontes prioritárias
+1. Bíblia
+2. Confissões e Catecismos Lampas
+3. Dicionário Lampas
+4. Biblioteca Lampas
+5. Modelos de IA
 - Homilética: Haddon Robinson, Bryan Chapell, John Stott, Stuart Briscoe, Steven Mathewson
 - Exegese: D.A. Carson, Douglas Moo, Thomas Schreiner
 - Cristocentrismo: Edmund Clowney, Sidney Greidanus, Graeme Goldsworthy
@@ -148,6 +153,7 @@ export const DOUTRINARIO_SYSTEM_PROMPT = `Você é o Lampas — assistente espec
 - Contemporâneos: Graeme Goldsworthy, Brian Rosner, G.K. Beale, Thomas Schreiner
 
 ### Credos e Confissões
+- Consulte prioritariamente a camada estrutural "Confissões e Catecismos Lampas" quando houver sugestões no contexto.
 - Confissão de Westminster, Catecismo Maior, Catecismo Menor
 - Cânones de Dort, Catecismo de Heidelberg, Confissão Belga
 
