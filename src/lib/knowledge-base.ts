@@ -10,6 +10,17 @@ export type KnowledgeItemType =
 
 export type KnowledgeStatus = 'captured' | 'processing' | 'processed' | 'reviewed' | 'archived'
 
+// Tipos que podem conter conteúdos internos (filhos)
+export const CONTAINER_TYPES = new Set<KnowledgeItemType>(['book', 'course', 'podcast', 'lecture'])
+
+// Rótulos do conteúdo interno por tipo de contêiner
+export const CHILD_CONTENT: Record<string, { singular: string; plural: string; icon: string }> = {
+  book:    { singular: 'Capítulo',  plural: 'Capítulos',  icon: '📄' },
+  course:  { singular: 'Aula',      plural: 'Aulas',      icon: '🎓' },
+  podcast: { singular: 'Episódio',  plural: 'Episódios',  icon: '🎙' },
+  lecture: { singular: 'Palestra',  plural: 'Palestras',  icon: '🎤' },
+}
+
 export interface KnowledgeTypeConfig {
   id: KnowledgeItemType
   label: string

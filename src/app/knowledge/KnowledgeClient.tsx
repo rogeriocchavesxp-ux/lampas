@@ -3,7 +3,7 @@
 import { useMemo, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
-import { KNOWLEDGE_STATUSES, KNOWLEDGE_TYPES, type KnowledgeItemType, type KnowledgeStatus } from '@/lib/knowledge-base'
+import { CHILD_CONTENT, CONTAINER_TYPES, KNOWLEDGE_STATUSES, KNOWLEDGE_TYPES, type KnowledgeItemType, type KnowledgeStatus } from '@/lib/knowledge-base'
 import { ArrowLeft, Brain, Check, Link2, Plus, Search, Sparkles, Trash2, X } from 'lucide-react'
 
 type JsonRecord = Record<string, string>
@@ -31,6 +31,8 @@ interface KnowledgeItem {
   people: string[]
   institutions: string[]
   books_mentioned: string[]
+  parent_id: string | null
+  order_index: number
   query_count: number
   created_at: string
   updated_at: string
@@ -72,6 +74,8 @@ const TYPE_SECTION_LABELS: Record<KnowledgeItemType, { metadata: string; content
 }
 
 const EMPTY_ITEM: Omit<KnowledgeItem, 'id' | 'user_id' | 'query_count' | 'created_at' | 'updated_at'> = {
+  parent_id: null,
+  order_index: 0,
   item_type: 'book',
   title: '',
   subtitle: '',
@@ -135,13 +139,23 @@ export default function KnowledgeClient({ userId, initialItems, initialDashboard
   const [activeBlocks,    setActiveBlocks]    = useState<string[]>([])
   const [collapsedBlocks, setCollapsedBlocks] = useState<Set<string>>(new Set())
   const [showBlockPicker, setShowBlockPicker] = useState(false)
+  const [expandedContainers, setExpandedContainers] = useState<Set<string>>(new Set())
+  const [creatingChildOf,    setCreatingChildOf]    = useState<KnowledgeItem | null>(null)
 
   const selected = items.find(item => item.id === selectedId) ?? null
   const currentDraftType = KNOWLEDGE_TYPES[draft.item_type]
 
   const dashboard = useMemo(() => {
+    const roots    = items.filter(i => !i.parent_id)
+    const children = items.filter(i => !!i.parent_id)
+
     const counts = TYPE_ORDER.reduce<Record<KnowledgeItemType, number>>((acc, type) => {
-      acc[type] = items.filter(item => item.item_type === type).length
+      acc[type] = roots.filter(item => item.item_type === type).length
+      return acc
+    }, {} as Record<KnowledgeItemType, number>)
+
+    const childCounts = TYPE_ORDER.reduce<Record<KnowledgeItemType, number>>((acc, type) => {
+      acc[type] = children.filter(item => item.item_type === type).length
       return acc
     }, {} as Record<KnowledgeItemType, number>)
 
@@ -152,8 +166,10 @@ export default function KnowledgeClient({ userId, initialItems, initialDashboard
     }
 
     return {
-      total: items.length || initialDashboard?.total_items || 0,
+      total: roots.length || initialDashboard?.total_items || 0,
+      totalChildren: children.length,
       counts,
+      childCounts,
       authors: countValues('authors'),
       doctrines: countValues('doctrines'),
       themes: countValues('themes'),
@@ -164,6 +180,7 @@ export default function KnowledgeClient({ userId, initialItems, initialDashboard
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase()
     return items.filter(item => {
+      if (item.parent_id) return false  // filhos aparecem dentro do contêiner
       if (typeFilter !== 'all' && item.item_type !== typeFilter) return false
       if (!q) return true
       return [
@@ -173,8 +190,19 @@ export default function KnowledgeClient({ userId, initialItems, initialDashboard
     })
   }, [items, query, typeFilter])
 
-  function openCreate(type: KnowledgeItemType = 'book') {
-    setDraft({ ...EMPTY_ITEM, item_type: type })
+  // Filhos de um contêiner, ordenados
+  function childrenOf(parentId: string): KnowledgeItem[] {
+    return items
+      .filter(i => i.parent_id === parentId)
+      .sort((a, b) => a.order_index - b.order_index)
+  }
+
+  function openCreate(type: KnowledgeItemType = 'book', parent?: KnowledgeItem) {
+    const nextOrder = parent
+      ? items.filter(i => i.parent_id === parent.id).length
+      : 0
+    setDraft({ ...EMPTY_ITEM, item_type: type, parent_id: parent?.id ?? null, order_index: nextOrder })
+    setCreatingChildOf(parent ?? null)
     setActiveBlocks([])
     setCollapsedBlocks(new Set())
     setShowBlockPicker(false)
@@ -183,7 +211,10 @@ export default function KnowledgeClient({ userId, initialItems, initialDashboard
   }
 
   function openEdit(item: KnowledgeItem) {
+    setCreatingChildOf(null)
     setDraft({
+      parent_id: item.parent_id,
+      order_index: item.order_index,
       item_type: item.item_type,
       title: item.title,
       subtitle: item.subtitle ?? '',
@@ -251,6 +282,11 @@ export default function KnowledgeClient({ userId, initialItems, initialDashboard
       setItems(prev => selected ? prev.map(item => item.id === saved.id ? saved : item) : [saved, ...prev])
       setSelectedId(saved.id)
       setEditing(false)
+      setCreatingChildOf(null)
+      // Auto-expande o contêiner pai ao salvar um filho
+      if (saved.parent_id) {
+        setExpandedContainers(prev => new Set([...prev, saved.parent_id!]))
+      }
       setToast('Item salvo na Base de Conhecimento')
       setTimeout(() => setToast(''), 2500)
     }
@@ -298,13 +334,21 @@ export default function KnowledgeClient({ userId, initialItems, initialDashboard
           {/* Header */}
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '1rem', marginBottom: '1.25rem' }}>
             <div>
+              {creatingChildOf && (
+                <div style={{ fontSize: '0.68rem', color: '#64748B', marginBottom: '0.2rem', display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
+                  <span>{KNOWLEDGE_TYPES[creatingChildOf.item_type].icon}</span>
+                  <span style={{ fontWeight: 700 }}>{creatingChildOf.title}</span>
+                  <span>›</span>
+                  <span>{CHILD_CONTENT[creatingChildOf.item_type]?.singular}</span>
+                </div>
+              )}
               <div style={{ fontSize: '0.7rem', fontWeight: 800, color: currentDraftType.color, textTransform: 'uppercase', letterSpacing: '0.07em' }}>
-                {selected ? 'Editar item' : 'Novo item'} · {currentDraftType.label}
+                {selected ? 'Editar' : creatingChildOf ? `Novo ${CHILD_CONTENT[creatingChildOf.item_type]?.singular ?? 'conteúdo'}` : 'Novo item'} · {currentDraftType.label}
               </div>
               <h1 style={{ margin: '0.15rem 0 0', color: '#0F172A', fontSize: '1.35rem', letterSpacing: '-0.02em' }}>Base de Conhecimento</h1>
             </div>
             <div style={{ display: 'flex', gap: '0.45rem' }}>
-              <button onClick={() => { setEditing(false); setShowBlockPicker(false); if (selected) setSelectedId(selected.id) }} style={{ border: '1px solid #E2E8F0', background: '#FFFFFF', borderRadius: '7px', padding: '0.5rem 0.75rem', cursor: 'pointer', fontFamily: 'inherit', color: '#64748B' }}>Cancelar</button>
+              <button onClick={() => { setEditing(false); setShowBlockPicker(false); setCreatingChildOf(null); if (selected) setSelectedId(selected.id) }} style={{ border: '1px solid #E2E8F0', background: '#FFFFFF', borderRadius: '7px', padding: '0.5rem 0.75rem', cursor: 'pointer', fontFamily: 'inherit', color: '#64748B' }}>Cancelar</button>
               <button onClick={saveItem} disabled={saving || !draft.title.trim()} style={{ border: 'none', background: currentDraftType.color, color: '#FFFFFF', borderRadius: '7px', padding: '0.5rem 0.9rem', cursor: saving ? 'wait' : 'pointer', fontFamily: 'inherit', fontWeight: 750, opacity: !draft.title.trim() ? 0.5 : 1 }}>
                 {saving ? 'Salvando...' : 'Salvar'}
               </button>
@@ -475,7 +519,17 @@ export default function KnowledgeClient({ userId, initialItems, initialDashboard
       </div>
     </div>
   ) : selected ? (
-    <DetailView item={selected} onEdit={() => openEdit(selected)} onDelete={() => deleteItem(selected)} onAsk={askAI} />
+    <DetailView
+      item={selected}
+      children={childrenOf(selected.id)}
+      parent={selected.parent_id ? items.find(i => i.id === selected.parent_id) : undefined}
+      onEdit={() => openEdit(selected)}
+      onDelete={() => deleteItem(selected)}
+      onAsk={askAI}
+      onSelectChild={child => { setSelectedId(child.id); setEditing(false) }}
+      onAddChild={() => openCreate(selected.item_type, selected)}
+      onBackToParent={selected.parent_id ? () => setSelectedId(selected.parent_id!) : undefined}
+    />
   ) : (
     <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '2rem', color: '#64748B', textAlign: 'center' }}>
       <div>
@@ -517,8 +571,8 @@ export default function KnowledgeClient({ userId, initialItems, initialDashboard
         <aside style={{ borderRight: '1px solid #E2E8F0', background: '#FFFFFF', minHeight: 0, display: 'flex', flexDirection: 'column' }}>
           <div style={{ padding: '0.9rem', borderBottom: '1px solid #F1F5F9' }}>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.45rem', marginBottom: '0.8rem' }}>
-              <StatCard label="Itens" value={dashboard.total} icon="🧠" />
-              <StatCard label="Livros" value={dashboard.counts.book} icon="📚" />
+              <StatCard label="Entidades" value={dashboard.total} icon="🧠" />
+              <StatCard label="Conteúdos" value={dashboard.totalChildren} icon="📄" />
             </div>
             <div style={{ position: 'relative' }}>
               <Search size={14} style={{ position: 'absolute', left: '0.65rem', top: '50%', transform: 'translateY(-50%)', color: '#94A3B8' }} />
@@ -539,23 +593,71 @@ export default function KnowledgeClient({ userId, initialItems, initialDashboard
             {filtered.map(item => {
               const cfg = KNOWLEDGE_TYPES[item.item_type]
               const active = selectedId === item.id && !editing
+              const isContainer = CONTAINER_TYPES.has(item.item_type)
+              const children = isContainer ? childrenOf(item.id) : []
+              const expanded = expandedContainers.has(item.id)
+              const childLabel = CHILD_CONTENT[item.item_type]
+
               return (
-                <button key={item.id} onClick={() => { setSelectedId(item.id); setEditing(false); void supabase.rpc('increment_knowledge_item_query_count', { p_id: item.id }) }}
-                  style={{ width: '100%', textAlign: 'left', border: `1px solid ${active ? cfg.color + '55' : 'transparent'}`, background: active ? cfg.bg : 'transparent', borderRadius: '8px', padding: '0.65rem 0.7rem', cursor: 'pointer', fontFamily: 'inherit', marginBottom: '0.2rem' }}>
-                  <div style={{ display: 'flex', gap: '0.55rem', alignItems: 'flex-start' }}>
-                    <span style={{ fontSize: '1rem', lineHeight: 1.1 }}>{cfg.icon}</span>
-                    <div style={{ minWidth: 0, flex: 1 }}>
-                      <div style={{ fontSize: '0.84rem', fontWeight: 750, color: '#0F172A', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{item.title}</div>
-                      <div style={{ fontSize: '0.68rem', color: '#64748B', marginTop: '0.12rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                        {item.authors[0] ?? cfg.label}{item.bible_references[0] ? ` · ${item.bible_references[0]}` : ''}
+                <div key={item.id} style={{ marginBottom: '0.2rem' }}>
+                  {/* Linha do item raiz */}
+                  <div style={{ display: 'flex', alignItems: 'stretch', borderRadius: '8px', border: `1px solid ${active ? cfg.color + '55' : 'transparent'}`, background: active ? cfg.bg : 'transparent' }}>
+                    <button
+                      onClick={() => { setSelectedId(item.id); setEditing(false); void supabase.rpc('increment_knowledge_item_query_count', { p_id: item.id }) }}
+                      style={{ flex: 1, textAlign: 'left', border: 'none', background: 'transparent', padding: '0.65rem 0.7rem', cursor: 'pointer', fontFamily: 'inherit' }}
+                    >
+                      <div style={{ display: 'flex', gap: '0.55rem', alignItems: 'flex-start' }}>
+                        <span style={{ fontSize: '1rem', lineHeight: 1.1 }}>{cfg.icon}</span>
+                        <div style={{ minWidth: 0, flex: 1 }}>
+                          <div style={{ fontSize: '0.84rem', fontWeight: 750, color: '#0F172A', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{item.title}</div>
+                          <div style={{ fontSize: '0.68rem', color: '#64748B', marginTop: '0.12rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                            {item.authors[0] ?? cfg.label}{item.bible_references[0] ? ` · ${item.bible_references[0]}` : ''}
+                          </div>
+                          <div style={{ marginTop: '0.35rem', display: 'flex', gap: '0.25rem', flexWrap: 'wrap' }}>
+                            <Badge color={KNOWLEDGE_STATUSES[item.status].color} bg={KNOWLEDGE_STATUSES[item.status].bg}>{KNOWLEDGE_STATUSES[item.status].label}</Badge>
+                            {isContainer && children.length > 0 && (
+                              <Badge color={cfg.color} bg={cfg.bg}>{children.length} {children.length === 1 ? childLabel?.singular : childLabel?.plural}</Badge>
+                            )}
+                          </div>
+                        </div>
                       </div>
-                      <div style={{ marginTop: '0.35rem', display: 'flex', gap: '0.25rem', flexWrap: 'wrap' }}>
-                        <Badge color={KNOWLEDGE_STATUSES[item.status].color} bg={KNOWLEDGE_STATUSES[item.status].bg}>{KNOWLEDGE_STATUSES[item.status].label}</Badge>
-                        {item.themes.slice(0, 1).map(t => <Badge key={t}>{t}</Badge>)}
-                      </div>
-                    </div>
+                    </button>
+                    {/* Botão expand — só para contêineres com filhos */}
+                    {isContainer && children.length > 0 && (
+                      <button
+                        onClick={() => setExpandedContainers(prev => { const n = new Set(prev); n.has(item.id) ? n.delete(item.id) : n.add(item.id); return n })}
+                        style={{ border: 'none', background: 'transparent', padding: '0 0.6rem', cursor: 'pointer', color: '#94A3B8', fontSize: '0.7rem' }}
+                        title={expanded ? 'Recolher' : 'Expandir'}
+                      >
+                        {expanded ? '▴' : '▾'}
+                      </button>
+                    )}
                   </div>
-                </button>
+
+                  {/* Filhos — visíveis quando expandido */}
+                  {isContainer && expanded && children.length > 0 && (
+                    <div style={{ marginLeft: '1.25rem', marginTop: '0.15rem', borderLeft: `2px solid ${cfg.color}30`, paddingLeft: '0.6rem' }}>
+                      {children.map(child => {
+                        const childActive = selectedId === child.id && !editing
+                        return (
+                          <button
+                            key={child.id}
+                            onClick={() => { setSelectedId(child.id); setEditing(false); void supabase.rpc('increment_knowledge_item_query_count', { p_id: child.id }) }}
+                            style={{ width: '100%', textAlign: 'left', border: `1px solid ${childActive ? cfg.color + '40' : 'transparent'}`, background: childActive ? cfg.bg : 'transparent', borderRadius: '6px', padding: '0.45rem 0.6rem', cursor: 'pointer', fontFamily: 'inherit', marginBottom: '0.15rem', display: 'flex', alignItems: 'center', gap: '0.45rem' }}
+                          >
+                            <span style={{ fontSize: '0.82rem', color: '#94A3B8' }}>{childLabel?.icon}</span>
+                            <div style={{ minWidth: 0, flex: 1 }}>
+                              <div style={{ fontSize: '0.79rem', fontWeight: 700, color: '#334155', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{child.title}</div>
+                              <div style={{ fontSize: '0.64rem', color: '#94A3B8' }}>
+                                {KNOWLEDGE_STATUSES[child.status].label}
+                              </div>
+                            </div>
+                          </button>
+                        )
+                      })}
+                    </div>
+                  )}
+                </div>
               )
             })}
             {filtered.length === 0 && (
@@ -635,7 +737,17 @@ function SectionTitle({ title, color = '#0F172A' }: { title: string; color?: str
   return <div style={{ fontSize: '0.72rem', color, fontWeight: 850, marginBottom: '0.75rem', letterSpacing: '-0.01em' }}>{title}</div>
 }
 
-function DetailView({ item, onEdit, onDelete, onAsk }: { item: KnowledgeItem; onEdit: () => void; onDelete: () => void; onAsk: (prompt: string, item: KnowledgeItem) => void }) {
+function DetailView({ item, children, parent, onEdit, onDelete, onAsk, onSelectChild, onAddChild, onBackToParent }: {
+  item: KnowledgeItem
+  children: KnowledgeItem[]
+  parent?: KnowledgeItem
+  onEdit: () => void
+  onDelete: () => void
+  onAsk: (prompt: string, item: KnowledgeItem) => void
+  onSelectChild: (child: KnowledgeItem) => void
+  onAddChild: () => void
+  onBackToParent?: () => void
+}) {
   const cfg = KNOWLEDGE_TYPES[item.item_type]
   const status = KNOWLEDGE_STATUSES[item.status]
   const contentEntries = cfg.contentFields
@@ -648,6 +760,15 @@ function DetailView({ item, onEdit, onDelete, onAsk }: { item: KnowledgeItem; on
   return (
     <div style={{ flex: 1, overflowY: 'auto', background: '#FFFFFF', padding: '1.35rem 1.6rem 4rem' }}>
       <div style={{ maxWidth: '980px' }}>
+        {/* Breadcrumb de pai */}
+        {parent && onBackToParent && (
+          <button
+            onClick={onBackToParent}
+            style={{ display: 'inline-flex', alignItems: 'center', gap: '0.35rem', border: 'none', background: 'transparent', color: '#64748B', cursor: 'pointer', fontFamily: 'inherit', fontSize: '0.75rem', padding: '0 0 0.75rem 0', fontWeight: 600 }}
+          >
+            ← {KNOWLEDGE_TYPES[parent.item_type].icon} {parent.title}
+          </button>
+        )}
         <div style={{ display: 'flex', justifyContent: 'space-between', gap: '1rem', alignItems: 'flex-start', marginBottom: '1.2rem' }}>
           <div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem', marginBottom: '0.4rem', flexWrap: 'wrap' }}>
@@ -665,9 +786,53 @@ function DetailView({ item, onEdit, onDelete, onAsk }: { item: KnowledgeItem; on
         </div>
 
         {item.summary && (
-          <section style={detailSectionStyle}>
+          <section style={{ ...detailSectionStyle, marginBottom: '1rem' }}>
             <SectionTitle title="Síntese" />
             <p style={{ margin: 0, color: '#334155', fontSize: '0.92rem', lineHeight: 1.7, whiteSpace: 'pre-wrap' }}>{item.summary}</p>
+          </section>
+        )}
+
+        {/* ── Conteúdos internos — apenas para contêineres ── */}
+        {CONTAINER_TYPES.has(item.item_type) && (
+          <section style={{ ...detailSectionStyle, marginBottom: '1rem' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.75rem' }}>
+              <SectionTitle
+                title={`${CHILD_CONTENT[item.item_type]?.plural ?? 'Conteúdos'} (${children.length})`}
+                color={cfg.color}
+              />
+              <button
+                onClick={onAddChild}
+                style={{ display: 'inline-flex', alignItems: 'center', gap: '0.35rem', border: `1px solid ${cfg.color}40`, background: cfg.bg, color: cfg.color, borderRadius: '7px', padding: '0.38rem 0.7rem', cursor: 'pointer', fontFamily: 'inherit', fontSize: '0.75rem', fontWeight: 750 }}
+              >
+                <Plus size={13} /> {CHILD_CONTENT[item.item_type]?.singular ?? 'Conteúdo'}
+              </button>
+            </div>
+            {children.length === 0 ? (
+              <div style={{ color: '#94A3B8', fontSize: '0.82rem', textAlign: 'center', padding: '0.75rem 0' }}>
+                Nenhum conteúdo ainda. Adicione o primeiro {CHILD_CONTENT[item.item_type]?.singular?.toLowerCase() ?? 'conteúdo'}.
+              </div>
+            ) : (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
+                {children.map((child, idx) => (
+                  <button
+                    key={child.id}
+                    onClick={() => onSelectChild(child)}
+                    style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', border: '1px solid #E2E8F0', background: '#F8FAFC', borderRadius: '7px', padding: '0.55rem 0.75rem', cursor: 'pointer', fontFamily: 'inherit', textAlign: 'left', transition: 'border-color 0.12s' }}
+                    onMouseEnter={e => { e.currentTarget.style.borderColor = cfg.color + '55'; e.currentTarget.style.background = cfg.bg }}
+                    onMouseLeave={e => { e.currentTarget.style.borderColor = '#E2E8F0'; e.currentTarget.style.background = '#F8FAFC' }}
+                  >
+                    <span style={{ fontSize: '0.72rem', color: '#94A3B8', minWidth: '1.4rem', textAlign: 'right', fontVariantNumeric: 'tabular-nums' }}>{idx + 1}</span>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ fontSize: '0.84rem', fontWeight: 750, color: '#0F172A', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{child.title}</div>
+                      {child.subtitle && <div style={{ fontSize: '0.7rem', color: '#64748B', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{child.subtitle}</div>}
+                    </div>
+                    <Badge color={KNOWLEDGE_STATUSES[child.status].color} bg={KNOWLEDGE_STATUSES[child.status].bg}>
+                      {KNOWLEDGE_STATUSES[child.status].label}
+                    </Badge>
+                  </button>
+                ))}
+              </div>
+            )}
           </section>
         )}
 
