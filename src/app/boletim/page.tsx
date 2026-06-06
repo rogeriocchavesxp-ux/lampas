@@ -5,8 +5,8 @@ import { createClient } from '@/lib/supabase/server'
 import { BOLETIM_EDITORIAS, BOLETIM_SOCIEDADE_SUBAREAS, inferBoletimEditorias } from '@/lib/boletim-editorial'
 
 export const metadata: Metadata = {
-  title: 'Observatório Lampas — curadoria cristã de acontecimentos e fontes',
-  description: 'Central de curadoria para acompanhar acontecimentos relevantes, fontes confiáveis e recursos de aprofundamento.',
+  title: 'Observatório Lampas — Iluminando os acontecimentos à luz da Palavra',
+  description: 'Iluminando os acontecimentos à luz da Palavra, com curadoria cristã, fontes confiáveis e recursos de aprofundamento.',
 }
 
 type BoletimEntry = {
@@ -113,7 +113,7 @@ export default async function BoletimPage() {
           <div className="masthead-rule" />
           <p>{edition} · {date}</p>
           <h1>Observatório Lampas</h1>
-          <h2>Curadoria cristã de acontecimentos, fontes e pesquisa</h2>
+          <h2>Iluminando os acontecimentos à luz da Palavra</h2>
           <div className="masthead-rule" />
         </section>
 
@@ -165,7 +165,7 @@ export default async function BoletimPage() {
 
       <footer className="paper-footer">
         <LampasLogo height={30} />
-        <p>Uma central de descoberta para acompanhar acontecimentos, fontes confiáveis e recursos de aprofundamento.</p>
+        <p>Iluminando os acontecimentos à luz da Palavra.</p>
       </footer>
 
       <style>{`

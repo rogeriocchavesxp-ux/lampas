@@ -78,61 +78,54 @@ export const BOLETIM_CRITICAL_ONLY_SOURCES = ['Jacobin', 'Brasil 247', 'Carta Ca
 
 export const BOLETIM_ARTICLE_TEMPLATE = `## Resumo Executivo
 
-Escreva de 3 a 5 parágrafos curtos com a síntese objetiva do acontecimento.
+Não escreva sem antes confirmar a fonte original, a data da publicação e o link. Se não houver publicação real, substitua por: "Nenhuma matéria relevante encontrada nesta categoria."
 
-## O que aconteceu?
+## Fonte original
 
-Descreva os fatos com clareza, sem sensacionalismo, militância partidária ou conclusões excessivas.
+Nome da organização ou veículo.
 
-## Quem publicou?
+## Autor
 
-Informe fonte original, autor original, ministério ou organização responsável sempre que possível.
+Nome do autor quando disponível. Se não houver byline, use "Não informado pela fonte".
 
-## Por que a matéria é relevante?
+## Data da publicação
 
-Explique brevemente por que o tema importa para cristãos, igrejas e famílias.
+dd/mm/aaaa
 
-## Fontes recomendadas
+## Link original
 
-- Fonte original:
-- Autor original:
-- Organização/ministério:
-- Relatórios ou documentos:
+URL da publicação original.
 
-## Leitura adicional
+## Resumo do conteúdo
 
-- Artigos:
-- Relatórios:
-- Livros:
-- Recursos para pesquisa:
+Resumo factual, sem opinião, sermão, militância ou comentários partidários.
+
+## Por que isso é relevante?
+
+Contexto mínimo para cristãos, igrejas e famílias.
 `
 
 export const BOLETIM_EDITION_TEMPLATE = `# Observatório Lampas — Edição Inaugural
+
+Antes de escrever qualquer matéria, confirme a publicação original, autor, data, link e atualidade. Não use exemplos fictícios. Se não encontrar matéria real em uma categoria, escreva exatamente: "Nenhuma matéria relevante encontrada nesta categoria."
 
 ## Manchete Principal
 
 ### Título
 
-### Subtítulo
+### Fonte original
 
-### Resumo Executivo
+### Autor
 
-Escreva de 3 a 5 parágrafos sobre o avanço da Igreja global, priorizando igreja perseguida, povos não alcançados, tradução da Bíblia, crescimento em regiões hostis e missões globais.
+### Data da publicação
 
-### O que aconteceu?
+### Link original
+
+### Resumo do conteúdo
 
 ### Por que isso é relevante?
 
-### Fontes principais
-
-- Portas Abertas:
-- Voice of the Martyrs:
-- Joshua Project:
-- Lausanne Movement:
-
 ### Leituras recomendadas
-
-- 
 
 ## Igreja e Reino
 
@@ -140,49 +133,17 @@ Escreva de 3 a 5 parágrafos sobre o avanço da Igreja global, priorizando igrej
 
 #### Título
 
-#### Subtítulo
+#### Fonte original
 
-#### Resumo Executivo
+#### Autor
 
-#### O que aconteceu?
+#### Data da publicação
 
-#### Por que isso é relevante?
+#### Link original
 
-#### Fontes principais
-
-#### Leituras recomendadas
-
-### Matéria 2
-
-#### Título
-
-#### Subtítulo
-
-#### Resumo Executivo
-
-#### O que aconteceu?
+#### Resumo do conteúdo
 
 #### Por que isso é relevante?
-
-#### Fontes principais
-
-#### Leituras recomendadas
-
-### Matéria 3
-
-#### Título
-
-#### Subtítulo
-
-#### Resumo Executivo
-
-#### O que aconteceu?
-
-#### Por que isso é relevante?
-
-#### Fontes principais
-
-#### Leituras recomendadas
 
 ## Mundo
 
@@ -190,33 +151,17 @@ Escreva de 3 a 5 parágrafos sobre o avanço da Igreja global, priorizando igrej
 
 #### Título
 
-#### Subtítulo
+#### Fonte original
 
-#### Resumo Executivo
+#### Autor
 
-#### O que aconteceu?
+#### Data da publicação
 
-#### Por que isso é relevante?
+#### Link original
 
-#### Fontes principais
-
-#### Leituras recomendadas
-
-### Matéria 2
-
-#### Título
-
-#### Subtítulo
-
-#### Resumo Executivo
-
-#### O que aconteceu?
+#### Resumo do conteúdo
 
 #### Por que isso é relevante?
-
-#### Fontes principais
-
-#### Leituras recomendadas
 
 ## Sociedade
 
@@ -224,33 +169,17 @@ Escreva de 3 a 5 parágrafos sobre o avanço da Igreja global, priorizando igrej
 
 #### Título
 
-#### Subtítulo
+#### Fonte original
 
-#### Resumo Executivo
+#### Autor
 
-#### O que aconteceu?
+#### Data da publicação
 
-#### Por que isso é relevante?
+#### Link original
 
-#### Fontes principais
-
-#### Leituras recomendadas
-
-### Matéria 2
-
-#### Título
-
-#### Subtítulo
-
-#### Resumo Executivo
-
-#### O que aconteceu?
+#### Resumo do conteúdo
 
 #### Por que isso é relevante?
-
-#### Fontes principais
-
-#### Leituras recomendadas
 
 ## Família
 
@@ -258,17 +187,17 @@ Escreva de 3 a 5 parágrafos sobre o avanço da Igreja global, priorizando igrej
 
 #### Título
 
-#### Subtítulo
+#### Fonte original
 
-#### Resumo Executivo
+#### Autor
 
-#### O que aconteceu?
+#### Data da publicação
+
+#### Link original
+
+#### Resumo do conteúdo
 
 #### Por que isso é relevante?
-
-#### Fontes principais
-
-#### Leituras recomendadas
 
 ## Educação
 
@@ -276,17 +205,17 @@ Escreva de 3 a 5 parágrafos sobre o avanço da Igreja global, priorizando igrej
 
 #### Título
 
-#### Subtítulo
+#### Fonte original
 
-#### Resumo Executivo
+#### Autor
 
-#### O que aconteceu?
+#### Data da publicação
+
+#### Link original
+
+#### Resumo do conteúdo
 
 #### Por que isso é relevante?
-
-#### Fontes principais
-
-#### Leituras recomendadas
 
 ## Profissão
 
@@ -294,17 +223,17 @@ Escreva de 3 a 5 parágrafos sobre o avanço da Igreja global, priorizando igrej
 
 #### Título
 
-#### Subtítulo
+#### Fonte original
 
-#### Resumo Executivo
+#### Autor
 
-#### O que aconteceu?
+#### Data da publicação
+
+#### Link original
+
+#### Resumo do conteúdo
 
 #### Por que isso é relevante?
-
-#### Fontes principais
-
-#### Leituras recomendadas
 
 ## Ministério
 
@@ -312,50 +241,25 @@ Escreva de 3 a 5 parágrafos sobre o avanço da Igreja global, priorizando igrej
 
 #### Título
 
-#### Subtítulo
+#### Fonte original
 
-#### Resumo Executivo
+#### Autor
 
-#### O que aconteceu?
+#### Data da publicação
+
+#### Link original
+
+#### Resumo do conteúdo
 
 #### Por que isso é relevante?
 
-#### Fontes principais
-
-#### Leituras recomendadas
-
 ## Leituras Recomendadas
 
-### Livros recomendados
-
-- 
-
-### Artigos recomendados
-
-- 
-
-### Podcasts recomendados
-
-- 
-
-### Palestras recomendadas
-
-- 
-
-### Cursos recomendados
-
-- 
+Liste apenas recursos reais já verificados.
 
 ## Agenda de Oração
 
-### Pedidos de oração da semana
-
-- Igreja perseguida:
-- Missionários:
-- Povos não alcançados:
-- Pastores:
-- Famílias:
-- Escolas cristãs:
+Pedidos baseados nas matérias verificadas desta edição.
 `
 
 export function inferBoletimEditorias(title: string, tags: string[]): string[] {
