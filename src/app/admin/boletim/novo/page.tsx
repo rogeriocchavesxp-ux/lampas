@@ -23,11 +23,11 @@ export default async function NovaEntradaPage() {
 
         <div style={{ marginBottom: '2rem' }}>
           <Link href="/admin/boletim" style={{ color: 'var(--text-muted)', fontSize: '0.82rem', textDecoration: 'none' }}>
-            ← Boletim
+            ← Observatório
           </Link>
-          <h1 style={{ marginTop: '0.5rem', marginBottom: '0.25rem', fontSize: '1.4rem' }}>Nova entrada</h1>
+          <h1 style={{ marginTop: '0.5rem', marginBottom: '0.25rem', fontSize: '1.4rem' }}>Nova matéria</h1>
           <p style={{ color: 'var(--text-muted)', fontSize: '0.875rem', margin: 0 }}>
-            Crie uma nova entrada para o boletim público da plataforma.
+            Crie uma curadoria para o observatório público da plataforma.
           </p>
         </div>
 

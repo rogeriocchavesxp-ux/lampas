@@ -32,9 +32,9 @@ export default async function EditarEntradaPage({ params }: { params: Promise<{ 
 
         <div style={{ marginBottom: '2rem' }}>
           <Link href="/admin/boletim" style={{ color: 'var(--text-muted)', fontSize: '0.82rem', textDecoration: 'none' }}>
-            ← Boletim
+            ← Observatório
           </Link>
-          <h1 style={{ marginTop: '0.5rem', marginBottom: '0.25rem', fontSize: '1.4rem' }}>Editar entrada</h1>
+          <h1 style={{ marginTop: '0.5rem', marginBottom: '0.25rem', fontSize: '1.4rem' }}>Editar matéria</h1>
           <p style={{ color: 'var(--text-muted)', fontSize: '0.875rem', margin: 0 }}>
             v{entry.version} · {entry.title}
           </p>

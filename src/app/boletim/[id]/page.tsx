@@ -42,7 +42,7 @@ function readTime(markdown: string) {
 
 function summary(markdown: string) {
   const text = plainText(markdown)
-  if (!text) return 'Um artigo do Boletim Lampas para interpretar a vida à luz da Escritura, com cosmovisão cristã reformada.'
+  if (!text) return 'Uma curadoria do Observatório Lampas para acompanhar acontecimentos relevantes, fontes confiáveis e recursos de aprofundamento.'
   return `${text.slice(0, 260)}${text.length > 260 ? '...' : ''}`
 }
 
@@ -65,9 +65,9 @@ async function loadEntry(id: string) {
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { id } = await params
   const entry = await loadEntry(id)
-  if (!entry) return { title: 'Artigo não encontrado — Boletim Lampas' }
+  if (!entry) return { title: 'Matéria não encontrada — Observatório Lampas' }
   return {
-    title: `${entry.title} — Boletim Lampas`,
+    title: `${entry.title} — Observatório Lampas`,
     description: summary(entry.content),
   }
 }
@@ -85,7 +85,7 @@ export default async function BoletimArticlePage({ params }: Props) {
         <Link href="/" className="brand" aria-label="Lampas — página inicial">
           <LampasLogo height={34} />
         </Link>
-        <Link href="/boletim" className="back-link">Boletim Lampas</Link>
+        <Link href="/boletim" className="back-link">Observatório Lampas</Link>
       </header>
 
       <article className="article">
@@ -106,50 +106,13 @@ export default async function BoletimArticlePage({ params }: Props) {
           <p>{summary(entry.content)}</p>
         </section>
 
-        <section className="worldview">
-          {['Criação', 'Queda', 'Redenção', 'Consumação'].map(stage => (
-            <div key={stage}>
-              <h2>{stage}</h2>
-              <p>{stage === 'Criação'
-                ? 'O tema deve ser lido a partir do propósito bom de Deus para a vida humana.'
-                : stage === 'Queda'
-                  ? 'A análise considera como o pecado distorce desejos, instituições e cultura.'
-                  : stage === 'Redenção'
-                    ? 'A esperança cristã passa por Cristo, sua obra e a formação de um povo santo.'
-                    : 'A leitura aponta para o reino consumado, justiça final e restauração plena.'}</p>
-            </div>
-          ))}
-        </section>
-
         <section className="body">
-          <h2>Texto completo</h2>
+          <h2>Matéria</h2>
           <MarkdownRenderer content={entry.content} moduleColor="#9a6a1f" />
         </section>
 
-        <section className="applications">
-          <h2>Aplicações</h2>
-          <div>
-            <article>
-              <h3>Para o indivíduo</h3>
-              <p>Examine desejos, hábitos e decisões diante da Escritura, buscando obediência concreta e arrependimento real.</p>
-            </article>
-            <article>
-              <h3>Para a família</h3>
-              <p>Transforme o tema em conversa doméstica, oração e práticas simples de discipulado no lar.</p>
-            </article>
-            <article>
-              <h3>Para a igreja</h3>
-              <p>Use o conteúdo para formar discernimento comunitário, cuidado pastoral e maturidade doutrinária.</p>
-            </article>
-            <article>
-              <h3>Para a sociedade</h3>
-              <p>Leia a vida pública com fidelidade bíblica, prudência cristã e amor ao próximo.</p>
-            </article>
-          </div>
-        </section>
-
         <section className="resources">
-          <h2>Recursos relacionados</h2>
+          <h2>Para aprofundar</h2>
           <div>
             {areas.map(area => <span key={area}>{area}</span>)}
             {entry.tags.map(tag => <span key={tag}>{tag}</span>)}
@@ -228,52 +191,26 @@ export default async function BoletimArticlePage({ params }: Props) {
         }
         .executive,
         .body,
-        .applications,
         .resources {
           padding: 1.3rem 0;
           border-bottom: 1px solid #d8cdbd;
         }
         .executive h2,
         .body h2,
-        .applications h2,
-        .resources h2,
-        .worldview h2 {
+        .resources h2 {
           margin: 0 0 0.55rem;
           font-family: Georgia, 'Times New Roman', serif;
           font-size: 1.22rem;
           letter-spacing: 0;
         }
-        .executive p,
-        .worldview p,
-        .applications p {
+        .executive p {
           margin: 0;
           color: #5b5147;
           line-height: 1.62;
         }
-        .worldview {
-          display: grid;
-          grid-template-columns: repeat(4, minmax(0, 1fr));
-          gap: 1rem;
-          padding: 1.25rem 0;
-          border-bottom: 1px solid #d8cdbd;
-        }
-        .worldview div,
-        .applications article {
-          border-top: 2px solid #15110c;
-          padding-top: 0.65rem;
-        }
         .body :global(p) {
           color: #24201b;
           line-height: 1.72;
-        }
-        .applications > div {
-          display: grid;
-          grid-template-columns: repeat(2, minmax(0, 1fr));
-          gap: 1rem;
-        }
-        .applications h3 {
-          margin: 0 0 0.35rem;
-          font-size: 0.95rem;
         }
         .resources div {
           display: flex;
@@ -285,12 +222,6 @@ export default async function BoletimArticlePage({ params }: Props) {
           color: #5b5147;
           padding: 0.28rem 0.5rem;
           font-size: 0.76rem;
-        }
-        @media (max-width: 760px) {
-          .worldview,
-          .applications > div {
-            grid-template-columns: 1fr;
-          }
         }
       `}</style>
     </main>

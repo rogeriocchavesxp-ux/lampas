@@ -5,6 +5,7 @@ import { createBoletimEntry, updateBoletimEntry, deleteBoletimEntry } from './ac
 import {
   BOLETIM_ARTICLE_TEMPLATE,
   BOLETIM_CRITICAL_ONLY_SOURCES,
+  BOLETIM_EDITION_TEMPLATE,
   BOLETIM_EDITORIAS,
   BOLETIM_FACTUAL_SOURCES,
   BOLETIM_PRIMARY_SOURCES,
@@ -96,12 +97,12 @@ export default function BoletimForm({ entry }: Props) {
     })
   }
 
-  function applyTemplate() {
+  function applyTemplate(template: string) {
     const form = formRef.current
     if (!form) return
     const field = form.elements.namedItem('content') as HTMLTextAreaElement | null
     if (!field) return
-    field.value = field.value.trim() ? `${field.value.trim()}\n\n${BOLETIM_ARTICLE_TEMPLATE}` : BOLETIM_ARTICLE_TEMPLATE
+    field.value = field.value.trim() ? `${field.value.trim()}\n\n${template}` : template
   }
 
   const inputStyle: React.CSSProperties = {
@@ -161,7 +162,7 @@ export default function BoletimForm({ entry }: Props) {
           name="title"
           type="text"
           required
-          placeholder="Ex: Por que a família cristã precisa recuperar o culto doméstico"
+          placeholder="Ex: A perseguição aos cristãos cresce em novas regiões do mundo"
           defaultValue={entry?.title}
           style={inputStyle}
         />
@@ -226,26 +227,44 @@ export default function BoletimForm({ entry }: Props) {
       </div>
 
       <div style={{ marginBottom: '1.25rem' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', gap: '1rem', alignItems: 'center', marginBottom: '0.4rem' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', gap: '1rem', alignItems: 'center', marginBottom: '0.4rem', flexWrap: 'wrap' }}>
           <label htmlFor="content" style={{ ...labelStyle, marginBottom: 0 }}>
-            Conteúdo editorial <span style={{ fontWeight: 400, color: 'var(--text-muted)' }}>(markdown)</span>
+            Matéria de curadoria <span style={{ fontWeight: 400, color: 'var(--text-muted)' }}>(markdown)</span>
           </label>
-          <button
-            type="button"
-            onClick={applyTemplate}
-            style={{
-              border: '1px solid var(--border)',
-              background: 'var(--surface)',
-              color: '#a0720f',
-              borderRadius: 6,
-              cursor: 'pointer',
-              fontSize: '0.74rem',
-              fontWeight: 700,
-              padding: '0.32rem 0.55rem',
-            }}
-          >
-            Inserir modelo editorial
-          </button>
+          <div style={{ display: 'flex', gap: '0.45rem', flexWrap: 'wrap' }}>
+            <button
+              type="button"
+              onClick={() => applyTemplate(BOLETIM_ARTICLE_TEMPLATE)}
+              style={{
+                border: '1px solid var(--border)',
+                background: 'var(--surface)',
+                color: '#a0720f',
+                borderRadius: 6,
+                cursor: 'pointer',
+                fontSize: '0.74rem',
+                fontWeight: 700,
+                padding: '0.32rem 0.55rem',
+              }}
+            >
+              Modelo de matéria
+            </button>
+            <button
+              type="button"
+              onClick={() => applyTemplate(BOLETIM_EDITION_TEMPLATE)}
+              style={{
+                border: '1px solid #c9921a',
+                background: '#c9921a18',
+                color: '#8a610d',
+                borderRadius: 6,
+                cursor: 'pointer',
+                fontSize: '0.74rem',
+                fontWeight: 800,
+                padding: '0.32rem 0.55rem',
+              }}
+            >
+              Edição inaugural
+            </button>
+          </div>
         </div>
         <textarea
           id="content"
@@ -265,13 +284,13 @@ export default function BoletimForm({ entry }: Props) {
         marginBottom: '1.5rem',
       }}>
         <div style={{ color: '#a0720f', fontSize: '0.72rem', fontWeight: 800, letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: '0.5rem' }}>
-          Editor-Chefe Lampas
+          Linha editorial do Observatório
         </div>
         <p style={{ margin: '0 0 0.75rem', color: 'var(--text-secondary)', fontSize: '0.82rem', lineHeight: 1.55 }}>
-          Produza em tom confessional, reformado, pastoral, intelectualmente robusto e culturalmente atento. Analise sempre por Criação, Queda, Redenção e Consumação.
+          Priorize curadoria, contexto e indicação de fontes. A pergunta principal é "o que aconteceu?"; a pergunta secundária é "por que isso é relevante para cristãos, igrejas e famílias?".
         </p>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '0.8rem' }}>
-          <GuideList title="Fontes prioritárias" items={BOLETIM_PRIMARY_SOURCES.slice(0, 10)} />
+          <GuideList title="Fontes prioritárias" items={BOLETIM_PRIMARY_SOURCES.slice(0, 18)} />
           <GuideList title="Factual" items={BOLETIM_FACTUAL_SOURCES} />
           <GuideList title="Somente crítica" items={BOLETIM_CRITICAL_ONLY_SOURCES} />
         </div>

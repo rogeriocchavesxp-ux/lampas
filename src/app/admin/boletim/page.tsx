@@ -51,9 +51,9 @@ export default async function AdminBoletimPage() {
             <Link href="/dashboard" style={{ color: 'var(--text-muted)', fontSize: '0.82rem', textDecoration: 'none' }}>
               ← Dashboard
             </Link>
-            <h1 style={{ marginTop: '0.5rem', marginBottom: '0.25rem', fontSize: '1.5rem' }}>Boletim Lampas</h1>
+            <h1 style={{ marginTop: '0.5rem', marginBottom: '0.25rem', fontSize: '1.5rem' }}>Observatório Lampas</h1>
             <p style={{ color: 'var(--text-muted)', fontSize: '0.875rem', margin: 0 }}>
-              Mesa editorial para artigos cristãos reformados sobre família, igreja, cultura e vida pública.
+              Mesa de curadoria para acontecimentos relevantes, fontes confiáveis e recursos de aprofundamento.
             </p>
           </div>
           <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center', flexShrink: 0 }}>
@@ -76,7 +76,7 @@ export default async function AdminBoletimPage() {
               fontSize: '0.875rem',
               textDecoration: 'none',
             }}>
-              + Novo artigo
+              + Nova matéria
             </Link>
           </div>
         </div>
@@ -89,7 +89,7 @@ export default async function AdminBoletimPage() {
         }}>
           {entries.length === 0 ? (
             <div style={{ padding: '3rem', textAlign: 'center', color: 'var(--text-muted)' }}>
-              Nenhum artigo criado ainda.{' '}
+              Nenhuma matéria criada ainda.{' '}
               <Link href="/admin/boletim/novo" style={{ color: '#c9921a' }}>Criar primeira</Link>.
             </div>
           ) : (

@@ -5,8 +5,8 @@ import { createClient } from '@/lib/supabase/server'
 import { BOLETIM_EDITORIAS, BOLETIM_SOCIEDADE_SUBAREAS, inferBoletimEditorias } from '@/lib/boletim-editorial'
 
 export const metadata: Metadata = {
-  title: 'Boletim Lampas — Cristo, Escritura e vida pública',
-  description: 'Jornal teológico-cultural reformado para interpretar a vida à luz das Escrituras.',
+  title: 'Observatório Lampas — curadoria cristã de acontecimentos e fontes',
+  description: 'Central de curadoria para acompanhar acontecimentos relevantes, fontes confiáveis e recursos de aprofundamento.',
 }
 
 type BoletimEntry = {
@@ -19,10 +19,10 @@ type BoletimEntry = {
 }
 
 const PRACTICAL_BLOCKS = [
-  { title: 'Para Pastores', text: 'Pautas para leitura pública, cuidado pastoral, discipulado e formação da igreja.' },
-  { title: 'Para Professores', text: 'Pontes entre cosmovisão cristã, sala de aula, cultura e formação intelectual.' },
-  { title: 'Para Pregadores', text: 'Ideias para sermões, aplicações textuais e leitura cristocêntrica da vida comum.' },
-  { title: 'Para Famílias', text: 'Conversas, práticas devocionais e discernimento bíblico para a casa cristã.' },
+  { title: 'O que aconteceu?', text: 'Síntese objetiva dos fatos principais, com distinção entre acontecimento e interpretação.' },
+  { title: 'Quem publicou?', text: 'Destaque para fonte original, autor, ministério ou organização responsável.' },
+  { title: 'Por que é relevante?', text: 'Contexto breve para cristãos, igrejas e famílias, sem transformar a notícia em sermão.' },
+  { title: 'Onde aprofundar?', text: 'Links e referências para que o leitor pesquise nas melhores fontes disponíveis.' },
 ]
 
 function formatDate(dateStr: string) {
@@ -46,13 +46,13 @@ function readTime(markdown: string) {
   return `${Math.max(1, Math.ceil(words / 220))} min`
 }
 
-function excerpt(entry: BoletimEntry, fallback = 'Uma leitura reformada para interpretar a vida, a igreja e o mundo à luz das Escrituras.') {
+function excerpt(entry: BoletimEntry, fallback = 'Uma curadoria para entender o que aconteceu, quem publicou e onde aprofundar a pesquisa.') {
   const text = plainText(entry.content)
   return text ? `${text.slice(0, 180)}${text.length > 180 ? '...' : ''}` : fallback
 }
 
 function editoriaFor(entry: BoletimEntry) {
-  return inferBoletimEditorias(entry.title, entry.tags)[0] ?? 'Cosmovisão'
+  return inferBoletimEditorias(entry.title, entry.tags)[0] ?? 'Igreja e Reino'
 }
 
 function ArticleTeaser({ entry, variant = 'regular' }: { entry: BoletimEntry; variant?: 'lead' | 'regular' | 'compact' }) {
@@ -112,8 +112,8 @@ export default async function BoletimPage() {
         <section className="masthead">
           <div className="masthead-rule" />
           <p>{edition} · {date}</p>
-          <h1>Boletim Lampas</h1>
-          <h2>Cristo, Escritura e vida pública</h2>
+          <h1>Observatório Lampas</h1>
+          <h2>Curadoria cristã de acontecimentos, fontes e pesquisa</h2>
           <div className="masthead-rule" />
         </section>
 
@@ -127,12 +127,12 @@ export default async function BoletimPage() {
         ) : (
           <section className="empty-edition">
             <h2>A primeira edição está sendo preparada.</h2>
-            <p>Em breve, artigos sobre família, igreja, educação, cultura e vida pública sob cosmovisão cristã reformada.</p>
+            <p>Em breve, curadorias sobre igreja, mundo, sociedade, família, profissão, educação e ministério.</p>
           </section>
         )}
 
-        <section className="society-strip" aria-labelledby="sociedade-e-mundo-subareas">
-          <h2 id="sociedade-e-mundo-subareas">Sociedade e Mundo</h2>
+        <section className="society-strip" aria-labelledby="curadoria-subareas">
+          <h2 id="curadoria-subareas">Curadoria</h2>
           <div>
             {BOLETIM_SOCIEDADE_SUBAREAS.map(item => <span key={item}>{item}</span>)}
           </div>
@@ -165,7 +165,7 @@ export default async function BoletimPage() {
 
       <footer className="paper-footer">
         <LampasLogo height={30} />
-        <p>Formação cristã reformada para ler a igreja, a casa, o trabalho e o mundo.</p>
+        <p>Uma central de descoberta para acompanhar acontecimentos, fontes confiáveis e recursos de aprofundamento.</p>
       </footer>
 
       <style>{`
