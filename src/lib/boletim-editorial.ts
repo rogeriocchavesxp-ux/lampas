@@ -10,7 +10,7 @@ export const BOLETIM_EDITORIAS = [
 
 export const BOLETIM_SUBEDITORIAS: Record<string, string[]> = {
   'Igreja e Reino': ['Missões', 'Plantação de igrejas', 'Perseguição', 'Evangelização', 'Tradução da Bíblia'],
-  Mundo: ['Geopolítica', 'Israel', 'Oriente Médio', 'China', 'Economia', 'Tecnologia'],
+  Mundo: ['Geopolítica', 'Israel', 'Oriente Médio', 'China', 'Economia', 'Tecnologia', 'Política e Liberdade Religiosa'],
   Sociedade: ['Família', 'Educação', 'Cultura', 'Sexualidade', 'Bioética'],
   Família: ['Pais', 'Mães', 'Filhos', 'Casamento'],
   Profissão: ['Vocação', 'Trabalho', 'Liderança', 'Empreendedorismo'],

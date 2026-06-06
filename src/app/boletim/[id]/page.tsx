@@ -6,11 +6,9 @@ import MarkdownRenderer from '@/components/MarkdownRenderer'
 import { createClient } from '@/lib/supabase/server'
 import { inferBoletimEditorias } from '@/lib/boletim-editorial'
 
-type Props = {
-  params: Promise<{ id: string }>
-}
+type Props = { params: Promise<{ id: string }> }
 
-type BoletimEntry = {
+type Entry = {
   id: string
   version: string
   release_date: string
@@ -19,38 +17,56 @@ type BoletimEntry = {
   tags: string[]
 }
 
-function formatDate(dateStr: string) {
-  return new Date(dateStr + 'T12:00:00').toLocaleDateString('pt-BR', {
+// ── Parsers ───────────────────────────────────────────────
+
+function getSection(content: string, header: string): string {
+  const esc = header.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+  return content.match(new RegExp(`##\\s+${esc}[^\n]*\\n([\\s\\S]+?)(?=\\n##|$)`))?.[1]?.trim() ?? ''
+}
+
+function plainText(md: string): string {
+  return md
+    .replace(/```[\s\S]*?```/g, '')
+    .replace(/[#*_>`~\[\]\-()]/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim()
+}
+
+function readTime(content: string): string {
+  const w = plainText(content).split(/\s+/).filter(Boolean).length
+  return `${Math.max(1, Math.ceil(w / 220))} min`
+}
+
+function fmtDate(s: string): string {
+  return new Date(s + 'T12:00:00').toLocaleDateString('pt-BR', {
     day: 'numeric',
     month: 'long',
     year: 'numeric',
   })
 }
 
-function plainText(markdown: string) {
-  return markdown
-    .replace(/```[\s\S]*?```/g, ' ')
-    .replace(/[#*_>`~\[\]()-]/g, ' ')
-    .replace(/\s+/g, ' ')
-    .trim()
+function sourceOf(content: string): string {
+  return getSection(content, 'Fonte original').split('\n')[0].trim() || 'Observatório Lampas'
 }
 
-function readTime(markdown: string) {
-  const words = plainText(markdown).split(/\s+/).filter(Boolean).length
-  return `${Math.max(1, Math.ceil(words / 220))} min`
+function authorOf(content: string): string | null {
+  const a = getSection(content, 'Autor').split('\n')[0].trim()
+  return (!a || a.toLowerCase().startsWith('não informado')) ? null : a
 }
 
-function summary(markdown: string) {
-  const text = plainText(markdown)
-  if (!text) return 'Uma curadoria do Observatório Lampas para acompanhar acontecimentos relevantes, fontes confiáveis e recursos de aprofundamento.'
-  return `${text.slice(0, 260)}${text.length > 260 ? '...' : ''}`
+function linkOf(content: string): string | null {
+  return getSection(content, 'Link original').match(/https?:\/\/[^\s\n]+/)?.[0] ?? null
 }
 
-function editorias(entry: BoletimEntry) {
-  return inferBoletimEditorias(entry.title, entry.tags)
+function lede(content: string): string {
+  const resumo = getSection(content, 'Resumo')
+  const text = plainText(resumo || content)
+  return text.slice(0, 320) + (text.length > 320 ? '…' : '')
 }
 
-async function loadEntry(id: string) {
+// ── Data ─────────────────────────────────────────────────
+
+async function loadEntry(id: string): Promise<Entry | null> {
   const supabase = await createClient()
   const { data } = await supabase
     .from('boletim_entries')
@@ -58,9 +74,10 @@ async function loadEntry(id: string) {
     .eq('id', id)
     .eq('published', true)
     .maybeSingle()
-
-  return data as BoletimEntry | null
+  return data as Entry | null
 }
+
+// ── Metadata ─────────────────────────────────────────────
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { id } = await params
@@ -68,162 +85,282 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   if (!entry) return { title: 'Matéria não encontrada — Observatório Lampas' }
   return {
     title: `${entry.title} — Observatório Lampas`,
-    description: summary(entry.content),
+    description: lede(entry.content),
   }
 }
+
+// ── Page ─────────────────────────────────────────────────
 
 export default async function BoletimArticlePage({ params }: Props) {
   const { id } = await params
   const entry = await loadEntry(id)
   if (!entry) notFound()
 
-  const areas = editorias(entry)
+  const source = sourceOf(entry.content)
+  const author = authorOf(entry.content)
+  const originalLink = linkOf(entry.content)
+  const categories = inferBoletimEditorias(entry.title, entry.tags)
+
+  const conteudo = getSection(entry.content, 'Resumo do conteúdo')
+  const leituraAdicional = getSection(entry.content, 'Leitura adicional')
 
   return (
-    <main className="article-shell">
-      <header className="article-topbar">
-        <Link href="/" className="brand" aria-label="Lampas — página inicial">
+    <main className="art-shell">
+
+      {/* ── Topbar ── */}
+      <header className="art-topbar">
+        <Link href="/" className="art-brand" aria-label="Lampas">
           <LampasLogo height={34} />
         </Link>
-        <Link href="/boletim" className="back-link">Observatório Lampas</Link>
+        <div className="art-topbar-right">
+          <Link href="/boletim" className="art-back">← Observatório Lampas</Link>
+          {originalLink && (
+            <a href={originalLink} target="_blank" rel="noopener noreferrer" className="art-source-cta">
+              Ler na fonte original ↗
+            </a>
+          )}
+        </div>
       </header>
 
-      <article className="article">
-        <div className="article-rule" />
-        <p className="kicker">{areas.join(' · ')}</p>
-        <h1>{entry.title}</h1>
-        <p className="subtitle">{summary(entry.content)}</p>
+      <article className="art-body">
 
-        <div className="byline">
-          <span>Equipe Lampas</span>
-          <time dateTime={entry.release_date}>{formatDate(entry.release_date)}</time>
+        {/* ── Article header ── */}
+        <div className="art-rule-thick" />
+        <p className="art-categories">{categories.join(' · ')}</p>
+        <p className="art-source-label">{source}</p>
+        <h1 className="art-title">{entry.title}</h1>
+
+        <div className="art-byline">
+          {author && <span>{author}</span>}
+          <time dateTime={entry.release_date}>{fmtDate(entry.release_date)}</time>
           <span>{readTime(entry.content)} de leitura</span>
         </div>
-        <div className="article-rule thin" />
 
-        <section className="executive">
-          <h2>Resumo executivo</h2>
-          <p>{summary(entry.content)}</p>
-        </section>
+        <div className="art-rule-thin" />
 
-        <section className="body">
-          <h2>Matéria</h2>
-          <MarkdownRenderer content={entry.content} moduleColor="#9a6a1f" />
-        </section>
+        {/* ── Lede ── */}
+        <p className="art-lede">{lede(entry.content)}</p>
 
-        <section className="resources">
-          <h2>Para aprofundar</h2>
-          <div>
-            {areas.map(area => <span key={area}>{area}</span>)}
-            {entry.tags.map(tag => <span key={tag}>{tag}</span>)}
+        {/* ── Body ── */}
+        {conteudo && (
+          <section className="art-content">
+            <MarkdownRenderer content={conteudo} moduleColor="#9a6a1f" />
+          </section>
+        )}
+
+        {/* ── Source CTA ── */}
+        {originalLink && (
+          <div className="art-cta-block">
+            <a href={originalLink} target="_blank" rel="noopener noreferrer" className="art-cta-btn">
+              Ler na fonte original →
+            </a>
+            <span className="art-cta-source">{source}</span>
           </div>
-        </section>
+        )}
+
+        {/* ── Leitura adicional ── */}
+        {leituraAdicional && (
+          <section className="art-further">
+            <h2 className="art-further-title">Leitura adicional</h2>
+            <MarkdownRenderer content={leituraAdicional} moduleColor="#9a6a1f" />
+          </section>
+        )}
+
+        {/* ── Tags ── */}
+        {entry.tags.length > 0 && (
+          <div className="art-tags">
+            {entry.tags.map(tag => (
+              <span key={tag} className="art-tag">{tag}</span>
+            ))}
+          </div>
+        )}
+
       </article>
 
       <style>{`
-        .article-shell {
+        .art-shell {
           min-height: 100vh;
           background: #f3efe6;
           color: #15110c;
-          font-family: inherit;
+          font-family: system-ui, -apple-system, sans-serif;
         }
-        .article-topbar {
+
+        /* ── Topbar ── */
+        .art-topbar {
           display: flex;
           align-items: center;
           justify-content: space-between;
+          gap: 1rem;
           padding: 1rem clamp(1.25rem, 4vw, 3rem);
           border-bottom: 1px solid #d8cdbd;
           background: #f8f4ed;
+          flex-wrap: wrap;
         }
-        .brand { display: flex; text-decoration: none; }
-        .back-link {
+        .art-brand { display: flex; text-decoration: none; }
+        .art-topbar-right {
+          display: flex;
+          align-items: center;
+          gap: 1.25rem;
+          flex-wrap: wrap;
+        }
+        .art-back {
           color: #6d6256;
+          font-size: 0.84rem;
           text-decoration: none;
-          font-size: 0.86rem;
-          font-weight: 650;
+          font-weight: 600;
         }
-        .article {
-          max-width: 850px;
+        .art-back:hover { color: #9a6a1f; }
+        .art-source-cta {
+          padding: 0.4rem 0.9rem;
+          border: 1px solid #9a6a1f;
+          border-radius: 4px;
+          color: #9a6a1f;
+          font-size: 0.78rem;
+          font-weight: 700;
+          text-decoration: none;
+          white-space: nowrap;
+        }
+        .art-source-cta:hover {
+          background: #9a6a1f;
+          color: #fff;
+        }
+
+        /* ── Article body ── */
+        .art-body {
+          max-width: 760px;
           margin: 0 auto;
-          padding: 2rem clamp(1.25rem, 4vw, 2rem) 4rem;
+          padding: 2rem clamp(1.25rem, 4vw, 2rem) 5rem;
         }
-        .article-rule {
+
+        /* ── Rules ── */
+        .art-rule-thick {
           height: 3px;
           border-top: 1px solid #15110c;
           border-bottom: 1px solid #15110c;
-          margin-bottom: 1.25rem;
+          margin-bottom: 1.4rem;
         }
-        .article-rule.thin {
-          height: 1px;
+        .art-rule-thin {
+          border: none;
           border-top: 1px solid #d8cdbd;
-          border-bottom: none;
-          margin: 1.2rem 0 1.5rem;
+          margin: 1.25rem 0 1.75rem;
         }
-        .kicker {
-          margin: 0 0 0.65rem;
-          color: #9a6a1f;
-          font-size: 0.75rem;
-          font-weight: 850;
+
+        /* ── Header ── */
+        .art-categories {
+          margin: 0 0 0.3rem;
+          color: #7a6d5d;
+          font-size: 0.72rem;
+          font-weight: 700;
           text-transform: uppercase;
           letter-spacing: 0.08em;
         }
-        h1 {
+        .art-source-label {
+          margin: 0 0 0.65rem;
+          color: #9a6a1f;
+          font-size: 0.8rem;
+          font-weight: 800;
+          text-transform: uppercase;
+          letter-spacing: 0.1em;
+        }
+        .art-title {
           margin: 0;
           font-family: Georgia, 'Times New Roman', serif;
-          font-size: clamp(2.25rem, 6vw, 4.6rem);
+          font-size: clamp(2.1rem, 5vw, 3.8rem);
+          font-weight: 700;
           line-height: 0.98;
-          letter-spacing: 0;
+          letter-spacing: -0.01em;
         }
-        .subtitle {
-          margin: 0.9rem 0 0;
-          max-width: 760px;
-          color: #5b5147;
-          font-size: 1.08rem;
-          line-height: 1.58;
-        }
-        .byline {
+        .art-byline {
           display: flex;
           flex-wrap: wrap;
-          gap: 0.55rem 0.9rem;
-          margin-top: 1rem;
+          gap: 0.5rem 1rem;
+          margin-top: 1.1rem;
+          color: #7a6d5d;
+          font-size: 0.78rem;
+        }
+
+        /* ── Lede ── */
+        .art-lede {
+          margin: 0 0 1.75rem;
+          font-family: Georgia, 'Times New Roman', serif;
+          font-size: 1.18rem;
+          line-height: 1.62;
+          color: #3a3028;
+          font-style: italic;
+        }
+
+        /* ── Content ── */
+        .art-content {
+          padding-bottom: 2rem;
+          border-bottom: 1px solid #d8cdbd;
+        }
+        .art-content p {
+          color: #24201b;
+          line-height: 1.72;
+          font-size: 1.05rem;
+          margin: 0 0 1rem;
+        }
+
+        /* ── Source CTA block ── */
+        .art-cta-block {
+          display: flex;
+          align-items: center;
+          gap: 1rem;
+          padding: 1.5rem 0;
+          border-bottom: 1px solid #d8cdbd;
+          flex-wrap: wrap;
+        }
+        .art-cta-btn {
+          padding: 0.6rem 1.25rem;
+          background: #9a6a1f;
+          color: #fff;
+          font-size: 0.85rem;
+          font-weight: 700;
+          text-decoration: none;
+          border-radius: 4px;
+          white-space: nowrap;
+        }
+        .art-cta-btn:hover { background: #7f5619; }
+        .art-cta-source {
           color: #7a6d5d;
           font-size: 0.8rem;
         }
-        .executive,
-        .body,
-        .resources {
-          padding: 1.3rem 0;
+
+        /* ── Further reading ── */
+        .art-further {
+          padding: 1.5rem 0;
           border-bottom: 1px solid #d8cdbd;
         }
-        .executive h2,
-        .body h2,
-        .resources h2 {
-          margin: 0 0 0.55rem;
+        .art-further-title {
+          margin: 0 0 0.75rem;
           font-family: Georgia, 'Times New Roman', serif;
-          font-size: 1.22rem;
-          letter-spacing: 0;
-        }
-        .executive p {
-          margin: 0;
+          font-size: 1rem;
+          font-weight: 700;
+          text-transform: uppercase;
+          letter-spacing: 0.06em;
           color: #5b5147;
-          line-height: 1.62;
         }
-        .body :global(p) {
-          color: #24201b;
-          line-height: 1.72;
-        }
-        .resources div {
+
+        /* ── Tags ── */
+        .art-tags {
           display: flex;
           flex-wrap: wrap;
-          gap: 0.45rem;
+          gap: 0.4rem;
+          padding-top: 1.25rem;
         }
-        .resources span {
+        .art-tag {
           border: 1px solid #d8cdbd;
           color: #5b5147;
-          padding: 0.28rem 0.5rem;
-          font-size: 0.76rem;
+          padding: 0.25rem 0.55rem;
+          font-size: 0.74rem;
+          letter-spacing: 0.02em;
+        }
+
+        @media (max-width: 560px) {
+          .art-topbar-right { gap: 0.75rem; }
         }
       `}</style>
+
     </main>
   )
 }
