@@ -110,6 +110,34 @@ function pontoElements(p: PontoPrincipal, key: PontoElementKey): PontoElement[] 
   return []
 }
 
+function escapeHtml(s: string) {
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+}
+
+function renderInlineFormatting(s: string) {
+  return escapeHtml(s)
+    .replace(/\*\*([^*\n]+)\*\*/g, '<strong>$1</strong>')
+    .replace(/(^|[^*])\*([^*\n]+)\*(?!\*)/g, '$1<em>$2</em>')
+}
+
+function renderFormattedText(s: string) {
+  const blocks = s.trim().split(/\n{2,}/).filter(Boolean)
+
+  return blocks.map(block => {
+    const lines = block.split('\n')
+    const isList = lines.every(line => /^\s*(-|\*|•)\s+/.test(line) || line.trim() === '')
+
+    if (isList) {
+      return `<ul class="formatted-list">${lines
+        .filter(line => line.trim())
+        .map(line => `<li>${renderInlineFormatting(line.replace(/^\s*(-|\*|•)\s+/, ''))}</li>`)
+        .join('')}</ul>`
+    }
+
+    return `<p>${lines.map(renderInlineFormatting).join('<br>')}</p>`
+  }).join('')
+}
+
 // ── Constants ──────────────────────────────────────────────────────────────
 
 const BLOCK_TYPES: { type: BlockType; label: string }[] = [
@@ -368,6 +396,121 @@ function ContextMenu({ items, onClose, style }: {
   )
 }
 
+// ── RichTextarea ──────────────────────────────────────────────────────────
+
+function RichTextarea({
+  value,
+  onChange,
+  placeholder,
+  rows = 3,
+  autoFocus,
+  style,
+  toolbarColor = 'var(--ai)',
+}: {
+  value: string
+  onChange: (value: string) => void
+  placeholder: string
+  rows?: number
+  autoFocus?: boolean
+  style?: React.CSSProperties
+  toolbarColor?: string
+}) {
+  const ref = useRef<HTMLTextAreaElement | null>(null)
+
+  function updateSelection(next: string, start: number, end: number) {
+    onChange(next)
+    window.setTimeout(() => {
+      const textarea = ref.current
+      if (!textarea) return
+      textarea.focus()
+      textarea.setSelectionRange(start, end)
+    }, 0)
+  }
+
+  function wrap(prefix: string, suffix = prefix) {
+    const textarea = ref.current
+    if (!textarea) return
+    const start = textarea.selectionStart
+    const end = textarea.selectionEnd
+    const selected = value.slice(start, end) || 'texto'
+    const replacement = `${prefix}${selected}${suffix}`
+    updateSelection(
+      value.slice(0, start) + replacement + value.slice(end),
+      start + prefix.length,
+      start + prefix.length + selected.length
+    )
+  }
+
+  function addBullets() {
+    const textarea = ref.current
+    if (!textarea) return
+    const start = textarea.selectionStart
+    const end = textarea.selectionEnd
+    const selectionStart = value.lastIndexOf('\n', Math.max(0, start - 1)) + 1
+    const selectionEndBreak = value.indexOf('\n', end)
+    const selectionEnd = selectionEndBreak === -1 ? value.length : selectionEndBreak
+    const selected = value.slice(selectionStart, selectionEnd) || 'Novo item'
+    const replacement = selected
+      .split('\n')
+      .map(line => line.trim() ? line.replace(/^\s*(-|\*|•)\s+/, '- ') : line)
+      .map(line => line.trim() && !/^\s*(-|\*|•)\s+/.test(line) ? `- ${line}` : line)
+      .join('\n')
+
+    updateSelection(
+      value.slice(0, selectionStart) + replacement + value.slice(selectionEnd),
+      selectionStart,
+      selectionStart + replacement.length
+    )
+  }
+
+  const toolButton = (label: string, title: string, onClick: () => void, fontStyle?: React.CSSProperties) => (
+    <button
+      type="button"
+      title={title}
+      onClick={onClick}
+      style={{
+        width: '24px',
+        height: '24px',
+        display: 'inline-flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        background: 'transparent',
+        border: '1px solid var(--border-subtle)',
+        borderRadius: '4px',
+        color: 'var(--text-muted)',
+        cursor: 'pointer',
+        fontFamily: 'inherit',
+        fontSize: '0.74rem',
+        lineHeight: 1,
+        ...fontStyle,
+      }}
+      onMouseEnter={e => { e.currentTarget.style.borderColor = toolbarColor; e.currentTarget.style.color = toolbarColor }}
+      onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border-subtle)'; e.currentTarget.style.color = 'var(--text-muted)' }}
+    >
+      {label}
+    </button>
+  )
+
+  return (
+    <div>
+      <div style={{ display: 'flex', gap: '0.22rem', marginBottom: '0.28rem' }}>
+        {toolButton('B', 'Negrito', () => wrap('**'), { fontWeight: 900 })}
+        {toolButton('I', 'Itálico', () => wrap('*'), { fontStyle: 'italic', fontFamily: 'Georgia, serif' })}
+        {toolButton('•', 'Marcadores', addBullets, { fontSize: '0.95rem' })}
+      </div>
+      <textarea
+        ref={ref}
+        value={value}
+        onChange={e => onChange(e.target.value)}
+        placeholder={placeholder}
+        autoFocus={autoFocus}
+        rows={rows}
+        style={style}
+      />
+    </div>
+  )
+}
+
 // ── NoteArea ───────────────────────────────────────────────────────────────
 
 function NoteArea({ value, onChange, onAskAI, aiPrompt, color = 'var(--ai)' }: {
@@ -384,12 +527,13 @@ function NoteArea({ value, onChange, onAskAI, aiPrompt, color = 'var(--ai)' }: {
       padding: '0.5rem 0.62rem 0.35rem',
       marginTop: '0.25rem',
     }}>
-      <textarea
+      <RichTextarea
         value={value}
-        onChange={e => onChange(e.target.value)}
+        onChange={onChange}
         placeholder="Explicação, argumento, citação, referência bíblica, observação pastoral, lembrete de pregação…"
         autoFocus
         rows={3}
+        toolbarColor={color}
         style={{
           width: '100%', background: 'transparent', border: 'none',
           color: 'var(--text-primary)', fontFamily: 'inherit',
@@ -712,11 +856,12 @@ function DesenvolvimentoEditor({ pontos, project, onUpdate, onAskAI }: DevEditor
                 )}
               </div>
 
-              <textarea
+              <RichTextarea
                 value={item.text}
-                onChange={e => patchElement(ponto.id, key, item.id, { text: e.target.value })}
+                onChange={text => patchElement(ponto.id, key, item.id, { text })}
                 placeholder={meta.placeholder}
                 rows={key === 'citacoes' || key === 'observacoes' ? 2 : 3}
+                toolbarColor={meta.color}
                 style={{
                   width: '100%', background: 'transparent', border: 'none',
                   borderBottom: '1px solid transparent',
@@ -724,8 +869,6 @@ function DesenvolvimentoEditor({ pontos, project, onUpdate, onAskAI }: DevEditor
                   fontSize: '0.85rem', lineHeight: 1.7,
                   padding: '0 0 0.18rem', resize: 'vertical', outline: 'none',
                 }}
-                onFocus={e => e.currentTarget.style.borderBottomColor = 'var(--border-subtle)'}
-                onBlur={e => e.currentTarget.style.borderBottomColor = 'transparent'}
               />
 
               {noteOpen && (
@@ -780,10 +923,12 @@ function DesenvolvimentoEditor({ pontos, project, onUpdate, onAskAI }: DevEditor
               border: '1px solid var(--border-subtle)',
               borderLeft: `2px solid ${isOpen ? AI_COLOR : `${AI_COLOR}44`}`,
               borderRadius: '6px',
-              background: 'var(--surface)',
+              background: isOpen ? '#fff' : 'var(--surface)',
+              boxShadow: isOpen ? '0 14px 32px rgba(15, 23, 42, 0.08)' : 'none',
               marginBottom: '0.5rem',
               overflow: 'visible',
               position: 'relative',
+              transition: 'background 0.16s ease, box-shadow 0.16s ease, border-color 0.16s ease',
             }}
           >
             {/* ── Ponto header */}
@@ -1106,10 +1251,8 @@ function DesenvolvimentoEditor({ pontos, project, onUpdate, onAskAI }: DevEditor
 function buildFinalSermonDocument(blocks: SermonBlock[], project: Project) {
   const ref   = `${project.book} ${project.passage_ref}`
   const title = project.title || `Sermão — ${ref}`
-  const esc   = (s: string) => s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
-  const lines = (s: string) => esc(s).split('\n').join('<br>')
-  const paras = (s: string) => s.trim().split(/\n{2,}/).map(p =>
-    `<p>${lines(p)}</p>`).join('')
+  const esc   = escapeHtml
+  const paras = renderFormattedText
 
   const pages: string[] = []
   let pontoIdx = 0
@@ -1324,6 +1467,13 @@ function buildFinalSermonDocument(blocks: SermonBlock[], project: Project) {
 .sermon-final-document .prose p + p {
   margin-top: 0.85em;
 }
+.sermon-final-document .formatted-list {
+  margin: 0.4rem 0 0.9rem 1.25rem;
+  padding: 0;
+}
+.sermon-final-document .formatted-list li + li {
+  margin-top: 0.28rem;
+}
 @media print {
   @page { size: A4; margin: 0; }
   body { margin: 0; background: #fff !important; }
@@ -1369,6 +1519,7 @@ export default function SermonBuilderWorkspace({
   const [saving,     setSaving]     = useState(false)
   const [savedAt,    setSavedAt]    = useState<Date | null>(null)
   const [activeMenu, setActiveMenu] = useState<string | null>(null)
+  const [activeBlockId, setActiveBlockId] = useState<string | null>(null)
   const [renamingId, setRenamingId] = useState<string | null>(null)
   const [renameVal,  setRenameVal]  = useState('')
   const [addOpen,    setAddOpen]    = useState(false)
@@ -1831,17 +1982,22 @@ h2 .roman {
           const isLast   = idx === blocks.length - 1
           const menuOpen = activeMenu === block.id
           const isDev    = block.type === 'desenvolvimento'
+          const isBlockActive = activeBlockId === block.id || menuOpen || renamingId === block.id
 
           return (
             <div
               key={block.id}
+              onMouseDownCapture={() => setActiveBlockId(block.id)}
+              onFocusCapture={() => setActiveBlockId(block.id)}
               style={{
-                border: '1px solid var(--border-subtle)',
+                border: isBlockActive ? '1px solid rgba(148, 163, 184, 0.38)' : '1px solid var(--border-subtle)',
                 borderLeft: `3px solid ${color}`,
                 borderRadius: '7px',
-                background: 'var(--surface)',
+                background: isBlockActive ? '#fff' : 'var(--surface)',
+                boxShadow: isBlockActive ? '0 18px 42px rgba(15, 23, 42, 0.10)' : 'none',
                 position: 'relative',
                 overflow: 'visible',
+                transition: 'background 0.16s ease, box-shadow 0.16s ease, border-color 0.16s ease',
               }}
             >
               {/* Block header */}
@@ -1944,10 +2100,12 @@ h2 .roman {
                   onAskAI={onAskAI}
                 />
               ) : (
-                <textarea
+                <RichTextarea
                   value={block.content}
-                  onChange={e => updateContent(block.id, e.target.value)}
+                  onChange={content => updateContent(block.id, content)}
                   placeholder={`Escreva o ${block.title.toLowerCase()}…`}
+                  rows={5}
+                  toolbarColor={color}
                   style={{
                     width: '100%', minHeight: '110px',
                     background: 'transparent', border: 'none',
