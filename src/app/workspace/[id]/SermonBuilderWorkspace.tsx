@@ -120,7 +120,19 @@ function renderInlineFormatting(s: string) {
     .replace(/(^|[^*])\*([^*\n]+)\*(?!\*)/g, '$1<em>$2</em>')
 }
 
+function sanitizeRichHtml(html: string) {
+  return html
+    .replace(/<script[\s\S]*?<\/script>/gi, '')
+    .replace(/<style[\s\S]*?<\/style>/gi, '')
+    .replace(/<\s*(\/?)\s*(strong|b|em|i|ul|ol|li|br|p|div)\b[^>]*>/gi, (_, close: string, tag: string) => `<${close}${tag.toLowerCase()}>`)
+    .replace(/<(?!\/?(strong|b|em|i|ul|ol|li|br|p|div)\b)[^>]+>/gi, '')
+}
+
 function renderFormattedText(s: string) {
+  if (/<\/?(strong|b|em|i|ul|ol|li|br|p|div)\b/i.test(s)) {
+    return sanitizeRichHtml(s)
+  }
+
   const blocks = s.trim().split(/\n{2,}/).filter(Boolean)
 
   return blocks.map(block => {
@@ -136,6 +148,11 @@ function renderFormattedText(s: string) {
 
     return `<p>${lines.map(renderInlineFormatting).join('<br>')}</p>`
   }).join('')
+}
+
+function richEditorHtml(s: string) {
+  if (!s.trim()) return ''
+  return renderFormattedText(s)
 }
 
 // ── Constants ──────────────────────────────────────────────────────────────
@@ -396,9 +413,9 @@ function ContextMenu({ items, onClose, style }: {
   )
 }
 
-// ── RichTextarea ──────────────────────────────────────────────────────────
+// ── RichEditor ────────────────────────────────────────────────────────────
 
-function RichTextarea({
+function RichEditor({
   value,
   onChange,
   placeholder,
@@ -415,59 +432,59 @@ function RichTextarea({
   style?: React.CSSProperties
   toolbarColor?: string
 }) {
-  const ref = useRef<HTMLTextAreaElement | null>(null)
+  const ref = useRef<HTMLDivElement | null>(null)
+  const [focused, setFocused] = useState(false)
 
-  function updateSelection(next: string, start: number, end: number) {
-    onChange(next)
-    window.setTimeout(() => {
-      const textarea = ref.current
-      if (!textarea) return
-      textarea.focus()
-      textarea.setSelectionRange(start, end)
-    }, 0)
+  useEffect(() => {
+    const editor = ref.current
+    if (!editor || focused) return
+    const next = richEditorHtml(value)
+    if (editor.innerHTML !== next) editor.innerHTML = next
+  }, [value, focused])
+
+  useEffect(() => {
+    if (autoFocus) ref.current?.focus()
+  }, [autoFocus])
+
+  function syncValue() {
+    const editor = ref.current
+    if (!editor) return
+    const text = editor.innerText.replace(/\u00a0/g, ' ').trim()
+    onChange(text ? sanitizeRichHtml(editor.innerHTML) : '')
   }
 
-  function wrap(prefix: string, suffix = prefix) {
-    const textarea = ref.current
-    if (!textarea) return
-    const start = textarea.selectionStart
-    const end = textarea.selectionEnd
-    const selected = value.slice(start, end) || 'texto'
-    const replacement = `${prefix}${selected}${suffix}`
-    updateSelection(
-      value.slice(0, start) + replacement + value.slice(end),
-      start + prefix.length,
-      start + prefix.length + selected.length
-    )
+  function runCommand(command: 'bold' | 'italic' | 'insertUnorderedList') {
+    const editor = ref.current
+    if (!editor) return
+    editor.focus()
+    document.execCommand(command)
+    syncValue()
   }
 
-  function addBullets() {
-    const textarea = ref.current
-    if (!textarea) return
-    const start = textarea.selectionStart
-    const end = textarea.selectionEnd
-    const selectionStart = value.lastIndexOf('\n', Math.max(0, start - 1)) + 1
-    const selectionEndBreak = value.indexOf('\n', end)
-    const selectionEnd = selectionEndBreak === -1 ? value.length : selectionEndBreak
-    const selected = value.slice(selectionStart, selectionEnd) || 'Novo item'
-    const replacement = selected
-      .split('\n')
-      .map(line => line.trim() ? line.replace(/^\s*(-|\*|•)\s+/, '- ') : line)
-      .map(line => line.trim() && !/^\s*(-|\*|•)\s+/.test(line) ? `- ${line}` : line)
-      .join('\n')
+  function handlePaste(e: React.ClipboardEvent<HTMLDivElement>) {
+    e.preventDefault()
+    const text = e.clipboardData.getData('text/plain')
+    document.execCommand('insertText', false, text)
+    syncValue()
+  }
 
-    updateSelection(
-      value.slice(0, selectionStart) + replacement + value.slice(selectionEnd),
-      selectionStart,
-      selectionStart + replacement.length
-    )
+  function handleKeyDown(e: React.KeyboardEvent<HTMLDivElement>) {
+    if (!e.metaKey && !e.ctrlKey) return
+    if (e.key.toLowerCase() === 'b') {
+      e.preventDefault()
+      runCommand('bold')
+    }
+    if (e.key.toLowerCase() === 'i') {
+      e.preventDefault()
+      runCommand('italic')
+    }
   }
 
   const toolButton = (label: string, title: string, onClick: () => void, fontStyle?: React.CSSProperties) => (
     <button
       type="button"
       title={title}
-      onClick={onClick}
+      onMouseDown={e => { e.preventDefault(); onClick() }}
       style={{
         width: '24px',
         height: '24px',
@@ -493,20 +510,61 @@ function RichTextarea({
 
   return (
     <div>
+      <style>{`
+        .sermon-rich-editor ul,
+        .sermon-rich-editor ol {
+          margin: 0.35rem 0 0.55rem 1.15rem;
+          padding: 0;
+        }
+        .sermon-rich-editor li + li {
+          margin-top: 0.22rem;
+        }
+        .sermon-rich-editor p {
+          margin: 0 0 0.55rem;
+        }
+        .sermon-rich-editor p:last-child {
+          margin-bottom: 0;
+        }
+      `}</style>
       <div style={{ display: 'flex', gap: '0.22rem', marginBottom: '0.28rem' }}>
-        {toolButton('B', 'Negrito', () => wrap('**'), { fontWeight: 900 })}
-        {toolButton('I', 'Itálico', () => wrap('*'), { fontStyle: 'italic', fontFamily: 'Georgia, serif' })}
-        {toolButton('•', 'Marcadores', addBullets, { fontSize: '0.95rem' })}
+        {toolButton('B', 'Negrito', () => runCommand('bold'), { fontWeight: 900 })}
+        {toolButton('I', 'Itálico', () => runCommand('italic'), { fontStyle: 'italic', fontFamily: 'Georgia, serif' })}
+        {toolButton('•', 'Marcadores', () => runCommand('insertUnorderedList'), { fontSize: '0.95rem' })}
       </div>
-      <textarea
+      <div
         ref={ref}
-        value={value}
-        onChange={e => onChange(e.target.value)}
-        placeholder={placeholder}
-        autoFocus={autoFocus}
-        rows={rows}
-        style={style}
+        className="sermon-rich-editor"
+        contentEditable
+        suppressContentEditableWarning
+        aria-label={placeholder}
+        data-placeholder={placeholder}
+        onInput={syncValue}
+        onBlur={() => { setFocused(false); syncValue() }}
+        onFocus={() => { setFocused(true); if (ref.current && ref.current.innerHTML !== richEditorHtml(value)) ref.current.innerHTML = richEditorHtml(value) }}
+        onKeyDown={handleKeyDown}
+        onPaste={handlePaste}
+        style={{
+          minHeight: `${Math.max(rows, 1) * 1.7}em`,
+          whiteSpace: 'pre-wrap',
+          ...style,
+        }}
       />
+      {!value.trim() && !focused && (
+        <div
+          aria-hidden
+          style={{
+            marginTop: `-${Math.max(rows, 1) * 1.7}em`,
+            minHeight: `${Math.max(rows, 1) * 1.7}em`,
+            pointerEvents: 'none',
+            color: 'var(--text-muted)',
+            opacity: 0.62,
+            fontSize: typeof style?.fontSize === 'string' ? style.fontSize : '0.85rem',
+            lineHeight: style?.lineHeight ?? 1.7,
+          }}
+        >
+          {placeholder}
+        </div>
+      )}
     </div>
   )
 }
@@ -527,7 +585,7 @@ function NoteArea({ value, onChange, onAskAI, aiPrompt, color = 'var(--ai)' }: {
       padding: '0.5rem 0.62rem 0.35rem',
       marginTop: '0.25rem',
     }}>
-      <RichTextarea
+      <RichEditor
         value={value}
         onChange={onChange}
         placeholder="Explicação, argumento, citação, referência bíblica, observação pastoral, lembrete de pregação…"
@@ -856,7 +914,7 @@ function DesenvolvimentoEditor({ pontos, project, onUpdate, onAskAI }: DevEditor
                 )}
               </div>
 
-              <RichTextarea
+              <RichEditor
                 value={item.text}
                 onChange={text => patchElement(ponto.id, key, item.id, { text })}
                 placeholder={meta.placeholder}
@@ -1467,11 +1525,17 @@ function buildFinalSermonDocument(blocks: SermonBlock[], project: Project) {
 .sermon-final-document .prose p + p {
   margin-top: 0.85em;
 }
-.sermon-final-document .formatted-list {
+.sermon-final-document .formatted-list,
+.sermon-final-document .prose ul,
+.sermon-final-document .ilustracao ul,
+.sermon-final-document .aplicacao ul {
   margin: 0.4rem 0 0.9rem 1.25rem;
   padding: 0;
 }
-.sermon-final-document .formatted-list li + li {
+.sermon-final-document .formatted-list li + li,
+.sermon-final-document .prose li + li,
+.sermon-final-document .ilustracao li + li,
+.sermon-final-document .aplicacao li + li {
   margin-top: 0.28rem;
 }
 @media print {
@@ -2100,7 +2164,7 @@ h2 .roman {
                   onAskAI={onAskAI}
                 />
               ) : (
-                <RichTextarea
+                <RichEditor
                   value={block.content}
                   onChange={content => updateContent(block.id, content)}
                   placeholder={`Escreva o ${block.title.toLowerCase()}…`}
