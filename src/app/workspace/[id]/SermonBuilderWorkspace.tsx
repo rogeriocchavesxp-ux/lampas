@@ -655,10 +655,7 @@ function DesenvolvimentoEditor({ pontos, project, onUpdate, onAskAI }: DevEditor
         onMouseLeave={() => setHoveredSection(null)}
         style={{ borderTop: '1px solid var(--border-subtle)', paddingTop: '0.58rem' }}
       >
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.25rem', minHeight: '18px' }}>
-          <span style={{ ...secLabel, color: key === 'aplicacoes' ? '#4a9a82' : 'var(--text-muted)' }}>
-            {meta.plural}
-          </span>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', marginBottom: isHovered ? '0.25rem' : 0, minHeight: isHovered ? '18px' : 0 }}>
           {isHovered && (
             <div style={{ display: 'flex', gap: '0.2rem' }}>
               {aiAction && ghostBtn('✦ IA', aiAction, meta.color)}
@@ -1106,6 +1103,253 @@ function DesenvolvimentoEditor({ pontos, project, onUpdate, onAskAI }: DevEditor
 
 // ── SermonBuilderWorkspace ────────────────────────────────────────────────
 
+function buildFinalSermonDocument(blocks: SermonBlock[], project: Project) {
+  const ref   = `${project.book} ${project.passage_ref}`
+  const title = project.title || `Sermão — ${ref}`
+  const esc   = (s: string) => s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+  const lines = (s: string) => esc(s).split('\n').join('<br>')
+  const paras = (s: string) => s.trim().split(/\n{2,}/).map(p =>
+    `<p>${lines(p)}</p>`).join('')
+
+  const pages: string[] = []
+  let pontoIdx = 0
+  const totalPontos = blocks.filter(b => b.type === 'desenvolvimento').flatMap(b => b.pontos ?? []).length
+
+  pages.push(`<section class="page cover">
+    <div class="cover-eyebrow">SERMÃO</div>
+    <h1>${esc(title)}</h1>
+    <dl class="sermon-meta">
+      <div><dt>Título</dt><dd>${esc(title)}</dd></div>
+      <div><dt>Texto</dt><dd>${esc(ref)}</dd></div>
+    </dl>
+    <div class="cover-rule"></div>
+  </section>`)
+
+  for (const block of blocks) {
+    if (block.type === 'desenvolvimento' && block.pontos?.length) {
+      for (const ponto of block.pontos) {
+        pontoIdx++
+        const subs = ponto.subpontos.filter(s => s.text.trim())
+        const ilustracoes = pontoElements(ponto, 'ilustracoes').filter(item => item.text.trim())
+        const aplicacoes = pontoElements(ponto, 'aplicacoes').filter(item => item.text.trim())
+        const citacoes = pontoElements(ponto, 'citacoes').filter(item => item.text.trim())
+        const observacoes = pontoElements(ponto, 'observacoes').filter(item => item.text.trim())
+        const renderItems = (items: PontoElement[], label: string, className: string) => items.map((item, index) => `
+          <div class="sep"></div>
+          <div class="label">${esc(item.title?.trim() || (items.length > 1 ? `${label} ${index + 1}` : label))}</div>
+          <div class="${className}">${paras(item.text)}</div>`
+        ).join('')
+
+        pages.push(`<section class="page">
+          <div class="pg-header">
+            <span>${esc(ref)}</span>
+            <span>${pontoIdx} / ${totalPontos}</span>
+          </div>
+          <h2><span class="roman">${toRoman(pontoIdx)}.</span> ${esc(ponto.text || `Ponto ${pontoIdx}`)}</h2>
+          ${subs.length ? `<ol class="subs">${subs.map((s, index) =>
+            `<li><span class="sub-number">${index + 1}.</span><span>${esc(s.text)}</span></li>`
+          ).join('')}</ol>` : ''}
+          ${renderItems(ilustracoes, 'Ilustração', 'ilustracao')}
+          ${renderItems(aplicacoes, 'Aplicação', 'aplicacao')}
+          ${renderItems(citacoes, 'Citação', 'ilustracao')}
+          ${renderItems(observacoes, 'Observação', 'ilustracao')}
+          <div class="pg-footer">${esc(title)}</div>
+        </section>`)
+      }
+    } else if (block.content.trim()) {
+      pages.push(`<section class="page">
+        <div class="pg-header"><span>${esc(ref)}</span></div>
+        <h2 class="section-title">${esc(block.title)}</h2>
+        <div class="prose">${paras(block.content)}</div>
+        <div class="pg-footer">${esc(title)}</div>
+      </section>`)
+    }
+  }
+
+  const css = `
+.sermon-final-document, .sermon-final-document * { box-sizing: border-box; }
+.sermon-final-document {
+  font-family: "Times New Roman", Times, serif;
+  font-size: 13.5pt;
+  color: #111827;
+  line-height: 1.75;
+}
+.sermon-final-document .page {
+  width: 21cm;
+  min-height: 29.7cm;
+  padding: 2.4cm 3cm 2cm;
+  margin: 0 auto 1.5rem;
+  background: #fff;
+  box-shadow: 0 18px 44px rgba(15, 23, 42, 0.12);
+  display: flex;
+  flex-direction: column;
+  page-break-after: always;
+  break-after: page;
+}
+.sermon-final-document .page:last-child { page-break-after: avoid; break-after: avoid; margin-bottom: 0; }
+.sermon-final-document .cover {
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  gap: 0;
+}
+.sermon-final-document .cover-eyebrow {
+  font-family: system-ui, sans-serif;
+  font-size: 8pt;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: #6b7280;
+  margin-bottom: 2rem;
+}
+.sermon-final-document .cover h1 {
+  font-size: 26pt;
+  font-weight: bold;
+  line-height: 1.2;
+  max-width: 500px;
+  margin: 0 auto 2rem;
+  letter-spacing: -0.01em;
+}
+.sermon-final-document .sermon-meta {
+  width: 100%;
+  max-width: 420px;
+  margin: 0 auto 2.2rem;
+  text-align: left;
+  border-top: 0.5px solid #d1d5db;
+  border-bottom: 0.5px solid #d1d5db;
+  padding: 1rem 0;
+}
+.sermon-final-document .sermon-meta div {
+  display: grid;
+  grid-template-columns: 72px 1fr;
+  gap: 1rem;
+  padding: 0.28rem 0;
+}
+.sermon-final-document .sermon-meta dt {
+  font-family: system-ui, sans-serif;
+  font-size: 7.5pt;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #9ca3af;
+}
+.sermon-final-document .sermon-meta dd { margin: 0; color: #111827; }
+.sermon-final-document .cover-rule {
+  width: 72px;
+  height: 1.5px;
+  background: #111827;
+  margin: 0 auto;
+}
+.sermon-final-document .pg-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-family: system-ui, sans-serif;
+  font-size: 7.5pt;
+  color: #9ca3af;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  border-bottom: 0.5px solid #d8d8d8;
+  padding-bottom: 0.5rem;
+  margin-bottom: 2.4rem;
+}
+.sermon-final-document .pg-footer {
+  margin-top: auto;
+  padding-top: 1.4rem;
+  font-family: system-ui, sans-serif;
+  font-size: 7.5pt;
+  color: #c7c7c7;
+  text-align: center;
+  letter-spacing: 0.06em;
+}
+.sermon-final-document h2 {
+  font-size: 15.5pt;
+  font-weight: bold;
+  line-height: 1.25;
+  margin: 0 0 2rem;
+  letter-spacing: 0.01em;
+}
+.sermon-final-document h2 .roman {
+  display: inline-block;
+  margin-right: 0.45em;
+}
+.sermon-final-document .section-title {
+  font-size: 16pt;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-weight: bold;
+  margin-bottom: 1.8rem;
+}
+.sermon-final-document .subs {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 2rem 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.9em;
+}
+.sermon-final-document .subs li {
+  display: flex;
+  gap: 0.8em;
+  align-items: baseline;
+  font-size: 13.5pt;
+  line-height: 1.65;
+}
+.sermon-final-document .sub-number {
+  color: #6b7280;
+  flex-shrink: 0;
+  min-width: 1.25rem;
+  text-align: right;
+}
+.sermon-final-document .sep {
+  border: none;
+  border-top: 0.5px solid #d1d5db;
+  margin: 1.8rem 0 1.2rem;
+}
+.sermon-final-document .label {
+  font-family: system-ui, sans-serif;
+  font-size: 7.5pt;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: #6b7280;
+  margin-bottom: 0.8rem;
+}
+.sermon-final-document .ilustracao {
+  font-style: italic;
+  padding-left: 1.4em;
+  border-left: 2px solid #d1d5db;
+  margin-bottom: 0.5rem;
+  line-height: 1.75;
+}
+.sermon-final-document .ilustracao p + p,
+.sermon-final-document .aplicacao p + p,
+.sermon-final-document .prose p + p {
+  margin-top: 0.85em;
+}
+@media print {
+  @page { size: A4; margin: 0; }
+  body { margin: 0; background: #fff !important; }
+  .sermon-final-document { font-size: 13pt; }
+  .sermon-final-document .page {
+    width: 21cm;
+    min-height: 29.7cm;
+    margin: 0;
+    box-shadow: none;
+  }
+}`
+
+  const body = `<main class="sermon-final-document">${pages.join('\n')}</main>`
+  const html = `<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>${esc(title)}</title>
+<style>${css}</style>
+</head>
+<body>${body}</body>
+</html>`
+
+  return { title, css, body, html }
+}
+
 export default function SermonBuilderWorkspace({
   project, userId, existingSection, onUpdate, onAskAI,
 }: Props) {
@@ -1128,6 +1372,7 @@ export default function SermonBuilderWorkspace({
   const [renamingId, setRenamingId] = useState<string | null>(null)
   const [renameVal,  setRenameVal]  = useState('')
   const [addOpen,    setAddOpen]    = useState(false)
+  const [viewMode,   setViewMode]   = useState<'edit' | 'preview'>('edit')
 
   const blocksRef      = useRef(blocks)
   blocksRef.current    = blocks
@@ -1216,6 +1461,25 @@ export default function SermonBuilderWorkspace({
     const t = renameVal.trim()
     if (t) scheduleSave(blocksRef.current.map(b => b.id === id ? { ...b, title: t } : b))
     setRenamingId(null)
+  }
+
+  async function saveAndPreview() {
+    if (saveTimer.current) clearTimeout(saveTimer.current)
+    await performSave(blocksRef.current)
+    setViewMode('preview')
+    setActiveMenu(null)
+    setAddOpen(false)
+  }
+
+  function printFinalSermon() {
+    const { html } = buildFinalSermonDocument(blocksRef.current, project)
+    const win = window.open('', '_blank', 'width=960,height=760')
+    if (win) {
+      win.document.write(html)
+      win.document.close()
+      win.focus()
+      setTimeout(() => win.print(), 700)
+    }
   }
 
   function printSermon() {
@@ -1452,6 +1716,60 @@ h2 .roman {
   const savedLabel = saving ? 'salvando…'
     : savedAt ? `salvo ${savedAt.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}` : ''
 
+  const finalDocument = buildFinalSermonDocument(blocks, project)
+
+  if (viewMode === 'preview') {
+    return (
+      <div style={{ background: '#eef1f5', minHeight: '100vh', padding: '1.25rem clamp(0.75rem, 2vw, 2rem) 3rem' }}>
+        <div
+          style={{
+            maxWidth: '21cm',
+            margin: '0 auto 1rem',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            gap: '0.75rem',
+            flexWrap: 'wrap',
+          }}
+        >
+          <div>
+            <div style={{ fontSize: '0.65rem', color: 'var(--ai)', textTransform: 'uppercase', letterSpacing: '0.1em', fontWeight: 900 }}>
+              Visualização final
+            </div>
+            <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)', marginTop: '0.15rem' }}>
+              {project.book} {project.passage_ref} · {savedLabel}
+            </div>
+          </div>
+          <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+            <button
+              onClick={() => setViewMode('edit')}
+              style={{
+                background: '#fff', border: '1px solid var(--border)', borderRadius: '7px',
+                color: 'var(--text-secondary)', cursor: 'pointer', fontFamily: 'inherit',
+                fontSize: '0.8rem', fontWeight: 700, padding: '0.48rem 0.9rem',
+              }}
+            >
+              Editar
+            </button>
+            <button
+              onClick={printFinalSermon}
+              style={{
+                background: 'var(--ai)', border: '1px solid var(--ai)', borderRadius: '7px',
+                color: '#fff', cursor: 'pointer', fontFamily: 'inherit',
+                fontSize: '0.8rem', fontWeight: 800, padding: '0.48rem 0.95rem',
+              }}
+            >
+              Imprimir / PDF
+            </button>
+          </div>
+        </div>
+
+        <style>{finalDocument.css}</style>
+        <div dangerouslySetInnerHTML={{ __html: finalDocument.body }} />
+      </div>
+    )
+  }
+
   return (
     <div style={{ padding: '2rem clamp(1.2rem, 3vw, 2.5rem) 5rem', maxWidth: '860px', margin: '0 auto' }}>
 
@@ -1490,7 +1808,7 @@ h2 .roman {
           )}
           {blocks.some(b => blockHasContent(b)) && (
             <button
-              onClick={printSermon}
+              onClick={printFinalSermon}
               style={{
                 background: 'transparent', border: '1px solid var(--border)', borderRadius: '5px',
                 color: 'var(--text-muted)', cursor: 'pointer', fontFamily: 'inherit',
@@ -1691,6 +2009,43 @@ h2 .roman {
             ))}
           </div>
         )}
+      </div>
+
+      <div
+        style={{
+          marginTop: '1.35rem',
+          paddingTop: '1rem',
+          borderTop: '1px solid var(--border-subtle)',
+          display: 'flex',
+          justifyContent: 'flex-end',
+          gap: '0.55rem',
+          flexWrap: 'wrap',
+        }}
+      >
+        <button
+          onClick={() => setViewMode('edit')}
+          style={{
+            background: 'transparent', border: '1px solid var(--border)',
+            borderRadius: '7px', color: 'var(--text-muted)',
+            cursor: 'pointer', fontFamily: 'inherit',
+            fontSize: '0.82rem', padding: '0.5rem 1rem',
+          }}
+        >
+          Editar
+        </button>
+        <button
+          onClick={saveAndPreview}
+          disabled={saving}
+          style={{
+            background: 'var(--ai)', border: '1px solid var(--ai)',
+            borderRadius: '7px', color: '#fff',
+            cursor: saving ? 'wait' : 'pointer', fontFamily: 'inherit',
+            fontSize: '0.82rem', fontWeight: 800, padding: '0.5rem 1.1rem',
+            opacity: saving ? 0.75 : 1,
+          }}
+        >
+          {saving ? 'Salvando…' : 'Salvar e visualizar'}
+        </button>
       </div>
     </div>
   )
