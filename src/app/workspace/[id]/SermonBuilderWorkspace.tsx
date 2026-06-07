@@ -1735,7 +1735,10 @@ export default function SermonBuilderWorkspace({
     if (typeof window === 'undefined') return 'complete'
     return window.localStorage.getItem(printModeStorageKey) === 'reduced' ? 'reduced' : 'complete'
   })
-  const [printMenuOpen, setPrintMenuOpen] = useState(false)
+  const [previewDocument, setPreviewDocument] = useState<{
+    mode: PrintOutlineMode
+    document: ReturnType<typeof buildFinalSermonDocument>
+  } | null>(null)
   const [collapsedBlocks, setCollapsedBlocks] = useState<Set<string>>(() => {
     if (typeof window === 'undefined') return new Set()
     try {
@@ -1750,13 +1753,6 @@ export default function SermonBuilderWorkspace({
   const sectionIdRef   = useRef(existingSection?.id)
   sectionIdRef.current = existingSection?.id
   const saveTimer      = useRef<ReturnType<typeof setTimeout> | null>(null)
-
-  useEffect(() => {
-    if (!printMenuOpen) return
-    function closePrintMenu() { setPrintMenuOpen(false) }
-    document.addEventListener('mousedown', closePrintMenu)
-    return () => document.removeEventListener('mousedown', closePrintMenu)
-  }, [printMenuOpen])
 
   const performSave = useCallback(async (current: SermonBlock[]) => {
     setSaving(true)
@@ -1857,7 +1853,9 @@ export default function SermonBuilderWorkspace({
   }
 
   function setActivePrintMode(mode: PrintOutlineMode) {
+    const nextDocument = buildFinalSermonDocument(blocksRef.current, project, mode)
     setPrintMode(mode)
+    setPreviewDocument({ mode, document: nextDocument })
     if (typeof window !== 'undefined') {
       window.localStorage.setItem(printModeStorageKey, mode)
     }
@@ -1865,16 +1863,22 @@ export default function SermonBuilderWorkspace({
 
   async function saveAndPreview() {
     if (saveTimer.current) clearTimeout(saveTimer.current)
+    setPreviewDocument({
+      mode: printMode,
+      document: buildFinalSermonDocument(blocksRef.current, project, printMode),
+    })
     await performSave(blocksRef.current)
     setViewMode('preview')
     setActiveMenu(null)
     setAddOpen(false)
-    setPrintMenuOpen(false)
   }
 
   async function previewPrintMode(mode: PrintOutlineMode) {
     setActivePrintMode(mode)
-    setPrintMenuOpen(false)
+    setPreviewDocument({
+      mode,
+      document: buildFinalSermonDocument(blocksRef.current, project, mode),
+    })
     if (saveTimer.current) clearTimeout(saveTimer.current)
     await performSave(blocksRef.current)
     setViewMode('preview')
@@ -1896,8 +1900,11 @@ export default function SermonBuilderWorkspace({
   const savedLabel = saving ? 'salvando…'
     : savedAt ? `salvo ${savedAt.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}` : ''
 
-  const finalDocument = buildFinalSermonDocument(blocks, project, printMode)
-  const printModeLabel = printMode === 'reduced' ? 'Esboço reduzido' : 'Esboço completo'
+  const activePreviewDocument = previewDocument ?? {
+    mode: printMode,
+    document: buildFinalSermonDocument(blocks, project, printMode),
+  }
+  const printModeLabel = activePreviewDocument.mode === 'reduced' ? 'Esboço reduzido' : 'Esboço completo'
 
   const toolbarButton: React.CSSProperties = {
     background: '#fff',
@@ -1920,77 +1927,74 @@ export default function SermonBuilderWorkspace({
     fontWeight: 850,
   }
 
-  const renderPrintMenu = () => printMenuOpen ? (
-    <div
-      onMouseDown={e => e.stopPropagation()}
+  const renderPrintModeToggle = () => {
+    const currentMode = viewMode === 'preview' ? activePreviewDocument.mode : printMode
+    const isReduced = currentMode === 'reduced'
+    return (
+      <button
+        type="button"
+        role="switch"
+        aria-checked={isReduced}
+        onClick={() => setActivePrintMode(isReduced ? 'complete' : 'reduced')}
       style={{
-        position: 'absolute',
-        top: 'calc(100% + 0.4rem)',
-        right: 0,
-        zIndex: 80,
-        width: '245px',
+        display: 'inline-flex',
+        alignItems: 'center',
+        gap: '0.48rem',
         background: '#fff',
         border: '1px solid var(--border)',
-        borderRadius: '8px',
-        padding: '0.35rem',
-        boxShadow: '0 16px 38px rgba(15, 23, 42, 0.16)',
+        borderRadius: '999px',
+        color: 'var(--text-secondary)',
+        cursor: 'pointer',
+        fontFamily: 'inherit',
+        fontSize: '0.74rem',
+        fontWeight: 800,
+        padding: '0.28rem 0.48rem 0.28rem 0.72rem',
+        lineHeight: 1,
       }}
     >
-      {([
-        {
-          mode: 'reduced' as PrintOutlineMode,
-          title: 'Esboço reduzido para pregação',
-          desc: 'Pontos principais e subpontos, sem notas longas.',
-        },
-        {
-          mode: 'complete' as PrintOutlineMode,
-          title: 'Esboço completo',
-          desc: 'Inclui descrições, ilustrações, aplicações e observações.',
-        },
-      ]).map(option => (
-        <button
-          key={option.mode}
-          onClick={() => previewPrintMode(option.mode)}
+        <span>{isReduced ? 'Reduzido' : 'Completo'}</span>
+        <span
+          aria-hidden
           style={{
-            width: '100%',
-            background: option.mode === printMode ? 'rgba(139, 92, 246, 0.08)' : 'transparent',
-            border: 'none',
-            borderRadius: '6px',
-            color: 'var(--text-primary)',
-            cursor: 'pointer',
-            fontFamily: 'inherit',
-            padding: '0.62rem 0.65rem',
-            textAlign: 'left',
+            width: '34px',
+            height: '18px',
+            borderRadius: '999px',
+            background: isReduced ? 'var(--ai)' : 'var(--border)',
+            padding: '2px',
+            display: 'inline-flex',
+            justifyContent: isReduced ? 'flex-end' : 'flex-start',
+            transition: 'background 0.16s ease',
           }}
-          onMouseEnter={e => { e.currentTarget.style.background = 'rgba(139, 92, 246, 0.08)' }}
-          onMouseLeave={e => { e.currentTarget.style.background = option.mode === printMode ? 'rgba(139, 92, 246, 0.08)' : 'transparent' }}
         >
-          <span style={{ display: 'block', fontSize: '0.78rem', fontWeight: 850 }}>
-            {option.title}
-          </span>
-          <span style={{ display: 'block', marginTop: '0.18rem', color: 'var(--text-muted)', fontSize: '0.68rem', lineHeight: 1.35 }}>
-            {option.desc}
-          </span>
-        </button>
-      ))}
-    </div>
-  ) : null
+          <span
+            style={{
+              width: '14px',
+              height: '14px',
+              borderRadius: '50%',
+              background: '#fff',
+              boxShadow: '0 1px 3px rgba(15, 23, 42, 0.25)',
+            }}
+          />
+        </span>
+      </button>
+    )
+  }
 
   const renderToolbar = (variant: 'edit' | 'preview') => (
     <div
       style={{
         position: variant === 'preview' ? 'fixed' : 'sticky',
-        top: variant === 'preview' ? '0.75rem' : 0,
+        top: variant === 'preview' ? '4.4rem' : 0,
         left: variant === 'preview' ? '50%' : undefined,
         transform: variant === 'preview' ? 'translateX(-50%)' : undefined,
-        width: variant === 'preview' ? 'min(21cm, calc(100vw - 1.5rem))' : undefined,
+        width: variant === 'preview' ? 'min(21cm, calc(100vw - 2rem))' : undefined,
         zIndex: 50,
-        background: variant === 'preview' ? 'rgba(238, 241, 245, 0.92)' : 'rgba(255, 255, 255, 0.92)',
+        background: variant === 'preview' ? 'rgba(255, 255, 255, 0.94)' : 'rgba(255, 255, 255, 0.92)',
         backdropFilter: 'blur(12px)',
         border: '1px solid var(--border-subtle)',
-        borderRadius: '10px',
-        boxShadow: '0 12px 32px rgba(15, 23, 42, 0.08)',
-        padding: '0.55rem 0.65rem',
+        borderRadius: '9px',
+        boxShadow: variant === 'preview' ? '0 10px 28px rgba(15, 23, 42, 0.10)' : '0 12px 32px rgba(15, 23, 42, 0.08)',
+        padding: variant === 'preview' ? '0.42rem 0.56rem' : '0.55rem 0.65rem',
         marginBottom: '1rem',
       }}
     >
@@ -2012,7 +2016,6 @@ export default function SermonBuilderWorkspace({
             onClick={async () => {
               if (saveTimer.current) clearTimeout(saveTimer.current)
               await performSave(blocksRef.current)
-              setPrintMenuOpen(false)
             }}
             disabled={saving}
             style={{ ...toolbarButton, opacity: saving ? 0.65 : 1, cursor: saving ? 'wait' : 'pointer' }}
@@ -2022,17 +2025,9 @@ export default function SermonBuilderWorkspace({
           <button onClick={saveAndPreview} style={variant === 'preview' ? primaryToolbarButton : toolbarButton}>
             Visualizar
           </button>
-          <div style={{ position: 'relative' }}>
-            <button
-              onMouseDown={e => { e.stopPropagation(); setPrintMenuOpen(open => !open); setActiveMenu(null); setAddOpen(false) }}
-              style={toolbarButton}
-            >
-              Imprimir/PDF ▾
-            </button>
-            {renderPrintMenu()}
-          </div>
+          {renderPrintModeToggle()}
           {variant === 'preview' && (
-            <button onClick={() => printFinalSermon()} style={primaryToolbarButton}>
+            <button onClick={() => printFinalSermon(activePreviewDocument.mode)} style={primaryToolbarButton}>
               Imprimir esta versão
             </button>
           )}
@@ -2043,13 +2038,13 @@ export default function SermonBuilderWorkspace({
 
   if (viewMode === 'preview') {
     return (
-      <div style={{ background: '#eef1f5', minHeight: '100vh', padding: '6.5rem clamp(0.75rem, 2vw, 2rem) 3rem' }}>
+      <div style={{ background: '#eef1f5', minHeight: '100vh', padding: '9.8rem clamp(0.75rem, 2vw, 2rem) 3rem' }}>
         <div style={{ maxWidth: '21cm', margin: '0 auto' }}>
           {renderToolbar('preview')}
         </div>
 
-        <style>{finalDocument.css}</style>
-        <div dangerouslySetInnerHTML={{ __html: finalDocument.body }} />
+        <style>{activePreviewDocument.document.css}</style>
+        <div dangerouslySetInnerHTML={{ __html: activePreviewDocument.document.body }} />
       </div>
     )
   }
@@ -2093,7 +2088,7 @@ export default function SermonBuilderWorkspace({
           )}
           {blocks.some(b => blockHasContent(b)) && (
             <button
-              onClick={() => previewPrintMode('complete')}
+              onClick={() => previewPrintMode(printMode)}
               style={{
                 background: 'transparent', border: '1px solid var(--border)', borderRadius: '5px',
                 color: 'var(--text-muted)', cursor: 'pointer', fontFamily: 'inherit',
