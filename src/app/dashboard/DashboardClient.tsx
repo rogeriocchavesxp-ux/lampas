@@ -25,6 +25,13 @@ const LEGACY_TYPE: Record<StudyModeId, string> = {
   sermao:                      'sermao',
   estudo_biblico:              'estudo_biblico',
   devocional:                  'devocional',
+  aula:                        'estudo_biblico',
+  artigo:                      'pesquisa_teologica',
+  ebook:                       'pesquisa_teologica',
+  livro:                       'pesquisa_teologica',
+  palestra:                    'pesquisa_teologica',
+  curso:                       'estudo_biblico',
+  serie_mensagens:             'sermao',
   comentario_exegetico:        'exegese',
 }
 
@@ -104,6 +111,13 @@ const MODE_ICONS: Record<StudyModeId, React.ReactNode> = {
       <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
     </svg>
   ),
+  aula: '🏫',
+  artigo: '📝',
+  ebook: '📙',
+  livro: '📕',
+  palestra: '🎤',
+  curso: '🎓',
+  serie_mensagens: '🧩',
   comentario_exegetico: (
     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
       <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
@@ -123,6 +137,13 @@ const MODE_VISUALS: Record<StudyModeId, { color: string; bg: string; border: str
   estudo_tematico:             { color: '#0F766E', bg: 'rgba(15,118,110,0.08)', border: 'rgba(15,118,110,0.18)' },
   exegese_biblica:             { color: '#0F766E', bg: 'rgba(15,118,110,0.08)', border: 'rgba(15,118,110,0.18)' },
   estudo_de_carta:             { color: '#475569', bg: 'rgba(71,85,105,0.08)',  border: 'rgba(71,85,105,0.18)' },
+  aula:                        { color: '#2563EB', bg: 'rgba(37,99,235,0.08)',  border: 'rgba(37,99,235,0.18)' },
+  artigo:                      { color: '#7C3AED', bg: 'rgba(124,58,237,0.08)', border: 'rgba(124,58,237,0.18)' },
+  ebook:                       { color: '#0F766E', bg: 'rgba(15,118,110,0.08)', border: 'rgba(15,118,110,0.18)' },
+  livro:                       { color: '#92400E', bg: 'rgba(146,64,14,0.08)',  border: 'rgba(146,64,14,0.18)' },
+  palestra:                    { color: '#DB2777', bg: 'rgba(219,39,119,0.08)', border: 'rgba(219,39,119,0.18)' },
+  curso:                       { color: '#0E7490', bg: 'rgba(14,116,144,0.08)', border: 'rgba(14,116,144,0.18)' },
+  serie_mensagens:             { color: '#7C2D12', bg: 'rgba(124,45,18,0.08)',  border: 'rgba(124,45,18,0.18)' },
   comentario_exegetico:        { color: '#B45309', bg: 'rgba(180,83,9,0.08)',   border: 'rgba(180,83,9,0.18)' },
 }
 
@@ -138,6 +159,13 @@ const SECTION_ORDER: StudyModeId[] = [
   'exegese_biblica',
   'estudo_de_carta',
   'comentario_exegetico',
+  'aula',
+  'artigo',
+  'ebook',
+  'livro',
+  'palestra',
+  'curso',
+  'serie_mensagens',
   'estudo_biblico',  // legado — mantido para projetos existentes
 ]
 
@@ -147,6 +175,8 @@ const GENRE_LABEL: Partial<Record<StudyModeId, string>> = {
   estudo_narrativas: 'Narrativas', estudo_de_profecias: 'Profecias',
   estudo_doutrinario: 'Doutrina', estudo_tematico: 'Temático',
   devocional: 'Devocional', comentario_exegetico: 'Comentário', estudo_biblico: 'Est. Bíblico',
+  aula: 'Aula', artigo: 'Artigo', ebook: 'E-book', livro: 'Livro',
+  palestra: 'Palestra', curso: 'Curso', serie_mensagens: 'Série',
 }
 
 // ── Fluxo da tela de criação ──────────────────────────────────────────────
@@ -521,15 +551,14 @@ export default function DashboardClient({ user, projects: initialProjects, profi
     switch (uid) {
       case 'sermao':      setSelectedMode('sermao'); break
       case 'devocional':  setSelectedMode('devocional'); break
-      case 'aula':
-      case 'estudo_biblico':
-      case 'artigo':
-      case 'ebook':
-      case 'livro':
-      case 'palestra':
-      case 'curso':
-      case 'serie_mensagens':
-        setSelectedMode('estudo_biblico'); break
+      case 'aula':        setSelectedMode('aula'); break
+      case 'estudo_biblico': setSelectedMode('estudo_biblico'); break
+      case 'artigo':      setSelectedMode('artigo'); break
+      case 'ebook':       setSelectedMode('ebook'); break
+      case 'livro':       setSelectedMode('livro'); break
+      case 'palestra':    setSelectedMode('palestra'); break
+      case 'curso':       setSelectedMode('curso'); break
+      case 'serie_mensagens': setSelectedMode('serie_mensagens'); break
       case 'doutrinario': setSelectedMode('estudo_doutrinario'); break
       case 'tematico':    setSelectedMode('estudo_tematico'); break
       case 'exegetico':   setSelectedMode(null); break
@@ -575,7 +604,7 @@ export default function DashboardClient({ user, projects: initialProjects, profi
 
     if (!selectedMode || !selectedUiMode) return
 
-    const isTopicProduction = ['artigo', 'ebook', 'livro', 'palestra', 'curso', 'serie_mensagens'].includes(selectedUiMode)
+    const isTopicProduction = ['aula', 'artigo', 'ebook', 'livro', 'palestra', 'curso', 'serie_mensagens'].includes(selectedUiMode)
     const isPassage     = selectedUiMode !== 'doutrinario' && selectedUiMode !== 'tematico' && !isTopicProduction
     const generatedTitle = isPassage ? buildReferenceTitle(form.book, form.passage_ref) : form.topic.trim()
     const projectTitle  = form.title.trim() || generatedTitle
@@ -1150,7 +1179,7 @@ export default function DashboardClient({ user, projects: initialProjects, profi
               <div style={{ padding: '1.75rem 1.75rem 1.5rem' }}>
                 {(() => {
                   const uiMode        = UI_MODES.find(m => m.id === selectedUiMode)!
-                  const isTopicProduction = ['artigo', 'ebook', 'livro', 'palestra', 'curso', 'serie_mensagens'].includes(selectedUiMode)
+                  const isTopicProduction = ['aula', 'artigo', 'ebook', 'livro', 'palestra', 'curso', 'serie_mensagens'].includes(selectedUiMode)
                   const isPassage     = selectedUiMode !== 'doutrinario' && selectedUiMode !== 'tematico' && !isTopicProduction
                   const detectedLabel = selectedMode ? DETECTED_LABEL[selectedMode] : null
                   const canSubmit     = isPassage

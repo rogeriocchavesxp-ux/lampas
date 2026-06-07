@@ -16,6 +16,13 @@ export type StudyModeId =
   | 'sermao'
   | 'estudo_biblico'
   | 'devocional'
+  | 'aula'
+  | 'artigo'
+  | 'ebook'
+  | 'livro'
+  | 'palestra'
+  | 'curso'
+  | 'serie_mensagens'
   | 'comentario_exegetico'
 
 export type PhaseId = 'preparar' | 'investigar' | 'comunicar' | 'ferramentas'
@@ -87,6 +94,74 @@ function toolPhase(): NavPhase {
         { id: 'colagens', label: 'Colagens' },
       ],
     }],
+  }
+}
+
+function rgba(hex: string, alpha = '0.08') {
+  const clean = hex.replace('#', '')
+  const value = Number.parseInt(clean, 16)
+  const r = (value >> 16) & 255
+  const g = (value >> 8) & 255
+  const b = value & 255
+  return `rgba(${r},${g},${b},${alpha})`
+}
+
+type ProductionModeOptions = {
+  id: StudyModeId
+  name: string
+  tagline: string
+  color: string
+  audience: string
+  titlePlaceholder: string
+  topicLabel: string
+  defaultSection: string
+  phases: Array<{
+    id: PhaseId
+    roman: string
+    label: string
+    description: string
+    color: string
+    modeId: string
+    modeLabel: string
+    subtitle: string
+    groups: NavGroup[]
+  }>
+}
+
+function productionMode(options: ProductionModeOptions): StudyModeConfig {
+  return {
+    id: options.id,
+    name: options.name,
+    tagline: options.tagline,
+    color: options.color,
+    audience: options.audience,
+    titlePlaceholder: options.titlePlaceholder,
+    passageBased: false,
+    passageLabel: 'Texto base',
+    topicLabel: options.topicLabel,
+    defaultSection: options.defaultSection,
+    defaultExpandedPhases: ['preparar', 'investigar', 'comunicar'],
+    defaultExpandedCanons: options.phases.map(phase => phase.modeId),
+    defaultExpandedGroups: options.phases.flatMap(phase => phase.groups.slice(0, 1).map(group => group.id)),
+    phases: [
+      ...options.phases.map((phase): NavPhase => ({
+        id: phase.id,
+        roman: phase.roman,
+        label: phase.label,
+        description: phase.description,
+        color: phase.color,
+        bgActive: rgba(phase.color),
+        modes: [{
+          id: phase.modeId,
+          label: phase.modeLabel,
+          subtitle: phase.subtitle,
+          color: phase.color,
+          bgActive: rgba(phase.color),
+          groups: phase.groups,
+        }],
+      })),
+      toolPhase(),
+    ],
   }
 }
 
@@ -511,6 +586,360 @@ const ESTUDO_TEMATICO: StudyModeConfig = {
   ],
 }
 
+// ── Modos de Produção ────────────────────────────────────────────────────
+
+const AULA = productionMode({
+  id: 'aula',
+  name: 'Aula',
+  tagline: 'Ensino estruturado para formação cristã',
+  color: '#2563EB',
+  audience: 'Professores · Líderes · Seminaristas',
+  titlePlaceholder: 'Ex: Introdução à hermenêutica bíblica',
+  topicLabel: 'Tema ou texto base',
+  defaultSection: 'aula_preparar',
+  phases: [
+    {
+      id: 'preparar',
+      roman: 'I',
+      label: 'Preparar',
+      description: 'Finalidade, público, tempo e base da aula',
+      color: '#2563EB',
+      modeId: 'aula_planejamento',
+      modeLabel: 'Planejamento',
+      subtitle: 'Objetivos e público',
+      groups: [{ id: 'aula_preparar_grp', label: 'Preparar' }],
+    },
+    {
+      id: 'investigar',
+      roman: 'II',
+      label: 'Compreender',
+      description: 'Conteúdo central, conceitos e relação bíblica',
+      color: '#0EA5E9',
+      modeId: 'aula_conteudo',
+      modeLabel: 'Conteúdo',
+      subtitle: 'Compreensão e conceitos',
+      groups: [{ id: 'aula_compreender_grp', label: 'Compreender' }],
+    },
+    {
+      id: 'comunicar',
+      roman: 'III',
+      label: 'Ensinar',
+      description: 'Condução didática, interação e materiais',
+      color: '#10B981',
+      modeId: 'aula_ensino',
+      modeLabel: 'Ensino',
+      subtitle: 'Aula e material',
+      groups: [
+        { id: 'aula_ensinar_grp', label: 'Ensinar' },
+        { id: 'aula_material_grp', label: 'Material' },
+      ],
+    },
+  ],
+})
+
+const ARTIGO = productionMode({
+  id: 'artigo',
+  name: 'Artigo',
+  tagline: 'Argumentação teológica ou pastoral',
+  color: '#7C3AED',
+  audience: 'Pastores · Professores · Pesquisadores',
+  titlePlaceholder: 'Ex: A esperança cristã em tempos de sofrimento',
+  topicLabel: 'Tema do artigo',
+  defaultSection: 'artigo_planejar',
+  phases: [
+    {
+      id: 'preparar',
+      roman: 'I',
+      label: 'Planejar',
+      description: 'Tema, problema, tese, público e objetivo',
+      color: '#7C3AED',
+      modeId: 'artigo_planejamento',
+      modeLabel: 'Planejamento',
+      subtitle: 'Tese e objetivo',
+      groups: [{ id: 'artigo_planejar_grp', label: 'Planejar' }],
+    },
+    {
+      id: 'investigar',
+      roman: 'II',
+      label: 'Pesquisar',
+      description: 'Fontes, citações, evidências e objeções',
+      color: '#2563EB',
+      modeId: 'artigo_pesquisa',
+      modeLabel: 'Pesquisa',
+      subtitle: 'Fontes e evidências',
+      groups: [{ id: 'artigo_pesquisar_grp', label: 'Pesquisar' }],
+    },
+    {
+      id: 'comunicar',
+      roman: 'III',
+      label: 'Produzir',
+      description: 'Argumentação, redação e revisão',
+      color: '#A855F7',
+      modeId: 'artigo_producao',
+      modeLabel: 'Produção',
+      subtitle: 'Argumentar, redigir e revisar',
+      groups: [
+        { id: 'artigo_argumentar_grp', label: 'Argumentar' },
+        { id: 'artigo_redigir_grp', label: 'Redigir' },
+        { id: 'artigo_revisar_grp', label: 'Revisar' },
+      ],
+    },
+  ],
+})
+
+const EBOOK = productionMode({
+  id: 'ebook',
+  name: 'E-book',
+  tagline: 'Material digital claro e reutilizável',
+  color: '#0F766E',
+  audience: 'Autores · Ministérios · Professores',
+  titlePlaceholder: 'Ex: Guia de oração em família',
+  topicLabel: 'Tema do e-book',
+  defaultSection: 'ebook_conceber',
+  phases: [
+    {
+      id: 'preparar',
+      roman: 'I',
+      label: 'Conceber',
+      description: 'Tema, público, promessa e problema resolvido',
+      color: '#0F766E',
+      modeId: 'ebook_conceito',
+      modeLabel: 'Conceito',
+      subtitle: 'Promessa e público',
+      groups: [{ id: 'ebook_conceber_grp', label: 'Conceber' }],
+    },
+    {
+      id: 'investigar',
+      roman: 'II',
+      label: 'Estruturar',
+      description: 'Sumário, capítulos e progressão lógica',
+      color: '#0891B2',
+      modeId: 'ebook_estrutura',
+      modeLabel: 'Estrutura',
+      subtitle: 'Sumário e capítulos',
+      groups: [{ id: 'ebook_estruturar_grp', label: 'Estruturar' }],
+    },
+    {
+      id: 'comunicar',
+      roman: 'III',
+      label: 'Publicar',
+      description: 'Escrita, recursos e versão final',
+      color: '#14B8A6',
+      modeId: 'ebook_publicacao',
+      modeLabel: 'Publicação',
+      subtitle: 'Escrever, enriquecer e publicar',
+      groups: [
+        { id: 'ebook_escrever_grp', label: 'Escrever' },
+        { id: 'ebook_enriquecer_grp', label: 'Enriquecer' },
+        { id: 'ebook_publicar_grp', label: 'Publicar' },
+      ],
+    },
+  ],
+})
+
+const LIVRO = productionMode({
+  id: 'livro',
+  name: 'Livro',
+  tagline: 'Obra longa com tese, arquitetura e revisão',
+  color: '#92400E',
+  audience: 'Autores · Professores · Pesquisadores',
+  titlePlaceholder: 'Ex: Fundamentos da vida cristã',
+  topicLabel: 'Tema do livro',
+  defaultSection: 'livro_conceito',
+  phases: [
+    {
+      id: 'preparar',
+      roman: 'I',
+      label: 'Conceito',
+      description: 'Tese, público e contribuição da obra',
+      color: '#92400E',
+      modeId: 'livro_conceito_mode',
+      modeLabel: 'Conceito',
+      subtitle: 'Tese e contribuição',
+      groups: [{ id: 'livro_conceito_grp', label: 'Conceito' }],
+    },
+    {
+      id: 'investigar',
+      roman: 'II',
+      label: 'Arquitetura',
+      description: 'Sumário, partes, capítulos e pesquisa',
+      color: '#B45309',
+      modeId: 'livro_arquitetura_mode',
+      modeLabel: 'Arquitetura',
+      subtitle: 'Estrutura e pesquisa',
+      groups: [
+        { id: 'livro_arquitetura_grp', label: 'Arquitetura' },
+        { id: 'livro_pesquisa_grp', label: 'Pesquisa' },
+      ],
+    },
+    {
+      id: 'comunicar',
+      roman: 'III',
+      label: 'Escrever',
+      description: 'Desenvolvimento, revisão e publicação',
+      color: '#D97706',
+      modeId: 'livro_escrita_mode',
+      modeLabel: 'Escrita',
+      subtitle: 'Desenvolver e publicar',
+      groups: [
+        { id: 'livro_desenvolvimento_grp', label: 'Desenvolvimento' },
+        { id: 'livro_revisao_grp', label: 'Revisão' },
+        { id: 'livro_publicacao_grp', label: 'Publicação' },
+      ],
+    },
+  ],
+})
+
+const PALESTRA = productionMode({
+  id: 'palestra',
+  name: 'Palestra',
+  tagline: 'Comunicação oral para eventos e conferências',
+  color: '#DB2777',
+  audience: 'Palestrantes · Professores · Líderes',
+  titlePlaceholder: 'Ex: Família e vocação cristã',
+  topicLabel: 'Tema da palestra',
+  defaultSection: 'palestra_preparar',
+  phases: [
+    {
+      id: 'preparar',
+      roman: 'I',
+      label: 'Preparar',
+      description: 'Evento, público, tempo e objetivo',
+      color: '#DB2777',
+      modeId: 'palestra_preparo_mode',
+      modeLabel: 'Preparo',
+      subtitle: 'Contexto e objetivo',
+      groups: [{ id: 'palestra_preparar_grp', label: 'Preparar' }],
+    },
+    {
+      id: 'investigar',
+      roman: 'II',
+      label: 'Construir',
+      description: 'Abertura, pontos, transições e fechamento',
+      color: '#BE185D',
+      modeId: 'palestra_estrutura_mode',
+      modeLabel: 'Estrutura',
+      subtitle: 'Movimentos da palestra',
+      groups: [{ id: 'palestra_construir_grp', label: 'Construir' }],
+    },
+    {
+      id: 'comunicar',
+      roman: 'III',
+      label: 'Comunicar',
+      description: 'Linguagem, apoio visual e ensaio',
+      color: '#EC4899',
+      modeId: 'palestra_comunicacao_mode',
+      modeLabel: 'Comunicação',
+      subtitle: 'Entrega e recursos',
+      groups: [
+        { id: 'palestra_comunicar_grp', label: 'Comunicar' },
+        { id: 'palestra_apoiar_grp', label: 'Apoiar' },
+        { id: 'palestra_ensaiar_grp', label: 'Ensaiar' },
+      ],
+    },
+  ],
+})
+
+const CURSO = productionMode({
+  id: 'curso',
+  name: 'Curso',
+  tagline: 'Trilha de aprendizagem com aulas e materiais',
+  color: '#0E7490',
+  audience: 'Professores · Instituições · Ministérios',
+  titlePlaceholder: 'Ex: Princípios de interpretação bíblica',
+  topicLabel: 'Tema do curso',
+  defaultSection: 'curso_planejar',
+  phases: [
+    {
+      id: 'preparar',
+      roman: 'I',
+      label: 'Planejar',
+      description: 'Público, objetivos e resultados esperados',
+      color: '#0E7490',
+      modeId: 'curso_planejamento_mode',
+      modeLabel: 'Planejamento',
+      subtitle: 'Público e objetivos',
+      groups: [{ id: 'curso_planejar_grp', label: 'Planejar' }],
+    },
+    {
+      id: 'investigar',
+      roman: 'II',
+      label: 'Estruturar',
+      description: 'Módulos, aulas e progressão didática',
+      color: '#2563EB',
+      modeId: 'curso_estrutura_mode',
+      modeLabel: 'Estrutura',
+      subtitle: 'Módulos e aulas',
+      groups: [{ id: 'curso_estruturar_grp', label: 'Estruturar' }],
+    },
+    {
+      id: 'comunicar',
+      roman: 'III',
+      label: 'Produzir',
+      description: 'Aulas, materiais e publicação',
+      color: '#06B6D4',
+      modeId: 'curso_producao_mode',
+      modeLabel: 'Produção',
+      subtitle: 'Aulas, materiais e entrega',
+      groups: [
+        { id: 'curso_produzir_aulas_grp', label: 'Produzir Aulas' },
+        { id: 'curso_materiais_grp', label: 'Materiais' },
+        { id: 'curso_publicar_grp', label: 'Publicar' },
+      ],
+    },
+  ],
+})
+
+const SERIE_MENSAGENS = productionMode({
+  id: 'serie_mensagens',
+  name: 'Série de Mensagens',
+  tagline: 'Planejamento de uma sequência de sermões',
+  color: '#7C2D12',
+  audience: 'Pastores · Equipes de ensino',
+  titlePlaceholder: 'Ex: A presença de Deus na vida de José',
+  topicLabel: 'Tema da série',
+  defaultSection: 'serie_conceber',
+  phases: [
+    {
+      id: 'preparar',
+      roman: 'I',
+      label: 'Conceber',
+      description: 'Tema, necessidade pastoral e eixo bíblico',
+      color: '#7C2D12',
+      modeId: 'serie_conceito_mode',
+      modeLabel: 'Conceito',
+      subtitle: 'Tema e necessidade',
+      groups: [{ id: 'serie_conceber_grp', label: 'Conceber' }],
+    },
+    {
+      id: 'investigar',
+      roman: 'II',
+      label: 'Planejar',
+      description: 'Calendário, ordem e progressão da série',
+      color: '#B45309',
+      modeId: 'serie_planejamento_mode',
+      modeLabel: 'Planejamento',
+      subtitle: 'Calendário e mensagens',
+      groups: [{ id: 'serie_planejar_grp', label: 'Planejar' }],
+    },
+    {
+      id: 'comunicar',
+      roman: 'III',
+      label: 'Comunicar',
+      description: 'Mensagens, identidade, materiais e publicação',
+      color: '#EA580C',
+      modeId: 'serie_comunicacao_mode',
+      modeLabel: 'Comunicação',
+      subtitle: 'Desenvolver e publicar',
+      groups: [
+        { id: 'serie_desenvolver_grp', label: 'Desenvolver' },
+        { id: 'serie_comunicar_grp', label: 'Comunicar' },
+        { id: 'serie_publicar_grp', label: 'Publicar' },
+      ],
+    },
+  ],
+})
+
 // ── 7. Estudo de Carta ──────────────────────────────────────────────────
 
 const ESTUDO_DE_CARTA: StudyModeConfig = {
@@ -873,6 +1302,13 @@ export const STUDY_MODE_REGISTRY: Record<StudyModeId, StudyModeConfig> = {
   sermao:                      SERMAO,
   estudo_biblico:              ESTUDO_BIBLICO,
   devocional:                  DEVOCIONAL,
+  aula:                        AULA,
+  artigo:                      ARTIGO,
+  ebook:                       EBOOK,
+  livro:                       LIVRO,
+  palestra:                    PALESTRA,
+  curso:                       CURSO,
+  serie_mensagens:             SERIE_MENSAGENS,
   comentario_exegetico:        COMENTARIO_EXEGETICO,
 }
 

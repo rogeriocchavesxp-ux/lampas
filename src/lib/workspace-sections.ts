@@ -8,6 +8,7 @@ import { ESTUDO_SALMOS_SABEDORIA_SECTIONS } from './estudo-salmos-sabedoria-sect
 import { ESTUDO_PROFECIAS_SECTIONS } from './estudo-profecias-sections'
 import { ESTUDO_NARRATIVAS_SECTIONS } from './estudo-narrativas-sections'
 import { PESQUISA_TEOLOGICA_SECTIONS } from './pesquisa-teologica-sections'
+import { PRODUCTION_SECTIONS } from './production-sections'
 
 export interface CardDef {
   id: string
@@ -1372,6 +1373,7 @@ const PRONUNTIATIO_SECTIONS: SectionDef[] = [
 WORKSPACE_SECTIONS.push(...PRONUNTIATIO_SECTIONS)
 WORKSPACE_SECTIONS.push(...COMMUNICATION_SECTIONS)
 WORKSPACE_SECTIONS.push(...ESTUDO_BIBLICO_SECTIONS)
+WORKSPACE_SECTIONS.push(...PRODUCTION_SECTIONS)
 WORKSPACE_SECTIONS.push(...ESTUDO_DOUTRINARIO_SECTIONS)
 WORKSPACE_SECTIONS.push(...ESTUDO_TEMATICO_SECTIONS)
 WORKSPACE_SECTIONS.push(...ESTUDO_CARTA_SECTIONS)
