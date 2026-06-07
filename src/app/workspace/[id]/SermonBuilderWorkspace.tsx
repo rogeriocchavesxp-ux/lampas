@@ -8,6 +8,7 @@ import type { Project, Section } from '@/types/database'
 
 type BlockType = 'introducao' | 'proposicao' | 'contextualizacao' | 'desenvolvimento' | 'transicao' | 'aplicacao' | 'conclusao'
 type MarkerStyle = 'roman' | 'decimal' | 'alpha' | 'bullet'
+type PrintOutlineMode = 'reduced' | 'complete'
 
 interface Subponto {
   id: string
@@ -1414,11 +1415,13 @@ function DesenvolvimentoEditor({
 
 // ── SermonBuilderWorkspace ────────────────────────────────────────────────
 
-function buildFinalSermonDocument(blocks: SermonBlock[], project: Project) {
+function buildFinalSermonDocument(blocks: SermonBlock[], project: Project, mode: PrintOutlineMode = 'complete') {
   const ref   = `${project.book} ${project.passage_ref}`
   const title = project.title || `Sermão — ${ref}`
   const esc   = escapeHtml
   const paras = renderFormattedText
+  const isReduced = mode === 'reduced'
+  const outlineLabel = isReduced ? 'Esboço reduzido para pregação' : 'Esboço completo'
 
   const pages: string[] = []
   let pontoIdx = 0
@@ -1430,6 +1433,7 @@ function buildFinalSermonDocument(blocks: SermonBlock[], project: Project) {
     <dl class="sermon-meta">
       <div><dt>Título</dt><dd>${esc(title)}</dd></div>
       <div><dt>Texto</dt><dd>${esc(ref)}</dd></div>
+      <div><dt>Formato</dt><dd>${esc(outlineLabel)}</dd></div>
     </dl>
     <div class="cover-rule"></div>
   </section>`)
@@ -1445,6 +1449,7 @@ function buildFinalSermonDocument(blocks: SermonBlock[], project: Project) {
         const aplicacoes = pontoElements(ponto, 'aplicacoes').filter(item => item.text.trim())
         const citacoes = pontoElements(ponto, 'citacoes').filter(item => item.text.trim())
         const observacoes = pontoElements(ponto, 'observacoes').filter(item => item.text.trim())
+        const renderSubNotes = !isReduced
         const renderItems = (items: PontoElement[], label: string, className: string) => items.map((item, index) => `
           <div class="sep"></div>
           <div class="label">${esc(item.title?.trim() || (items.length > 1 ? `${label} ${index + 1}` : label))}</div>
@@ -1460,13 +1465,14 @@ function buildFinalSermonDocument(blocks: SermonBlock[], project: Project) {
             <div class="main-point-marker">${esc(markerLabel(pontoIdx - 1, mainMarkerStyle))}</div>
             <h2>${esc(ponto.text || `Ponto ${pontoIdx}`).toUpperCase()}</h2>
           </div>
+          ${!isReduced && ponto.notes?.trim() ? `<div class="label">Descrição do ponto</div><div class="prose point-notes">${paras(ponto.notes)}</div>` : ''}
           ${subs.length ? `<ol class="subs">${subs.map((s, index) =>
-            `<li><span class="sub-number">${esc(markerLabel(index, subMarkerStyle))}</span><span>${esc(s.text)}</span></li>`
+            `<li><span class="sub-number">${esc(markerLabel(index, subMarkerStyle))}</span><div class="sub-content"><strong>${esc(s.text)}</strong>${renderSubNotes && s.notes?.trim() ? `<div class="sub-description">${paras(s.notes)}</div>` : ''}</div></li>`
           ).join('')}</ol>` : ''}
-          ${renderItems(ilustracoes, 'Ilustração', 'ilustracao')}
-          ${renderItems(aplicacoes, 'Aplicação', 'aplicacao')}
-          ${renderItems(citacoes, 'Citação', 'ilustracao')}
-          ${renderItems(observacoes, 'Observação', 'ilustracao')}
+          ${isReduced ? '' : renderItems(ilustracoes, 'Ilustração', 'ilustracao')}
+          ${isReduced ? '' : renderItems(aplicacoes, 'Aplicação', 'aplicacao')}
+          ${isReduced ? '' : renderItems(citacoes, 'Citação', 'ilustracao')}
+          ${isReduced ? '' : renderItems(observacoes, 'Observação', 'ilustracao')}
           <div class="pg-footer">${esc(title)}</div>
         </section>`)
       }
@@ -1617,11 +1623,24 @@ function buildFinalSermonDocument(blocks: SermonBlock[], project: Project) {
   font-size: 13.5pt;
   line-height: 1.65;
 }
+.sermon-final-document .sub-description {
+  display: block;
+  margin-top: 0.45rem;
+  color: #374151;
+  font-weight: normal;
+}
+.sermon-final-document .point-notes {
+  margin: -0.8rem 0 1.7rem;
+  color: #374151;
+}
 .sermon-final-document .sub-number {
   color: #6b7280;
   flex-shrink: 0;
   min-width: 1.25rem;
   text-align: right;
+}
+.sermon-final-document .sub-content {
+  flex: 1;
 }
 .sermon-final-document .sep {
   border: none;
@@ -1711,6 +1730,8 @@ export default function SermonBuilderWorkspace({
   const [renameVal,  setRenameVal]  = useState('')
   const [addOpen,    setAddOpen]    = useState(false)
   const [viewMode,   setViewMode]   = useState<'edit' | 'preview'>('edit')
+  const [printMode,  setPrintMode]  = useState<PrintOutlineMode>('complete')
+  const [printMenuOpen, setPrintMenuOpen] = useState(false)
   const [collapsedBlocks, setCollapsedBlocks] = useState<Set<string>>(() => {
     if (typeof window === 'undefined') return new Set()
     try {
@@ -1725,6 +1746,13 @@ export default function SermonBuilderWorkspace({
   const sectionIdRef   = useRef(existingSection?.id)
   sectionIdRef.current = existingSection?.id
   const saveTimer      = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  useEffect(() => {
+    if (!printMenuOpen) return
+    function closePrintMenu() { setPrintMenuOpen(false) }
+    document.addEventListener('mousedown', closePrintMenu)
+    return () => document.removeEventListener('mousedown', closePrintMenu)
+  }, [printMenuOpen])
 
   const performSave = useCallback(async (current: SermonBlock[]) => {
     setSaving(true)
@@ -1830,241 +1858,21 @@ export default function SermonBuilderWorkspace({
     setViewMode('preview')
     setActiveMenu(null)
     setAddOpen(false)
+    setPrintMenuOpen(false)
   }
 
-  function printFinalSermon() {
-    const { html } = buildFinalSermonDocument(blocksRef.current, project)
-    const win = window.open('', '_blank', 'width=960,height=760')
-    if (win) {
-      win.document.write(html)
-      win.document.close()
-      win.focus()
-      setTimeout(() => win.print(), 700)
-    }
+  async function previewPrintMode(mode: PrintOutlineMode) {
+    setPrintMode(mode)
+    setPrintMenuOpen(false)
+    if (saveTimer.current) clearTimeout(saveTimer.current)
+    await performSave(blocksRef.current)
+    setViewMode('preview')
+    setActiveMenu(null)
+    setAddOpen(false)
   }
 
-  function printSermon() {
-    const ref   = `${project.book} ${project.passage_ref}`
-    const title = project.title || `Sermão — ${ref}`
-    const esc   = (s: string) => s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
-    const lines = (s: string) => esc(s).split('\n').join('<br>')
-    const paras = (s: string) => s.trim().split(/\n{2,}/).map(p =>
-      `<p>${lines(p)}</p>`).join('')
-
-    const pages: string[] = []
-    let pontoIdx = 0
-
-    // ── Capa ──
-    pages.push(`<div class="page cover">
-      <div class="cover-eyebrow">${esc(ref)}</div>
-      <h1>${esc(title)}</h1>
-      <div class="cover-rule"></div>
-    </div>`)
-
-    for (const block of blocks) {
-      if (block.type === 'desenvolvimento' && block.pontos?.length) {
-        for (const ponto of block.pontos) {
-          pontoIdx++
-          const subs = ponto.subpontos.filter(s => s.text.trim())
-          const ilustracoes = pontoElements(ponto, 'ilustracoes').filter(item => item.text.trim())
-          const aplicacoes = pontoElements(ponto, 'aplicacoes').filter(item => item.text.trim())
-          const citacoes = pontoElements(ponto, 'citacoes').filter(item => item.text.trim())
-          const observacoes = pontoElements(ponto, 'observacoes').filter(item => item.text.trim())
-          const renderItems = (items: PontoElement[], label: string, className: string) => items.map((item, index) => `
-              <div class="sep"></div>
-              <div class="label">${esc(item.title?.trim() || (items.length > 1 ? `${label} ${index + 1}` : label))}</div>
-              <div class="${className}">${paras(item.text)}</div>`
-            ).join('')
-
-          pages.push(`<div class="page">
-            <div class="pg-header">
-              <span>${esc(ref)}</span>
-              <span>${pontoIdx} / ${blocks.filter(b => b.type === 'desenvolvimento').flatMap(b => b.pontos ?? []).length}</span>
-            </div>
-            <h2><span class="roman">${toRoman(pontoIdx)}.</span> ${esc(ponto.text)}</h2>
-            ${subs.length ? `<ul class="subs">${subs.map(s =>
-              `<li><span class="bullet">—</span><span>${esc(s.text)}</span></li>`
-            ).join('')}</ul>` : ''}
-            ${renderItems(ilustracoes, 'Ilustração', 'ilustracao')}
-            ${renderItems(aplicacoes, 'Aplicação', 'aplicacao')}
-            ${renderItems(citacoes, 'Citação', 'ilustracao')}
-            ${renderItems(observacoes, 'Observação', 'ilustracao')}
-            <div class="pg-footer">${esc(title)}</div>
-          </div>`)
-        }
-      } else if (block.content.trim()) {
-        pages.push(`<div class="page">
-          <div class="pg-header"><span>${esc(ref)}</span></div>
-          <h2 class="section-title">${esc(block.title)}</h2>
-          <div class="prose">${paras(block.content)}</div>
-          <div class="pg-footer">${esc(title)}</div>
-        </div>`)
-      }
-    }
-
-    const css = `
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-body {
-  font-family: "Times New Roman", Times, serif;
-  font-size: 13.5pt;
-  color: #000;
-  background: #fff;
-  line-height: 1.75;
-}
-
-/* ── Página ── */
-.page {
-  padding: 2.4cm 3cm 2cm;
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  page-break-after: always;
-  break-after: page;
-}
-.page:last-child { page-break-after: avoid; break-after: avoid; }
-
-/* ── Capa ── */
-.cover {
-  justify-content: center;
-  align-items: center;
-  text-align: center;
-  gap: 0;
-}
-.cover-eyebrow {
-  font-family: Georgia, "Times New Roman", serif;
-  font-size: 10.5pt;
-  letter-spacing: 0.22em;
-  text-transform: uppercase;
-  color: #555;
-  margin-bottom: 2.2rem;
-}
-.cover h1 {
-  font-size: 26pt;
-  font-weight: bold;
-  line-height: 1.2;
-  max-width: 500px;
-  margin: 0 auto 2.4rem;
-  letter-spacing: -0.01em;
-}
-.cover-rule {
-  width: 72px;
-  height: 1.5px;
-  background: #000;
-  margin: 0 auto;
-}
-
-/* ── Cabeçalho / Rodapé ── */
-.pg-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  font-family: system-ui, sans-serif;
-  font-size: 7.5pt;
-  color: #aaa;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  border-bottom: 0.5px solid #d8d8d8;
-  padding-bottom: 0.5rem;
-  margin-bottom: 2.4rem;
-}
-.pg-footer {
-  margin-top: auto;
-  padding-top: 1.4rem;
-  font-family: system-ui, sans-serif;
-  font-size: 7.5pt;
-  color: #ccc;
-  text-align: center;
-  letter-spacing: 0.06em;
-}
-
-/* ── Títulos ── */
-h2 {
-  font-size: 15.5pt;
-  font-weight: bold;
-  line-height: 1.25;
-  margin-bottom: 2rem;
-  letter-spacing: 0.01em;
-}
-h2 .roman {
-  display: inline-block;
-  margin-right: 0.45em;
-}
-.section-title {
-  font-size: 16pt;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  font-weight: bold;
-  margin-bottom: 1.8rem;
-}
-
-/* ── Subpontos ── */
-.subs {
-  list-style: none;
-  padding: 0;
-  margin: 0 0 2rem 0;
-  display: flex;
-  flex-direction: column;
-  gap: 0.9em;
-}
-.subs li {
-  display: flex;
-  gap: 0.8em;
-  align-items: baseline;
-  font-size: 13.5pt;
-  line-height: 1.65;
-}
-.subs .bullet {
-  color: #aaa;
-  flex-shrink: 0;
-  font-size: 11pt;
-  margin-top: 0.05em;
-}
-
-/* ── Separador ── */
-.sep {
-  border: none;
-  border-top: 0.5px solid #ccc;
-  margin: 1.8rem 0 1.2rem;
-}
-.label {
-  font-family: system-ui, sans-serif;
-  font-size: 7.5pt;
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
-  color: #999;
-  margin-bottom: 0.8rem;
-}
-
-/* ── Conteúdo ── */
-.ilustracao {
-  font-style: italic;
-  padding-left: 1.4em;
-  border-left: 2px solid #ccc;
-  margin-bottom: 0.5rem;
-  line-height: 1.75;
-}
-.ilustracao p + p,
-.aplicacao p + p,
-.prose p + p {
-  margin-top: 0.85em;
-}
-
-/* ── Print ── */
-@media print {
-  .page { min-height: auto; }
-  body { font-size: 13pt; }
-}`
-
-    const html = `<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-<meta charset="UTF-8">
-<title>${esc(title)}</title>
-<style>${css}</style>
-</head>
-<body>${pages.join('\n')}</body>
-</html>`
-
+  function printFinalSermon(mode: PrintOutlineMode = printMode) {
+    const { html } = buildFinalSermonDocument(blocksRef.current, project, mode)
     const win = window.open('', '_blank', 'width=960,height=760')
     if (win) {
       win.document.write(html)
@@ -2077,52 +1885,153 @@ h2 .roman {
   const savedLabel = saving ? 'salvando…'
     : savedAt ? `salvo ${savedAt.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}` : ''
 
-  const finalDocument = buildFinalSermonDocument(blocks, project)
+  const finalDocument = buildFinalSermonDocument(blocks, project, printMode)
+  const printModeLabel = printMode === 'reduced' ? 'Esboço reduzido' : 'Esboço completo'
+
+  const toolbarButton: React.CSSProperties = {
+    background: '#fff',
+    border: '1px solid var(--border)',
+    borderRadius: '7px',
+    color: 'var(--text-secondary)',
+    cursor: 'pointer',
+    fontFamily: 'inherit',
+    fontSize: '0.78rem',
+    fontWeight: 750,
+    padding: '0.46rem 0.78rem',
+    lineHeight: 1,
+  }
+
+  const primaryToolbarButton: React.CSSProperties = {
+    ...toolbarButton,
+    background: 'var(--ai)',
+    borderColor: 'var(--ai)',
+    color: '#fff',
+    fontWeight: 850,
+  }
+
+  const renderPrintMenu = () => printMenuOpen ? (
+    <div
+      onMouseDown={e => e.stopPropagation()}
+      style={{
+        position: 'absolute',
+        top: 'calc(100% + 0.4rem)',
+        right: 0,
+        zIndex: 80,
+        width: '245px',
+        background: '#fff',
+        border: '1px solid var(--border)',
+        borderRadius: '8px',
+        padding: '0.35rem',
+        boxShadow: '0 16px 38px rgba(15, 23, 42, 0.16)',
+      }}
+    >
+      {([
+        {
+          mode: 'reduced' as PrintOutlineMode,
+          title: 'Esboço reduzido para pregação',
+          desc: 'Pontos principais e subpontos, sem notas longas.',
+        },
+        {
+          mode: 'complete' as PrintOutlineMode,
+          title: 'Esboço completo',
+          desc: 'Inclui descrições, ilustrações, aplicações e observações.',
+        },
+      ]).map(option => (
+        <button
+          key={option.mode}
+          onClick={() => previewPrintMode(option.mode)}
+          style={{
+            width: '100%',
+            background: option.mode === printMode ? 'rgba(139, 92, 246, 0.08)' : 'transparent',
+            border: 'none',
+            borderRadius: '6px',
+            color: 'var(--text-primary)',
+            cursor: 'pointer',
+            fontFamily: 'inherit',
+            padding: '0.62rem 0.65rem',
+            textAlign: 'left',
+          }}
+          onMouseEnter={e => { e.currentTarget.style.background = 'rgba(139, 92, 246, 0.08)' }}
+          onMouseLeave={e => { e.currentTarget.style.background = option.mode === printMode ? 'rgba(139, 92, 246, 0.08)' : 'transparent' }}
+        >
+          <span style={{ display: 'block', fontSize: '0.78rem', fontWeight: 850 }}>
+            {option.title}
+          </span>
+          <span style={{ display: 'block', marginTop: '0.18rem', color: 'var(--text-muted)', fontSize: '0.68rem', lineHeight: 1.35 }}>
+            {option.desc}
+          </span>
+        </button>
+      ))}
+    </div>
+  ) : null
+
+  const renderToolbar = (variant: 'edit' | 'preview') => (
+    <div
+      style={{
+        position: 'sticky',
+        top: 0,
+        zIndex: 50,
+        background: variant === 'preview' ? 'rgba(238, 241, 245, 0.92)' : 'rgba(255, 255, 255, 0.92)',
+        backdropFilter: 'blur(12px)',
+        border: '1px solid var(--border-subtle)',
+        borderRadius: '10px',
+        boxShadow: '0 12px 32px rgba(15, 23, 42, 0.08)',
+        padding: '0.55rem 0.65rem',
+        marginBottom: '1rem',
+      }}
+    >
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '0.75rem', flexWrap: 'wrap' }}>
+        <div>
+          <div style={{ color: 'var(--ai)', fontSize: '0.62rem', fontWeight: 900, letterSpacing: '0.1em', textTransform: 'uppercase' }}>
+            Construtor Homilético
+          </div>
+          <div style={{ color: 'var(--text-muted)', fontSize: '0.72rem', marginTop: '0.18rem' }}>
+            {project.book} {project.passage_ref} · {printModeLabel} · {savedLabel || 'aguardando alterações'}
+          </div>
+        </div>
+
+        <div style={{ display: 'flex', gap: '0.45rem', alignItems: 'center', flexWrap: 'wrap' }}>
+          <button onClick={() => setViewMode('edit')} style={variant === 'edit' ? primaryToolbarButton : toolbarButton}>
+            Editar
+          </button>
+          <button
+            onClick={async () => {
+              if (saveTimer.current) clearTimeout(saveTimer.current)
+              await performSave(blocksRef.current)
+              setPrintMenuOpen(false)
+            }}
+            disabled={saving}
+            style={{ ...toolbarButton, opacity: saving ? 0.65 : 1, cursor: saving ? 'wait' : 'pointer' }}
+          >
+            {saving ? 'Salvando…' : 'Salvar'}
+          </button>
+          <button onClick={saveAndPreview} style={variant === 'preview' ? primaryToolbarButton : toolbarButton}>
+            Visualizar
+          </button>
+          <div style={{ position: 'relative' }}>
+            <button
+              onMouseDown={e => { e.stopPropagation(); setPrintMenuOpen(open => !open); setActiveMenu(null); setAddOpen(false) }}
+              style={toolbarButton}
+            >
+              Imprimir/PDF ▾
+            </button>
+            {renderPrintMenu()}
+          </div>
+          {variant === 'preview' && (
+            <button onClick={() => printFinalSermon()} style={primaryToolbarButton}>
+              Imprimir esta versão
+            </button>
+          )}
+        </div>
+      </div>
+    </div>
+  )
 
   if (viewMode === 'preview') {
     return (
       <div style={{ background: '#eef1f5', minHeight: '100vh', padding: '1.25rem clamp(0.75rem, 2vw, 2rem) 3rem' }}>
-        <div
-          style={{
-            maxWidth: '21cm',
-            margin: '0 auto 1rem',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            gap: '0.75rem',
-            flexWrap: 'wrap',
-          }}
-        >
-          <div>
-            <div style={{ fontSize: '0.65rem', color: 'var(--ai)', textTransform: 'uppercase', letterSpacing: '0.1em', fontWeight: 900 }}>
-              Visualização final
-            </div>
-            <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)', marginTop: '0.15rem' }}>
-              {project.book} {project.passage_ref} · {savedLabel}
-            </div>
-          </div>
-          <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
-            <button
-              onClick={() => setViewMode('edit')}
-              style={{
-                background: '#fff', border: '1px solid var(--border)', borderRadius: '7px',
-                color: 'var(--text-secondary)', cursor: 'pointer', fontFamily: 'inherit',
-                fontSize: '0.8rem', fontWeight: 700, padding: '0.48rem 0.9rem',
-              }}
-            >
-              Editar
-            </button>
-            <button
-              onClick={printFinalSermon}
-              style={{
-                background: 'var(--ai)', border: '1px solid var(--ai)', borderRadius: '7px',
-                color: '#fff', cursor: 'pointer', fontFamily: 'inherit',
-                fontSize: '0.8rem', fontWeight: 800, padding: '0.48rem 0.95rem',
-              }}
-            >
-              Imprimir / PDF
-            </button>
-          </div>
+        <div style={{ maxWidth: '21cm', margin: '0 auto' }}>
+          {renderToolbar('preview')}
         </div>
 
         <style>{finalDocument.css}</style>
@@ -2133,6 +2042,7 @@ h2 .roman {
 
   return (
     <div style={{ padding: '2rem clamp(1.2rem, 3vw, 2.5rem) 5rem', maxWidth: '860px', margin: '0 auto' }}>
+      {renderToolbar('edit')}
 
       {/* Header */}
       <div style={{ marginBottom: '1.75rem' }}>
@@ -2169,7 +2079,7 @@ h2 .roman {
           )}
           {blocks.some(b => blockHasContent(b)) && (
             <button
-              onClick={printFinalSermon}
+              onClick={() => previewPrintMode('complete')}
               style={{
                 background: 'transparent', border: '1px solid var(--border)', borderRadius: '5px',
                 color: 'var(--text-muted)', cursor: 'pointer', fontFamily: 'inherit',
@@ -2178,7 +2088,7 @@ h2 .roman {
               onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--text-secondary)'; e.currentTarget.style.color = 'var(--text-secondary)' }}
               onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.color = 'var(--text-muted)' }}
             >
-              ⎙ Imprimir / PDF
+              ⎙ Visualizar impressão
             </button>
           )}
         </div>
