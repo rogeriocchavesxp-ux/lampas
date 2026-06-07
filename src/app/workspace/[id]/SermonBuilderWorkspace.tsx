@@ -237,33 +237,58 @@ function defaultSlidePromptSettings(): SlidePromptSettings {
 
 function platformFocus(platform: SlidePlatform): string {
   const map: Record<SlidePlatform, string> = {
-    Canvas: 'Dê prioridade ao design visual: layout, hierarquia, paleta sóbria, imagens discretas, composição e equilíbrio entre texto e espaço em branco.',
-    Claude: 'Dê prioridade à estrutura: conteúdo, narrativa, clareza textual, organização didática e progressão lógica do argumento.',
-    Gemini: 'Dê prioridade à síntese: linguagem clara, sugestões visuais, adaptação multimodal e conexão entre texto, imagem e aplicação.',
-    ChatGPT: 'Dê prioridade ao roteiro de slides: títulos, bullets enxutos, notas do apresentador e sugestões objetivas de design.',
-    Gamma: 'Dê prioridade à geração direta da apresentação: seções bem delimitadas, títulos curtos, layout moderno e prompts visuais para cada slide.',
+    Canvas: 'Dê prioridade à criação visual de slides: layout, hierarquia, paleta sóbria, imagens discretas, composição, contraste e equilíbrio entre texto e espaço em branco.',
+    Claude: 'Dê prioridade à estruturação, refinamento e expansão da apresentação: conteúdo, narrativa, clareza textual, organização didática e progressão lógica.',
+    Gemini: 'Dê prioridade à apresentação visual, ensino e exposição: síntese clara, sugestões visuais, adaptação multimodal e conexão entre texto, imagem e aplicação.',
+    ChatGPT: 'Dê prioridade à criação completa da apresentação slide a slide: títulos, bullets enxutos, notas do apresentador e sugestões objetivas de design.',
+    Gamma: 'Dê prioridade à geração automática de uma apresentação profissional: seções bem delimitadas, títulos curtos, layout moderno e prompts visuais para cada slide.',
   }
   return map[platform]
 }
 
-function buildSlidesPrompt(platform: SlidePlatform, settings: SlidePromptSettings, blocks: SermonBlock[], project: Project): string {
+function blockText(block: SermonBlock | undefined): string {
+  return block?.content?.trim() ? plainTextFromHtml(block.content) : ''
+}
+
+function blockTexts(blocks: SermonBlock[], type: BlockType): string[] {
+  return blocks
+    .filter(block => block.type === type && block.content.trim())
+    .map(block => `${block.title}:\n${plainTextFromHtml(block.content)}`)
+}
+
+function buildSlidesPrompt(
+  platform: SlidePlatform,
+  settings: SlidePromptSettings,
+  blocks: SermonBlock[],
+  project: Project,
+  outlineMode: PrintOutlineMode,
+): string {
   const ref = `${project.book} ${project.passage_ref}`
   const title = project.title || `Sermão — ${ref}`
   const intro = blocks.find(b => b.type === 'introducao')
   const proposition = blocks.find(b => b.type === 'proposicao')
+  const contextualization = blocks.find(b => b.type === 'contextualizacao')
   const conclusion = blocks.find(b => b.type === 'conclusao')
-  const applications = blocks.filter(b => b.type === 'aplicacao' && b.content.trim())
+  const transitions = blockTexts(blocks, 'transicao')
+  const applications = blockTexts(blocks, 'aplicacao')
+  const otherBlocks = blocks
+    .filter(block => !['introducao', 'proposicao', 'contextualizacao', 'desenvolvimento', 'transicao', 'aplicacao', 'conclusao'].includes(block.type) && block.content.trim())
+    .map(block => `${block.title}:\n${plainTextFromHtml(block.content)}`)
   const development = blocks.filter(b => b.type === 'desenvolvimento').flatMap(b => b.pontos ?? [])
+  const isReduced = outlineMode === 'reduced'
 
-  const theme = proposition?.content?.trim()
-    ? plainTextFromHtml(proposition.content).split('\n').find(Boolean) ?? title
-    : title
+  const theme = title
+  const propositionText = blockText(proposition)
+  const introText = blockText(intro)
+  const contextualizationText = blockText(contextualization)
+  const conclusionText = blockText(conclusion)
 
   const lines: string[] = [
-    `Crie uma apresentação de slides para ${settings.presentationType.toLowerCase()} a partir de um sermão expositivo.`,
+    `Crie uma apresentação de slides para ${settings.presentationType.toLowerCase()} a partir do sermão abaixo.`,
     '',
     `Ferramenta de destino: ${platform}.`,
     platformFocus(platform),
+    `Formato atual do sermão no Lampas: ${isReduced ? 'esboço reduzido para pregação' : 'esboço completo para estudo, arquivo e revisão'}.`,
     '',
     'Diretrizes obrigatórias:',
     '- Clareza, reverência, sobriedade e foco bíblico.',
@@ -271,6 +296,8 @@ function buildSlidesPrompt(platform: SlidePlatform, settings: SlidePromptSetting
     '- Títulos fortes e progressão lógica.',
     '- Aplicações práticas e tom pastoral.',
     '- Visual limpo, sem imagens caricatas, sem estética infantilizada e sem excesso de elementos.',
+    '- Use exclusivamente o conteúdo fornecido abaixo. Não invente ilustrações, aplicações, citações, argumentos ou referências.',
+    '- Se algum campo estiver ausente, apenas omita esse elemento da apresentação.',
     `- Tamanho desejado: ${settings.deckSize}.`,
     `- Estilo visual: ${settings.visualStyle}.`,
     '',
@@ -279,42 +306,63 @@ function buildSlidesPrompt(platform: SlidePlatform, settings: SlidePromptSetting
 
   if (settings.include.bibleText) lines.push('', `Texto bíblico:\n${ref}`)
   if (settings.include.theme) lines.push('', `Tema:\n${theme}`)
-  if (settings.include.proposition && proposition?.content.trim()) lines.push('', `Proposição:\n${plainTextFromHtml(proposition.content)}`)
-  if (intro?.content.trim()) lines.push('', `Introdução:\n${plainTextFromHtml(intro.content)}`)
+  if (settings.include.proposition && propositionText) lines.push('', `Proposição:\n${propositionText}`)
+  if (introText) lines.push('', `Introdução:\n${introText}`)
+  if (!isReduced && contextualizationText) lines.push('', `Contextualização:\n${contextualizationText}`)
+  if (!isReduced && transitions.length) lines.push('', `Transições:\n${transitions.join('\n\n')}`)
 
   if (settings.include.mainPoints && development.length) {
     lines.push('', 'Estrutura do desenvolvimento:')
     development.forEach((point, index) => {
       lines.push(`${index + 1}. ${point.text || `Ponto ${index + 1}`}`)
+      if (!isReduced && point.notes?.trim()) lines.push(`   Descrição do ponto: ${plainTextFromHtml(point.notes)}`)
       if (settings.include.subpoints) {
         point.subpontos.filter(sub => sub.text.trim()).forEach((sub, subIndex) => {
           lines.push(`   ${subIndex + 1}. ${sub.text}`)
+          if (!isReduced && sub.notes?.trim()) lines.push(`      Descrição: ${plainTextFromHtml(sub.notes)}`)
         })
       }
-      if (settings.include.illustrations) {
+      if (!isReduced && settings.include.illustrations) {
         const illustrations = pontoElements(point, 'ilustracoes').filter(item => item.text.trim())
-        illustrations.forEach(item => lines.push(`   Ilustração: ${plainTextFromHtml(item.text)}`))
+        illustrations.forEach(item => {
+          lines.push(`   ${item.title?.trim() || 'Ilustração'}: ${plainTextFromHtml(item.text)}`)
+          if (item.notes?.trim()) lines.push(`      Nota: ${plainTextFromHtml(item.notes)}`)
+        })
       }
       if (settings.include.applications) {
         const pointApplications = pontoElements(point, 'aplicacoes').filter(item => item.text.trim())
-        pointApplications.forEach(item => lines.push(`   Aplicação: ${plainTextFromHtml(item.text)}`))
+        pointApplications.forEach(item => {
+          lines.push(`   ${item.title?.trim() || 'Aplicação'}: ${plainTextFromHtml(item.text)}`)
+          if (!isReduced && item.notes?.trim()) lines.push(`      Nota: ${plainTextFromHtml(item.notes)}`)
+        })
+      }
+      if (!isReduced) {
+        const citations = pontoElements(point, 'citacoes').filter(item => item.text.trim())
+        const observations = pontoElements(point, 'observacoes').filter(item => item.text.trim())
+        citations.forEach(item => lines.push(`   ${item.title?.trim() || 'Citação'}: ${plainTextFromHtml(item.text)}`))
+        observations.forEach(item => lines.push(`   ${item.title?.trim() || 'Observação'}: ${plainTextFromHtml(item.text)}`))
       }
     })
   }
 
   if (settings.include.applications && applications.length) {
     lines.push('', 'Aplicações gerais:')
-    applications.forEach(block => lines.push(`- ${plainTextFromHtml(block.content)}`))
+    applications.forEach(text => lines.push(text))
   }
 
-  if (settings.include.conclusion && conclusion?.content.trim()) {
-    lines.push('', `Conclusão:\n${plainTextFromHtml(conclusion.content)}`)
+  if (!isReduced && otherBlocks.length) {
+    lines.push('', `Demais elementos do construtor:\n${otherBlocks.join('\n\n')}`)
+  }
+
+  if (settings.include.conclusion && conclusionText) {
+    lines.push('', `Conclusão:\n${conclusionText}`)
   }
 
   lines.push('', 'Entregue a resposta com:')
   lines.push('- Lista slide a slide.')
   lines.push('- Título de cada slide.')
   lines.push('- Texto curto sugerido para cada slide.')
+  lines.push('- Indicação clara de qual conteúdo do sermão fundamenta cada slide.')
   if (settings.include.speakerNotes) lines.push('- Notas do apresentador para cada slide.')
   if (settings.include.imageSuggestions) lines.push('- Sugestões de imagens discretas, reverentes e não caricatas para cada slide.')
   lines.push('- Indicação de transições lógicas entre as partes.')
@@ -2081,7 +2129,8 @@ export default function SermonBuilderWorkspace({
   }
 
   function generateSlidesPrompt(platform: SlidePlatform, settings = slidesSettings) {
-    const prompt = buildSlidesPrompt(platform, settings, blocksRef.current, project)
+    const mode = viewMode === 'preview' && previewDocument ? previewDocument.mode : printMode
+    const prompt = buildSlidesPrompt(platform, settings, blocksRef.current, project, mode)
     setSlidesPlatform(platform)
     setSlidesPrompt(prompt)
     setSlidesCopied(false)
@@ -2096,7 +2145,8 @@ export default function SermonBuilderWorkspace({
     setSlidesSettings(current => {
       const next = { ...current, ...patch }
       if (slidesPlatform) {
-        setSlidesPrompt(buildSlidesPrompt(slidesPlatform, next, blocksRef.current, project))
+        const mode = viewMode === 'preview' && previewDocument ? previewDocument.mode : printMode
+        setSlidesPrompt(buildSlidesPrompt(slidesPlatform, next, blocksRef.current, project, mode))
         setSlidesCopied(false)
       }
       return next
@@ -2107,7 +2157,8 @@ export default function SermonBuilderWorkspace({
     setSlidesSettings(current => {
       const next = { ...current, include: { ...current.include, [key]: value } }
       if (slidesPlatform) {
-        setSlidesPrompt(buildSlidesPrompt(slidesPlatform, next, blocksRef.current, project))
+        const mode = viewMode === 'preview' && previewDocument ? previewDocument.mode : printMode
+        setSlidesPrompt(buildSlidesPrompt(slidesPlatform, next, blocksRef.current, project, mode))
         setSlidesCopied(false)
       }
       return next
