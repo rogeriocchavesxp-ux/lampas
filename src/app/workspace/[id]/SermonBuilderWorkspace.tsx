@@ -6,13 +6,22 @@ import type { Project, Section } from '@/types/database'
 
 // ── Types ──────────────────────────────────────────────────────────────────
 
-type BlockType = 'introducao' | 'desenvolvimento' | 'transicao' | 'aplicacao' | 'conclusao'
+type BlockType = 'introducao' | 'contextualizacao' | 'desenvolvimento' | 'transicao' | 'aplicacao' | 'conclusao'
 
 interface Subponto {
   id: string
   text: string
   notes?: string
 }
+
+interface PontoElement {
+  id: string
+  title?: string
+  text: string
+  notes?: string
+}
+
+type PontoElementKey = 'ilustracoes' | 'aplicacoes' | 'citacoes' | 'observacoes'
 
 interface PontoPrincipal {
   id: string
@@ -21,8 +30,12 @@ interface PontoPrincipal {
   subpontos: Subponto[]
   ilustracao: string
   ilustracaoNotes?: string
+  ilustracoes?: PontoElement[]
   aplicacao: string
   aplicacaoNotes?: string
+  aplicacoes?: PontoElement[]
+  citacoes?: PontoElement[]
+  observacoes?: PontoElement[]
 }
 
 interface SermonBlock {
@@ -60,8 +73,25 @@ function toRoman(n: number): string {
   return r
 }
 
+function newPontoPrincipal(): PontoPrincipal {
+  return {
+    id: mkId(),
+    text: '',
+    notes: '',
+    subpontos: [{ id: mkId(), text: '', notes: '' }],
+    ilustracao: '',
+    ilustracaoNotes: '',
+    ilustracoes: [],
+    aplicacao: '',
+    aplicacaoNotes: '',
+    aplicacoes: [],
+    citacoes: [],
+    observacoes: [],
+  }
+}
+
 function defaultPontos(): PontoPrincipal[] {
-  return [{ id: mkId(), text: '', notes: '', subpontos: [{ id: mkId(), text: '', notes: '' }], ilustracao: '', ilustracaoNotes: '', aplicacao: '', aplicacaoNotes: '' }]
+  return [newPontoPrincipal()]
 }
 
 function normalizePontos(raw: unknown): PontoPrincipal[] {
@@ -69,10 +99,22 @@ function normalizePontos(raw: unknown): PontoPrincipal[] {
   return defaultPontos()
 }
 
+function pontoElements(p: PontoPrincipal, key: PontoElementKey): PontoElement[] {
+  if (Array.isArray(p[key])) return p[key] ?? []
+  if (key === 'ilustracoes' && (p.ilustracao?.trim() || p.ilustracaoNotes?.trim())) {
+    return [{ id: 'legacy-ilustracao', title: 'Ilustração', text: p.ilustracao ?? '', notes: p.ilustracaoNotes ?? '' }]
+  }
+  if (key === 'aplicacoes' && (p.aplicacao?.trim() || p.aplicacaoNotes?.trim())) {
+    return [{ id: 'legacy-aplicacao', title: 'Aplicação', text: p.aplicacao ?? '', notes: p.aplicacaoNotes ?? '' }]
+  }
+  return []
+}
+
 // ── Constants ──────────────────────────────────────────────────────────────
 
 const BLOCK_TYPES: { type: BlockType; label: string }[] = [
   { type: 'introducao',      label: 'Introdução' },
+  { type: 'contextualizacao', label: 'Contextualização' },
   { type: 'desenvolvimento', label: 'Desenvolvimento' },
   { type: 'transicao',      label: 'Transição' },
   { type: 'aplicacao',      label: 'Aplicação' },
@@ -81,6 +123,7 @@ const BLOCK_TYPES: { type: BlockType; label: string }[] = [
 
 const TYPE_COLOR: Record<BlockType, string> = {
   introducao:      'var(--accent)',
+  contextualizacao: '#c89b3c',
   desenvolvimento: 'var(--ai)',
   transicao:       'var(--text-muted)',
   aplicacao:       '#6db8a0',
@@ -89,8 +132,9 @@ const TYPE_COLOR: Record<BlockType, string> = {
 
 const DEFAULT_BLOCKS: SermonBlock[] = [
   { id: 'b1', type: 'introducao',      title: 'Introdução',      content: '' },
-  { id: 'b2', type: 'desenvolvimento', title: 'Desenvolvimento', content: '', pontos: defaultPontos() },
-  { id: 'b3', type: 'conclusao',       title: 'Conclusão',       content: '' },
+  { id: 'b2', type: 'contextualizacao', title: 'Contextualização', content: '' },
+  { id: 'b3', type: 'desenvolvimento', title: 'Desenvolvimento', content: '', pontos: defaultPontos() },
+  { id: 'b4', type: 'conclusao',       title: 'Conclusão',       content: '' },
 ]
 
 // ── Preset: A Presença de Deus em Todas as Circunstâncias — Gn 39.1-23 ────
@@ -109,7 +153,7 @@ A PERCEPÇÃO EQUIVOCADA DA PRESENÇA DE DEUS GERA CONSEQUÊNCIAS:
 TRANSIÇÃO: Deus está presente em todas as circunstâncias`,
   },
   {
-    id: mkId(), type: 'transicao', title: 'Contextualização',
+    id: mkId(), type: 'contextualizacao', title: 'Contextualização',
     content: `O texto começa dizendo que José foi LEVADO para o Egito.
 
 Personagens:
@@ -231,7 +275,14 @@ Aquele que esteve com José na escravidão, na falsidade e na prisão — veio E
 function blockHasContent(block: SermonBlock): boolean {
   if (block.type === 'desenvolvimento') {
     return (block.pontos ?? []).some(p =>
-      p.text.trim() || p.subpontos.some(s => s.text.trim()) || p.ilustracao.trim() || p.aplicacao.trim()
+      p.text.trim() ||
+      p.subpontos.some(s => s.text.trim()) ||
+      p.ilustracao.trim() ||
+      p.aplicacao.trim() ||
+      pontoElements(p, 'ilustracoes').some(item => item.text.trim()) ||
+      pontoElements(p, 'aplicacoes').some(item => item.text.trim()) ||
+      pontoElements(p, 'citacoes').some(item => item.text.trim()) ||
+      pontoElements(p, 'observacoes').some(item => item.text.trim())
     )
   }
   return block.content.trim().length > 0
@@ -250,6 +301,7 @@ function blockPrompt(block: SermonBlock, project: Project): string {
   const ref = `${project.book} ${project.passage_ref}`
   const map: Record<BlockType, string> = {
     introducao:      `Redija uma introdução pastoral para o sermão de ${ref}. Capture atenção, revele a necessidade humana e conduza naturalmente ao texto.`,
+    contextualizacao: `Redija uma contextualização bíblica e histórica para o sermão de ${ref}. Situe a perícope no livro, no enredo, no contexto imediato e no movimento teológico do texto, preparando o ouvinte para a exposição.`,
     desenvolvimento: `Sugira pontos principais para o sermão de ${ref}. Cada ponto deve ser claro, teológico, progressivo e derivado do texto.`,
     transicao:       `Crie uma transição natural entre os movimentos do sermão de ${ref}. Resuma o que foi dito e abra o próximo ponto.`,
     aplicacao:       `Desenvolva aplicações concretas para "${block.title}" a partir de ${ref}. Específicas, evangélicas e pastorais.`,
@@ -397,7 +449,7 @@ function DesenvolvimentoEditor({ pontos, project, onUpdate, onAskAI }: DevEditor
   // ── Pontos CRUD
 
   function addPonto() {
-    const p: PontoPrincipal = { id: mkId(), text: '', notes: '', subpontos: [{ id: mkId(), text: '', notes: '' }], ilustracao: '', ilustracaoNotes: '', aplicacao: '', aplicacaoNotes: '' }
+    const p = newPontoPrincipal()
     setExpanded(prev => new Set([...prev, p.id]))
     onUpdate([...pontos, p])
   }
@@ -431,7 +483,6 @@ function DesenvolvimentoEditor({ pontos, project, onUpdate, onAskAI }: DevEditor
 
   function addSubponto(pontoId: string) {
     const p = pontos.find(p => p.id === pontoId)!
-    if (p.subpontos.length >= 7) return
     patch(pontoId, { subpontos: [...p.subpontos, { id: mkId(), text: '', notes: '' }] })
   }
 
@@ -460,11 +511,79 @@ function DesenvolvimentoEditor({ pontos, project, onUpdate, onAskAI }: DevEditor
     const i = pontos.findIndex(p => p.id === pontoId)
     const p = pontos[i]
     const sub = p.subpontos.find(s => s.id === subId)!
-    const newPonto: PontoPrincipal = { id: mkId(), text: sub.text, notes: sub.notes ?? '', subpontos: [], ilustracao: '', ilustracaoNotes: '', aplicacao: '', aplicacaoNotes: '' }
+    const newPonto: PontoPrincipal = { ...newPontoPrincipal(), text: sub.text, notes: sub.notes ?? '', subpontos: [] }
     const arr = pontos.map(pt => pt.id === pontoId ? { ...pt, subpontos: pt.subpontos.filter(s => s.id !== subId) } : pt)
     arr.splice(i + 1, 0, newPonto)
     setExpanded(prev => new Set([...prev, newPonto.id]))
     onUpdate(arr)
+  }
+
+  // ── Elementos internos do ponto
+
+  const AI_COLOR = 'var(--ai)'
+
+  type ElementKey = PontoElementKey
+
+  const elementMeta: Record<ElementKey, { singular: string; plural: string; placeholder: string; color: string }> = {
+    ilustracoes: {
+      singular: 'Ilustração',
+      plural: 'Ilustrações',
+      placeholder: 'Ilustração, analogia, exemplo histórico, citação ou caso pastoral…',
+      color: AI_COLOR,
+    },
+    aplicacoes: {
+      singular: 'Aplicação',
+      plural: 'Aplicações',
+      placeholder: 'Como isso confronta, consola, chama à fé, revela Cristo e deve mudar a vida do ouvinte?',
+      color: '#6db8a0',
+    },
+    citacoes: {
+      singular: 'Citação',
+      plural: 'Citações',
+      placeholder: 'Citação, fonte, referência bibliográfica ou frase marcante…',
+      color: AI_COLOR,
+    },
+    observacoes: {
+      singular: 'Observação',
+      plural: 'Observações',
+      placeholder: 'Observação pastoral, nota de organização, cuidado retórico ou detalhe para lembrar…',
+      color: AI_COLOR,
+    },
+  }
+
+  function getElements(p: PontoPrincipal, key: ElementKey): PontoElement[] {
+    return pontoElements(p, key)
+  }
+
+  function patchElements(pontoId: string, key: ElementKey, elements: PontoElement[]) {
+    const legacyPatch =
+      key === 'ilustracoes'
+        ? { ilustracao: elements[0]?.text ?? '', ilustracaoNotes: elements[0]?.notes ?? '' }
+        : key === 'aplicacoes'
+          ? { aplicacao: elements[0]?.text ?? '', aplicacaoNotes: elements[0]?.notes ?? '' }
+          : {}
+
+    patch(pontoId, { [key]: elements, ...legacyPatch } as Partial<PontoPrincipal>)
+  }
+
+  function addElement(pontoId: string, key: ElementKey) {
+    const p = pontos.find(p => p.id === pontoId)!
+    const meta = elementMeta[key]
+    const nextIndex = getElements(p, key).length + 1
+    patchElements(pontoId, key, [
+      ...getElements(p, key),
+      { id: mkId(), title: nextIndex > 1 ? `${meta.singular} ${nextIndex}` : meta.singular, text: '', notes: '' },
+    ])
+  }
+
+  function patchElement(pontoId: string, key: ElementKey, itemId: string, data: Partial<PontoElement>) {
+    const p = pontos.find(p => p.id === pontoId)!
+    patchElements(pontoId, key, getElements(p, key).map(item => item.id === itemId ? { ...item, ...data } : item))
+  }
+
+  function removeElement(pontoId: string, key: ElementKey, itemId: string) {
+    const p = pontos.find(p => p.id === pontoId)!
+    patchElements(pontoId, key, getElements(p, key).filter(item => item.id !== itemId))
   }
 
   // ── AI prompts
@@ -514,7 +633,119 @@ function DesenvolvimentoEditor({ pontos, project, onUpdate, onAskAI }: DevEditor
     >{label}</button>
   )
 
-  const AI_COLOR = 'var(--ai)'
+  function renderElementSection(ponto: PontoPrincipal, key: ElementKey) {
+    const meta = elementMeta[key]
+    const items = getElements(ponto, key)
+    const sectionKey = `${ponto.id}:${key}`
+    const isHovered = hoveredSection === sectionKey
+    const hasItems = items.length > 0
+
+    if (!hasItems) return null
+
+    const aiAction =
+      key === 'ilustracoes'
+        ? () => aiIlustracao(ponto)
+        : key === 'aplicacoes'
+          ? () => aiAplicacao(ponto)
+          : undefined
+
+    return (
+      <div
+        onMouseEnter={() => setHoveredSection(sectionKey)}
+        onMouseLeave={() => setHoveredSection(null)}
+        style={{ borderTop: '1px solid var(--border-subtle)', paddingTop: '0.58rem' }}
+      >
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.25rem', minHeight: '18px' }}>
+          <span style={{ ...secLabel, color: key === 'aplicacoes' ? '#4a9a82' : 'var(--text-muted)' }}>
+            {meta.plural}
+          </span>
+          {isHovered && (
+            <div style={{ display: 'flex', gap: '0.2rem' }}>
+              {aiAction && ghostBtn('✦ IA', aiAction, meta.color)}
+              {ghostBtn(`+ Adicionar ${meta.singular}`, () => addElement(ponto.id, key), meta.color)}
+            </div>
+          )}
+        </div>
+
+        {items.map((item, index) => {
+          const noteKey = `${ponto.id}:${key}:${item.id}`
+          const noteOpen = openNotes.has(noteKey)
+          const itemHasNote = !!item.notes?.trim()
+          const fallbackLabel = items.length > 1 ? `${meta.singular} ${index + 1}` : meta.singular
+          const label = item.title?.trim() || fallbackLabel
+
+          return (
+            <div key={item.id} style={{ marginTop: index === 0 ? '0.15rem' : '0.5rem' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', marginBottom: '0.15rem' }}>
+                <input
+                  value={item.title ?? fallbackLabel}
+                  onChange={e => patchElement(ponto.id, key, item.id, { title: e.target.value })}
+                  aria-label={`Título de ${meta.singular.toLowerCase()}`}
+                  style={{
+                    flex: 1, background: 'transparent', border: 'none',
+                    color: meta.color, fontFamily: 'inherit',
+                    fontSize: '0.64rem', fontWeight: 700,
+                    outline: 'none', padding: 0,
+                  }}
+                />
+                {(isHovered || noteOpen || itemHasNote) && (
+                  <>
+                    <button
+                      onClick={() => toggleNote(noteKey)}
+                      title={itemHasNote ? 'Nota de apoio (preenchida)' : 'Adicionar nota'}
+                      style={{
+                        background: noteOpen ? `${meta.color}18` : 'transparent',
+                        border: 'none', borderRadius: '3px', padding: '0.1rem 0.26rem',
+                        cursor: 'pointer', color: noteOpen ? meta.color : itemHasNote ? `${meta.color}AA` : 'var(--text-muted)',
+                        fontSize: '0.7rem', lineHeight: 1,
+                      }}
+                    >✎</button>
+                    <button
+                      onClick={() => removeElement(ponto.id, key, item.id)}
+                      title={`Remover ${meta.singular.toLowerCase()}`}
+                      style={{
+                        background: 'transparent', border: 'none', borderRadius: '3px',
+                        padding: '0.1rem 0.24rem', cursor: 'pointer',
+                        color: 'var(--text-muted)', fontSize: '0.78rem', lineHeight: 1,
+                      }}
+                      onMouseEnter={e => e.currentTarget.style.color = 'var(--error)'}
+                      onMouseLeave={e => e.currentTarget.style.color = 'var(--text-muted)'}
+                    >×</button>
+                  </>
+                )}
+              </div>
+
+              <textarea
+                value={item.text}
+                onChange={e => patchElement(ponto.id, key, item.id, { text: e.target.value })}
+                placeholder={meta.placeholder}
+                rows={key === 'citacoes' || key === 'observacoes' ? 2 : 3}
+                style={{
+                  width: '100%', background: 'transparent', border: 'none',
+                  borderBottom: '1px solid transparent',
+                  color: 'var(--text-primary)', fontFamily: 'inherit',
+                  fontSize: '0.85rem', lineHeight: 1.7,
+                  padding: '0 0 0.18rem', resize: 'vertical', outline: 'none',
+                }}
+                onFocus={e => e.currentTarget.style.borderBottomColor = 'var(--border-subtle)'}
+                onBlur={e => e.currentTarget.style.borderBottomColor = 'transparent'}
+              />
+
+              {noteOpen && (
+                <NoteArea
+                  value={item.notes ?? ''}
+                  onChange={v => patchElement(ponto.id, key, item.id, { notes: v })}
+                  onAskAI={onAskAI}
+                  aiPrompt={`Escreva notas de apoio para ${label.toLowerCase()} do ponto "${ponto.text || 'principal'}" do sermão de ${ref}. Ajude a desenvolver oralmente com clareza, conexão textual e aplicação pastoral.`}
+                  color={meta.color}
+                />
+              )}
+            </div>
+          )
+        })}
+      </div>
+    )
+  }
 
   return (
     <div style={{ padding: '0.5rem 0.85rem 1rem' }}>
@@ -526,8 +757,6 @@ function DesenvolvimentoEditor({ pontos, project, onUpdate, onAskAI }: DevEditor
         const hasText        = ponto.text.trim().length > 0
         const subCount       = ponto.subpontos.length
         const pontoNoteKey   = `${ponto.id}:ponto`
-        const iluNoteKey     = `${ponto.id}:ilu`
-        const aplNoteKey     = `${ponto.id}:apl`
         const pontoNoteOpen  = openNotes.has(pontoNoteKey)
         const pontoHasNote   = !!(ponto.notes?.trim())
         const isPontoHovered = hoveredPontoId === ponto.id
@@ -548,6 +777,8 @@ function DesenvolvimentoEditor({ pontos, project, onUpdate, onAskAI }: DevEditor
         return (
           <div
             key={ponto.id}
+            onMouseEnter={() => setHoveredPontoId(ponto.id)}
+            onMouseLeave={() => setHoveredPontoId(null)}
             style={{
               border: '1px solid var(--border-subtle)',
               borderLeft: `2px solid ${isOpen ? AI_COLOR : `${AI_COLOR}44`}`,
@@ -560,8 +791,6 @@ function DesenvolvimentoEditor({ pontos, project, onUpdate, onAskAI }: DevEditor
           >
             {/* ── Ponto header */}
             <div
-              onMouseEnter={() => setHoveredPontoId(ponto.id)}
-              onMouseLeave={() => setHoveredPontoId(null)}
               style={{
                 display: 'flex', alignItems: 'center', gap: '0.3rem',
                 padding: '0.48rem 0.6rem',
@@ -680,10 +909,10 @@ function DesenvolvimentoEditor({ pontos, project, onUpdate, onAskAI }: DevEditor
                     style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.35rem', minHeight: '18px' }}
                   >
                     <span style={secLabel}>Subpontos</span>
-                    {hoveredSection === `${ponto.id}:subs` && (
+                    {(hoveredSection === `${ponto.id}:subs` || isPontoHovered) && (
                       <div style={{ display: 'flex', gap: '0.2rem' }}>
                         {ghostBtn('✦ IA', () => aiSubpontos(ponto))}
-                        {ponto.subpontos.length < 7 && ghostBtn('+ Adicionar', () => addSubponto(ponto.id))}
+                        {ghostBtn('+ Adicionar Subponto', () => addSubponto(ponto.id))}
                       </div>
                     )}
                   </div>
@@ -807,109 +1036,34 @@ function DesenvolvimentoEditor({ pontos, project, onUpdate, onAskAI }: DevEditor
                         onMouseEnter={e => { e.currentTarget.style.borderColor = AI_COLOR; e.currentTarget.style.color = AI_COLOR }}
                         onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border-subtle)'; e.currentTarget.style.color = 'var(--text-muted)' }}
                       >
-                        + Adicionar subponto
+                        + Adicionar Subponto
                       </button>
                     )}
                   </div>
                 </div>
 
-                {/* Ilustração */}
-                <div
-                  onMouseEnter={() => setHoveredSection(`${ponto.id}:ilu`)}
-                  onMouseLeave={() => setHoveredSection(null)}
-                  style={{ borderTop: '1px solid var(--border-subtle)', paddingTop: '0.58rem' }}
-                >
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.25rem', minHeight: '18px' }}>
-                    <span style={secLabel}>Ilustração</span>
-                    {(hoveredSection === `${ponto.id}:ilu` || openNotes.has(iluNoteKey)) && (
-                      <div style={{ display: 'flex', gap: '0.2rem' }}>
-                        <button
-                          onClick={() => toggleNote(iluNoteKey)}
-                          style={{
-                            background: openNotes.has(iluNoteKey) ? `${AI_COLOR}18` : 'transparent',
-                            border: 'none', borderRadius: '3px', padding: '0.1rem 0.26rem',
-                            cursor: 'pointer', color: openNotes.has(iluNoteKey) ? AI_COLOR : 'var(--text-muted)',
-                            fontSize: '0.7rem', lineHeight: 1,
-                          }}
-                        >✎</button>
-                        {ghostBtn('✦ IA', () => aiIlustracao(ponto))}
-                      </div>
-                    )}
-                  </div>
-                  <textarea
-                    value={ponto.ilustracao}
-                    onChange={e => patch(ponto.id, { ilustracao: e.target.value })}
-                    placeholder="Ilustração, analogia, exemplo histórico, citação ou caso pastoral…"
-                    rows={3}
+                {isPontoHovered && (
+                  <div
                     style={{
-                      width: '100%', background: 'transparent', border: 'none',
-                      borderBottom: '1px solid transparent',
-                      color: 'var(--text-primary)', fontFamily: 'inherit',
-                      fontSize: '0.85rem', lineHeight: 1.7,
-                      padding: '0 0 0.18rem', resize: 'vertical', outline: 'none',
+                      display: 'flex',
+                      gap: '0.35rem',
+                      alignItems: 'center',
+                      flexWrap: 'wrap',
+                      borderTop: '1px solid var(--border-subtle)',
+                      paddingTop: '0.52rem',
                     }}
-                    onFocus={e => e.currentTarget.style.borderBottomColor = 'var(--border-subtle)'}
-                    onBlur={e => e.currentTarget.style.borderBottomColor = 'transparent'}
-                  />
-                  {openNotes.has(iluNoteKey) && (
-                    <NoteArea
-                      value={ponto.ilustracaoNotes ?? ''}
-                      onChange={v => patch(ponto.id, { ilustracaoNotes: v })}
-                      onAskAI={onAskAI}
-                      aiPrompt={`Escreva notas de apoio para a ilustração do ponto "${ponto.text || 'principal'}" do sermão de ${ref}. Como apresentá-la oralmente? Transição de entrada, desenvolvimento e saída natural.`}
-                      color={AI_COLOR}
-                    />
-                  )}
-                </div>
+                  >
+                    {ghostBtn('+ Adicionar Ilustração', () => addElement(ponto.id, 'ilustracoes'))}
+                    {ghostBtn('+ Adicionar Aplicação', () => addElement(ponto.id, 'aplicacoes'), '#6db8a0')}
+                    {ghostBtn('+ Adicionar Citação', () => addElement(ponto.id, 'citacoes'))}
+                    {ghostBtn('+ Adicionar Observação', () => addElement(ponto.id, 'observacoes'))}
+                  </div>
+                )}
 
-                {/* Aplicação */}
-                <div
-                  onMouseEnter={() => setHoveredSection(`${ponto.id}:apl`)}
-                  onMouseLeave={() => setHoveredSection(null)}
-                  style={{ borderTop: '1px solid var(--border-subtle)', paddingTop: '0.58rem' }}
-                >
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.25rem', minHeight: '18px' }}>
-                    <span style={{ ...secLabel, color: '#4a9a82' }}>Aplicação</span>
-                    {(hoveredSection === `${ponto.id}:apl` || openNotes.has(aplNoteKey)) && (
-                      <div style={{ display: 'flex', gap: '0.2rem' }}>
-                        <button
-                          onClick={() => toggleNote(aplNoteKey)}
-                          style={{
-                            background: openNotes.has(aplNoteKey) ? 'rgba(109,184,160,0.1)' : 'transparent',
-                            border: 'none', borderRadius: '3px', padding: '0.1rem 0.26rem',
-                            cursor: 'pointer', color: openNotes.has(aplNoteKey) ? '#6db8a0' : 'var(--text-muted)',
-                            fontSize: '0.7rem', lineHeight: 1,
-                          }}
-                        >✎</button>
-                        {ghostBtn('✦ IA', () => aiAplicacao(ponto), '#6db8a0')}
-                      </div>
-                    )}
-                  </div>
-                  <textarea
-                    value={ponto.aplicacao}
-                    onChange={e => patch(ponto.id, { aplicacao: e.target.value })}
-                    placeholder="Como isso confronta, consola, chama à fé, revela Cristo e deve mudar a vida do ouvinte?"
-                    rows={3}
-                    style={{
-                      width: '100%', background: 'transparent', border: 'none',
-                      borderBottom: '1px solid transparent',
-                      color: 'var(--text-primary)', fontFamily: 'inherit',
-                      fontSize: '0.85rem', lineHeight: 1.7,
-                      padding: '0 0 0.18rem', resize: 'vertical', outline: 'none',
-                    }}
-                    onFocus={e => e.currentTarget.style.borderBottomColor = 'var(--border-subtle)'}
-                    onBlur={e => e.currentTarget.style.borderBottomColor = 'transparent'}
-                  />
-                  {openNotes.has(aplNoteKey) && (
-                    <NoteArea
-                      value={ponto.aplicacaoNotes ?? ''}
-                      onChange={v => patch(ponto.id, { aplicacaoNotes: v })}
-                      onAskAI={onAskAI}
-                      aiPrompt={`Escreva notas de apoio para a aplicação do ponto "${ponto.text || 'principal'}" do sermão de ${ref}. Como torná-la concreta, evangélica, transformadora e específica para a congregação?`}
-                      color="#6db8a0"
-                    />
-                  )}
-                </div>
+                {renderElementSection(ponto, 'ilustracoes')}
+                {renderElementSection(ponto, 'aplicacoes')}
+                {renderElementSection(ponto, 'citacoes')}
+                {renderElementSection(ponto, 'observacoes')}
 
               </div>
             )}
@@ -1087,6 +1241,16 @@ export default function SermonBuilderWorkspace({
         for (const ponto of block.pontos) {
           pontoIdx++
           const subs = ponto.subpontos.filter(s => s.text.trim())
+          const ilustracoes = pontoElements(ponto, 'ilustracoes').filter(item => item.text.trim())
+          const aplicacoes = pontoElements(ponto, 'aplicacoes').filter(item => item.text.trim())
+          const citacoes = pontoElements(ponto, 'citacoes').filter(item => item.text.trim())
+          const observacoes = pontoElements(ponto, 'observacoes').filter(item => item.text.trim())
+          const renderItems = (items: PontoElement[], label: string, className: string) => items.map((item, index) => `
+              <div class="sep"></div>
+              <div class="label">${esc(item.title?.trim() || (items.length > 1 ? `${label} ${index + 1}` : label))}</div>
+              <div class="${className}">${paras(item.text)}</div>`
+            ).join('')
+
           pages.push(`<div class="page">
             <div class="pg-header">
               <span>${esc(ref)}</span>
@@ -1096,14 +1260,10 @@ export default function SermonBuilderWorkspace({
             ${subs.length ? `<ul class="subs">${subs.map(s =>
               `<li><span class="bullet">—</span><span>${esc(s.text)}</span></li>`
             ).join('')}</ul>` : ''}
-            ${ponto.ilustracao.trim() ? `
-              <div class="sep"></div>
-              <div class="label">Ilustração</div>
-              <div class="ilustracao">${paras(ponto.ilustracao)}</div>` : ''}
-            ${ponto.aplicacao.trim() ? `
-              <div class="sep"></div>
-              <div class="label">Aplicação</div>
-              <div class="aplicacao">${paras(ponto.aplicacao)}</div>` : ''}
+            ${renderItems(ilustracoes, 'Ilustração', 'ilustracao')}
+            ${renderItems(aplicacoes, 'Aplicação', 'aplicacao')}
+            ${renderItems(citacoes, 'Citação', 'ilustracao')}
+            ${renderItems(observacoes, 'Observação', 'ilustracao')}
             <div class="pg-footer">${esc(title)}</div>
           </div>`)
         }
