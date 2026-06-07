@@ -1062,11 +1062,11 @@ function DesenvolvimentoEditor({
             onMouseLeave={() => setHoveredPontoId(null)}
             style={{
               border: '1px solid var(--border-subtle)',
-              borderLeft: `2px solid ${isOpen ? AI_COLOR : `${AI_COLOR}44`}`,
-              borderRadius: '6px',
+              borderLeft: `4px solid ${isOpen ? AI_COLOR : `${AI_COLOR}44`}`,
+              borderRadius: '8px',
               background: isOpen ? '#fff' : 'var(--surface)',
-              boxShadow: isOpen ? '0 14px 32px rgba(15, 23, 42, 0.08)' : 'none',
-              marginBottom: '0.5rem',
+              boxShadow: isOpen ? '0 18px 38px rgba(15, 23, 42, 0.10)' : 'none',
+              marginBottom: isOpen ? '0.9rem' : '0.5rem',
               overflow: 'visible',
               position: 'relative',
               transition: 'background 0.16s ease, box-shadow 0.16s ease, border-color 0.16s ease',
@@ -1075,21 +1075,39 @@ function DesenvolvimentoEditor({
             {/* ── Ponto header */}
             <div
               style={{
-                display: 'flex', alignItems: 'center', gap: '0.3rem',
-                padding: '0.48rem 0.6rem',
+                display: 'flex', alignItems: 'center', gap: '0.7rem',
+                padding: isOpen ? '0.82rem 0.85rem' : '0.62rem 0.75rem',
                 borderBottom: isOpen ? '1px solid var(--border-subtle)' : 'none',
+                background: isOpen ? `${AI_COLOR}0f` : 'transparent',
+                borderRadius: isOpen ? '5px 5px 0 0' : '5px',
               }}
             >
               <button
                 onClick={() => toggleExpand(ponto.id)}
                 style={{
                   background: 'none', border: 'none', color: 'var(--text-muted)',
-                  cursor: 'pointer', fontSize: '0.52rem', padding: 0, flexShrink: 0,
+                  cursor: 'pointer', fontSize: '0.6rem', padding: 0, flexShrink: 0,
                   transition: 'transform 0.15s', transform: isOpen ? 'rotate(90deg)' : 'none', lineHeight: 1,
                 }}
               >▶</button>
 
-              <span style={{ fontSize: '0.58rem', color: `${AI_COLOR}80`, fontWeight: 900, flexShrink: 0, minWidth: '22px', textAlign: 'right' }}>
+              <span
+                style={{
+                  width: isOpen ? '38px' : '28px',
+                  height: isOpen ? '38px' : '28px',
+                  borderRadius: '999px',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  background: isOpen ? AI_COLOR : `${AI_COLOR}14`,
+                  color: isOpen ? '#fff' : AI_COLOR,
+                  fontSize: isOpen ? '0.82rem' : '0.62rem',
+                  fontWeight: 900,
+                  flexShrink: 0,
+                  lineHeight: 1,
+                  boxShadow: isOpen ? `0 8px 18px ${AI_COLOR}2a` : 'none',
+                }}
+              >
                 {markerLabel(pi, mainMarkerStyle)}
               </span>
 
@@ -1101,17 +1119,20 @@ function DesenvolvimentoEditor({
                   style={{
                     flex: 1, background: 'transparent', border: 'none',
                     color: 'var(--text-primary)', fontFamily: 'inherit',
-                    fontSize: '0.9rem', fontWeight: 600, outline: 'none', padding: 0,
+                    fontSize: '1rem', fontWeight: 900, outline: 'none', padding: 0,
+                    textTransform: 'uppercase', letterSpacing: '0.02em', lineHeight: 1.35,
                   }}
                 />
               ) : (
                 <span
                   onClick={() => toggleExpand(ponto.id)}
                   style={{
-                    flex: 1, fontSize: '0.9rem', fontWeight: 600, cursor: 'pointer',
+                    flex: 1, fontSize: '0.92rem', fontWeight: 800, cursor: 'pointer',
                     color: hasText ? 'var(--text-primary)' : 'var(--text-muted)',
                     fontStyle: hasText ? 'normal' : 'italic',
                     overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+                    textTransform: hasText ? 'uppercase' : 'none',
+                    letterSpacing: hasText ? '0.015em' : 0,
                   }}
                 >
                   {ponto.text || `Ponto ${pi + 1}`}
@@ -1431,7 +1452,10 @@ function buildFinalSermonDocument(blocks: SermonBlock[], project: Project) {
             <span>${esc(ref)}</span>
             <span>${pontoIdx} / ${totalPontos}</span>
           </div>
-          <h2><span class="roman">${esc(markerLabel(pontoIdx - 1, mainMarkerStyle))}</span> ${esc(ponto.text || `Ponto ${pontoIdx}`)}</h2>
+          <div class="main-point-heading">
+            <div class="main-point-marker">${esc(markerLabel(pontoIdx - 1, mainMarkerStyle))}</div>
+            <h2>${esc(ponto.text || `Ponto ${pontoIdx}`).toUpperCase()}</h2>
+          </div>
           ${subs.length ? `<ol class="subs">${subs.map((s, index) =>
             `<li><span class="sub-number">${esc(markerLabel(index, subMarkerStyle))}</span><span>${esc(s.text)}</span></li>`
           ).join('')}</ol>` : ''}
@@ -1546,16 +1570,26 @@ function buildFinalSermonDocument(blocks: SermonBlock[], project: Project) {
   text-align: center;
   letter-spacing: 0.06em;
 }
-.sermon-final-document h2 {
-  font-size: 15.5pt;
-  font-weight: bold;
-  line-height: 1.25;
-  margin: 0 0 2rem;
-  letter-spacing: 0.01em;
+.sermon-final-document .main-point-heading {
+  border-top: 1.5px solid #111827;
+  border-bottom: 0.5px solid #d1d5db;
+  padding: 1.1rem 0 1.2rem;
+  margin: 0 0 2.1rem;
 }
-.sermon-final-document h2 .roman {
-  display: inline-block;
-  margin-right: 0.45em;
+.sermon-final-document .main-point-marker {
+  font-family: system-ui, sans-serif;
+  font-size: 9pt;
+  letter-spacing: 0.18em;
+  color: #6b7280;
+  font-weight: 800;
+  margin-bottom: 0.55rem;
+}
+.sermon-final-document h2 {
+  font-size: 18pt;
+  font-weight: bold;
+  line-height: 1.18;
+  margin: 0;
+  letter-spacing: 0.04em;
 }
 .sermon-final-document .section-title {
   font-size: 16pt;
