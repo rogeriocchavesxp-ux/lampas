@@ -538,6 +538,9 @@ export default function WorkspaceClient({ user, project, initialSections }: Prop
       ?? activeDef?.shortTitle
     : activeDef?.shortTitle
   const activeGroupPct = activeGroupId ? Math.round(progressGroupRatio(activeGroupId) * 100) : 0
+  const activePhaseProgress = activePhase
+    ? phaseProgress.find(phase => phase.id === activePhase.id)
+    : undefined
 
   const handleSectionUpdate = useCallback((updated: Section) => {
     setSections(prev => {
@@ -1074,7 +1077,7 @@ export default function WorkspaceClient({ user, project, initialSections }: Prop
 
                   <div style={{ display: 'flex', justifyContent: 'space-between', gap: '0.6rem', alignItems: 'baseline', marginBottom: '0.4rem' }}>
                     <span style={{ fontSize: '0.62rem', color: 'var(--text-muted)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                      {activeGroupLabel ? `Etapa atual: ${activeGroupLabel}` : 'Etapa atual'}
+                      {activeGroupLabel ? `Seção atual: ${activeGroupLabel}` : 'Seção atual'}
                     </span>
                     <span style={{ fontSize: '0.64rem', color: 'var(--text-muted)', fontWeight: 750 }}>{activeGroupPct}%</span>
                   </div>
@@ -1087,6 +1090,26 @@ export default function WorkspaceClient({ user, project, initialSections }: Prop
                       transition: 'width 0.35s ease',
                     }} />
                   </div>
+
+                  {activePhaseProgress && (
+                    <>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', gap: '0.6rem', alignItems: 'baseline', marginBottom: '0.4rem' }}>
+                        <span style={{ fontSize: '0.62rem', color: 'var(--text-muted)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                          Fase atual: {activePhaseProgress.label}
+                        </span>
+                        <span style={{ fontSize: '0.64rem', color: 'var(--text-muted)', fontWeight: 750 }}>{activePhaseProgress.pct}%</span>
+                      </div>
+                      <div style={{ height: '3px', background: 'var(--border-subtle)', borderRadius: '99px', overflow: 'hidden', marginBottom: '0.65rem' }}>
+                        <div style={{
+                          width: `${activePhaseProgress.pct}%`,
+                          height: '100%',
+                          background: activePhaseProgress.color,
+                          borderRadius: '99px',
+                          transition: 'width 0.35s ease',
+                        }} />
+                      </div>
+                    </>
+                  )}
 
                   <div style={{ display: 'grid', gap: '0.34rem' }}>
                     {phaseProgress.map(phase => (

@@ -2678,7 +2678,7 @@ export default function SermonBuilderWorkspace({
     <div
       style={{
         position: 'sticky',
-        top: variant === 'preview' ? '4.4rem' : 0,
+        top: 0,
         width: '100%',
         zIndex: 50,
         background: variant === 'preview' ? 'rgba(255, 255, 255, 0.94)' : 'rgba(255, 255, 255, 0.92)',
@@ -2743,11 +2743,13 @@ export default function SermonBuilderWorkspace({
         style={{
           background: '#eef1f5',
           minHeight: '100vh',
-          padding: '1.25rem clamp(0.75rem, 2vw, 2rem) 3rem',
+          padding: publishedReader
+            ? '1.25rem clamp(0.75rem, 2vw, 2rem) 3rem'
+            : '0 clamp(0.75rem, 2vw, 2rem) 3rem',
           overflow: readerMode === 'paged' ? 'hidden auto' : 'visible',
         }}
       >
-        <div style={{ maxWidth: '21cm', margin: '0 auto' }}>
+        <div style={{ maxWidth: '21cm', margin: '0 auto', paddingTop: publishedReader ? 0 : '1.25rem' }}>
           {publishedReader ? renderReaderToolbar() : renderToolbar('preview')}
         </div>
 
