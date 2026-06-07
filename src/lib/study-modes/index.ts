@@ -490,8 +490,8 @@ const ESTUDO_TEMATICO: StudyModeConfig = {
       }],
     },
     {
-      id: 'comunicar', roman: 'III', label: 'Formular',
-      description: 'Teologia sistemática e aplicações',
+      id: 'comunicar', roman: 'III', label: 'Comunicar',
+      description: 'Organização da apresentação e aplicações',
       color: 'var(--ai)', bgActive: 'rgba(139,92,246,0.08)',
       modes: [{
         id: 'et_formular_mode', label: 'Formulação', subtitle: 'Sistema e prática',
@@ -499,7 +499,11 @@ const ESTUDO_TEMATICO: StudyModeConfig = {
         groups: [
           { id: 'pregar_visao_geral', label: 'Visão Geral' },
           { id: 'et_sistematica_grp', label: 'Teologia Sistemática' },
+          { id: 'sermao_dispositio',  label: 'Estrutura' },
+          { id: 'sermao_elocutio',    label: 'Linguagem' },
           { id: 'et_aplicacoes_grp',  label: 'Aplicações' },
+          { id: 'sermao_memoria',     label: 'Internalização' },
+          { id: 'sermao_pronuntiatio', label: 'Execução' },
         ],
       }],
     },
