@@ -39,6 +39,8 @@ export interface Project {
   updated_at: string
   deleted_at?: string | null
   is_demo?: boolean
+  published?: boolean
+  published_at?: string | null
 }
 
 export interface Section {

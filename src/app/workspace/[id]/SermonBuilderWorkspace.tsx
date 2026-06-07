@@ -1736,6 +1736,8 @@ export default function SermonBuilderWorkspace({
     if (typeof window === 'undefined') return 'complete'
     return window.localStorage.getItem(printModeStorageKey) === 'reduced' ? 'reduced' : 'complete'
   })
+  const [published,  setPublished]  = useState(Boolean(project.published))
+  const [publishing, setPublishing] = useState(false)
   const [previewDocument, setPreviewDocument] = useState<{
     mode: PrintOutlineMode
     document: ReturnType<typeof buildFinalSermonDocument>
@@ -1898,6 +1900,20 @@ export default function SermonBuilderWorkspace({
     }
   }
 
+  async function togglePublished() {
+    const next = !published
+    const publishedAt = next ? new Date().toISOString() : null
+    setPublished(next)
+    setPublishing(true)
+    const { error } = await supabase
+      .from('projects')
+      .update({ published: next, published_at: publishedAt })
+      .eq('id', project.id)
+      .eq('user_id', userId)
+    if (error) setPublished(!next)
+    setPublishing(false)
+  }
+
   const savedLabel = saving ? 'salvando…'
     : savedAt ? `salvo ${savedAt.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}` : ''
 
@@ -1981,6 +1997,57 @@ export default function SermonBuilderWorkspace({
     )
   }
 
+  const renderPublishToggle = () => (
+    <button
+      type="button"
+      role="switch"
+      aria-checked={published}
+      disabled={publishing}
+      onClick={togglePublished}
+      style={{
+        display: 'inline-flex',
+        alignItems: 'center',
+        gap: '0.48rem',
+        background: published ? 'rgba(16, 185, 129, 0.08)' : '#fff',
+        border: `1px solid ${published ? 'rgba(16, 185, 129, 0.35)' : 'var(--border)'}`,
+        borderRadius: '999px',
+        color: published ? '#047857' : 'var(--text-secondary)',
+        cursor: publishing ? 'wait' : 'pointer',
+        fontFamily: 'inherit',
+        fontSize: '0.74rem',
+        fontWeight: 850,
+        padding: '0.28rem 0.48rem 0.28rem 0.72rem',
+        lineHeight: 1,
+        opacity: publishing ? 0.68 : 1,
+      }}
+    >
+      <span>{published ? 'Publicado' : 'Publicar'}</span>
+      <span
+        aria-hidden
+        style={{
+          width: '34px',
+          height: '18px',
+          borderRadius: '999px',
+          background: published ? '#10B981' : 'var(--border)',
+          padding: '2px',
+          display: 'inline-flex',
+          justifyContent: published ? 'flex-end' : 'flex-start',
+          transition: 'background 0.16s ease',
+        }}
+      >
+        <span
+          style={{
+            width: '14px',
+            height: '14px',
+            borderRadius: '50%',
+            background: '#fff',
+            boxShadow: '0 1px 3px rgba(15, 23, 42, 0.25)',
+          }}
+        />
+      </span>
+    </button>
+  )
+
   const renderToolbar = (variant: 'edit' | 'preview') => (
     <div
       style={{
@@ -2025,11 +2092,13 @@ export default function SermonBuilderWorkspace({
             Visualizar
           </button>
           {renderPrintModeToggle()}
-          {variant === 'preview' && (
-            <button onClick={() => printFinalSermon(activePreviewDocument.mode)} style={primaryToolbarButton}>
-              Imprimir esta versão
-            </button>
-          )}
+          <button
+            onClick={() => variant === 'preview' ? printFinalSermon(activePreviewDocument.mode) : previewPrintMode(printMode)}
+            style={variant === 'preview' ? primaryToolbarButton : toolbarButton}
+          >
+            Imprimir/PDF
+          </button>
+          {renderPublishToggle()}
         </div>
       </div>
     </div>

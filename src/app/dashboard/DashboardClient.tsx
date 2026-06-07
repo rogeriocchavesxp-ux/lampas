@@ -271,6 +271,52 @@ function statusLabel(s: string): string {
   return { draft: 'Em andamento', in_progress: 'Em andamento', completed: 'Concluído', archived: 'Arquivado' }[s] ?? s
 }
 
+const PUBLISHED_CATEGORIES = [
+  { id: 'sermoes', label: 'Sermões' },
+  { id: 'devocionais', label: 'Devocionais' },
+  { id: 'ebooks', label: 'E-books' },
+  { id: 'livros', label: 'Livros' },
+  { id: 'palestras', label: 'Palestras' },
+  { id: 'cursos', label: 'Cursos' },
+  { id: 'artigos', label: 'Artigos' },
+  { id: 'estudos_tematicos', label: 'Estudos Temáticos' },
+  { id: 'estudos_doutrinarios', label: 'Estudos Doutrinários' },
+  { id: 'estudos_exegeticos', label: 'Estudos Exegéticos' },
+  { id: 'base_conhecimento', label: 'Base de Conhecimento' },
+] as const
+
+type PublishedCategoryId = typeof PUBLISHED_CATEGORIES[number]['id']
+
+function projectCreationMode(project: Project): string | null {
+  const value = project.meta?.creation_ui_mode
+  return typeof value === 'string' ? value : null
+}
+
+function publishedCategoryFor(project: Project): PublishedCategoryId {
+  const creationMode = projectCreationMode(project)
+  if (creationMode === 'ebook') return 'ebooks'
+  if (creationMode === 'livro') return 'livros'
+  if (creationMode === 'palestra') return 'palestras'
+  if (creationMode === 'curso') return 'cursos'
+  if (creationMode === 'artigo') return 'artigos'
+  if (creationMode === 'conhecimento') return 'base_conhecimento'
+
+  const mode = getModeConfig(project.study_mode ?? project.project_type).id
+  if (mode === 'sermao') return 'sermoes'
+  if (mode === 'devocional') return 'devocionais'
+  if (mode === 'estudo_tematico') return 'estudos_tematicos'
+  if (mode === 'estudo_doutrinario') return 'estudos_doutrinarios'
+  if (mode === 'exegese_biblica' || mode === 'estudo_de_carta' || mode === 'estudo_de_salmos_sabedoria' || mode === 'estudo_de_profecias' || mode === 'estudo_narrativas' || mode === 'comentario_exegetico') {
+    return 'estudos_exegeticos'
+  }
+  return 'estudos_exegeticos'
+}
+
+function formatCalendarDate(dateStr?: string | null): string {
+  if (!dateStr) return '—'
+  return new Date(dateStr).toLocaleDateString('pt-BR', { day: '2-digit', month: 'short', year: 'numeric' })
+}
+
 function modeVisual(modeId: StudyModeId) {
   return MODE_VISUALS[modeId]
 }
@@ -391,6 +437,38 @@ export default function DashboardClient({ user, projects: initialProjects, profi
     }
     return [...counts.entries()].sort((a, b) => b[1] - a[1]).slice(0, 6)
   }, [projects])
+
+  const publishedProjects = useMemo(
+    () => projects.filter(project => project.published),
+    [projects],
+  )
+
+  const publishedByCategory = useMemo(() => {
+    const map = new Map<PublishedCategoryId, Project[]>()
+    for (const category of PUBLISHED_CATEGORIES) map.set(category.id, [])
+    for (const project of publishedProjects) {
+      const category = publishedCategoryFor(project)
+      map.set(category, [...(map.get(category) ?? []), project])
+    }
+    return map
+  }, [publishedProjects])
+
+  async function updatePublishedProject(projectId: string, published: boolean) {
+    const publishedAt = published ? new Date().toISOString() : null
+    setProjects(prev => prev.map(project =>
+      project.id === projectId ? { ...project, published, published_at: publishedAt } : project
+    ))
+    const { error } = await supabase
+      .from('projects')
+      .update({ published, published_at: publishedAt })
+      .eq('id', projectId)
+      .eq('user_id', user.id)
+    if (error) {
+      setProjects(prev => prev.map(project =>
+        project.id === projectId ? { ...project, published: !published } : project
+      ))
+    }
+  }
 
   async function handleDeleteConfirm() {
     if (!deleteTarget) return
@@ -520,6 +598,7 @@ export default function DashboardClient({ user, projects: initialProjects, profi
       study_mode:        selectedMode,
       project_type:      LEGACY_TYPE[selectedMode] ?? 'exegese',
       meta:              isPassage ? { creation_ui_mode: selectedUiMode } : { topic: form.topic.trim(), creation_ui_mode: selectedUiMode },
+      published:         false,
     }
 
     setCreating(true)
@@ -631,7 +710,7 @@ export default function DashboardClient({ user, projects: initialProjects, profi
             cursor: 'pointer', fontSize: '0.88rem', fontFamily: 'inherit',
             boxShadow: '0 4px 12px rgba(59,130,246,0.18)', flexShrink: 0,
           }}>
-            + Novo Estudo
+            + Novo Projeto
           </button>
         </div>
 
@@ -651,6 +730,59 @@ export default function DashboardClient({ user, projects: initialProjects, profi
                     onDelete={() => setDeleteTarget(p)}
                   />
                 ))}
+              </div>
+            </section>
+
+            {/* ── Meus Projetos ── */}
+            <section>
+              <DashLabel>Meus Projetos</DashLabel>
+              <div style={{
+                marginTop: '0.85rem',
+                background: 'var(--surface)',
+                border: '1px solid var(--border-subtle)',
+                borderRadius: '12px',
+                padding: '1.1rem',
+              }}>
+                {publishedProjects.length === 0 ? (
+                  <div style={{ padding: '1.2rem', textAlign: 'center', color: 'var(--text-muted)' }}>
+                    <div style={{ fontSize: '0.9rem', fontWeight: 700, color: 'var(--text-secondary)', marginBottom: '0.25rem' }}>
+                      Nenhum projeto publicado ainda.
+                    </div>
+                    <p style={{ margin: 0, fontSize: '0.78rem' }}>
+                      Publique um projeto pela Organização Homilética para vê-lo aqui.
+                    </p>
+                  </div>
+                ) : (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '1.15rem' }}>
+                    {PUBLISHED_CATEGORIES.map(category => {
+                      const categoryProjects = publishedByCategory.get(category.id) ?? []
+                      if (categoryProjects.length === 0) return null
+                      return (
+                        <div key={category.id}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '0.55rem', marginBottom: '0.55rem' }}>
+                            <h3 style={{ margin: 0, fontSize: '0.85rem', color: 'var(--text-primary)', fontWeight: 800 }}>
+                              {category.label}
+                            </h3>
+                            <span style={{ fontSize: '0.68rem', color: 'var(--text-muted)', border: '1px solid var(--border-subtle)', borderRadius: '999px', padding: '0.05rem 0.42rem' }}>
+                              {categoryProjects.length}
+                            </span>
+                          </div>
+                          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(245px, 1fr))', gap: '0.7rem' }}>
+                            {categoryProjects.map(project => (
+                              <PublishedProjectCard
+                                key={project.id}
+                                project={project}
+                                category={category.label}
+                                onOpen={() => router.push(`/workspace/${project.id}`)}
+                                onUnpublish={() => updatePublishedProject(project.id, false)}
+                              />
+                            ))}
+                          </div>
+                        </div>
+                      )
+                    })}
+                  </div>
+                )}
               </div>
             </section>
 
@@ -877,7 +1009,7 @@ export default function DashboardClient({ user, projects: initialProjects, profi
             {modalStep === 'mode' && (
               <div style={{ padding: '1.75rem 1.75rem 1.5rem' }}>
                 <div style={{ marginBottom: '1.5rem' }}>
-                  <h2 style={{ marginBottom: '0.3rem', fontSize: '1.15rem' }}>Novo Estudo</h2>
+                  <h2 style={{ marginBottom: '0.3rem', fontSize: '1.15rem' }}>Novo Projeto</h2>
                   <p style={{ color: 'var(--text-muted)', fontSize: '0.84rem' }}>
                     Escolha o fluxo natural do Lampas: estudar, produzir ou armazenar.
                   </p>
@@ -1491,6 +1623,114 @@ function ProjectCard({
             </button>
           </div>
         )}
+      </div>
+    </div>
+  )
+}
+
+function PublishedProjectCard({
+  project, category, onOpen, onUnpublish,
+}: {
+  project: Project
+  category: string
+  onOpen: () => void
+  onUnpublish: () => void
+}) {
+  const mode = getModeConfig(project.study_mode ?? project.project_type)
+  const visual = MODE_VISUALS[mode.id as StudyModeId] ?? MODE_VISUALS.exegese_biblica
+  const isPassage = mode.passageBased
+  const subject = isPassage && project.book && project.book !== '—'
+    ? `${project.book} ${project.passage_ref}`
+    : project.passage_ref && project.passage_ref !== '—'
+      ? project.passage_ref
+      : typeof project.meta?.topic === 'string'
+        ? project.meta.topic
+        : 'Projeto Lampas'
+
+  return (
+    <div style={{
+      background: '#fff',
+      border: `1px solid ${visual.border}`,
+      borderRadius: '9px',
+      padding: '0.9rem',
+      display: 'flex',
+      flexDirection: 'column',
+      gap: '0.7rem',
+      minHeight: '176px',
+      borderTop: `3px solid ${visual.color}`,
+    }}>
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem', marginBottom: '0.45rem' }}>
+          <span style={{ fontSize: '0.64rem', fontWeight: 800, color: visual.color, background: visual.bg, border: `1px solid ${visual.border}`, borderRadius: '999px', padding: '0.12rem 0.45rem' }}>
+            Publicado
+          </span>
+          <span style={{ fontSize: '0.66rem', color: 'var(--text-muted)' }}>{category}</span>
+        </div>
+        <h4 style={{
+          margin: '0 0 0.35rem',
+          color: 'var(--text-primary)',
+          fontSize: '0.93rem',
+          lineHeight: 1.28,
+          fontWeight: 800,
+        }}>
+          {project.title}
+        </h4>
+        <p style={{
+          margin: 0,
+          color: 'var(--text-muted)',
+          fontSize: '0.75rem',
+          lineHeight: 1.45,
+          fontStyle: isPassage ? 'italic' : 'normal',
+        }}>
+          {subject}
+        </p>
+      </div>
+
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.55rem', borderTop: '1px solid var(--border-subtle)', paddingTop: '0.65rem' }}>
+        <div>
+          <div style={{ fontSize: '0.58rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.08em', fontWeight: 800 }}>Publicado</div>
+          <div style={{ fontSize: '0.7rem', color: 'var(--text-secondary)', marginTop: '0.12rem' }}>{formatCalendarDate(project.published_at)}</div>
+        </div>
+        <div>
+          <div style={{ fontSize: '0.58rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.08em', fontWeight: 800 }}>Atualizado</div>
+          <div style={{ fontSize: '0.7rem', color: 'var(--text-secondary)', marginTop: '0.12rem' }}>{formatCalendarDate(project.updated_at)}</div>
+        </div>
+      </div>
+
+      <div style={{ display: 'flex', gap: '0.45rem', flexWrap: 'wrap' }}>
+        <button
+          onClick={onOpen}
+          style={{
+            flex: 1,
+            background: visual.color,
+            border: `1px solid ${visual.color}`,
+            color: '#fff',
+            borderRadius: '6px',
+            cursor: 'pointer',
+            fontFamily: 'inherit',
+            fontSize: '0.74rem',
+            fontWeight: 800,
+            padding: '0.42rem 0.65rem',
+          }}
+        >
+          Abrir
+        </button>
+        <button
+          onClick={onUnpublish}
+          style={{
+            background: '#fff',
+            border: '1px solid var(--border)',
+            color: 'var(--text-muted)',
+            borderRadius: '6px',
+            cursor: 'pointer',
+            fontFamily: 'inherit',
+            fontSize: '0.74rem',
+            fontWeight: 700,
+            padding: '0.42rem 0.65rem',
+          }}
+        >
+          Despublicar
+        </button>
       </div>
     </div>
   )
