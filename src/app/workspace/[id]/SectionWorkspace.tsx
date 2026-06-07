@@ -115,7 +115,9 @@ export default function SectionWorkspace({
   const [saving, setSaving]               = useState(false)
   const [savedAt, setSavedAt]             = useState<Date | null>(null)
   const [cardStates, setCardStates]       = useState<Record<string, CardState>>({})
+  const [cardErrors, setCardErrors]       = useState<Record<string, string>>({})
   const [generatingAll, setGeneratingAll] = useState(false)
+  const [generationError, setGenerationError] = useState<string | null>(null)
   const [hoveredCard, setHoveredCard]     = useState<string | null>(null)
   const [openMenu, setOpenMenu]           = useState<string | null>(null)
 
@@ -183,19 +185,37 @@ export default function SectionWorkspace({
   }
 
   async function generateCard(cardId: string) {
+    const currentValue = latestContent.current[cardId] ?? ''
+    if (toDisplayText(currentValue).trim()) {
+      const ok = window.confirm('Este campo já possui conteúdo. Deseja substituir pelo conteúdo gerado com IA?')
+      if (!ok) return
+    }
+
     setCardStates(prev => ({ ...prev, [cardId]: 'generating' }))
+    setCardErrors(prev => {
+      const next = { ...prev }
+      delete next[cardId]
+      return next
+    })
     setExpandedCards(prev => new Set([...prev, cardId]))
     try {
       const res = await fetch('/api/claude/generate', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           sectionSlug: sectionDef.slug, cardId,
-          project: { id: project.id, book: project.book, passage_ref: project.passage_ref, testament: project.testament, original_language: project.original_language, study_mode: project.study_mode },
+          currentCards: latestContent.current,
+          project: { id: project.id, title: project.title, book: project.book, passage_ref: project.passage_ref, testament: project.testament, original_language: project.original_language, study_mode: project.study_mode },
         }),
       })
-      const data = await res.json()
+      const data = await res.json().catch(() => ({}))
+      if (!res.ok) throw new Error(data.error || 'Não foi possível gerar conteúdo com IA.')
       const generated = data[cardId] ?? ''
-      if (!generated) throw new Error('empty')
+      if (!generated.trim()) throw new Error('A IA não retornou conteúdo para este campo.')
+      if (generated.trim() === currentValue.trim()) {
+        setCardStates(prev => ({ ...prev, [cardId]: 'saved' }))
+        setTimeout(() => setCardStates(prev => ({ ...prev, [cardId]: 'idle' })), 1800)
+        return
+      }
       const next = { ...latestContent.current, [cardId]: generated }
       setCardContent(next); latestContent.current = next
       setCardStates(prev => ({ ...prev, [cardId]: 'saving' }))
@@ -203,13 +223,23 @@ export default function SectionWorkspace({
       setCardStates(prev => ({ ...prev, [cardId]: 'saved' }))
       setEditingCards(prev => { const n = new Set(prev); n.delete(cardId); return n })
       setTimeout(() => setCardStates(prev => ({ ...prev, [cardId]: 'idle' })), 2000)
-    } catch {
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Não foi possível gerar conteúdo com IA.'
+      setCardErrors(prev => ({ ...prev, [cardId]: message }))
       setCardStates(prev => ({ ...prev, [cardId]: 'idle' }))
     }
   }
 
   async function generateAll() {
+    const hasExistingContent = Object.values(latestContent.current).some(value => toDisplayText(value).trim())
+    if (hasExistingContent) {
+      const ok = window.confirm('Alguns campos já possuem conteúdo. Deseja substituir apenas os campos retornados pela IA?')
+      if (!ok) return
+    }
+
     setGeneratingAll(true)
+    setGenerationError(null)
+    setCardErrors({})
     const allGenerating: Record<string, CardState> = {}
     sectionDef.cards.forEach(c => { allGenerating[c.id] = 'generating' })
     setCardStates(allGenerating)
@@ -219,10 +249,12 @@ export default function SectionWorkspace({
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           sectionSlug: sectionDef.slug,
-          project: { id: project.id, book: project.book, passage_ref: project.passage_ref, testament: project.testament, original_language: project.original_language, study_mode: project.study_mode },
+          currentCards: latestContent.current,
+          project: { id: project.id, title: project.title, book: project.book, passage_ref: project.passage_ref, testament: project.testament, original_language: project.original_language, study_mode: project.study_mode },
         }),
       })
-      const data = await res.json()
+      const data = await res.json().catch(() => ({}))
+      if (!res.ok) throw new Error(data.error || 'Não foi possível gerar a seção com IA.')
       const next = { ...latestContent.current }
       sectionDef.cards.forEach(c => { if (data[c.id]) next[c.id] = data[c.id] })
       setCardContent(next); latestContent.current = next
@@ -235,7 +267,9 @@ export default function SectionWorkspace({
       setCardStates(allSaved)
       setEditingCards(new Set())
       setTimeout(() => setCardStates({}), 2500)
-    } catch {
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Não foi possível gerar a seção com IA.'
+      setGenerationError(message)
       setCardStates({})
     } finally {
       setGeneratingAll(false)
@@ -404,6 +438,7 @@ export default function SectionWorkspace({
           const dc        = dotColor(displayText)
           const state     = cardStates[card.id] ?? 'idle'
           const isWorking = state === 'generating' || state === 'saving'
+          const errorMessage = cardErrors[card.id]
           const hasContent = displayText.trim().length > 0
           const isEditing = editingCards.has(card.id) || !hasContent
           const preview   = !expanded && hasContent
@@ -561,7 +596,11 @@ export default function SectionWorkspace({
                         ) : (
                           <button
                             key={item.label}
-                            onClick={item.action}
+                            onMouseDown={e => {
+                              e.preventDefault()
+                              e.stopPropagation()
+                              if (!item.disabled) item.action()
+                            }}
                             disabled={item.disabled}
                             style={{
                               display: 'block', width: '100%', textAlign: 'left',
@@ -607,6 +646,20 @@ export default function SectionWorkspace({
               {/* Expanded content */}
               {expanded && (
                 <div style={{ paddingBottom: '1.25rem' }}>
+                  {errorMessage && (
+                    <div style={{
+                      marginBottom: '0.75rem',
+                      padding: '0.65rem 0.75rem',
+                      border: '1px solid rgba(185, 28, 28, 0.22)',
+                      borderRadius: '8px',
+                      background: 'rgba(254, 242, 242, 0.9)',
+                      color: '#B91C1C',
+                      fontSize: '0.78rem',
+                      lineHeight: 1.45,
+                    }}>
+                      {errorMessage}
+                    </div>
+                  )}
                   {isEditing ? (
                     <RichEditor
                       value={content}
@@ -685,7 +738,23 @@ export default function SectionWorkspace({
         marginTop: '3rem', paddingTop: '2rem',
         borderTop: '1px solid var(--border-subtle)',
         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+        gap: '1rem',
+        flexWrap: 'wrap',
       }}>
+        {generationError && (
+          <div style={{
+            flexBasis: '100%',
+            padding: '0.7rem 0.85rem',
+            border: '1px solid rgba(185, 28, 28, 0.22)',
+            borderRadius: '8px',
+            background: 'rgba(254, 242, 242, 0.9)',
+            color: '#B91C1C',
+            fontSize: '0.8rem',
+            lineHeight: 1.45,
+          }}>
+            {generationError}
+          </div>
+        )}
         <button
           onClick={generateAll}
           disabled={generatingAll}

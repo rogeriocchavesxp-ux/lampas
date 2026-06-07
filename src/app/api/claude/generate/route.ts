@@ -12,6 +12,7 @@ const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY! })
 
 interface ProjectContext {
   id?: string
+  title?: string
   book: string
   passage_ref: string
   testament: string
@@ -21,6 +22,31 @@ interface ProjectContext {
 
 function shouldUseOriginalText(sectionSlug: string, sectionGroup: string): boolean {
   return sectionGroup === 'textual' || ['sintese', 'contexto_canonico'].includes(sectionSlug)
+}
+
+function plainText(value: unknown): string {
+  if (typeof value !== 'string') return ''
+  return value
+    .replace(/<br\s*\/?>/gi, '\n')
+    .replace(/<\/(p|div|li|h[1-6])>/gi, '\n')
+    .replace(/<[^>]+>/g, '')
+    .replace(/&nbsp;/g, ' ')
+    .replace(/&amp;/g, '&')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/\n{3,}/g, '\n\n')
+    .trim()
+}
+
+function summarizeCards(cards: Record<string, unknown> | undefined, limit = 1600): string {
+  if (!cards) return ''
+  const entries = Object.entries(cards)
+    .map(([key, value]) => {
+      const text = plainText(value)
+      return text ? `- ${key}: ${text.slice(0, 420)}` : ''
+    })
+    .filter(Boolean)
+  return entries.join('\n').slice(0, limit)
 }
 
 export async function POST(req: Request) {
@@ -46,10 +72,11 @@ export async function POST(req: Request) {
 
   incrementAIUsage(user.id).catch(() => {})
 
-  const { sectionSlug, cardId, cardIds, project } = await req.json() as {
+  const { sectionSlug, cardId, cardIds, currentCards, project } = await req.json() as {
     sectionSlug: string
     cardId?: string
     cardIds?: string[]
+    currentCards?: Record<string, string>
     project: ProjectContext
   }
 
@@ -69,6 +96,27 @@ export async function POST(req: Request) {
   const originalTextContext = shouldUseOriginalText(sectionSlug, sectionDef.group)
     ? await loadOriginalTextContext(supabase, project.id)
     : ''
+  const currentSectionContext = summarizeCards(currentCards, 2200)
+
+  let projectSectionsContext = ''
+  if (project.id) {
+    const { data: relatedSections } = await supabase
+      .from('sections')
+      .select('slug,title,content')
+      .eq('project_id', project.id)
+      .limit(24)
+
+    projectSectionsContext = (relatedSections ?? [])
+      .filter(section => section.slug !== sectionSlug)
+      .map(section => {
+        const cards = (section.content as { cards?: Record<string, unknown> } | null)?.cards
+        const summary = summarizeCards(cards, 900)
+        return summary ? `## ${section.title}\n${summary}` : ''
+      })
+      .filter(Boolean)
+      .join('\n\n')
+      .slice(0, 5000)
+  }
 
   const jsonKeys = cardsToGenerate.map(c => `  "${c.id}": "..."`).join(',\n')
   const fieldDescriptions = cardsToGenerate
@@ -91,14 +139,25 @@ export async function POST(req: Request) {
     return 'Modo: Interpretação exegética. Gere conteúdo acadêmico, textual, histórico, teológico e reformado.'
   })()
 
+  const activeFieldLine = cardId
+    ? `Subseção atual: ${cardsToGenerate[0]?.title ?? cardId}`
+    : `Subseções atuais: ${cardsToGenerate.map(card => card.title).join(', ')}`
+
   const userPrompt = `Gere conteúdo para a seção "${sectionDef.title}".
 
+Projeto: ${project.title || project.book + ' ' + project.passage_ref}
 Texto: ${project.book} ${project.passage_ref}
+Modo de estudo: ${project.study_mode ?? 'não informado'}
+Fase atual: ${sectionDef.phase ?? 'não informada'}
+Grupo/seção atual: ${sectionDef.groupLabel}
+${activeFieldLine}
 Idioma original: ${project.original_language}
 Testamento: ${project.testament === 'NT' ? 'Novo Testamento' : 'Antigo Testamento'}
 ${modeInstruction}
 Objetivo da seção: ${sectionDef.objective}
 ${originalTextContext ? `\nTexto original já carregado no workspace:\n${originalTextContext}\n` : ''}
+${currentSectionContext ? `\nConteúdo já preenchido nesta seção:\n${currentSectionContext}\n` : ''}
+${projectSectionsContext ? `\nConteúdo já preenchido em outras seções do projeto:\n${projectSectionsContext}\n` : ''}
 
 Campos a gerar:
 ${fieldDescriptions}
@@ -110,6 +169,8 @@ INSTRUÇÕES CRÍTICAS:
 - Newlines dentro dos valores JSON devem ser escapados como \\n (JSON padrão)
 - Use rigor exegético reformado
 - Adapte tom, vocabulário e organização ao modo ministerial indicado
+- Gere conteúdo específico para o campo solicitado; não responda genericamente
+- Considere o conteúdo existente para manter continuidade, sem repetir material já escrito desnecessariamente
 - Estrutura exata esperada:
 
 {
@@ -119,7 +180,7 @@ ${jsonKeys}
   const basePrompt = getSystemPromptForMode(project.study_mode)
   const systemText = basePrompt + '\n\nIMPORTANTE: Quando solicitado a gerar JSON estruturado, retorne SOMENTE o JSON válido, sem blocos de código markdown envolvendo o JSON, sem texto fora do JSON. Os valores dentro do JSON podem e devem conter markdown (### títulos, **negrito**, tabelas, listas) para estruturar o conteúdo exegeticamente.'
 
-  const ck = cacheKey(sectionSlug, (cardIds ?? (cardId ? [cardId] : [])).join(','), project.book, project.passage_ref, originalTextContext)
+  const ck = cacheKey(sectionSlug, (cardIds ?? (cardId ? [cardId] : [])).join(','), project.book, project.passage_ref, originalTextContext, currentSectionContext, projectSectionsContext)
   const cached = await getAICache<Record<string, string>>(ck)
   if (cached) return Response.json(cached)
 
