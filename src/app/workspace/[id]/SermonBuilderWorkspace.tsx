@@ -1495,7 +1495,8 @@ function buildFinalSermonDocument(blocks: SermonBlock[], project: Project, mode:
   line-height: 1.75;
 }
 .sermon-final-document .page {
-  width: 21cm;
+  width: min(21cm, 100%);
+  max-width: 21cm;
   min-height: 29.7cm;
   padding: 2.4cm 3cm 2cm;
   margin: 0 auto 1.5rem;
@@ -1983,11 +1984,9 @@ export default function SermonBuilderWorkspace({
   const renderToolbar = (variant: 'edit' | 'preview') => (
     <div
       style={{
-        position: variant === 'preview' ? 'fixed' : 'sticky',
+        position: 'sticky',
         top: variant === 'preview' ? '4.4rem' : 0,
-        left: variant === 'preview' ? '50%' : undefined,
-        transform: variant === 'preview' ? 'translateX(-50%)' : undefined,
-        width: variant === 'preview' ? 'min(21cm, calc(100vw - 2rem))' : undefined,
+        width: '100%',
         zIndex: 50,
         background: variant === 'preview' ? 'rgba(255, 255, 255, 0.94)' : 'rgba(255, 255, 255, 0.92)',
         backdropFilter: 'blur(12px)',
@@ -2038,7 +2037,7 @@ export default function SermonBuilderWorkspace({
 
   if (viewMode === 'preview') {
     return (
-      <div style={{ background: '#eef1f5', minHeight: '100vh', padding: '9.8rem clamp(0.75rem, 2vw, 2rem) 3rem' }}>
+      <div style={{ background: '#eef1f5', minHeight: '100vh', padding: '1.25rem clamp(0.75rem, 2vw, 2rem) 3rem' }}>
         <div style={{ maxWidth: '21cm', margin: '0 auto' }}>
           {renderToolbar('preview')}
         </div>
