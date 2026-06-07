@@ -142,8 +142,40 @@ function defaultPontos(): PontoPrincipal[] {
 }
 
 function normalizePontos(raw: unknown): PontoPrincipal[] {
-  if (Array.isArray(raw) && raw.length > 0) return raw as PontoPrincipal[]
-  return defaultPontos()
+  if (!Array.isArray(raw) || raw.length === 0) return defaultPontos()
+  return raw.map(item => {
+    const ponto = item as Partial<PontoPrincipal>
+    const normalizeElement = (element: unknown): PontoElement => {
+      const value = element as Partial<PontoElement>
+      return {
+        id: typeof value.id === 'string' ? value.id : mkId(),
+        title: typeof value.title === 'string' ? value.title : undefined,
+        text: typeof value.text === 'string' ? value.text : '',
+        notes: typeof value.notes === 'string' ? value.notes : '',
+      }
+    }
+
+    return {
+      id: typeof ponto.id === 'string' ? ponto.id : mkId(),
+      text: typeof ponto.text === 'string' ? ponto.text : '',
+      notes: typeof ponto.notes === 'string' ? ponto.notes : '',
+      subpontos: Array.isArray(ponto.subpontos)
+        ? ponto.subpontos.map(sub => ({
+            id: typeof sub.id === 'string' ? sub.id : mkId(),
+            text: typeof sub.text === 'string' ? sub.text : '',
+            notes: typeof sub.notes === 'string' ? sub.notes : '',
+          }))
+        : [],
+      ilustracao: typeof ponto.ilustracao === 'string' ? ponto.ilustracao : '',
+      ilustracaoNotes: typeof ponto.ilustracaoNotes === 'string' ? ponto.ilustracaoNotes : '',
+      ilustracoes: Array.isArray(ponto.ilustracoes) ? ponto.ilustracoes.map(normalizeElement) : [],
+      aplicacao: typeof ponto.aplicacao === 'string' ? ponto.aplicacao : '',
+      aplicacaoNotes: typeof ponto.aplicacaoNotes === 'string' ? ponto.aplicacaoNotes : '',
+      aplicacoes: Array.isArray(ponto.aplicacoes) ? ponto.aplicacoes.map(normalizeElement) : [],
+      citacoes: Array.isArray(ponto.citacoes) ? ponto.citacoes.map(normalizeElement) : [],
+      observacoes: Array.isArray(ponto.observacoes) ? ponto.observacoes.map(normalizeElement) : [],
+    }
+  })
 }
 
 function pontoElements(p: PontoPrincipal, key: PontoElementKey): PontoElement[] {
@@ -253,8 +285,8 @@ function blockText(block: SermonBlock | undefined): string {
 
 function blockTexts(blocks: SermonBlock[], type: BlockType): string[] {
   return blocks
-    .filter(block => block.type === type && block.content.trim())
-    .map(block => `${block.title}:\n${plainTextFromHtml(block.content)}`)
+    .filter(block => block.type === type && block.content?.trim())
+    .map(block => `${block.title}:\n${plainTextFromHtml(block.content ?? '')}`)
 }
 
 function buildSlidesPrompt(
@@ -273,8 +305,8 @@ function buildSlidesPrompt(
   const transitions = blockTexts(blocks, 'transicao')
   const applications = blockTexts(blocks, 'aplicacao')
   const otherBlocks = blocks
-    .filter(block => !['introducao', 'proposicao', 'contextualizacao', 'desenvolvimento', 'transicao', 'aplicacao', 'conclusao'].includes(block.type) && block.content.trim())
-    .map(block => `${block.title}:\n${plainTextFromHtml(block.content)}`)
+    .filter(block => !['introducao', 'proposicao', 'contextualizacao', 'desenvolvimento', 'transicao', 'aplicacao', 'conclusao'].includes(block.type) && block.content?.trim())
+    .map(block => `${block.title}:\n${plainTextFromHtml(block.content ?? '')}`)
   const development = blocks.filter(b => b.type === 'desenvolvimento').flatMap(b => b.pontos ?? [])
   const isReduced = outlineMode === 'reduced'
 
@@ -318,7 +350,8 @@ function buildSlidesPrompt(
       lines.push(`${index + 1}. ${point.text || `Ponto ${index + 1}`}`)
       if (!isReduced && point.notes?.trim()) lines.push(`   Descrição do ponto: ${plainTextFromHtml(point.notes)}`)
       if (settings.include.subpoints) {
-        point.subpontos.filter(sub => sub.text.trim()).forEach((sub, subIndex) => {
+        const subpoints = point.subpontos ?? []
+        subpoints.filter(sub => sub.text.trim()).forEach((sub, subIndex) => {
           lines.push(`   ${subIndex + 1}. ${sub.text}`)
           if (!isReduced && sub.notes?.trim()) lines.push(`      Descrição: ${plainTextFromHtml(sub.notes)}`)
         })
@@ -2372,7 +2405,11 @@ export default function SermonBuilderWorkspace({
             <button
               key={platform}
               type="button"
-              onClick={() => openSlidesPrompt(platform)}
+              onMouseDown={e => {
+                e.preventDefault()
+                e.stopPropagation()
+                openSlidesPrompt(platform)
+              }}
               style={{
                 width: '100%',
                 background: 'transparent',
