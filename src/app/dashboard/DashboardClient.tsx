@@ -151,7 +151,7 @@ const GENRE_LABEL: Partial<Record<StudyModeId, string>> = {
 
 // ── 4 modos da tela de criação ────────────────────────────────────────────
 
-type UiModeId = 'exegetico' | 'sermao' | 'devocional' | 'doutrinario' | 'conhecimento'
+type UiModeId = 'exegetico' | 'sermao' | 'devocional' | 'doutrinario' | 'tematico' | 'conhecimento'
 
 const UI_MODES: Array<{
   id: UiModeId; emoji: string; label: string
@@ -168,7 +168,10 @@ const UI_MODES: Array<{
     description: 'Para meditação pessoal, formação espiritual e grupos familiares.' },
   { id: 'doutrinario', emoji: '📚', label: 'Estudo Doutrinário', color: '#1E40AF',
     tagline: 'Da doutrina à compreensão',
-    description: 'Para investigação teológica sistemática e rastreamento de temas bíblicos.' },
+    description: 'Investigue uma doutrina bíblica específica de forma sistemática.' },
+  { id: 'tematico', emoji: '🧭', label: 'Estudo Temático', color: '#0F766E',
+    tagline: 'Do tema ao cânone',
+    description: 'Rastreie um tema através de toda a Escritura, identificando padrões, desenvolvimento progressivo e aplicações.' },
   { id: 'conhecimento', emoji: '🧠', label: 'Base de Conhecimento', color: '#B45309',
     tagline: 'Seu repositório teológico pessoal',
     description: 'Organize livros, artigos, sermões e insights para reutilizar em qualquer estudo.' },
@@ -400,6 +403,7 @@ export default function DashboardClient({ user, projects: initialProjects, profi
       case 'sermao':      setSelectedMode('sermao'); break
       case 'devocional':  setSelectedMode('devocional'); break
       case 'doutrinario': setSelectedMode('estudo_doutrinario'); break
+      case 'tematico':    setSelectedMode('estudo_tematico'); break
       case 'exegetico':   setSelectedMode(null); break
       case 'conhecimento': setSelectedMode(null); break
     }
@@ -443,7 +447,7 @@ export default function DashboardClient({ user, projects: initialProjects, profi
 
     if (!selectedMode || !selectedUiMode) return
 
-    const isPassage     = selectedUiMode !== 'doutrinario'
+    const isPassage     = selectedUiMode !== 'doutrinario' && selectedUiMode !== 'tematico'
     const generatedTitle = isPassage ? buildReferenceTitle(form.book, form.passage_ref) : form.topic.trim()
     const projectTitle  = form.title.trim() || generatedTitle
 
@@ -914,7 +918,7 @@ export default function DashboardClient({ user, projects: initialProjects, profi
               <div style={{ padding: '1.75rem 1.75rem 1.5rem' }}>
                 {(() => {
                   const uiMode        = UI_MODES.find(m => m.id === selectedUiMode)!
-                  const isPassage     = selectedUiMode !== 'doutrinario'
+                  const isPassage     = selectedUiMode !== 'doutrinario' && selectedUiMode !== 'tematico'
                   const detectedLabel = selectedMode ? DETECTED_LABEL[selectedMode] : null
                   const canSubmit     = isPassage
                     ? (selectedMode && form.book && form.passage_ref.trim() && form.testament)
@@ -1001,11 +1005,13 @@ export default function DashboardClient({ user, projects: initialProjects, profi
                             </FormField>
                           </>
                         ) : (
-                          <FormField label="Doutrina ou Tema">
+                          <FormField label={selectedUiMode === 'doutrinario' ? 'Doutrina' : 'Tema'}>
                             <input
                               value={form.topic}
                               onChange={e => updateTopic(e.target.value)}
-                              placeholder="Ex: A justificação pela fé · A eleição soberana"
+                              placeholder={selectedUiMode === 'doutrinario'
+                                ? 'Ex: Justificação · Santificação · Eleição'
+                                : 'Ex: Família · Casamento · Trabalho · Sofrimento'}
                               required
                             />
                           </FormField>
