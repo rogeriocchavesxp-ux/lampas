@@ -84,6 +84,7 @@ interface Props {
   onUpdate: (section: Section) => void
   onAskAI: (prompt: string) => void
   initialViewMode?: 'edit' | 'preview'
+  publishedReader?: boolean
 }
 
 // ── Helpers ────────────────────────────────────────────────────────────────
@@ -1896,11 +1897,11 @@ function buildFinalSermonDocument(blocks: SermonBlock[], project: Project, mode:
 <body>${body}</body>
 </html>`
 
-  return { title, css, body, html }
+  return { title, css, body, html, pages }
 }
 
 export default function SermonBuilderWorkspace({
-  project, userId, existingSection, onUpdate, onAskAI, initialViewMode = 'edit',
+  project, userId, existingSection, onUpdate, onAskAI, initialViewMode = 'edit', publishedReader = false,
 }: Props) {
   const supabase = createClient()
   const printModeStorageKey = `lampas:sermon-builder:${project.id}:print-mode`
@@ -1936,6 +1937,9 @@ export default function SermonBuilderWorkspace({
   const [slidesSettings, setSlidesSettings] = useState<SlidePromptSettings>(defaultSlidePromptSettings)
   const [slidesPrompt, setSlidesPrompt] = useState('')
   const [slidesCopied, setSlidesCopied] = useState(false)
+  const [readerMode, setReaderMode] = useState<'continuous' | 'paged'>('continuous')
+  const [readerPage, setReaderPage] = useState(0)
+  const [readerFullscreen, setReaderFullscreen] = useState(false)
   const [previewDocument, setPreviewDocument] = useState<{
     mode: PrintOutlineMode
     document: ReturnType<typeof buildFinalSermonDocument>
@@ -1953,6 +1957,7 @@ export default function SermonBuilderWorkspace({
   blocksRef.current    = blocks
   const sectionIdRef   = useRef(existingSection?.id)
   sectionIdRef.current = existingSection?.id
+  const readerShellRef = useRef<HTMLDivElement | null>(null)
   const saveTimer      = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   useEffect(() => {
@@ -1961,6 +1966,19 @@ export default function SermonBuilderWorkspace({
     document.addEventListener('mousedown', closeSlidesMenu)
     return () => document.removeEventListener('mousedown', closeSlidesMenu)
   }, [slidesMenuOpen])
+
+  useEffect(() => {
+    if (!publishedReader || viewMode === 'preview') return
+    setViewMode('preview')
+  }, [publishedReader, viewMode])
+
+  useEffect(() => {
+    function handleFullscreenChange() {
+      setReaderFullscreen(Boolean(document.fullscreenElement))
+    }
+    document.addEventListener('fullscreenchange', handleFullscreenChange)
+    return () => document.removeEventListener('fullscreenchange', handleFullscreenChange)
+  }, [])
 
   const performSave = useCallback(async (current: SermonBlock[]) => {
     setSaving(true)
@@ -2182,6 +2200,26 @@ export default function SermonBuilderWorkspace({
     document: buildFinalSermonDocument(blocks, project, printMode),
   }
   const printModeLabel = activePreviewDocument.mode === 'reduced' ? 'Esboço reduzido' : 'Esboço completo'
+  const readerPages = activePreviewDocument.document.pages
+  const readerPageCount = Math.max(1, readerPages.length)
+  const readerCurrentPage = Math.min(readerPage, readerPageCount - 1)
+  const readerBody = readerMode === 'paged'
+    ? `<main class="sermon-final-document">${readerPages[readerCurrentPage] ?? ''}</main>`
+    : activePreviewDocument.document.body
+
+  useEffect(() => {
+    setReaderPage(current => Math.min(current, Math.max(0, readerPageCount - 1)))
+  }, [readerPageCount])
+
+  async function toggleReaderFullscreen() {
+    const element = readerShellRef.current
+    if (!element) return
+    if (document.fullscreenElement) {
+      await document.exitFullscreen()
+      return
+    }
+    await element.requestFullscreen()
+  }
 
   const toolbarButton: React.CSSProperties = {
     background: '#fff',
@@ -2525,6 +2563,80 @@ export default function SermonBuilderWorkspace({
     </div>
   ) : null
 
+  const readerToolbarButton: React.CSSProperties = {
+    ...toolbarButton,
+    background: '#fff',
+    fontSize: '0.76rem',
+    padding: '0.42rem 0.68rem',
+  }
+
+  const renderReaderToolbar = () => (
+    <div
+      style={{
+        position: 'sticky',
+        top: '4.4rem',
+        width: '100%',
+        zIndex: 50,
+        background: 'rgba(255, 255, 255, 0.96)',
+        backdropFilter: 'blur(12px)',
+        border: '1px solid var(--border-subtle)',
+        borderRadius: '9px',
+        boxShadow: '0 10px 28px rgba(15, 23, 42, 0.10)',
+        padding: '0.52rem 0.62rem',
+        marginBottom: '1rem',
+      }}
+    >
+      <div style={{ display: 'flex', justifyContent: 'space-between', gap: '0.75rem', alignItems: 'center', flexWrap: 'wrap' }}>
+        <div>
+          <div style={{ color: 'var(--ai)', fontSize: '0.62rem', fontWeight: 900, letterSpacing: '0.1em', textTransform: 'uppercase' }}>
+            Projeto publicado
+          </div>
+          <div style={{ color: 'var(--text-muted)', fontSize: '0.72rem', marginTop: '0.18rem' }}>
+            {project.book} {project.passage_ref} · {printModeLabel} · modo leitura
+          </div>
+        </div>
+
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem', flexWrap: 'wrap' }}>
+          <button
+            type="button"
+            onClick={() => setReaderMode(current => current === 'continuous' ? 'paged' : 'continuous')}
+            style={readerToolbarButton}
+          >
+            {readerMode === 'continuous' ? 'Página a página' : 'Rolagem contínua'}
+          </button>
+
+          {readerMode === 'paged' && (
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+              <button
+                type="button"
+                onClick={() => setReaderPage(page => Math.max(0, page - 1))}
+                disabled={readerCurrentPage === 0}
+                style={{ ...readerToolbarButton, opacity: readerCurrentPage === 0 ? 0.45 : 1, cursor: readerCurrentPage === 0 ? 'not-allowed' : 'pointer' }}
+              >
+                Anterior
+              </button>
+              <span style={{ color: 'var(--text-muted)', fontSize: '0.72rem', fontWeight: 750, minWidth: '4.8rem', textAlign: 'center' }}>
+                {readerCurrentPage + 1} / {readerPageCount}
+              </span>
+              <button
+                type="button"
+                onClick={() => setReaderPage(page => Math.min(readerPageCount - 1, page + 1))}
+                disabled={readerCurrentPage >= readerPageCount - 1}
+                style={{ ...readerToolbarButton, opacity: readerCurrentPage >= readerPageCount - 1 ? 0.45 : 1, cursor: readerCurrentPage >= readerPageCount - 1 ? 'not-allowed' : 'pointer' }}
+              >
+                Próxima
+              </button>
+            </div>
+          )}
+
+          <button type="button" onClick={toggleReaderFullscreen} style={readerToolbarButton}>
+            {readerFullscreen ? 'Sair da tela cheia' : 'Tela cheia'}
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+
   const renderToolbar = (variant: 'edit' | 'preview') => (
     <div
       style={{
@@ -2589,14 +2701,22 @@ export default function SermonBuilderWorkspace({
 
   if (viewMode === 'preview') {
     return (
-      <div style={{ background: '#eef1f5', minHeight: '100vh', padding: '1.25rem clamp(0.75rem, 2vw, 2rem) 3rem' }}>
+      <div
+        ref={readerShellRef}
+        style={{
+          background: '#eef1f5',
+          minHeight: '100vh',
+          padding: '1.25rem clamp(0.75rem, 2vw, 2rem) 3rem',
+          overflow: readerMode === 'paged' ? 'hidden auto' : 'visible',
+        }}
+      >
         <div style={{ maxWidth: '21cm', margin: '0 auto' }}>
-          {renderToolbar('preview')}
+          {publishedReader ? renderReaderToolbar() : renderToolbar('preview')}
         </div>
 
         <style>{activePreviewDocument.document.css}</style>
-        <div dangerouslySetInnerHTML={{ __html: activePreviewDocument.document.body }} />
-        {renderSlidesPromptModal()}
+        <div dangerouslySetInnerHTML={{ __html: readerBody }} />
+        {!publishedReader && renderSlidesPromptModal()}
       </div>
     )
   }

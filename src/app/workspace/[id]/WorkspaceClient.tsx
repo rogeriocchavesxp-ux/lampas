@@ -610,6 +610,23 @@ export default function WorkspaceClient({ user, project, initialSections }: Prop
     }
   }
 
+  const isPublishedReader = searchParams.get('reader') === 'published' && activeSlug === 'sermao_dispositio'
+
+  if (isPublishedReader) {
+    return (
+      <SermonBuilderWorkspace
+        key="published-reader"
+        project={project}
+        userId={user.id}
+        existingSection={activeSection}
+        onUpdate={handleSectionUpdate}
+        onAskAI={handleAskAI}
+        initialViewMode="preview"
+        publishedReader
+      />
+    )
+  }
+
   return (
     <div style={{ height: '100vh', display: 'flex', flexDirection: 'column', background: 'var(--background)' }}>
 
@@ -1561,6 +1578,7 @@ export default function WorkspaceClient({ user, project, initialSections }: Prop
                 onUpdate={handleSectionUpdate}
                 onAskAI={handleAskAI}
                 initialViewMode={searchParams.get('view') === 'preview' ? 'preview' : 'edit'}
+                publishedReader={searchParams.get('reader') === 'published'}
               />
             ) : activeSlug === 'comentario_expositivo' ? (
               <CommentaryWorkspace
