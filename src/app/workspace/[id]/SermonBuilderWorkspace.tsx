@@ -9,6 +9,28 @@ import type { Project, Section } from '@/types/database'
 type BlockType = 'introducao' | 'proposicao' | 'contextualizacao' | 'desenvolvimento' | 'transicao' | 'aplicacao' | 'conclusao'
 type MarkerStyle = 'roman' | 'decimal' | 'alpha' | 'bullet'
 type PrintOutlineMode = 'reduced' | 'complete'
+type SlidePlatform = 'Canvas' | 'Claude' | 'Gemini' | 'ChatGPT' | 'Gamma'
+type SlidePresentationType = 'Culto' | 'EBD' | 'Palestra' | 'Aula' | 'Treinamento' | 'Conferência'
+type SlideDeckSize = 'Curta — 5 a 7 slides' | 'Média — 8 a 12 slides' | 'Completa — 15 a 20 slides'
+type SlideVisualStyle = 'Minimalista' | 'Clássico' | 'Moderno' | 'Editorial' | 'Igreja' | 'Acadêmico'
+
+interface SlidePromptSettings {
+  presentationType: SlidePresentationType
+  deckSize: SlideDeckSize
+  visualStyle: SlideVisualStyle
+  include: {
+    bibleText: boolean
+    theme: boolean
+    proposition: boolean
+    mainPoints: boolean
+    subpoints: boolean
+    applications: boolean
+    illustrations: boolean
+    conclusion: boolean
+    imageSuggestions: boolean
+    speakerNotes: boolean
+  }
+}
 
 interface Subponto {
   id: string
@@ -61,6 +83,7 @@ interface Props {
   existingSection: Section | undefined
   onUpdate: (section: Section) => void
   onAskAI: (prompt: string) => void
+  initialViewMode?: 'edit' | 'preview'
 }
 
 // ── Helpers ────────────────────────────────────────────────────────────────
@@ -176,6 +199,127 @@ function renderFormattedText(s: string) {
 function richEditorHtml(s: string) {
   if (!s.trim()) return ''
   return renderFormattedText(s)
+}
+
+function plainTextFromHtml(value: string): string {
+  return value
+    .replace(/<br\s*\/?>/gi, '\n')
+    .replace(/<\/p>/gi, '\n')
+    .replace(/<\/li>/gi, '\n')
+    .replace(/<[^>]+>/g, '')
+    .replace(/&nbsp;/g, ' ')
+    .replace(/&amp;/g, '&')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/\n{3,}/g, '\n\n')
+    .trim()
+}
+
+function defaultSlidePromptSettings(): SlidePromptSettings {
+  return {
+    presentationType: 'Culto',
+    deckSize: 'Média — 8 a 12 slides',
+    visualStyle: 'Editorial',
+    include: {
+      bibleText: true,
+      theme: true,
+      proposition: true,
+      mainPoints: true,
+      subpoints: true,
+      applications: true,
+      illustrations: true,
+      conclusion: true,
+      imageSuggestions: true,
+      speakerNotes: true,
+    },
+  }
+}
+
+function platformFocus(platform: SlidePlatform): string {
+  const map: Record<SlidePlatform, string> = {
+    Canvas: 'Dê prioridade ao design visual: layout, hierarquia, paleta sóbria, imagens discretas, composição e equilíbrio entre texto e espaço em branco.',
+    Claude: 'Dê prioridade à estrutura: conteúdo, narrativa, clareza textual, organização didática e progressão lógica do argumento.',
+    Gemini: 'Dê prioridade à síntese: linguagem clara, sugestões visuais, adaptação multimodal e conexão entre texto, imagem e aplicação.',
+    ChatGPT: 'Dê prioridade ao roteiro de slides: títulos, bullets enxutos, notas do apresentador e sugestões objetivas de design.',
+    Gamma: 'Dê prioridade à geração direta da apresentação: seções bem delimitadas, títulos curtos, layout moderno e prompts visuais para cada slide.',
+  }
+  return map[platform]
+}
+
+function buildSlidesPrompt(platform: SlidePlatform, settings: SlidePromptSettings, blocks: SermonBlock[], project: Project): string {
+  const ref = `${project.book} ${project.passage_ref}`
+  const title = project.title || `Sermão — ${ref}`
+  const intro = blocks.find(b => b.type === 'introducao')
+  const proposition = blocks.find(b => b.type === 'proposicao')
+  const conclusion = blocks.find(b => b.type === 'conclusao')
+  const applications = blocks.filter(b => b.type === 'aplicacao' && b.content.trim())
+  const development = blocks.filter(b => b.type === 'desenvolvimento').flatMap(b => b.pontos ?? [])
+
+  const theme = proposition?.content?.trim()
+    ? plainTextFromHtml(proposition.content).split('\n').find(Boolean) ?? title
+    : title
+
+  const lines: string[] = [
+    `Crie uma apresentação de slides para ${settings.presentationType.toLowerCase()} a partir de um sermão expositivo.`,
+    '',
+    `Ferramenta de destino: ${platform}.`,
+    platformFocus(platform),
+    '',
+    'Diretrizes obrigatórias:',
+    '- Clareza, reverência, sobriedade e foco bíblico.',
+    '- Pouco texto por slide.',
+    '- Títulos fortes e progressão lógica.',
+    '- Aplicações práticas e tom pastoral.',
+    '- Visual limpo, sem imagens caricatas, sem estética infantilizada e sem excesso de elementos.',
+    `- Tamanho desejado: ${settings.deckSize}.`,
+    `- Estilo visual: ${settings.visualStyle}.`,
+    '',
+    `Título do sermão:\n${title}`,
+  ]
+
+  if (settings.include.bibleText) lines.push('', `Texto bíblico:\n${ref}`)
+  if (settings.include.theme) lines.push('', `Tema:\n${theme}`)
+  if (settings.include.proposition && proposition?.content.trim()) lines.push('', `Proposição:\n${plainTextFromHtml(proposition.content)}`)
+  if (intro?.content.trim()) lines.push('', `Introdução:\n${plainTextFromHtml(intro.content)}`)
+
+  if (settings.include.mainPoints && development.length) {
+    lines.push('', 'Estrutura do desenvolvimento:')
+    development.forEach((point, index) => {
+      lines.push(`${index + 1}. ${point.text || `Ponto ${index + 1}`}`)
+      if (settings.include.subpoints) {
+        point.subpontos.filter(sub => sub.text.trim()).forEach((sub, subIndex) => {
+          lines.push(`   ${subIndex + 1}. ${sub.text}`)
+        })
+      }
+      if (settings.include.illustrations) {
+        const illustrations = pontoElements(point, 'ilustracoes').filter(item => item.text.trim())
+        illustrations.forEach(item => lines.push(`   Ilustração: ${plainTextFromHtml(item.text)}`))
+      }
+      if (settings.include.applications) {
+        const pointApplications = pontoElements(point, 'aplicacoes').filter(item => item.text.trim())
+        pointApplications.forEach(item => lines.push(`   Aplicação: ${plainTextFromHtml(item.text)}`))
+      }
+    })
+  }
+
+  if (settings.include.applications && applications.length) {
+    lines.push('', 'Aplicações gerais:')
+    applications.forEach(block => lines.push(`- ${plainTextFromHtml(block.content)}`))
+  }
+
+  if (settings.include.conclusion && conclusion?.content.trim()) {
+    lines.push('', `Conclusão:\n${plainTextFromHtml(conclusion.content)}`)
+  }
+
+  lines.push('', 'Entregue a resposta com:')
+  lines.push('- Lista slide a slide.')
+  lines.push('- Título de cada slide.')
+  lines.push('- Texto curto sugerido para cada slide.')
+  if (settings.include.speakerNotes) lines.push('- Notas do apresentador para cada slide.')
+  if (settings.include.imageSuggestions) lines.push('- Sugestões de imagens discretas, reverentes e não caricatas para cada slide.')
+  lines.push('- Indicação de transições lógicas entre as partes.')
+
+  return lines.join('\n')
 }
 
 // ── Constants ──────────────────────────────────────────────────────────────
@@ -1708,7 +1852,7 @@ function buildFinalSermonDocument(blocks: SermonBlock[], project: Project, mode:
 }
 
 export default function SermonBuilderWorkspace({
-  project, userId, existingSection, onUpdate, onAskAI,
+  project, userId, existingSection, onUpdate, onAskAI, initialViewMode = 'edit',
 }: Props) {
   const supabase = createClient()
   const printModeStorageKey = `lampas:sermon-builder:${project.id}:print-mode`
@@ -1731,13 +1875,19 @@ export default function SermonBuilderWorkspace({
   const [renamingId, setRenamingId] = useState<string | null>(null)
   const [renameVal,  setRenameVal]  = useState('')
   const [addOpen,    setAddOpen]    = useState(false)
-  const [viewMode,   setViewMode]   = useState<'edit' | 'preview'>('edit')
+  const [viewMode,   setViewMode]   = useState<'edit' | 'preview'>(initialViewMode)
   const [printMode,  setPrintMode]  = useState<PrintOutlineMode>(() => {
     if (typeof window === 'undefined') return 'complete'
     return window.localStorage.getItem(printModeStorageKey) === 'reduced' ? 'reduced' : 'complete'
   })
   const [published,  setPublished]  = useState(Boolean(project.published))
   const [publishing, setPublishing] = useState(false)
+  const [publishError, setPublishError] = useState<string | null>(null)
+  const [slidesMenuOpen, setSlidesMenuOpen] = useState(false)
+  const [slidesPlatform, setSlidesPlatform] = useState<SlidePlatform | null>(null)
+  const [slidesSettings, setSlidesSettings] = useState<SlidePromptSettings>(defaultSlidePromptSettings)
+  const [slidesPrompt, setSlidesPrompt] = useState('')
+  const [slidesCopied, setSlidesCopied] = useState(false)
   const [previewDocument, setPreviewDocument] = useState<{
     mode: PrintOutlineMode
     document: ReturnType<typeof buildFinalSermonDocument>
@@ -1756,6 +1906,13 @@ export default function SermonBuilderWorkspace({
   const sectionIdRef   = useRef(existingSection?.id)
   sectionIdRef.current = existingSection?.id
   const saveTimer      = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  useEffect(() => {
+    if (!slidesMenuOpen) return
+    function closeSlidesMenu() { setSlidesMenuOpen(false) }
+    document.addEventListener('mousedown', closeSlidesMenu)
+    return () => document.removeEventListener('mousedown', closeSlidesMenu)
+  }, [slidesMenuOpen])
 
   const performSave = useCallback(async (current: SermonBlock[]) => {
     setSaving(true)
@@ -1903,6 +2060,7 @@ export default function SermonBuilderWorkspace({
   async function togglePublished() {
     const next = !published
     const publishedAt = next ? new Date().toISOString() : null
+    setPublishError(null)
     setPublished(next)
     setPublishing(true)
     const { error } = await supabase
@@ -1910,8 +2068,59 @@ export default function SermonBuilderWorkspace({
       .update({ published: next, published_at: publishedAt })
       .eq('id', project.id)
       .eq('user_id', userId)
-    if (error) setPublished(!next)
+    if (error) {
+      console.error('[Lampas] Falha ao atualizar publicação do projeto', error)
+      setPublishError(
+        error.code === '42703'
+          ? 'Execute a migration 022_project_publishing.sql para habilitar publicação.'
+          : 'Não foi possível atualizar a publicação agora.'
+      )
+      setPublished(!next)
+    }
     setPublishing(false)
+  }
+
+  function generateSlidesPrompt(platform: SlidePlatform, settings = slidesSettings) {
+    const prompt = buildSlidesPrompt(platform, settings, blocksRef.current, project)
+    setSlidesPlatform(platform)
+    setSlidesPrompt(prompt)
+    setSlidesCopied(false)
+  }
+
+  function openSlidesPrompt(platform: SlidePlatform) {
+    setSlidesMenuOpen(false)
+    generateSlidesPrompt(platform)
+  }
+
+  function updateSlidesSettings(patch: Partial<SlidePromptSettings>) {
+    setSlidesSettings(current => {
+      const next = { ...current, ...patch }
+      if (slidesPlatform) {
+        setSlidesPrompt(buildSlidesPrompt(slidesPlatform, next, blocksRef.current, project))
+        setSlidesCopied(false)
+      }
+      return next
+    })
+  }
+
+  function updateSlideInclude(key: keyof SlidePromptSettings['include'], value: boolean) {
+    setSlidesSettings(current => {
+      const next = { ...current, include: { ...current.include, [key]: value } }
+      if (slidesPlatform) {
+        setSlidesPrompt(buildSlidesPrompt(slidesPlatform, next, blocksRef.current, project))
+        setSlidesCopied(false)
+      }
+      return next
+    })
+  }
+
+  async function copySlidesPrompt() {
+    try {
+      await navigator.clipboard.writeText(slidesPrompt)
+      setSlidesCopied(true)
+    } catch {
+      setSlidesCopied(false)
+    }
   }
 
   const savedLabel = saving ? 'salvando…'
@@ -2048,6 +2257,223 @@ export default function SermonBuilderWorkspace({
     </button>
   )
 
+  const renderSlidesMenu = () => (
+    <div style={{ position: 'relative' }} onMouseDown={e => e.stopPropagation()}>
+      <button
+        type="button"
+        onMouseDown={e => { e.stopPropagation(); setSlidesMenuOpen(open => !open); setActiveMenu(null); setAddOpen(false) }}
+        style={toolbarButton}
+      >
+        Slides ▾
+      </button>
+      {slidesMenuOpen && (
+        <div style={{
+          position: 'absolute',
+          top: 'calc(100% + 0.35rem)',
+          right: 0,
+          zIndex: 90,
+          minWidth: '220px',
+          background: '#fff',
+          border: '1px solid var(--border)',
+          borderRadius: '8px',
+          padding: '0.35rem',
+          boxShadow: '0 16px 38px rgba(15, 23, 42, 0.16)',
+        }}>
+          {(['Canvas', 'Claude', 'Gemini', 'ChatGPT', 'Gamma'] as SlidePlatform[]).map(platform => (
+            <button
+              key={platform}
+              type="button"
+              onClick={() => openSlidesPrompt(platform)}
+              style={{
+                width: '100%',
+                background: 'transparent',
+                border: 'none',
+                borderRadius: '6px',
+                color: 'var(--text-primary)',
+                cursor: 'pointer',
+                fontFamily: 'inherit',
+                fontSize: '0.8rem',
+                fontWeight: 700,
+                padding: '0.52rem 0.6rem',
+                textAlign: 'left',
+              }}
+              onMouseEnter={e => { e.currentTarget.style.background = 'rgba(139, 92, 246, 0.08)' }}
+              onMouseLeave={e => { e.currentTarget.style.background = 'transparent' }}
+            >
+              Gerar prompt para {platform}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  )
+
+  const selectStyle: React.CSSProperties = {
+    width: '100%',
+    background: '#fff',
+    border: '1px solid var(--border)',
+    borderRadius: '7px',
+    color: 'var(--text-primary)',
+    fontFamily: 'inherit',
+    fontSize: '0.8rem',
+    padding: '0.45rem 0.55rem',
+  }
+
+  const renderSlidesPromptModal = () => slidesPlatform ? (
+    <div
+      onMouseDown={e => { if (e.target === e.currentTarget) setSlidesPlatform(null) }}
+      style={{
+        position: 'fixed',
+        inset: 0,
+        zIndex: 120,
+        background: 'rgba(15, 23, 42, 0.42)',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: '1rem',
+      }}
+    >
+      <div style={{
+        width: 'min(920px, 100%)',
+        maxHeight: '88vh',
+        overflow: 'hidden',
+        background: '#fff',
+        border: '1px solid var(--border)',
+        borderRadius: '12px',
+        boxShadow: '0 24px 70px rgba(15, 23, 42, 0.24)',
+        display: 'flex',
+        flexDirection: 'column',
+      }}>
+        <div style={{
+          padding: '1rem 1.15rem',
+          borderBottom: '1px solid var(--border-subtle)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          gap: '1rem',
+        }}>
+          <div>
+            <div style={{ fontSize: '0.68rem', color: 'var(--ai)', fontWeight: 900, letterSpacing: '0.1em', textTransform: 'uppercase' }}>
+              Prompt para {slidesPlatform}
+            </div>
+            <div style={{ marginTop: '0.18rem', fontSize: '0.82rem', color: 'var(--text-muted)' }}>
+              Gere uma apresentação visual a partir do sermão atual.
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={() => setSlidesPlatform(null)}
+            style={{ background: 'transparent', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', fontSize: '1.2rem', lineHeight: 1 }}
+          >
+            ×
+          </button>
+        </div>
+
+        <div style={{ padding: '1rem 1.15rem', overflow: 'auto' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'minmax(220px, 280px) 1fr', gap: '1rem' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem' }}>
+              <label style={{ display: 'flex', flexDirection: 'column', gap: '0.28rem', fontSize: '0.72rem', color: 'var(--text-muted)', fontWeight: 800 }}>
+                Tipo de apresentação
+                <select
+                  value={slidesSettings.presentationType}
+                  onChange={e => updateSlidesSettings({ presentationType: e.target.value as SlidePresentationType })}
+                  style={selectStyle}
+                >
+                  {(['Culto', 'EBD', 'Palestra', 'Aula', 'Treinamento', 'Conferência'] as SlidePresentationType[]).map(option => (
+                    <option key={option} value={option}>{option}</option>
+                  ))}
+                </select>
+              </label>
+              <label style={{ display: 'flex', flexDirection: 'column', gap: '0.28rem', fontSize: '0.72rem', color: 'var(--text-muted)', fontWeight: 800 }}>
+                Tamanho
+                <select
+                  value={slidesSettings.deckSize}
+                  onChange={e => updateSlidesSettings({ deckSize: e.target.value as SlideDeckSize })}
+                  style={selectStyle}
+                >
+                  {(['Curta — 5 a 7 slides', 'Média — 8 a 12 slides', 'Completa — 15 a 20 slides'] as SlideDeckSize[]).map(option => (
+                    <option key={option} value={option}>{option}</option>
+                  ))}
+                </select>
+              </label>
+              <label style={{ display: 'flex', flexDirection: 'column', gap: '0.28rem', fontSize: '0.72rem', color: 'var(--text-muted)', fontWeight: 800 }}>
+                Estilo visual
+                <select
+                  value={slidesSettings.visualStyle}
+                  onChange={e => updateSlidesSettings({ visualStyle: e.target.value as SlideVisualStyle })}
+                  style={selectStyle}
+                >
+                  {(['Minimalista', 'Clássico', 'Moderno', 'Editorial', 'Igreja', 'Acadêmico'] as SlideVisualStyle[]).map(option => (
+                    <option key={option} value={option}>{option}</option>
+                  ))}
+                </select>
+              </label>
+
+              <div>
+                <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)', fontWeight: 900, marginBottom: '0.45rem' }}>Incluir</div>
+                <div style={{ display: 'grid', gap: '0.38rem' }}>
+                  {([
+                    ['bibleText', 'Texto bíblico'],
+                    ['theme', 'Tema'],
+                    ['proposition', 'Proposição'],
+                    ['mainPoints', 'Pontos principais'],
+                    ['subpoints', 'Subpontos'],
+                    ['applications', 'Aplicações'],
+                    ['illustrations', 'Ilustrações'],
+                    ['conclusion', 'Conclusão'],
+                    ['imageSuggestions', 'Sugestões de imagens'],
+                    ['speakerNotes', 'Notas do apresentador'],
+                  ] as Array<[keyof SlidePromptSettings['include'], string]>).map(([key, label]) => (
+                    <label key={key} style={{ display: 'flex', alignItems: 'center', gap: '0.45rem', fontSize: '0.78rem', color: 'var(--text-secondary)' }}>
+                      <input
+                        type="checkbox"
+                        checked={slidesSettings.include[key]}
+                        onChange={e => updateSlideInclude(key, e.target.checked)}
+                      />
+                      {label}
+                    </label>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            <div style={{ minWidth: 0, display: 'flex', flexDirection: 'column', gap: '0.65rem' }}>
+              <textarea
+                value={slidesPrompt}
+                readOnly
+                style={{
+                  width: '100%',
+                  minHeight: '480px',
+                  resize: 'vertical',
+                  border: '1px solid var(--border)',
+                  borderRadius: '9px',
+                  padding: '0.9rem',
+                  fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace',
+                  fontSize: '0.78rem',
+                  lineHeight: 1.55,
+                  color: 'var(--text-primary)',
+                  background: '#F8FAFC',
+                  outline: 'none',
+                }}
+              />
+              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.5rem', flexWrap: 'wrap' }}>
+                <button type="button" onClick={() => generateSlidesPrompt(slidesPlatform)} style={toolbarButton}>
+                  Regenerar
+                </button>
+                <button type="button" onClick={copySlidesPrompt} style={primaryToolbarButton}>
+                  {slidesCopied ? 'Copiado' : 'Copiar'}
+                </button>
+                <button type="button" onClick={() => setSlidesPlatform(null)} style={toolbarButton}>
+                  Fechar
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  ) : null
+
   const renderToolbar = (variant: 'edit' | 'preview') => (
     <div
       style={{
@@ -2092,6 +2518,7 @@ export default function SermonBuilderWorkspace({
             Visualizar
           </button>
           {renderPrintModeToggle()}
+          {renderSlidesMenu()}
           <button
             onClick={() => variant === 'preview' ? printFinalSermon(activePreviewDocument.mode) : previewPrintMode(printMode)}
             style={variant === 'preview' ? primaryToolbarButton : toolbarButton}
@@ -2101,6 +2528,11 @@ export default function SermonBuilderWorkspace({
           {renderPublishToggle()}
         </div>
       </div>
+      {publishError && (
+        <div style={{ marginTop: '0.45rem', color: '#B91C1C', fontSize: '0.72rem', fontWeight: 700 }}>
+          {publishError}
+        </div>
+      )}
     </div>
   )
 
@@ -2113,6 +2545,7 @@ export default function SermonBuilderWorkspace({
 
         <style>{activePreviewDocument.document.css}</style>
         <div dangerouslySetInnerHTML={{ __html: activePreviewDocument.document.body }} />
+        {renderSlidesPromptModal()}
       </div>
     )
   }
@@ -2424,6 +2857,7 @@ export default function SermonBuilderWorkspace({
           {saving ? 'Salvando…' : 'Salvar e visualizar'}
         </button>
       </div>
+      {renderSlidesPromptModal()}
     </div>
   )
 }

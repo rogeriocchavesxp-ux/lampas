@@ -773,7 +773,12 @@ export default function DashboardClient({ user, projects: initialProjects, profi
                                 key={project.id}
                                 project={project}
                                 category={category.label}
-                                onOpen={() => router.push(`/workspace/${project.id}`)}
+                                onOpen={() => {
+                                  const mode = getModeConfig(project.study_mode ?? project.project_type)
+                                  router.push(mode.id === 'sermao'
+                                    ? `/workspace/${project.id}?section=sermao_dispositio&view=preview`
+                                    : `/workspace/${project.id}`)
+                                }}
                                 onUnpublish={() => updatePublishedProject(project.id, false)}
                               />
                             ))}

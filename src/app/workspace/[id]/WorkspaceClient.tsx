@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useCallback, useRef, useEffect, useMemo } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import type { User } from '@supabase/supabase-js'
 import type { Project, Section } from '@/types/database'
 import { createClient } from '@/lib/supabase/client'
@@ -310,6 +310,7 @@ function ResizeHandle({ onMouseDown }: { onMouseDown: (e: React.MouseEvent) => v
 
 export default function WorkspaceClient({ user, project, initialSections }: Props) {
   const router = useRouter()
+  const searchParams = useSearchParams()
   const supabase = useMemo(() => createClient(), [])
 
   // ── Título editável ───────────────────────────────────────────────────────
@@ -349,7 +350,7 @@ export default function WorkspaceClient({ user, project, initialSections }: Prop
   )
 
   const [sections, setSections] = useState<Section[]>(initialSections)
-  const [activeSlug, setActiveSlug] = useState(() => modeConfig.defaultSection)
+  const [activeSlug, setActiveSlug] = useState(() => searchParams.get('section') || modeConfig.defaultSection)
   const [expandedPhases, setExpandedPhases] = useState<Set<string>>(() => new Set(modeConfig.defaultExpandedPhases))
   const [expandedCanons, setExpandedCanons] = useState<Set<string>>(() => new Set(modeConfig.defaultExpandedCanons))
   const [expandedGroups, setExpandedGroups] = useState<Set<string>>(() => new Set(modeConfig.defaultExpandedGroups))
@@ -511,6 +512,12 @@ export default function WorkspaceClient({ user, project, initialSections }: Prop
     if (g) setExpandedGroups(prev => new Set([...prev, g]))
     setActiveSlug(slug)
   }
+
+  useEffect(() => {
+    const section = searchParams.get('section')
+    if (section && section !== activeSlug) navigate(section)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchParams])
 
   function groupProgress(groupId: string) {
     if (groupId === 'colagens') return toolProgress(groupId)
@@ -1391,6 +1398,7 @@ export default function WorkspaceClient({ user, project, initialSections }: Prop
                 existingSection={activeSection}
                 onUpdate={handleSectionUpdate}
                 onAskAI={handleAskAI}
+                initialViewMode={searchParams.get('view') === 'preview' ? 'preview' : 'edit'}
               />
             ) : activeSlug === 'comentario_expositivo' ? (
               <CommentaryWorkspace
