@@ -1710,6 +1710,7 @@ export default function SermonBuilderWorkspace({
   project, userId, existingSection, onUpdate, onAskAI,
 }: Props) {
   const supabase = createClient()
+  const printModeStorageKey = `lampas:sermon-builder:${project.id}:print-mode`
 
   const loadBlocks = useCallback((): SermonBlock[] => {
     const c = existingSection?.content as SermonBuilderContent | null
@@ -1730,7 +1731,10 @@ export default function SermonBuilderWorkspace({
   const [renameVal,  setRenameVal]  = useState('')
   const [addOpen,    setAddOpen]    = useState(false)
   const [viewMode,   setViewMode]   = useState<'edit' | 'preview'>('edit')
-  const [printMode,  setPrintMode]  = useState<PrintOutlineMode>('complete')
+  const [printMode,  setPrintMode]  = useState<PrintOutlineMode>(() => {
+    if (typeof window === 'undefined') return 'complete'
+    return window.localStorage.getItem(printModeStorageKey) === 'reduced' ? 'reduced' : 'complete'
+  })
   const [printMenuOpen, setPrintMenuOpen] = useState(false)
   const [collapsedBlocks, setCollapsedBlocks] = useState<Set<string>>(() => {
     if (typeof window === 'undefined') return new Set()
@@ -1852,6 +1856,13 @@ export default function SermonBuilderWorkspace({
     setRenamingId(null)
   }
 
+  function setActivePrintMode(mode: PrintOutlineMode) {
+    setPrintMode(mode)
+    if (typeof window !== 'undefined') {
+      window.localStorage.setItem(printModeStorageKey, mode)
+    }
+  }
+
   async function saveAndPreview() {
     if (saveTimer.current) clearTimeout(saveTimer.current)
     await performSave(blocksRef.current)
@@ -1862,7 +1873,7 @@ export default function SermonBuilderWorkspace({
   }
 
   async function previewPrintMode(mode: PrintOutlineMode) {
-    setPrintMode(mode)
+    setActivePrintMode(mode)
     setPrintMenuOpen(false)
     if (saveTimer.current) clearTimeout(saveTimer.current)
     await performSave(blocksRef.current)
@@ -1968,8 +1979,11 @@ export default function SermonBuilderWorkspace({
   const renderToolbar = (variant: 'edit' | 'preview') => (
     <div
       style={{
-        position: 'sticky',
-        top: 0,
+        position: variant === 'preview' ? 'fixed' : 'sticky',
+        top: variant === 'preview' ? '0.75rem' : 0,
+        left: variant === 'preview' ? '50%' : undefined,
+        transform: variant === 'preview' ? 'translateX(-50%)' : undefined,
+        width: variant === 'preview' ? 'min(21cm, calc(100vw - 1.5rem))' : undefined,
         zIndex: 50,
         background: variant === 'preview' ? 'rgba(238, 241, 245, 0.92)' : 'rgba(255, 255, 255, 0.92)',
         backdropFilter: 'blur(12px)',
@@ -2029,7 +2043,7 @@ export default function SermonBuilderWorkspace({
 
   if (viewMode === 'preview') {
     return (
-      <div style={{ background: '#eef1f5', minHeight: '100vh', padding: '1.25rem clamp(0.75rem, 2vw, 2rem) 3rem' }}>
+      <div style={{ background: '#eef1f5', minHeight: '100vh', padding: '6.5rem clamp(0.75rem, 2vw, 2rem) 3rem' }}>
         <div style={{ maxWidth: '21cm', margin: '0 auto' }}>
           {renderToolbar('preview')}
         </div>
