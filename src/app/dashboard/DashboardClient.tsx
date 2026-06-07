@@ -149,32 +149,71 @@ const GENRE_LABEL: Partial<Record<StudyModeId, string>> = {
   devocional: 'Devocional', comentario_exegetico: 'Comentário', estudo_biblico: 'Est. Bíblico',
 }
 
-// ── 4 modos da tela de criação ────────────────────────────────────────────
+// ── Fluxo da tela de criação ──────────────────────────────────────────────
 
-type UiModeId = 'exegetico' | 'sermao' | 'devocional' | 'doutrinario' | 'tematico' | 'conhecimento'
+type CreationGroupId = 'estudar' | 'produzir' | 'armazenar'
+type UiModeId =
+  | 'exegetico' | 'tematico' | 'doutrinario'
+  | 'sermao' | 'devocional' | 'aula' | 'estudo_biblico' | 'artigo' | 'ebook' | 'livro' | 'palestra' | 'curso' | 'serie_mensagens'
+  | 'conhecimento'
 
 const UI_MODES: Array<{
-  id: UiModeId; emoji: string; label: string
+  id: UiModeId; group: CreationGroupId; emoji: string; label: string
   tagline: string; description: string; color: string
 }> = [
-  { id: 'exegetico',   emoji: '📖', label: 'Estudo Exegético',   color: '#0F766E',
+  { id: 'exegetico', group: 'estudar', emoji: '📖', label: 'Exegético', color: '#0F766E',
     tagline: 'O que o texto diz, quer dizer e significa',
-    description: 'O Lampas detecta automaticamente o gênero literário e ativa o método adequado — carta, poesia, profecia ou narrativa.' },
-  { id: 'sermao',      emoji: '🎙', label: 'Sermão',             color: '#7C3AED',
-    tagline: 'Do texto ao púlpito',
-    description: 'Para pastores e pregadores que transformam exegese em proclamação expositiva.' },
-  { id: 'devocional',  emoji: '❤️', label: 'Devocional',         color: '#BE3455',
-    tagline: 'Do texto ao coração',
-    description: 'Para meditação pessoal, formação espiritual e grupos familiares.' },
-  { id: 'doutrinario', emoji: '📚', label: 'Estudo Doutrinário', color: '#1E40AF',
-    tagline: 'Da doutrina à compreensão',
-    description: 'Investigue uma doutrina bíblica específica de forma sistemática.' },
-  { id: 'tematico', emoji: '🧭', label: 'Estudo Temático', color: '#0F766E',
+    description: 'Análise profunda do texto bíblico em seu contexto histórico, literário e teológico.' },
+  { id: 'tematico', group: 'estudar', emoji: '🧭', label: 'Temático', color: '#0F766E',
     tagline: 'Do tema ao cânone',
     description: 'Rastreie um tema através de toda a Escritura, identificando padrões, desenvolvimento progressivo e aplicações.' },
-  { id: 'conhecimento', emoji: '🧠', label: 'Base de Conhecimento', color: '#B45309',
+  { id: 'doutrinario', group: 'estudar', emoji: '📚', label: 'Doutrinário', color: '#1E40AF',
+    tagline: 'Da doutrina à compreensão',
+    description: 'Investigue sistematicamente uma doutrina bíblica específica.' },
+  { id: 'sermao', group: 'produzir', emoji: '🎙', label: 'Sermão', color: '#7C3AED',
+    tagline: 'Do texto ao púlpito',
+    description: 'Da exegese ao púlpito.' },
+  { id: 'devocional', group: 'produzir', emoji: '❤️', label: 'Devocional', color: '#BE3455',
+    tagline: 'Do texto ao coração',
+    description: 'Aplicação pastoral para edificação pessoal e familiar.' },
+  { id: 'aula', group: 'produzir', emoji: '🏫', label: 'Aula', color: '#2563EB',
+    tagline: 'Ensino estruturado',
+    description: 'Conteúdo estruturado para ensino em classes, seminários e cursos.' },
+  { id: 'estudo_biblico', group: 'produzir', emoji: '📘', label: 'Estudo Bíblico', color: '#2563EB',
+    tagline: 'Formação cristã',
+    description: 'Material para grupos, discipulado e formação cristã.' },
+  { id: 'artigo', group: 'produzir', emoji: '📝', label: 'Artigo', color: '#475569',
+    tagline: 'Escrita pastoral',
+    description: 'Produção teológica ou pastoral em formato de artigo.' },
+  { id: 'ebook', group: 'produzir', emoji: '📙', label: 'E-book', color: '#B45309',
+    tagline: 'Publicação digital',
+    description: 'Organização de conteúdo para publicação digital.' },
+  { id: 'livro', group: 'produzir', emoji: '📕', label: 'Livro', color: '#92400E',
+    tagline: 'Obra extensa',
+    description: 'Projeto de escrita e organização de obras extensas.' },
+  { id: 'palestra', group: 'produzir', emoji: '🎤', label: 'Palestra', color: '#7C3AED',
+    tagline: 'Evento e conferência',
+    description: 'Conteúdo para conferências, congressos e eventos.' },
+  { id: 'curso', group: 'produzir', emoji: '🎓', label: 'Curso', color: '#4F46E5',
+    tagline: 'Módulos e aulas',
+    description: 'Estruturação de módulos, aulas e materiais educacionais.' },
+  { id: 'serie_mensagens', group: 'produzir', emoji: '🧩', label: 'Série de Mensagens', color: '#7C3AED',
+    tagline: 'Planejamento seriado',
+    description: 'Planejamento e organização de séries expositivas ou temáticas.' },
+  { id: 'conhecimento', group: 'armazenar', emoji: '🧠', label: 'Base de Conhecimento', color: '#B45309',
     tagline: 'Seu repositório teológico pessoal',
-    description: 'Organize livros, artigos, sermões e insights para reutilizar em qualquer estudo.' },
+    description: 'Preserve conhecimento para reutilização futura. Seu segundo cérebro teológico e ministerial.' },
+]
+
+const CREATION_GROUPS: Array<{
+  id: CreationGroupId; emoji: string; label: string; description: string; color: string
+}> = [
+  { id: 'estudar', emoji: '📖', label: 'Estudar', color: '#0F766E',
+    description: 'Investigue a Escritura, temas e doutrinas antes da produção.' },
+  { id: 'produzir', emoji: '✍️', label: 'Produzir', color: '#7C3AED',
+    description: 'Transforme seus estudos em conteúdo para ensinar, publicar e comunicar.' },
+  { id: 'armazenar', emoji: '🧠', label: 'Armazenar', color: '#B45309',
+    description: 'Preserve conhecimento para reutilização futura. Seu segundo cérebro teológico e ministerial.' },
 ]
 
 // Detecção automática de gênero literário pelo livro
@@ -280,6 +319,7 @@ export default function DashboardClient({ user, projects: initialProjects, profi
   // Modal state
   const [showNew,        setShowNew]       = useState(false)
   const [modalStep,      setModalStep]     = useState<'mode' | 'form'>('mode')
+  const [selectedCreationGroup, setSelectedCreationGroup] = useState<CreationGroupId | null>(null)
   const [selectedUiMode, setSelectedUiMode]= useState<UiModeId | null>(null)
   const [selectedMode,   setSelectedMode]  = useState<StudyModeId | null>(null)
   const [creating,       setCreating]      = useState(false)
@@ -383,6 +423,7 @@ export default function DashboardClient({ user, projects: initialProjects, profi
 
   function openModal() {
     setModalStep('mode')
+    setSelectedCreationGroup(null)
     setSelectedUiMode(null)
     setSelectedMode(null)
     setCreating(false)
@@ -402,6 +443,15 @@ export default function DashboardClient({ user, projects: initialProjects, profi
     switch (uid) {
       case 'sermao':      setSelectedMode('sermao'); break
       case 'devocional':  setSelectedMode('devocional'); break
+      case 'aula':
+      case 'estudo_biblico':
+      case 'artigo':
+      case 'ebook':
+      case 'livro':
+      case 'palestra':
+      case 'curso':
+      case 'serie_mensagens':
+        setSelectedMode('estudo_biblico'); break
       case 'doutrinario': setSelectedMode('estudo_doutrinario'); break
       case 'tematico':    setSelectedMode('estudo_tematico'); break
       case 'exegetico':   setSelectedMode(null); break
@@ -447,7 +497,8 @@ export default function DashboardClient({ user, projects: initialProjects, profi
 
     if (!selectedMode || !selectedUiMode) return
 
-    const isPassage     = selectedUiMode !== 'doutrinario' && selectedUiMode !== 'tematico'
+    const isTopicProduction = ['artigo', 'ebook', 'livro', 'palestra', 'curso', 'serie_mensagens'].includes(selectedUiMode)
+    const isPassage     = selectedUiMode !== 'doutrinario' && selectedUiMode !== 'tematico' && !isTopicProduction
     const generatedTitle = isPassage ? buildReferenceTitle(form.book, form.passage_ref) : form.topic.trim()
     const projectTitle  = form.title.trim() || generatedTitle
 
@@ -468,7 +519,7 @@ export default function DashboardClient({ user, projects: initialProjects, profi
       status:            'draft',
       study_mode:        selectedMode,
       project_type:      LEGACY_TYPE[selectedMode] ?? 'exegese',
-      meta:              isPassage ? {} : { topic: form.topic.trim() },
+      meta:              isPassage ? { creation_ui_mode: selectedUiMode } : { topic: form.topic.trim(), creation_ui_mode: selectedUiMode },
     }
 
     setCreating(true)
@@ -817,66 +868,110 @@ export default function DashboardClient({ user, projects: initialProjects, profi
           <div style={{
             background: 'var(--surface)', borderRadius: '14px', border: '1px solid var(--border)',
             width: '100%',
-            maxWidth: modalStep === 'mode' ? '660px' : '480px',
+            maxWidth: modalStep === 'mode' ? '760px' : '480px',
             animation: 'fadeIn 0.15s ease-out',
             transition: 'max-width 0.2s ease',
           }}>
 
-            {/* Step 1: Mode selection */}
+            {/* Step 1: Work-flow selection */}
             {modalStep === 'mode' && (
               <div style={{ padding: '1.75rem 1.75rem 1.5rem' }}>
                 <div style={{ marginBottom: '1.5rem' }}>
                   <h2 style={{ marginBottom: '0.3rem', fontSize: '1.15rem' }}>Novo Estudo</h2>
                   <p style={{ color: 'var(--text-muted)', fontSize: '0.84rem' }}>
-                    O que você quer fazer?
+                    Escolha o fluxo natural do Lampas: estudar, produzir ou armazenar.
                   </p>
                 </div>
 
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem', marginBottom: '1.5rem' }}>
-                  {UI_MODES.map(uiMode => {
-                    const active = selectedUiMode === uiMode.id
-                    return (
+                {!selectedCreationGroup ? (
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gap: '0.85rem', marginBottom: '1.5rem' }}>
+                    {CREATION_GROUPS.map(group => (
                       <button
-                        key={uiMode.id}
-                        onClick={() => selectUiMode(uiMode.id)}
+                        key={group.id}
+                        onClick={() => {
+                          setSelectedCreationGroup(group.id)
+                          setSelectedUiMode(null)
+                          if (group.id === 'armazenar') selectUiMode('conhecimento')
+                        }}
                         style={{
-                          textAlign: 'left', padding: '1rem 1.1rem',
-                          background: active ? `${uiMode.color}0A` : 'var(--surface-2)',
-                          border: `1.5px solid ${active ? uiMode.color : 'var(--border-subtle)'}`,
+                          textAlign: 'left', padding: '1.15rem',
+                          background: 'var(--surface-2)',
+                          border: '1.5px solid var(--border-subtle)',
                           borderRadius: '12px', cursor: 'pointer', fontFamily: 'inherit',
-                          transition: 'all 0.13s',
+                          minHeight: '156px',
                         }}
                         onMouseEnter={e => {
-                          if (!active) {
-                            e.currentTarget.style.borderColor = `${uiMode.color}50`
-                            e.currentTarget.style.background  = `${uiMode.color}05`
-                          }
+                          e.currentTarget.style.borderColor = `${group.color}55`
+                          e.currentTarget.style.background  = `${group.color}06`
                         }}
                         onMouseLeave={e => {
-                          if (!active) {
-                            e.currentTarget.style.borderColor = 'var(--border-subtle)'
-                            e.currentTarget.style.background  = 'var(--surface-2)'
-                          }
+                          e.currentTarget.style.borderColor = 'var(--border-subtle)'
+                          e.currentTarget.style.background  = 'var(--surface-2)'
                         }}
                       >
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem' }}>
-                          <span style={{ fontSize: '1.25rem', lineHeight: 1, flexShrink: 0 }}>{uiMode.emoji}</span>
-                          <span style={{
-                            fontSize: '0.92rem', fontWeight: 700,
-                            color: active ? uiMode.color : 'var(--text-primary)',
-                            transition: 'color 0.13s', lineHeight: 1.2,
-                          }}>
-                            {uiMode.label}
-                          </span>
-                          {active && <span style={{ marginLeft: 'auto', color: uiMode.color, fontSize: '0.8rem', flexShrink: 0 }}>✓</span>}
-                        </div>
-                        <p style={{ fontSize: '0.73rem', color: 'var(--text-muted)', lineHeight: 1.5, margin: 0 }}>
-                          {uiMode.description}
+                        <div style={{ fontSize: '1.55rem', marginBottom: '0.65rem' }}>{group.emoji}</div>
+                        <div style={{ fontSize: '1rem', fontWeight: 800, color: group.color, marginBottom: '0.45rem' }}>{group.label}</div>
+                        <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', lineHeight: 1.55, margin: 0 }}>
+                          {group.description}
                         </p>
                       </button>
-                    )
-                  })}
-                </div>
+                    ))}
+                  </div>
+                ) : (
+                  <>
+                    <button
+                      onClick={() => { setSelectedCreationGroup(null); setSelectedUiMode(null); setCreateError(null) }}
+                      style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)', padding: 0, marginBottom: '0.85rem', fontSize: '0.8rem', fontFamily: 'inherit' }}
+                    >
+                      ← Voltar às categorias
+                    </button>
+                    <div style={{ display: 'grid', gridTemplateColumns: selectedCreationGroup === 'produzir' ? '1fr 1fr' : '1fr', gap: '0.7rem', marginBottom: '1.5rem' }}>
+                      {UI_MODES.filter(uiMode => uiMode.group === selectedCreationGroup).map(uiMode => {
+                        const active = selectedUiMode === uiMode.id
+                        return (
+                          <button
+                            key={uiMode.id}
+                            onClick={() => selectUiMode(uiMode.id)}
+                            style={{
+                              textAlign: 'left', padding: '0.95rem 1rem',
+                              background: active ? `${uiMode.color}0A` : 'var(--surface-2)',
+                              border: `1.5px solid ${active ? uiMode.color : 'var(--border-subtle)'}`,
+                              borderRadius: '12px', cursor: 'pointer', fontFamily: 'inherit',
+                              transition: 'all 0.13s',
+                            }}
+                            onMouseEnter={e => {
+                              if (!active) {
+                                e.currentTarget.style.borderColor = `${uiMode.color}50`
+                                e.currentTarget.style.background  = `${uiMode.color}05`
+                              }
+                            }}
+                            onMouseLeave={e => {
+                              if (!active) {
+                                e.currentTarget.style.borderColor = 'var(--border-subtle)'
+                                e.currentTarget.style.background  = 'var(--surface-2)'
+                              }
+                            }}
+                          >
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.45rem' }}>
+                              <span style={{ fontSize: '1.15rem', lineHeight: 1, flexShrink: 0 }}>{uiMode.emoji}</span>
+                              <span style={{
+                                fontSize: '0.9rem', fontWeight: 750,
+                                color: active ? uiMode.color : 'var(--text-primary)',
+                                transition: 'color 0.13s', lineHeight: 1.2,
+                              }}>
+                                {uiMode.label}
+                              </span>
+                              {active && <span style={{ marginLeft: 'auto', color: uiMode.color, fontSize: '0.8rem', flexShrink: 0 }}>✓</span>}
+                            </div>
+                            <p style={{ fontSize: '0.72rem', color: 'var(--text-muted)', lineHeight: 1.5, margin: 0 }}>
+                              {uiMode.description}
+                            </p>
+                          </button>
+                        )
+                      })}
+                    </div>
+                  </>
+                )}
 
                 <div style={{ display: 'flex', gap: '0.75rem' }}>
                   <button onClick={closeModal} style={{
@@ -907,7 +1002,7 @@ export default function DashboardClient({ user, projects: initialProjects, profi
                   >
                     {selectedUiMode
                       ? `Continuar com ${UI_MODES.find(m => m.id === selectedUiMode)?.label} →`
-                      : 'Escolha o tipo de estudo'}
+                      : selectedCreationGroup ? 'Escolha uma opção' : 'Escolha estudar, produzir ou armazenar'}
                   </button>
                 </div>
               </div>
@@ -918,7 +1013,8 @@ export default function DashboardClient({ user, projects: initialProjects, profi
               <div style={{ padding: '1.75rem 1.75rem 1.5rem' }}>
                 {(() => {
                   const uiMode        = UI_MODES.find(m => m.id === selectedUiMode)!
-                  const isPassage     = selectedUiMode !== 'doutrinario' && selectedUiMode !== 'tematico'
+                  const isTopicProduction = ['artigo', 'ebook', 'livro', 'palestra', 'curso', 'serie_mensagens'].includes(selectedUiMode)
+                  const isPassage     = selectedUiMode !== 'doutrinario' && selectedUiMode !== 'tematico' && !isTopicProduction
                   const detectedLabel = selectedMode ? DETECTED_LABEL[selectedMode] : null
                   const canSubmit     = isPassage
                     ? (selectedMode && form.book && form.passage_ref.trim() && form.testament)
@@ -1005,13 +1101,15 @@ export default function DashboardClient({ user, projects: initialProjects, profi
                             </FormField>
                           </>
                         ) : (
-                          <FormField label={selectedUiMode === 'doutrinario' ? 'Doutrina' : 'Tema'}>
+                          <FormField label={selectedUiMode === 'doutrinario' ? 'Doutrina' : selectedUiMode === 'tematico' ? 'Tema' : 'Título ou assunto'}>
                             <input
                               value={form.topic}
                               onChange={e => updateTopic(e.target.value)}
                               placeholder={selectedUiMode === 'doutrinario'
                                 ? 'Ex: Justificação · Santificação · Eleição'
-                                : 'Ex: Família · Casamento · Trabalho · Sofrimento'}
+                                : selectedUiMode === 'tematico'
+                                  ? 'Ex: Família · Casamento · Trabalho · Sofrimento'
+                                  : 'Ex: Liderança cristã · Discipulado · Cristologia paulina'}
                               required
                             />
                           </FormField>

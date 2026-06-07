@@ -6,7 +6,7 @@ import type { Project, Section } from '@/types/database'
 
 // ── Types ──────────────────────────────────────────────────────────────────
 
-type BlockType = 'introducao' | 'contextualizacao' | 'desenvolvimento' | 'transicao' | 'aplicacao' | 'conclusao'
+type BlockType = 'introducao' | 'proposicao' | 'contextualizacao' | 'desenvolvimento' | 'transicao' | 'aplicacao' | 'conclusao'
 type MarkerStyle = 'roman' | 'decimal' | 'alpha' | 'bullet'
 
 interface Subponto {
@@ -181,6 +181,7 @@ function richEditorHtml(s: string) {
 
 const BLOCK_TYPES: { type: BlockType; label: string }[] = [
   { type: 'introducao',      label: 'Introdução' },
+  { type: 'proposicao',      label: 'Proposição' },
   { type: 'contextualizacao', label: 'Contextualização' },
   { type: 'desenvolvimento', label: 'Desenvolvimento' },
   { type: 'transicao',      label: 'Transição' },
@@ -190,6 +191,7 @@ const BLOCK_TYPES: { type: BlockType; label: string }[] = [
 
 const TYPE_COLOR: Record<BlockType, string> = {
   introducao:      'var(--accent)',
+  proposicao:      '#8B5CF6',
   contextualizacao: '#c89b3c',
   desenvolvimento: 'var(--ai)',
   transicao:       'var(--text-muted)',
@@ -199,9 +201,10 @@ const TYPE_COLOR: Record<BlockType, string> = {
 
 const DEFAULT_BLOCKS: SermonBlock[] = [
   { id: 'b1', type: 'introducao',      title: 'Introdução',      content: '' },
-  { id: 'b2', type: 'contextualizacao', title: 'Contextualização', content: '' },
-  { id: 'b3', type: 'desenvolvimento', title: 'Desenvolvimento', content: '', pontos: defaultPontos() },
-  { id: 'b4', type: 'conclusao',       title: 'Conclusão',       content: '' },
+  { id: 'b2', type: 'proposicao',      title: 'Proposição',      content: '' },
+  { id: 'b3', type: 'contextualizacao', title: 'Contextualização', content: '' },
+  { id: 'b4', type: 'desenvolvimento', title: 'Desenvolvimento', content: '', pontos: defaultPontos() },
+  { id: 'b5', type: 'conclusao',       title: 'Conclusão',       content: '' },
 ]
 
 // ── Preset: A Presença de Deus em Todas as Circunstâncias — Gn 39.1-23 ────
@@ -368,6 +371,7 @@ function blockPrompt(block: SermonBlock, project: Project): string {
   const ref = `${project.book} ${project.passage_ref}`
   const map: Record<BlockType, string> = {
     introducao:      `Redija uma introdução pastoral para o sermão de ${ref}. Capture atenção, revele a necessidade humana e conduza naturalmente ao texto.`,
+    proposicao:      `Redija a proposição homilética do sermão de ${ref}. Expresse a ideia central em uma frase clara, fiel ao texto, memorável e pregável.`,
     contextualizacao: `Redija uma contextualização bíblica e histórica para o sermão de ${ref}. Situe a perícope no livro, no enredo, no contexto imediato e no movimento teológico do texto, preparando o ouvinte para a exposição.`,
     desenvolvimento: `Sugira pontos principais para o sermão de ${ref}. Cada ponto deve ser claro, teológico, progressivo e derivado do texto.`,
     transicao:       `Crie uma transição natural entre os movimentos do sermão de ${ref}. Resuma o que foi dito e abra o próximo ponto.`,
@@ -1707,6 +1711,14 @@ export default function SermonBuilderWorkspace({
   const [renameVal,  setRenameVal]  = useState('')
   const [addOpen,    setAddOpen]    = useState(false)
   const [viewMode,   setViewMode]   = useState<'edit' | 'preview'>('edit')
+  const [collapsedBlocks, setCollapsedBlocks] = useState<Set<string>>(() => {
+    if (typeof window === 'undefined') return new Set()
+    try {
+      return new Set(JSON.parse(window.localStorage.getItem(`lampas:sermon-builder:${project.id}:collapsed`) ?? '[]'))
+    } catch {
+      return new Set()
+    }
+  })
 
   const blocksRef      = useRef(blocks)
   blocksRef.current    = blocks
@@ -1755,6 +1767,17 @@ export default function SermonBuilderWorkspace({
 
   function updateBlock(id: string, data: Partial<SermonBlock>) {
     scheduleSave(blocksRef.current.map(b => b.id === id ? { ...b, ...data } : b))
+  }
+
+  function toggleBlockCollapsed(id: string) {
+    setCollapsedBlocks(prev => {
+      const next = new Set(prev)
+      next.has(id) ? next.delete(id) : next.add(id)
+      if (typeof window !== 'undefined') {
+        window.localStorage.setItem(`lampas:sermon-builder:${project.id}:collapsed`, JSON.stringify([...next]))
+      }
+      return next
+    })
   }
 
   function addBlock(type: BlockType) {
@@ -2170,6 +2193,7 @@ h2 .roman {
           const menuOpen = activeMenu === block.id
           const isDev    = block.type === 'desenvolvimento'
           const isBlockActive = activeBlockId === block.id || menuOpen || renamingId === block.id
+          const isCollapsed = collapsedBlocks.has(block.id)
 
           return (
             <div
@@ -2190,9 +2214,20 @@ h2 .roman {
               {/* Block header */}
               <div style={{
                 display: 'flex', alignItems: 'center', gap: '0.5rem',
-                padding: '0.6rem 0.75rem',
-                borderBottom: '1px solid var(--border-subtle)',
+                padding: isBlockActive ? '0.78rem 0.85rem' : '0.62rem 0.75rem',
+                borderBottom: isCollapsed ? 'none' : '1px solid var(--border-subtle)',
+                background: isBlockActive ? `${color}0d` : 'transparent',
+                borderRadius: isCollapsed ? '6px' : '6px 6px 0 0',
               }}>
+                <button
+                  onClick={() => toggleBlockCollapsed(block.id)}
+                  title={isCollapsed ? 'Expandir bloco' : 'Recolher bloco'}
+                  style={{
+                    background: 'none', border: 'none', color: 'var(--text-muted)',
+                    cursor: 'pointer', fontSize: '0.65rem', padding: 0, flexShrink: 0,
+                    transition: 'transform 0.15s', transform: isCollapsed ? 'none' : 'rotate(90deg)', lineHeight: 1,
+                  }}
+                >▶</button>
                 <span style={{ width: '7px', height: '7px', borderRadius: '50%', flexShrink: 0, background: dotColor(block) }} />
 
                 {renamingId === block.id ? (
@@ -2209,7 +2244,14 @@ h2 .roman {
                   />
                 ) : (
                   <span
-                    style={{ flex: 1, fontSize: '0.88rem', fontWeight: 600, color: 'var(--text-primary)', cursor: 'text' }}
+                    style={{
+                      flex: 1,
+                      fontSize: isBlockActive ? '1rem' : '0.92rem',
+                      fontWeight: 900,
+                      color: 'var(--text-primary)',
+                      cursor: 'text',
+                      letterSpacing: '0.01em',
+                    }}
                     onDoubleClick={() => startRename(block.id, block.title)}
                   >
                     {block.title}
@@ -2279,7 +2321,7 @@ h2 .roman {
               </div>
 
               {/* Content area */}
-              {isDev ? (
+              {!isCollapsed && (isDev ? (
                 <DesenvolvimentoEditor
                   pontos={block.pontos ?? defaultPontos()}
                   project={project}
@@ -2304,7 +2346,7 @@ h2 .roman {
                     padding: '0.85rem 1rem', resize: 'vertical', outline: 'none',
                   }}
                 />
-              )}
+              ))}
             </div>
           )
         })}
