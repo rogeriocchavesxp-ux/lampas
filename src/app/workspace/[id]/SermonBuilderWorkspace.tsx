@@ -7,7 +7,7 @@ import type { Project, Section } from '@/types/database'
 // ── Types ──────────────────────────────────────────────────────────────────
 
 type BlockType = 'introducao' | 'proposicao' | 'contextualizacao' | 'desenvolvimento' | 'transicao' | 'aplicacao' | 'conclusao'
-type MarkerStyle = 'roman' | 'decimal' | 'alpha' | 'bullet'
+type MarkerStyle = 'roman' | 'decimal' | 'alpha' | 'bullet' | 'none'
 type PrintOutlineMode = 'reduced' | 'complete'
 type SlidePlatform = 'Canvas' | 'Claude' | 'Gemini' | 'ChatGPT' | 'Gamma'
 type SlidePresentationType = 'Culto' | 'EBD' | 'Palestra' | 'Aula' | 'Treinamento' | 'Conferência'
@@ -114,6 +114,7 @@ function toAlpha(n: number): string {
 
 function markerLabel(index: number, style: MarkerStyle): string {
   const n = index + 1
+  if (style === 'none') return ''
   if (style === 'roman') return `${toRoman(n)}.`
   if (style === 'alpha') return `${toAlpha(n)}.`
   if (style === 'bullet') return '•'
@@ -1091,6 +1092,7 @@ function DesenvolvimentoEditor({
     { value: 'decimal', label: 'Números' },
     { value: 'alpha', label: 'Letras' },
     { value: 'bullet', label: 'Marcadores' },
+    { value: 'none', label: 'Nenhum' },
   ]
 
   const markerSelect = (
@@ -1322,25 +1324,27 @@ function DesenvolvimentoEditor({
                 }}
               >▶</button>
 
-              <span
-                style={{
-                  width: isOpen ? '38px' : '28px',
-                  height: isOpen ? '38px' : '28px',
-                  borderRadius: '999px',
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  background: isOpen ? AI_COLOR : `${AI_COLOR}14`,
-                  color: isOpen ? '#fff' : AI_COLOR,
-                  fontSize: isOpen ? '0.82rem' : '0.62rem',
-                  fontWeight: 900,
-                  flexShrink: 0,
-                  lineHeight: 1,
-                  boxShadow: isOpen ? `0 8px 18px ${AI_COLOR}2a` : 'none',
-                }}
-              >
-                {markerLabel(pi, mainMarkerStyle)}
-              </span>
+              {mainMarkerStyle !== 'none' && (
+                <span
+                  style={{
+                    width: isOpen ? '38px' : '28px',
+                    height: isOpen ? '38px' : '28px',
+                    borderRadius: '999px',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    background: isOpen ? AI_COLOR : `${AI_COLOR}14`,
+                    color: isOpen ? '#fff' : AI_COLOR,
+                    fontSize: isOpen ? '0.82rem' : '0.62rem',
+                    fontWeight: 900,
+                    flexShrink: 0,
+                    lineHeight: 1,
+                    boxShadow: isOpen ? `0 8px 18px ${AI_COLOR}2a` : 'none',
+                  }}
+                >
+                  {markerLabel(pi, mainMarkerStyle)}
+                </span>
+              )}
 
               {isOpen ? (
                 <input
@@ -1486,9 +1490,11 @@ function DesenvolvimentoEditor({
                               transition: 'background 0.1s',
                             }}
                           >
-                            <span style={{ fontSize: '0.62rem', color: 'var(--text-muted)', width: '22px', textAlign: 'right', flexShrink: 0, lineHeight: 1 }}>
-                              {markerLabel(si, subMarkerStyle)}
-                            </span>
+                            {subMarkerStyle !== 'none' && (
+                              <span style={{ fontSize: '0.62rem', color: 'var(--text-muted)', width: '22px', textAlign: 'right', flexShrink: 0, lineHeight: 1 }}>
+                                {markerLabel(si, subMarkerStyle)}
+                              </span>
+                            )}
 
                             <input
                               value={sub.text}
@@ -1681,6 +1687,10 @@ function buildFinalSermonDocument(blocks: SermonBlock[], project: Project, mode:
           <div class="label">${esc(item.title?.trim() || (items.length > 1 ? `${label} ${index + 1}` : label))}</div>
           <div class="${className}">${paras(item.text)}</div>`
         ).join('')
+        const mainMarkerHtml = mainMarkerStyle === 'none'
+          ? ''
+          : `<div class="main-point-marker">${esc(markerLabel(pontoIdx - 1, mainMarkerStyle))}</div>`
+        const subListClass = subMarkerStyle === 'none' ? 'subs subs-none' : 'subs'
 
         pages.push(`<section class="page">
           <div class="pg-header">
@@ -1688,12 +1698,12 @@ function buildFinalSermonDocument(blocks: SermonBlock[], project: Project, mode:
             <span>${pontoIdx} / ${totalPontos}</span>
           </div>
           <div class="main-point-heading">
-            <div class="main-point-marker">${esc(markerLabel(pontoIdx - 1, mainMarkerStyle))}</div>
+            ${mainMarkerHtml}
             <h2>${esc(ponto.text || `Ponto ${pontoIdx}`).toUpperCase()}</h2>
           </div>
           ${!isReduced && ponto.notes?.trim() ? `<div class="label">Descrição do ponto</div><div class="prose point-notes">${paras(ponto.notes)}</div>` : ''}
-          ${subs.length ? `<ol class="subs">${subs.map((s, index) =>
-            `<li><span class="sub-number">${esc(markerLabel(index, subMarkerStyle))}</span><div class="sub-content"><strong>${esc(s.text)}</strong>${renderSubNotes && s.notes?.trim() ? `<div class="sub-description">${paras(s.notes)}</div>` : ''}</div></li>`
+          ${subs.length ? `<ol class="${subListClass}">${subs.map((s, index) =>
+            `<li>${subMarkerStyle === 'none' ? '' : `<span class="sub-number">${esc(markerLabel(index, subMarkerStyle))}</span>`}<div class="sub-content"><strong>${esc(s.text)}</strong>${renderSubNotes && s.notes?.trim() ? `<div class="sub-description">${paras(s.notes)}</div>` : ''}</div></li>`
           ).join('')}</ol>` : ''}
           ${isReduced ? '' : renderItems(ilustracoes, 'Ilustração', 'ilustracao')}
           ${isReduced ? '' : renderItems(aplicacoes, 'Aplicação', 'aplicacao')}
@@ -1849,6 +1859,9 @@ function buildFinalSermonDocument(blocks: SermonBlock[], project: Project, mode:
   align-items: baseline;
   font-size: 13.5pt;
   line-height: 1.65;
+}
+.sermon-final-document .subs-none li {
+  gap: 0;
 }
 .sermon-final-document .sub-description {
   display: block;
