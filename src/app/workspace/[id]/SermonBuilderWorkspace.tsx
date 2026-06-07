@@ -7,6 +7,7 @@ import type { Project, Section } from '@/types/database'
 // ── Types ──────────────────────────────────────────────────────────────────
 
 type BlockType = 'introducao' | 'contextualizacao' | 'desenvolvimento' | 'transicao' | 'aplicacao' | 'conclusao'
+type MarkerStyle = 'roman' | 'decimal' | 'alpha' | 'bullet'
 
 interface Subponto {
   id: string
@@ -44,6 +45,8 @@ interface SermonBlock {
   title: string
   content: string
   pontos?: PontoPrincipal[]
+  mainMarkerStyle?: MarkerStyle
+  subMarkerStyle?: MarkerStyle
 }
 
 interface SermonBuilderContent {
@@ -71,6 +74,25 @@ function toRoman(n: number): string {
   let r = '', v = n
   for (const [val, sym] of map) { while (v >= val) { r += sym; v -= val } }
   return r
+}
+
+function toAlpha(n: number): string {
+  let value = n
+  let result = ''
+  while (value > 0) {
+    value--
+    result = String.fromCharCode(65 + (value % 26)) + result
+    value = Math.floor(value / 26)
+  }
+  return result
+}
+
+function markerLabel(index: number, style: MarkerStyle): string {
+  const n = index + 1
+  if (style === 'roman') return `${toRoman(n)}.`
+  if (style === 'alpha') return `${toAlpha(n)}.`
+  if (style === 'bullet') return '•'
+  return `${n}.`
 }
 
 function newPontoPrincipal(): PontoPrincipal {
@@ -621,11 +643,22 @@ function NoteArea({ value, onChange, onAskAI, aiPrompt, color = 'var(--ai)' }: {
 interface DevEditorProps {
   pontos: PontoPrincipal[]
   project: Project
+  mainMarkerStyle: MarkerStyle
+  subMarkerStyle: MarkerStyle
   onUpdate: (pontos: PontoPrincipal[]) => void
+  onMarkerStyleChange: (data: Partial<Pick<SermonBlock, 'mainMarkerStyle' | 'subMarkerStyle'>>) => void
   onAskAI: (prompt: string) => void
 }
 
-function DesenvolvimentoEditor({ pontos, project, onUpdate, onAskAI }: DevEditorProps) {
+function DesenvolvimentoEditor({
+  pontos,
+  project,
+  mainMarkerStyle,
+  subMarkerStyle,
+  onUpdate,
+  onMarkerStyleChange,
+  onAskAI,
+}: DevEditorProps) {
   const ref = `${project.book} ${project.passage_ref}`
   const [expanded,        setExpanded]        = useState<Set<string>>(() => new Set([pontos[0]?.id].filter(Boolean)))
   const [openNotes,       setOpenNotes]       = useState<Set<string>>(new Set())
@@ -822,6 +855,41 @@ function DesenvolvimentoEditor({ pontos, project, onUpdate, onAskAI }: DevEditor
     textTransform: 'uppercase', color: 'var(--text-muted)',
   }
 
+  const markerOptions: { value: MarkerStyle; label: string }[] = [
+    { value: 'roman', label: 'Romanos' },
+    { value: 'decimal', label: 'Números' },
+    { value: 'alpha', label: 'Letras' },
+    { value: 'bullet', label: 'Marcadores' },
+  ]
+
+  const markerSelect = (
+    label: string,
+    value: MarkerStyle,
+    onChange: (style: MarkerStyle) => void,
+  ) => (
+    <label style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', fontSize: '0.68rem', color: 'var(--text-muted)' }}>
+      <span>{label}</span>
+      <select
+        value={value}
+        onChange={e => onChange(e.target.value as MarkerStyle)}
+        style={{
+          background: '#fff',
+          border: '1px solid var(--border-subtle)',
+          borderRadius: '5px',
+          color: 'var(--text-secondary)',
+          fontFamily: 'inherit',
+          fontSize: '0.72rem',
+          padding: '0.22rem 0.45rem',
+          outline: 'none',
+        }}
+      >
+        {markerOptions.map(option => (
+          <option key={option.value} value={option.value}>{option.label}</option>
+        ))}
+      </select>
+    </label>
+  )
+
   const ghostBtn = (label: string, onClick: () => void, colorHover = 'var(--ai)') => (
     <button
       onClick={onClick}
@@ -947,6 +1015,21 @@ function DesenvolvimentoEditor({ pontos, project, onUpdate, onAskAI }: DevEditor
 
   return (
     <div style={{ padding: '0.5rem 0.85rem 1rem' }}>
+      <div
+        style={{
+          display: 'flex',
+          justifyContent: 'flex-end',
+          gap: '0.75rem',
+          alignItems: 'center',
+          flexWrap: 'wrap',
+          marginBottom: '0.55rem',
+          paddingBottom: '0.5rem',
+          borderBottom: '1px solid var(--border-subtle)',
+        }}
+      >
+        {markerSelect('Pontos principais', mainMarkerStyle, style => onMarkerStyleChange({ mainMarkerStyle: style }))}
+        {markerSelect('Subpontos', subMarkerStyle, style => onMarkerStyleChange({ subMarkerStyle: style }))}
+      </div>
 
       {pontos.map((ponto, pi) => {
         const isOpen         = expanded.has(ponto.id)
@@ -1006,8 +1089,8 @@ function DesenvolvimentoEditor({ pontos, project, onUpdate, onAskAI }: DevEditor
                 }}
               >▶</button>
 
-              <span style={{ fontSize: '0.58rem', color: `${AI_COLOR}80`, fontWeight: 900, flexShrink: 0, minWidth: '14px' }}>
-                {toRoman(pi + 1)}.
+              <span style={{ fontSize: '0.58rem', color: `${AI_COLOR}80`, fontWeight: 900, flexShrink: 0, minWidth: '22px', textAlign: 'right' }}>
+                {markerLabel(pi, mainMarkerStyle)}
               </span>
 
               {isOpen ? (
@@ -1151,8 +1234,8 @@ function DesenvolvimentoEditor({ pontos, project, onUpdate, onAskAI }: DevEditor
                               transition: 'background 0.1s',
                             }}
                           >
-                            <span style={{ fontSize: '0.62rem', color: 'var(--text-muted)', width: '16px', textAlign: 'right', flexShrink: 0, lineHeight: 1 }}>
-                              {si + 1}.
+                            <span style={{ fontSize: '0.62rem', color: 'var(--text-muted)', width: '22px', textAlign: 'right', flexShrink: 0, lineHeight: 1 }}>
+                              {markerLabel(si, subMarkerStyle)}
                             </span>
 
                             <input
@@ -1328,6 +1411,8 @@ function buildFinalSermonDocument(blocks: SermonBlock[], project: Project) {
 
   for (const block of blocks) {
     if (block.type === 'desenvolvimento' && block.pontos?.length) {
+      const mainMarkerStyle = block.mainMarkerStyle ?? 'roman'
+      const subMarkerStyle = block.subMarkerStyle ?? 'decimal'
       for (const ponto of block.pontos) {
         pontoIdx++
         const subs = ponto.subpontos.filter(s => s.text.trim())
@@ -1346,9 +1431,9 @@ function buildFinalSermonDocument(blocks: SermonBlock[], project: Project) {
             <span>${esc(ref)}</span>
             <span>${pontoIdx} / ${totalPontos}</span>
           </div>
-          <h2><span class="roman">${toRoman(pontoIdx)}.</span> ${esc(ponto.text || `Ponto ${pontoIdx}`)}</h2>
+          <h2><span class="roman">${esc(markerLabel(pontoIdx - 1, mainMarkerStyle))}</span> ${esc(ponto.text || `Ponto ${pontoIdx}`)}</h2>
           ${subs.length ? `<ol class="subs">${subs.map((s, index) =>
-            `<li><span class="sub-number">${index + 1}.</span><span>${esc(s.text)}</span></li>`
+            `<li><span class="sub-number">${esc(markerLabel(index, subMarkerStyle))}</span><span>${esc(s.text)}</span></li>`
           ).join('')}</ol>` : ''}
           ${renderItems(ilustracoes, 'Ilustração', 'ilustracao')}
           ${renderItems(aplicacoes, 'Aplicação', 'aplicacao')}
@@ -1632,6 +1717,10 @@ export default function SermonBuilderWorkspace({
 
   function updatePontos(id: string, pontos: PontoPrincipal[]) {
     scheduleSave(blocksRef.current.map(b => b.id === id ? { ...b, pontos } : b))
+  }
+
+  function updateBlock(id: string, data: Partial<SermonBlock>) {
+    scheduleSave(blocksRef.current.map(b => b.id === id ? { ...b, ...data } : b))
   }
 
   function addBlock(type: BlockType) {
@@ -2160,7 +2249,10 @@ h2 .roman {
                 <DesenvolvimentoEditor
                   pontos={block.pontos ?? defaultPontos()}
                   project={project}
+                  mainMarkerStyle={block.mainMarkerStyle ?? 'roman'}
+                  subMarkerStyle={block.subMarkerStyle ?? 'decimal'}
                   onUpdate={pontos => updatePontos(block.id, pontos)}
+                  onMarkerStyleChange={data => updateBlock(block.id, data)}
                   onAskAI={onAskAI}
                 />
               ) : (
