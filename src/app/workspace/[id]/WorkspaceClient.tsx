@@ -38,7 +38,7 @@ import {
   Heart, BookOpen, FileText, Crosshair, Landmark, Languages, GraduationCap,
   Sparkles, BookMarked, Flame, MessageSquareText, Layers, Book, Library,
   BookCopy, Link2, Paperclip, ChevronDown, ChevronRight, ChevronUp,
-  MapPin, Network, TrendingUp,
+  MapPin, Network, TrendingUp, LayoutTemplate, Mic, Brain, Megaphone,
   type LucideIcon,
 } from 'lucide-react'
 import { LampasLogo, LampasMarkIcon } from '@/components/LampasLogo'
@@ -119,6 +119,11 @@ const GROUP_ICONS: Record<string, LucideIcon> = {
   contextual:                Landmark,
   textual:                   Languages,
   teologico:                 GraduationCap,
+  // Pregar — Sermão
+  sermao_dispositio:         LayoutTemplate,
+  sermao_elocutio:           Mic,
+  sermao_memoria:            Brain,
+  sermao_pronuntiatio:       Megaphone,
   // Produzir — Comentário
   comentario_expositivo:     MessageSquareText,
   // Ferramentas
@@ -462,6 +467,78 @@ export default function WorkspaceClient({ user, project, initialSections }: Prop
   const activeSection = sections.find(s => s.slug === activeSlug)
   const activePhase = navPhases.find(p => p.id === getPhaseFor(activeSlug))
 
+  const isSectionDone = useCallback((slug: string) => {
+    const section = sections.find(sec => sec.slug === slug)
+    return section?.status === 'draft' || section?.status === 'reviewed'
+  }, [sections])
+
+  function progressGroupWeight(groupId: string): number {
+    const weights: Record<string, number> = {
+      preparar_espiritual: 1,
+      preparar_assimilacao: 1,
+      preparar_impressoes: 1,
+      preparar_visao_geral: 1,
+      investigar_visao_geral: 1,
+      contextual: 2,
+      textual: 3,
+      teologico: 2,
+      pregar_visao_geral: 1,
+      sermao_dispositio: 2,
+      sermao_elocutio: 1,
+      sermao_memoria: 1,
+      sermao_pronuntiatio: 1,
+      estudo_dispositio: 2,
+      estudo_elocutio: 1,
+      estudo_memoria: 1,
+      estudo_pronuntiatio: 1,
+      devocional_dispositio: 2,
+      devocional_elocutio: 1,
+      devocional_memoria: 1,
+      devocional_pronuntiatio: 1,
+    }
+    return weights[groupId] ?? 1
+  }
+
+  function progressGroupRatio(groupId: string): number {
+    if (isToolSlug(groupId) || groupId === 'colagens' || groupId === 'comentario_expositivo') return 0
+    const groupSections = getSectionsByGroupNav(groupId)
+    const synthesis = SYNTHESIS_DEFS[groupId]
+    const slugs = [
+      ...groupSections.map(section => section.slug),
+      ...(synthesis ? [synthesis.slug] : []),
+    ]
+    if (slugs.length === 0) return 0
+    return slugs.filter(isSectionDone).length / slugs.length
+  }
+
+  const phaseProgress = useMemo(() => navPhases
+    .filter(phase => phase.id !== 'ferramentas')
+    .map(phase => {
+      const groups = phase.modes.flatMap(mode => mode.groups)
+      const total = groups.reduce((sum, group) => sum + progressGroupWeight(group.id), 0)
+      const done = groups.reduce((sum, group) => sum + progressGroupRatio(group.id) * progressGroupWeight(group.id), 0)
+      return {
+        id: phase.id,
+        label: phase.label,
+        color: phase.color,
+        total,
+        done,
+        pct: total > 0 ? Math.round((done / total) * 100) : 0,
+      }
+    }), [navPhases, sections, isSectionDone])
+
+  const progressTotal = phaseProgress.reduce((sum, phase) => sum + phase.total, 0)
+  const progressDone = phaseProgress.reduce((sum, phase) => sum + phase.done, 0)
+  const pct = progressTotal > 0 ? Math.round((progressDone / progressTotal) * 100) : 0
+
+  const activeGroupId = getGroupFor(activeSlug)
+  const activeGroupLabel = activeGroupId
+    ? navPhases.flatMap(phase => phase.modes.flatMap(mode => mode.groups)).find(group => group.id === activeGroupId)?.label
+      ?? getToolAreaBySlug(activeGroupId)?.shortTitle
+      ?? activeDef?.shortTitle
+    : activeDef?.shortTitle
+  const activeGroupPct = activeGroupId ? Math.round(progressGroupRatio(activeGroupId) * 100) : 0
+
   const handleSectionUpdate = useCallback((updated: Section) => {
     setSections(prev => {
       const idx = prev.findIndex(s => s.id === updated.id)
@@ -533,14 +610,6 @@ export default function WorkspaceClient({ user, project, initialSections }: Prop
     }
   }
 
-  const navigableSections = WORKSPACE_SECTIONS_NAV.filter(sd => sd.group && navGroupIds.has(sd.group))
-  const totalSecs = navigableSections.length
-  const doneSecs = navigableSections.filter(sd => {
-    const s = sections.find(sec => sec.slug === sd.slug)
-    return s?.status === 'draft' || s?.status === 'reviewed'
-  }).length
-  const pct = Math.round((doneSecs / totalSecs) * 100)
-
   return (
     <div style={{ height: '100vh', display: 'flex', flexDirection: 'column', background: 'var(--background)' }}>
 
@@ -560,6 +629,32 @@ export default function WorkspaceClient({ user, project, initialSections }: Prop
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', minWidth: 0 }}>
           <LampasLogo height={46} />
           <div style={{ width: '1px', height: '20px', background: 'var(--border-subtle)', flexShrink: 0 }} />
+          <button
+            onClick={() => router.push('/')}
+            title="Voltar para a página inicial"
+            style={{
+              background: 'transparent',
+              border: '1px solid var(--border-subtle)',
+              color: 'var(--text-secondary)',
+              borderRadius: '6px',
+              cursor: 'pointer',
+              fontFamily: 'inherit',
+              fontSize: '0.74rem',
+              fontWeight: 700,
+              padding: '0.24rem 0.62rem',
+              flexShrink: 0,
+            }}
+            onMouseEnter={e => {
+              e.currentTarget.style.borderColor = 'var(--accent)'
+              e.currentTarget.style.color = 'var(--accent)'
+            }}
+            onMouseLeave={e => {
+              e.currentTarget.style.borderColor = 'var(--border-subtle)'
+              e.currentTarget.style.color = 'var(--text-secondary)'
+            }}
+          >
+            Home
+          </button>
           {(sidebarCollapsed || focusMode) && (
             <>
               <button
@@ -656,9 +751,12 @@ export default function WorkspaceClient({ user, project, initialSections }: Prop
             {modeConfig.name}
           </span>
 
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-            <span style={{ fontSize: '0.68rem', color: 'var(--text-muted)' }}>{pct}%</span>
-            <div style={{ width: '56px', height: '2px', background: 'var(--border)', borderRadius: '1px', overflow: 'hidden' }}>
+          <div title="Progresso geral ponderado pelas etapas principais do fluxo" style={{ display: 'flex', alignItems: 'center', gap: '0.45rem' }}>
+            <span style={{ fontSize: '0.62rem', color: 'var(--text-muted)', fontWeight: 700, whiteSpace: 'nowrap' }}>
+              Progresso do {modeConfig.name}
+            </span>
+            <span style={{ fontSize: '0.68rem', color: 'var(--text-muted)', whiteSpace: 'nowrap' }}>{pct}% concluído</span>
+            <div style={{ width: '64px', height: '2px', background: 'var(--border)', borderRadius: '1px', overflow: 'hidden' }}>
               <div style={{
                 width: `${pct}%`, height: '100%',
                 background: activePhase?.color ?? 'var(--accent)',
@@ -930,6 +1028,70 @@ export default function WorkspaceClient({ user, project, initialSections }: Prop
                   >
                     <ChevronRight size={13} />
                   </button>
+                </div>
+
+                <div style={{
+                  marginTop: '0.75rem',
+                  padding: '0.68rem 0.72rem',
+                  border: '1px solid var(--border-subtle)',
+                  borderRadius: '8px',
+                  background: 'rgba(15,23,42,0.018)',
+                }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', gap: '0.6rem', alignItems: 'baseline', marginBottom: '0.42rem' }}>
+                    <span style={{ fontSize: '0.58rem', color: 'var(--text-muted)', fontWeight: 900, letterSpacing: '0.08em', textTransform: 'uppercase' }}>
+                      Progresso Geral
+                    </span>
+                    <span style={{ fontSize: '0.7rem', color: 'var(--text-secondary)', fontWeight: 800 }}>
+                      {pct}%
+                    </span>
+                  </div>
+                  <div style={{ height: '4px', background: 'var(--border-subtle)', borderRadius: '99px', overflow: 'hidden', marginBottom: '0.65rem' }}>
+                    <div style={{
+                      width: `${pct}%`,
+                      height: '100%',
+                      background: modeConfig.color,
+                      borderRadius: '99px',
+                      transition: 'width 0.35s ease',
+                    }} />
+                  </div>
+
+                  <div style={{ display: 'flex', justifyContent: 'space-between', gap: '0.6rem', alignItems: 'baseline', marginBottom: '0.4rem' }}>
+                    <span style={{ fontSize: '0.62rem', color: 'var(--text-muted)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                      {activeGroupLabel ? `Etapa atual: ${activeGroupLabel}` : 'Etapa atual'}
+                    </span>
+                    <span style={{ fontSize: '0.64rem', color: 'var(--text-muted)', fontWeight: 750 }}>{activeGroupPct}%</span>
+                  </div>
+                  <div style={{ height: '3px', background: 'var(--border-subtle)', borderRadius: '99px', overflow: 'hidden', marginBottom: '0.65rem' }}>
+                    <div style={{
+                      width: `${activeGroupPct}%`,
+                      height: '100%',
+                      background: activePhase?.color ?? modeConfig.color,
+                      borderRadius: '99px',
+                      transition: 'width 0.35s ease',
+                    }} />
+                  </div>
+
+                  <div style={{ display: 'grid', gap: '0.34rem' }}>
+                    {phaseProgress.map(phase => (
+                      <div key={phase.id} style={{ display: 'grid', gridTemplateColumns: '68px 1fr 30px', alignItems: 'center', gap: '0.38rem' }}>
+                        <span style={{ fontSize: '0.58rem', color: 'var(--text-muted)', fontWeight: 750, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                          {phase.label}
+                        </span>
+                        <span style={{ height: '3px', background: 'var(--border-subtle)', borderRadius: '99px', overflow: 'hidden' }}>
+                          <span style={{
+                            display: 'block',
+                            width: `${phase.pct}%`,
+                            height: '100%',
+                            background: phase.color,
+                            borderRadius: '99px',
+                          }} />
+                        </span>
+                        <span style={{ fontSize: '0.56rem', color: 'var(--text-muted)', textAlign: 'right', fontWeight: 750 }}>
+                          {phase.pct}%
+                        </span>
+                      </div>
+                    ))}
+                  </div>
                 </div>
               </div>
 
