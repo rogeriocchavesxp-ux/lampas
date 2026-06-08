@@ -1295,6 +1295,21 @@ export default function DashboardClient({ user, projects: initialProjects, profi
                       <form onSubmit={handleCreate} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
                         {isPassage ? (
                           <>
+                            {isSermon && (
+                              <FormField label="Tipo de Sermão">
+                                <select
+                                  value={form.sermon_type}
+                                  onChange={e => updatePassageForm({ sermon_type: e.target.value as SermonType })}
+                                  required
+                                >
+                                  <option value="">Selecione o tipo</option>
+                                  {SERMON_TYPE_OPTIONS.map(o => (
+                                    <option key={o.id} value={o.id}>{o.label}</option>
+                                  ))}
+                                </select>
+                              </FormField>
+                            )}
+
                             <FormField label="Testamento">
                               <div style={{ display: 'flex', gap: '0.5rem' }}>
                                 {(['AT', 'NT'] as const).map(t => (
@@ -1328,75 +1343,6 @@ export default function DashboardClient({ user, projects: initialProjects, profi
                                 ))}
                               </select>
                             </FormField>
-
-                            {isSermon && (
-                              <FormField label="Tipo de Sermão">
-                                <div style={{
-                                  display: 'grid',
-                                  gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))',
-                                  gap: '0.55rem',
-                                }}>
-                                  {SERMON_TYPE_OPTIONS.map(option => {
-                                    const active = form.sermon_type === option.id
-                                    return (
-                                      <button
-                                        key={option.id}
-                                        type="button"
-                                        onClick={() => updatePassageForm({ sermon_type: option.id })}
-                                        style={{
-                                          textAlign: 'left',
-                                          padding: '0.75rem',
-                                          minHeight: '118px',
-                                          background: active ? `${uiMode.color}10` : 'var(--surface-2)',
-                                          border: `1.5px solid ${active ? uiMode.color : 'var(--border-subtle)'}`,
-                                          borderRadius: '10px',
-                                          cursor: 'pointer',
-                                          fontFamily: 'inherit',
-                                          transition: 'all 0.13s',
-                                        }}
-                                        onMouseEnter={e => {
-                                          if (!active) {
-                                            e.currentTarget.style.borderColor = `${uiMode.color}50`
-                                            e.currentTarget.style.background = `${uiMode.color}06`
-                                          }
-                                        }}
-                                        onMouseLeave={e => {
-                                          if (!active) {
-                                            e.currentTarget.style.borderColor = 'var(--border-subtle)'
-                                            e.currentTarget.style.background = 'var(--surface-2)'
-                                          }
-                                        }}
-                                      >
-                                        <div style={{
-                                          display: 'flex',
-                                          alignItems: 'center',
-                                          gap: '0.35rem',
-                                          marginBottom: '0.45rem',
-                                        }}>
-                                          <span style={{
-                                            color: active ? uiMode.color : 'var(--text-primary)',
-                                            fontSize: '0.82rem',
-                                            fontWeight: 800,
-                                            lineHeight: 1.2,
-                                          }}>
-                                            {option.short}
-                                          </span>
-                                          {active && <span style={{ marginLeft: 'auto', color: uiMode.color, fontSize: '0.75rem' }}>✓</span>}
-                                        </div>
-                                        <p style={{
-                                          margin: 0,
-                                          color: 'var(--text-muted)',
-                                          fontSize: '0.68rem',
-                                          lineHeight: 1.45,
-                                        }}>
-                                          {option.description}
-                                        </p>
-                                      </button>
-                                    )
-                                  })}
-                                </div>
-                              </FormField>
-                            )}
 
                             {/* Badge de gênero detectado (apenas para exegético) */}
                             {selectedUiMode === 'exegetico' && detectedLabel && (
