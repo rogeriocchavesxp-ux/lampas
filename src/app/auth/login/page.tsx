@@ -1,6 +1,6 @@
 'use client'
 
-import { Suspense, useMemo, useState } from 'react'
+import { Suspense, useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { LampasLogo } from '@/components/LampasLogo'
@@ -14,7 +14,6 @@ function LoginContent() {
   const [error,    setError]    = useState('')
   const [success,  setSuccess]  = useState('')
 
-  const supabase     = useMemo(() => createClient(), [])
   const router       = useRouter()
   const searchParams = useSearchParams()
 
@@ -32,6 +31,8 @@ function LoginContent() {
     setLoading(true)
     setError('')
     setSuccess('')
+
+    const supabase = createClient()
 
     if (mode === 'login') {
       const { error } = await supabase.auth.signInWithPassword({ email, password })
