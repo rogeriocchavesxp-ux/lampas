@@ -13,6 +13,7 @@ export type StudyModeId =
   | 'estudo_narrativas'
   | 'estudo_doutrinario'
   | 'estudo_tematico'
+  | 'estudo_termos'
   | 'sermao'
   | 'estudo_biblico'
   | 'devocional'
@@ -579,6 +580,63 @@ const ESTUDO_TEMATICO: StudyModeConfig = {
           { id: 'et_aplicacoes_grp',  label: 'Aplicações' },
           { id: 'sermao_memoria',     label: 'Internalização' },
           { id: 'sermao_pronuntiatio', label: 'Execução' },
+        ],
+      }],
+    },
+    toolPhase(),
+  ],
+}
+
+const ESTUDO_TERMOS: StudyModeConfig = {
+  id: 'estudo_termos',
+  name: 'Estudo de Termos',
+  tagline: 'Léxico, contexto e teologia de palavras bíblicas',
+  color: '#0D9488',
+  audience: 'Pastores · Professores · Seminaristas',
+  titlePlaceholder: 'Ex: חֶסֶד — amor leal na aliança',
+  passageBased: false,
+  passageLabel: 'Texto âncora',
+  topicLabel: 'Termo',
+  defaultSection: 'termos_definir',
+  defaultExpandedPhases: ['preparar', 'investigar', 'comunicar'],
+  defaultExpandedCanons: ['termos_definir_mode', 'termos_analise_mode', 'termos_sintese_mode'],
+  defaultExpandedGroups: ['termos_definir_grp'],
+  phases: [
+    {
+      id: 'preparar', roman: 'I', label: 'Definir',
+      description: 'Termo, idioma, forma original e campo semântico',
+      color: '#0D9488', bgActive: 'rgba(13,148,136,0.08)',
+      modes: [{
+        id: 'termos_definir_mode', label: 'Definição', subtitle: 'Termo e pergunta',
+        color: '#0D9488', bgActive: 'rgba(13,148,136,0.08)',
+        groups: [
+          { id: 'termos_definir_grp', label: 'Definir' },
+        ],
+      }],
+    },
+    {
+      id: 'investigar', roman: 'II', label: 'Investigar',
+      description: 'Análise lexical, uso bíblico e desenvolvimento canônico',
+      color: '#2563EB', bgActive: 'rgba(37,99,235,0.08)',
+      modes: [{
+        id: 'termos_analise_mode', label: 'Análise', subtitle: 'Léxico e cânone',
+        color: '#2563EB', bgActive: 'rgba(37,99,235,0.08)',
+        groups: [
+          { id: 'termos_analisar_grp', label: 'Analisar' },
+          { id: 'termos_rastrear_grp', label: 'Rastrear' },
+        ],
+      }],
+    },
+    {
+      id: 'comunicar', roman: 'III', label: 'Produzir',
+      description: 'Síntese bíblico-teológica, verbete e aplicações',
+      color: '#7C3AED', bgActive: 'rgba(124,58,237,0.08)',
+      modes: [{
+        id: 'termos_sintese_mode', label: 'Síntese', subtitle: 'Teologia e uso pastoral',
+        color: '#7C3AED', bgActive: 'rgba(124,58,237,0.08)',
+        groups: [
+          { id: 'termos_sintetizar_grp', label: 'Sintetizar' },
+          { id: 'termos_produzir_grp', label: 'Produzir' },
         ],
       }],
     },
@@ -1299,6 +1357,7 @@ export const STUDY_MODE_REGISTRY: Record<StudyModeId, StudyModeConfig> = {
   estudo_narrativas:           ESTUDO_NARRATIVAS,
   estudo_doutrinario:          ESTUDO_DOUTRINARIO,
   estudo_tematico:             ESTUDO_TEMATICO,
+  estudo_termos:               ESTUDO_TERMOS,
   sermao:                      SERMAO,
   estudo_biblico:              ESTUDO_BIBLICO,
   devocional:                  DEVOCIONAL,
@@ -1325,6 +1384,7 @@ export function getModeConfig(modeId?: string | null): StudyModeConfig {
     devocional:          'devocional',
     estudo_biblico:      'estudo_biblico',
     estudo_doutrinario:  'estudo_doutrinario',
+    estudo_termos:       'estudo_termos',
     pesquisa_teologica:  'exegese_biblica', // fallback temporário
   }
   if (modeId && legacy[modeId]) {

@@ -13,6 +13,8 @@ import { getResearchGuide } from '@/lib/research-guides'
 import { getCardHelp } from '@/lib/card-help'
 
 type CardState = 'idle' | 'generating' | 'saving' | 'saved'
+type WorkspaceCard = SectionDef['cards'][number]
+type DynamicPointCard = Pick<WorkspaceCard, 'id' | 'title'>
 
 interface Props {
   sectionDef: SectionDef
@@ -95,6 +97,26 @@ function sectionTheme(sectionDef: SectionDef): { color: string; bg: string; labe
   return modeTheme(sectionDef.communicationMode)
 }
 
+function isPalestraPointCard(cardId: string): boolean {
+  return /^ponto_\d+$/.test(cardId) || /^palestra_ponto_/.test(cardId)
+}
+
+function makePalestraPointCard(meta: DynamicPointCard): WorkspaceCard {
+  return {
+    id: meta.id,
+    title: meta.title,
+    placeholder: `Desenvolva o conteúdo de "${meta.title}" para esta palestra.`,
+    aiTrigger: `Gere conteúdo para o ponto "${meta.title}" da palestra, com argumento claro, progressão oral, exemplos, transições e aplicação ao público.`,
+  }
+}
+
+function createPalestraPoint(index: number): DynamicPointCard {
+  return {
+    id: `palestra_ponto_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 7)}`,
+    title: `Ponto ${index}`,
+  }
+}
+
 export default function SectionWorkspace({
   sectionDef, project, userId, existingSection, onUpdate, onAskAI,
 }: Props) {
@@ -108,7 +130,29 @@ export default function SectionWorkspace({
     return {}
   }, [existingSection])
 
+  const isPalestraConstruir = sectionDef.slug === 'palestra_construir'
+
+  const loadDynamicPointCards = useCallback((): DynamicPointCard[] => {
+    if (!isPalestraConstruir) return []
+    const stored = existingSection?.content as Record<string, unknown> | null
+    const saved = stored?.dynamicPointCards
+    if (Array.isArray(saved)) {
+      return saved
+        .filter((item): item is DynamicPointCard => {
+          if (!item || typeof item !== 'object') return false
+          const candidate = item as Record<string, unknown>
+          return typeof candidate.id === 'string' && typeof candidate.title === 'string'
+        })
+        .map(item => ({ id: item.id, title: item.title.trim() || 'Ponto' }))
+    }
+
+    return sectionDef.cards
+      .filter(card => isPalestraPointCard(card.id))
+      .map(card => ({ id: card.id, title: card.title }))
+  }, [existingSection, isPalestraConstruir, sectionDef.cards])
+
   const [cardContent, setCardContent]   = useState<Record<string, string>>(loadCards)
+  const [dynamicPointCards, setDynamicPointCards] = useState<DynamicPointCard[]>(loadDynamicPointCards)
   const [expandedCards, setExpandedCards] = useState<Set<string>>(() => new Set([sectionDef.cards[0]?.id]))
   const [editingCards, setEditingCards]   = useState<Set<string>>(() => new Set())
   const [questionsOpen, setQuestionsOpen] = useState(false)
@@ -123,8 +167,18 @@ export default function SectionWorkspace({
 
   const saveTimer    = useRef<ReturnType<typeof setTimeout> | null>(null)
   const latestContent = useRef(cardContent)
+  const latestDynamicPointCards = useRef(dynamicPointCards)
 
   useEffect(() => { latestContent.current = cardContent }, [cardContent])
+  useEffect(() => { latestDynamicPointCards.current = dynamicPointCards }, [dynamicPointCards])
+
+  const activeCards: WorkspaceCard[] = isPalestraConstruir
+    ? sectionDef.cards.flatMap(card => {
+      if (card.id === 'ponto_1') return dynamicPointCards.map(makePalestraPointCard)
+      if (isPalestraPointCard(card.id)) return []
+      return [card]
+    })
+    : sectionDef.cards
 
   // Close menu on outside click
   useEffect(() => {
@@ -143,13 +197,15 @@ export default function SectionWorkspace({
     saveTimer.current = setTimeout(() => performSave(next), 1500)
   }
 
-  async function performSave(content: Record<string, string>) {
+  async function performSave(content: Record<string, string>, pointCards = latestDynamicPointCards.current) {
     setSaving(true)
     const hasContent = Object.values(content).some(v => v.trim().length > 0)
+    const storedContent: Record<string, unknown> = { cards: content }
+    if (isPalestraConstruir) storedContent.dynamicPointCards = pointCards
     const payload = {
       project_id: project.id, user_id: userId,
       slug: sectionDef.slug, module: sectionDef.module,
-      title: sectionDef.title, content: { cards: content },
+      title: sectionDef.title, content: storedContent,
       status: (hasContent ? 'draft' : 'empty') as 'empty' | 'draft' | 'reviewed',
     }
     if (existingSection?.id) {
@@ -184,6 +240,67 @@ export default function SectionWorkspace({
     })
   }
 
+  async function saveDynamicPointStructure(nextPointCards: DynamicPointCard[], nextContent = latestContent.current) {
+    setDynamicPointCards(nextPointCards)
+    latestDynamicPointCards.current = nextPointCards
+    await performSave(nextContent, nextPointCards)
+  }
+
+  async function addDynamicPoint() {
+    const nextPoint = createPalestraPoint(dynamicPointCards.length + 1)
+    const nextPoints = [...dynamicPointCards, nextPoint]
+    setExpandedCards(prev => new Set([...prev, nextPoint.id]))
+    setEditingCards(prev => new Set([...prev, nextPoint.id]))
+    await saveDynamicPointStructure(nextPoints)
+  }
+
+  async function renameDynamicPoint(cardId: string) {
+    const current = dynamicPointCards.find(point => point.id === cardId)
+    if (!current) return
+    const nextTitle = window.prompt('Novo título do ponto', current.title)
+    if (nextTitle === null) return
+    const title = nextTitle.trim()
+    if (!title) return
+    const nextPoints = dynamicPointCards.map(point => point.id === cardId ? { ...point, title } : point)
+    await saveDynamicPointStructure(nextPoints)
+  }
+
+  async function removeDynamicPoint(cardId: string) {
+    if (dynamicPointCards.length <= 1) {
+      window.alert('A palestra precisa manter pelo menos um ponto.')
+      return
+    }
+    const current = dynamicPointCards.find(point => point.id === cardId)
+    const ok = window.confirm(`Remover "${current?.title ?? 'este ponto'}"? O conteúdo deste ponto também será removido.`)
+    if (!ok) return
+    const nextPoints = dynamicPointCards.filter(point => point.id !== cardId)
+    const nextContent = { ...latestContent.current }
+    delete nextContent[cardId]
+    setCardContent(nextContent)
+    latestContent.current = nextContent
+    setExpandedCards(prev => {
+      const next = new Set(prev)
+      next.delete(cardId)
+      return next
+    })
+    setEditingCards(prev => {
+      const next = new Set(prev)
+      next.delete(cardId)
+      return next
+    })
+    await saveDynamicPointStructure(nextPoints, nextContent)
+  }
+
+  async function moveDynamicPoint(cardId: string, direction: -1 | 1) {
+    const index = dynamicPointCards.findIndex(point => point.id === cardId)
+    const target = index + direction
+    if (index < 0 || target < 0 || target >= dynamicPointCards.length) return
+    const nextPoints = [...dynamicPointCards]
+    const [item] = nextPoints.splice(index, 1)
+    nextPoints.splice(target, 0, item)
+    await saveDynamicPointStructure(nextPoints)
+  }
+
   async function generateCard(cardId: string) {
     const currentValue = latestContent.current[cardId] ?? ''
     if (toDisplayText(currentValue).trim()) {
@@ -203,6 +320,7 @@ export default function SectionWorkspace({
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           sectionSlug: sectionDef.slug, cardId,
+          dynamicCards: isPalestraConstruir ? activeCards.map(({ id, title, aiTrigger }) => ({ id, title, aiTrigger })) : undefined,
           currentCards: latestContent.current,
           project: { id: project.id, title: project.title, book: project.book, passage_ref: project.passage_ref, testament: project.testament, original_language: project.original_language, study_mode: project.study_mode },
         }),
@@ -241,14 +359,16 @@ export default function SectionWorkspace({
     setGenerationError(null)
     setCardErrors({})
     const allGenerating: Record<string, CardState> = {}
-    sectionDef.cards.forEach(c => { allGenerating[c.id] = 'generating' })
+    activeCards.forEach(c => { allGenerating[c.id] = 'generating' })
     setCardStates(allGenerating)
-    setExpandedCards(new Set(sectionDef.cards.map(c => c.id)))
+    setExpandedCards(new Set(activeCards.map(c => c.id)))
     try {
       const res = await fetch('/api/claude/generate', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           sectionSlug: sectionDef.slug,
+          cardIds: activeCards.map(card => card.id),
+          dynamicCards: isPalestraConstruir ? activeCards.map(({ id, title, aiTrigger }) => ({ id, title, aiTrigger })) : undefined,
           currentCards: latestContent.current,
           project: { id: project.id, title: project.title, book: project.book, passage_ref: project.passage_ref, testament: project.testament, original_language: project.original_language, study_mode: project.study_mode },
         }),
@@ -256,14 +376,14 @@ export default function SectionWorkspace({
       const data = await res.json().catch(() => ({}))
       if (!res.ok) throw new Error(data.error || 'Não foi possível gerar a seção com IA.')
       const next = { ...latestContent.current }
-      sectionDef.cards.forEach(c => { if (data[c.id]) next[c.id] = data[c.id] })
+      activeCards.forEach(c => { if (data[c.id]) next[c.id] = data[c.id] })
       setCardContent(next); latestContent.current = next
       const allSaving: Record<string, CardState> = {}
-      sectionDef.cards.forEach(c => { allSaving[c.id] = 'saving' })
+      activeCards.forEach(c => { allSaving[c.id] = 'saving' })
       setCardStates(allSaving)
       await performSave(next)
       const allSaved: Record<string, CardState> = {}
-      sectionDef.cards.forEach(c => { allSaved[c.id] = 'saved' })
+      activeCards.forEach(c => { allSaved[c.id] = 'saved' })
       setCardStates(allSaved)
       setEditingCards(new Set())
       setTimeout(() => setCardStates({}), 2500)
@@ -430,7 +550,7 @@ export default function SectionWorkspace({
 
       {/* ── Cards ─────────────────────────────────────────────────────────── */}
       <div>
-        {sectionDef.cards.map((card, idx) => {
+        {activeCards.map((card, idx) => {
           const content   = cardContent[card.id] ?? ''
           const displayContent = normalizeStoredHtml(content)
           const displayText = toDisplayText(content)
@@ -444,8 +564,10 @@ export default function SectionWorkspace({
           const preview   = !expanded && hasContent
             ? displayText.slice(0, 160) + (displayText.length > 160 ? '…' : '')
             : ''
-          const isLast    = idx === sectionDef.cards.length - 1
+          const isLast    = idx === activeCards.length - 1
           const showDots  = hoveredCard === card.id || openMenu === card.id
+          const isDynamicPoint = isPalestraConstruir && dynamicPointCards.some(point => point.id === card.id)
+          const dynamicIndex = dynamicPointCards.findIndex(point => point.id === card.id)
 
           const menuActions = [
             {
@@ -492,6 +614,29 @@ export default function SectionWorkspace({
               disabled: !hasContent,
               danger: true,
             },
+            ...(isDynamicPoint ? [
+              { separator: true as const },
+              {
+                label: 'Renomear ponto',
+                action: () => { setOpenMenu(null); renameDynamicPoint(card.id) },
+              },
+              {
+                label: 'Mover para cima',
+                action: () => { setOpenMenu(null); moveDynamicPoint(card.id, -1) },
+                disabled: dynamicIndex <= 0,
+              },
+              {
+                label: 'Mover para baixo',
+                action: () => { setOpenMenu(null); moveDynamicPoint(card.id, 1) },
+                disabled: dynamicIndex < 0 || dynamicIndex >= dynamicPointCards.length - 1,
+              },
+              {
+                label: 'Remover ponto',
+                action: () => { setOpenMenu(null); removeDynamicPoint(card.id) },
+                disabled: dynamicPointCards.length <= 1,
+                danger: true,
+              },
+            ] : []),
           ]
 
           return (
@@ -731,6 +876,44 @@ export default function SectionWorkspace({
             </div>
           )
         })}
+        {isPalestraConstruir && (
+          <div style={{
+            paddingTop: '1rem',
+            borderTop: activeCards.length ? '1px solid var(--border-subtle)' : 'none',
+            display: 'flex',
+            justifyContent: 'flex-start',
+          }}>
+            <button
+              type="button"
+              onClick={addDynamicPoint}
+              disabled={saving}
+              style={{
+                background: 'transparent',
+                border: '1px dashed var(--border)',
+                color: 'var(--text-muted)',
+                borderRadius: '9px',
+                padding: '0.52rem 0.8rem',
+                fontSize: '0.8rem',
+                fontWeight: 600,
+                cursor: saving ? 'wait' : 'pointer',
+                fontFamily: 'inherit',
+                transition: 'all 0.15s',
+              }}
+              onMouseEnter={e => {
+                e.currentTarget.style.borderColor = moduleColor
+                e.currentTarget.style.color = moduleColor
+                e.currentTarget.style.background = `${moduleColor}0D`
+              }}
+              onMouseLeave={e => {
+                e.currentTarget.style.borderColor = 'var(--border)'
+                e.currentTarget.style.color = 'var(--text-muted)'
+                e.currentTarget.style.background = 'transparent'
+              }}
+            >
+              + Adicionar ponto
+            </button>
+          </div>
+        )}
       </div>
 
       {/* ── Footer CTA ────────────────────────────────────────────────────── */}

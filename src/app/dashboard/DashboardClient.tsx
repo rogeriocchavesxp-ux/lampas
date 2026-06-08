@@ -22,6 +22,7 @@ const LEGACY_TYPE: Record<StudyModeId, string> = {
   estudo_narrativas:           'exegese',
   estudo_doutrinario:          'estudo_doutrinario',
   estudo_tematico:             'estudo_doutrinario',
+  estudo_termos:               'pesquisa_teologica',
   sermao:                      'sermao',
   estudo_biblico:              'estudo_biblico',
   devocional:                  'devocional',
@@ -93,6 +94,13 @@ const MODE_ICONS: Record<StudyModeId, React.ReactNode> = {
       <path d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"/>
     </svg>
   ),
+  estudo_termos: (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M4 19.5V5a2 2 0 0 1 2-2h12"/>
+      <path d="M6 21h12a2 2 0 0 0 2-2V7H8a2 2 0 0 0-2 2v12z"/>
+      <path d="M10 12h6M10 16h4"/>
+    </svg>
+  ),
   sermao: (
     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
       <path d="M12 2a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"/>
@@ -135,6 +143,7 @@ const MODE_VISUALS: Record<StudyModeId, { color: string; bg: string; border: str
   estudo_narrativas:           { color: '#92400E', bg: 'rgba(146,64,14,0.08)', border: 'rgba(146,64,14,0.18)' },
   estudo_doutrinario:          { color: '#4F46E5', bg: 'rgba(79,70,229,0.08)',  border: 'rgba(79,70,229,0.18)' },
   estudo_tematico:             { color: '#0F766E', bg: 'rgba(15,118,110,0.08)', border: 'rgba(15,118,110,0.18)' },
+  estudo_termos:               { color: '#0D9488', bg: 'rgba(13,148,136,0.08)', border: 'rgba(13,148,136,0.18)' },
   exegese_biblica:             { color: '#0F766E', bg: 'rgba(15,118,110,0.08)', border: 'rgba(15,118,110,0.18)' },
   estudo_de_carta:             { color: '#475569', bg: 'rgba(71,85,105,0.08)',  border: 'rgba(71,85,105,0.18)' },
   aula:                        { color: '#2563EB', bg: 'rgba(37,99,235,0.08)',  border: 'rgba(37,99,235,0.18)' },
@@ -156,6 +165,7 @@ const SECTION_ORDER: StudyModeId[] = [
   'estudo_narrativas',
   'estudo_doutrinario',
   'estudo_tematico',
+  'estudo_termos',
   'exegese_biblica',
   'estudo_de_carta',
   'comentario_exegetico',
@@ -174,6 +184,7 @@ const GENRE_LABEL: Partial<Record<StudyModeId, string>> = {
   estudo_de_carta: 'Cartas', estudo_de_salmos_sabedoria: 'Salmos e Sabedoria',
   estudo_narrativas: 'Narrativas', estudo_de_profecias: 'Profecias',
   estudo_doutrinario: 'Doutrina', estudo_tematico: 'Temático',
+  estudo_termos: 'Estudo de Termos',
   devocional: 'Devocional', comentario_exegetico: 'Comentário', estudo_biblico: 'Est. Bíblico',
   aula: 'Aula', artigo: 'Artigo', ebook: 'E-book', livro: 'Livro',
   palestra: 'Palestra', curso: 'Curso', serie_mensagens: 'Série',
@@ -183,7 +194,7 @@ const GENRE_LABEL: Partial<Record<StudyModeId, string>> = {
 
 type CreationGroupId = 'estudar' | 'produzir' | 'armazenar'
 type UiModeId =
-  | 'exegetico' | 'tematico' | 'doutrinario'
+  | 'exegetico' | 'tematico' | 'doutrinario' | 'termos'
   | 'sermao' | 'devocional' | 'aula' | 'estudo_biblico' | 'artigo' | 'ebook' | 'livro' | 'palestra' | 'curso' | 'serie_mensagens'
   | 'conhecimento'
 
@@ -200,6 +211,9 @@ const UI_MODES: Array<{
   { id: 'doutrinario', group: 'estudar', emoji: '📚', label: 'Doutrinário', color: '#1E40AF',
     tagline: 'Da doutrina à compreensão',
     description: 'Investigue sistematicamente uma doutrina bíblica específica.' },
+  { id: 'termos', group: 'estudar', emoji: '🔤', label: 'Estudo de Termos', color: '#0D9488',
+    tagline: 'Palavras bíblicas em profundidade',
+    description: 'Investigue palavras bíblicas e teológicas em seu uso lexical, contexto original, desenvolvimento canônico e implicações doutrinárias.' },
   { id: 'sermao', group: 'produzir', emoji: '🎙', label: 'Sermão', color: '#7C3AED',
     tagline: 'Do texto ao púlpito',
     description: 'Da exegese ao púlpito.' },
@@ -561,6 +575,7 @@ export default function DashboardClient({ user, projects: initialProjects, profi
       case 'serie_mensagens': setSelectedMode('serie_mensagens'); break
       case 'doutrinario': setSelectedMode('estudo_doutrinario'); break
       case 'tematico':    setSelectedMode('estudo_tematico'); break
+      case 'termos':      setSelectedMode('estudo_termos'); break
       case 'exegetico':   setSelectedMode(null); break
       case 'conhecimento': setSelectedMode(null); break
     }
@@ -605,14 +620,14 @@ export default function DashboardClient({ user, projects: initialProjects, profi
     if (!selectedMode || !selectedUiMode) return
 
     const isTopicProduction = ['aula', 'artigo', 'ebook', 'livro', 'palestra', 'curso', 'serie_mensagens'].includes(selectedUiMode)
-    const isPassage     = selectedUiMode !== 'doutrinario' && selectedUiMode !== 'tematico' && !isTopicProduction
+    const isPassage     = selectedUiMode !== 'doutrinario' && selectedUiMode !== 'tematico' && selectedUiMode !== 'termos' && !isTopicProduction
     const generatedTitle = isPassage ? buildReferenceTitle(form.book, form.passage_ref) : form.topic.trim()
     const projectTitle  = form.title.trim() || generatedTitle
 
     if (isPassage && !form.testament)          { setCreateError('Escolha o testamento.'); return }
     if (isPassage && !form.book)               { setCreateError('Selecione o livro.'); return }
     if (isPassage && !form.passage_ref.trim()) { setCreateError('Passagem é obrigatória.'); return }
-    if (!isPassage && !form.topic.trim())      { setCreateError('Doutrina ou tema é obrigatório.'); return }
+    if (!isPassage && !form.topic.trim())      { setCreateError(selectedUiMode === 'termos' ? 'Termo é obrigatório.' : 'Doutrina ou tema é obrigatório.'); return }
     if (!projectTitle)                         { setCreateError('Informe os dados do estudo para gerar o título.'); return }
 
     const payload = {
@@ -1180,7 +1195,7 @@ export default function DashboardClient({ user, projects: initialProjects, profi
                 {(() => {
                   const uiMode        = UI_MODES.find(m => m.id === selectedUiMode)!
                   const isTopicProduction = ['aula', 'artigo', 'ebook', 'livro', 'palestra', 'curso', 'serie_mensagens'].includes(selectedUiMode)
-                  const isPassage     = selectedUiMode !== 'doutrinario' && selectedUiMode !== 'tematico' && !isTopicProduction
+                  const isPassage     = selectedUiMode !== 'doutrinario' && selectedUiMode !== 'tematico' && selectedUiMode !== 'termos' && !isTopicProduction
                   const detectedLabel = selectedMode ? DETECTED_LABEL[selectedMode] : null
                   const canSubmit     = isPassage
                     ? (selectedMode && form.book && form.passage_ref.trim() && form.testament)
@@ -1267,7 +1282,7 @@ export default function DashboardClient({ user, projects: initialProjects, profi
                             </FormField>
                           </>
                         ) : (
-                          <FormField label={selectedUiMode === 'doutrinario' ? 'Doutrina' : selectedUiMode === 'tematico' ? 'Tema' : 'Título ou assunto'}>
+                          <FormField label={selectedUiMode === 'doutrinario' ? 'Doutrina' : selectedUiMode === 'tematico' ? 'Tema' : selectedUiMode === 'termos' ? 'Termo' : 'Título ou assunto'}>
                             <input
                               value={form.topic}
                               onChange={e => updateTopic(e.target.value)}
@@ -1275,7 +1290,9 @@ export default function DashboardClient({ user, projects: initialProjects, profi
                                 ? 'Ex: Justificação · Santificação · Eleição'
                                 : selectedUiMode === 'tematico'
                                   ? 'Ex: Família · Casamento · Trabalho · Sofrimento'
-                                  : 'Ex: Liderança cristã · Discipulado · Cristologia paulina'}
+                                  : selectedUiMode === 'termos'
+                                    ? 'Ex: graça · aliança · παρουσία · חֶסֶד'
+                                    : 'Ex: Liderança cristã · Discipulado · Cristologia paulina'}
                               required
                             />
                           </FormField>

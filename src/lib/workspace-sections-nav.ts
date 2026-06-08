@@ -3392,6 +3392,166 @@ export const WORKSPACE_SECTIONS_NAV: SectionNav[] = [
     ]
   },
   {
+    "slug": "termos_definir",
+    "title": "I. Definir",
+    "shortTitle": "Definir",
+    "phase": "preparar",
+    "module": "inventio",
+    "group": "termos_definir_grp",
+    "groupLabel": "I. Definir",
+    "order": 1225,
+    "cards": [
+      {
+        "id": "termo_principal",
+        "title": "Termo principal"
+      },
+      {
+        "id": "idioma",
+        "title": "Idioma"
+      },
+      {
+        "id": "forma_original",
+        "title": "Forma original"
+      },
+      {
+        "id": "transliteracao",
+        "title": "Transliteração"
+      },
+      {
+        "id": "campo_semantico",
+        "title": "Campo semântico"
+      },
+      {
+        "id": "pergunta_central",
+        "title": "Pergunta central"
+      }
+    ]
+  },
+  {
+    "slug": "termos_analisar",
+    "title": "II. Analisar",
+    "shortTitle": "Analisar",
+    "phase": "interpretar",
+    "module": "inventio",
+    "group": "termos_analisar_grp",
+    "groupLabel": "II. Analisar",
+    "order": 1226,
+    "cards": [
+      {
+        "id": "definicao_lexical",
+        "title": "Definição lexical"
+      },
+      {
+        "id": "contexto_imediato",
+        "title": "Uso no contexto imediato"
+      },
+      {
+        "id": "uso_livro_biblico",
+        "title": "Uso no livro bíblico"
+      },
+      {
+        "id": "uso_antigo_testamento",
+        "title": "Uso no Antigo Testamento"
+      },
+      {
+        "id": "uso_novo_testamento",
+        "title": "Uso no Novo Testamento"
+      },
+      {
+        "id": "termos_relacionados",
+        "title": "Variações e termos relacionados"
+      }
+    ]
+  },
+  {
+    "slug": "termos_rastrear",
+    "title": "III. Rastrear",
+    "shortTitle": "Rastrear",
+    "phase": "interpretar",
+    "module": "dispositio",
+    "group": "termos_rastrear_grp",
+    "groupLabel": "III. Rastrear",
+    "order": 1227,
+    "cards": [
+      {
+        "id": "ocorrencias_principais",
+        "title": "Ocorrências principais"
+      },
+      {
+        "id": "desenvolvimento_canonico",
+        "title": "Desenvolvimento canônico"
+      },
+      {
+        "id": "relacao_aliancas",
+        "title": "Relação com alianças"
+      },
+      {
+        "id": "relacao_cristo",
+        "title": "Relação com Cristo"
+      },
+      {
+        "id": "relacao_povo_de_deus",
+        "title": "Relação com o povo de Deus"
+      }
+    ]
+  },
+  {
+    "slug": "termos_sintetizar",
+    "title": "IV. Sintetizar",
+    "shortTitle": "Sintetizar",
+    "phase": "comunicar",
+    "module": "elocutio",
+    "group": "termos_sintetizar_grp",
+    "groupLabel": "IV. Sintetizar",
+    "order": 1228,
+    "cards": [
+      {
+        "id": "sintese_biblico_teologica",
+        "title": "Síntese bíblico-teológica"
+      },
+      {
+        "id": "implicacoes_doutrinarias",
+        "title": "Implicações doutrinárias"
+      },
+      {
+        "id": "implicacoes_pastorais",
+        "title": "Implicações pastorais"
+      },
+      {
+        "id": "erros_comuns",
+        "title": "Erros comuns de interpretação"
+      }
+    ]
+  },
+  {
+    "slug": "termos_produzir",
+    "title": "V. Produzir",
+    "shortTitle": "Produzir",
+    "phase": "comunicar",
+    "module": "pronuntiatio",
+    "group": "termos_produzir_grp",
+    "groupLabel": "V. Produzir",
+    "order": 1229,
+    "cards": [
+      {
+        "id": "verbete_final",
+        "title": "Verbete final"
+      },
+      {
+        "id": "esboco_estudo",
+        "title": "Esboço do estudo"
+      },
+      {
+        "id": "perguntas_discussao",
+        "title": "Perguntas para discussão"
+      },
+      {
+        "id": "aplicacoes",
+        "title": "Aplicações"
+      }
+    ]
+  },
+  {
     "slug": "ec_ocasiao",
     "title": "Ocasião e Propósito",
     "shortTitle": "Ocasião",

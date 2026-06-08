@@ -72,10 +72,11 @@ export async function POST(req: Request) {
 
   incrementAIUsage(user.id).catch(() => {})
 
-  const { sectionSlug, cardId, cardIds, currentCards, project } = await req.json() as {
+  const { sectionSlug, cardId, cardIds, dynamicCards, currentCards, project } = await req.json() as {
     sectionSlug: string
     cardId?: string
     cardIds?: string[]
+    dynamicCards?: Array<{ id: string; title: string; aiTrigger?: string }>
     currentCards?: Record<string, string>
     project: ProjectContext
   }
@@ -83,11 +84,22 @@ export async function POST(req: Request) {
   const sectionDef = getSectionBySlug(sectionSlug)
   if (!sectionDef) return Response.json({ error: 'Seção não encontrada' }, { status: 400 })
 
+  const requestCards = Array.isArray(dynamicCards)
+    ? dynamicCards
+      .filter(card => card && typeof card.id === 'string' && typeof card.title === 'string')
+      .map(card => ({
+        id: card.id,
+        title: card.title,
+        placeholder: '',
+        aiTrigger: card.aiTrigger || `Gere conteúdo contextualizado para "${card.title}".`,
+      }))
+    : []
+  const availableCards = [...sectionDef.cards, ...requestCards.filter(card => !sectionDef.cards.some(existing => existing.id === card.id))]
   const cardsToGenerate = cardId
-    ? sectionDef.cards.filter(c => c.id === cardId)
+    ? availableCards.filter(c => c.id === cardId)
     : cardIds
-    ? sectionDef.cards.filter(c => cardIds.includes(c.id))
-    : sectionDef.cards
+    ? availableCards.filter(c => cardIds.includes(c.id))
+    : availableCards
 
   if (cardsToGenerate.length === 0) {
     return Response.json({ error: 'Nenhum campo para gerar' }, { status: 400 })
