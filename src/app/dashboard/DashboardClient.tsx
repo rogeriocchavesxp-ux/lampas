@@ -793,10 +793,10 @@ export default function DashboardClient({ user, projects: initialProjects, profi
             </p>
             <h1 style={{ fontSize: '1.6rem', fontWeight: 800, letterSpacing: '-0.02em', color: 'var(--text-primary)', margin: '0 0 0.3rem' }}>
               {totalCount === 0
-                ? 'Comece seu primeiro estudo.'
+                ? 'Comece seu primeiro projeto.'
                 : activeCount > 0
-                  ? `${activeCount} ${activeCount === 1 ? 'estudo em andamento' : 'estudos em andamento'}.`
-                  : 'Todos os estudos concluídos.'}
+                  ? `${activeCount} ${activeCount === 1 ? 'projeto ativo' : 'projetos ativos'}.`
+                  : 'Todos os projetos concluídos.'}
             </h1>
             <p style={{ fontSize: '0.82rem', color: 'var(--text-muted)', margin: 0 }}>
               {completedCount > 0 ? `${completedCount} concluído${completedCount > 1 ? 's' : ''} · ` : ''}
@@ -1043,7 +1043,7 @@ export default function DashboardClient({ user, projects: initialProjects, profi
 
             {/* ── Todos os Estudos ── */}
             <section>
-              <CollapseHeader label="Todos os Estudos" collapsed={collapsedAnalytics.has('todos')} onToggle={() => toggleAnalytics('todos')} />
+              <CollapseHeader label="Todos os Projetos" collapsed={collapsedAnalytics.has('todos')} onToggle={() => toggleAnalytics('todos')} />
               {!collapsedAnalytics.has('todos') && <div style={{ marginTop: '0.85rem', border: '1px solid var(--border-subtle)', borderRadius: '10px', overflow: 'hidden', background: 'var(--surface)' }}>
                 {libraryModes.map((modeId, idx) => {
                   const mode         = STUDY_MODE_REGISTRY[modeId]
@@ -1467,7 +1467,7 @@ export default function DashboardClient({ user, projects: initialProjects, profi
                             fontFamily: 'inherit', fontSize: '0.9rem', transition: 'background 0.15s',
                           }}>
                             {creating ? 'Criando…'
-                              : !isPassage ? 'Iniciar estudo →'
+                              : !isPassage ? 'Iniciar projeto →'
                               : isSermon && !form.sermon_type ? 'Escolha o tipo de sermão'
                               : !form.book ? 'Selecione um livro'
                               : !form.passage_ref.trim() ? 'Informe a passagem'
@@ -1501,7 +1501,7 @@ export default function DashboardClient({ user, projects: initialProjects, profi
             boxShadow: '0 8px 32px rgba(15,23,42,0.15)',
           }}>
             <h3 style={{ fontSize: '1rem', fontWeight: 700, marginBottom: '0.35rem', color: 'var(--text-primary)' }}>
-              Excluir estudo?
+              Excluir projeto?
             </h3>
             <p style={{ fontSize: '0.84rem', color: 'var(--text-muted)', marginBottom: '1.25rem' }}>
               Esta ação não poderá ser desfeita.
@@ -1551,7 +1551,7 @@ export default function DashboardClient({ user, projects: initialProjects, profi
                   fontFamily: 'inherit', fontSize: '0.88rem', transition: 'background 0.12s',
                 }}
               >
-                {deleteConfirming ? 'Excluindo…' : 'Excluir estudo'}
+                {deleteConfirming ? 'Excluindo…' : 'Excluir projeto'}
               </button>
             </div>
           </div>
@@ -2181,7 +2181,7 @@ function EmptyDashboard({ onNew }: { onNew: () => void }) {
           cursor: 'pointer', fontSize: '0.8rem', fontFamily: 'inherit',
           padding: 0,
         }}>
-          Criar meu próprio estudo
+          Criar meu próprio projeto
         </button>
       </div>
     </div>
