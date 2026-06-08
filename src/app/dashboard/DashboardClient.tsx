@@ -13,6 +13,7 @@ import {
   type StudyModeConfig,
 } from '@/lib/study-modes'
 import pkg from '../../../package.json'
+import UpcomingEventsWidget from '@/components/agenda/UpcomingEventsWidget'
 
 const LEGACY_TYPE: Record<StudyModeId, string> = {
   exegese_biblica:             'exegese',
@@ -756,6 +757,14 @@ export default function DashboardClient({ user, projects: initialProjects, profi
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
           <span style={{ color: 'var(--text-muted)', fontSize: '0.82rem' }}>{user.email}</span>
+          <button onClick={() => router.push('/agenda')} style={{
+            background: 'transparent', border: '1px solid var(--border)',
+            color: 'var(--text-secondary)', padding: '0.3rem 0.75rem',
+            borderRadius: '6px', cursor: 'pointer', fontSize: '0.82rem', fontFamily: 'inherit',
+          }}
+            onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--accent)'; e.currentTarget.style.color = 'var(--accent)' }}
+            onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.color = 'var(--text-secondary)' }}
+          >Agenda</button>
           <button onClick={() => router.push('/billing')} style={{
             background: 'transparent', border: '1px solid var(--border)',
             color: 'var(--text-secondary)', padding: '0.3rem 0.75rem',
@@ -830,6 +839,14 @@ export default function DashboardClient({ user, projects: initialProjects, profi
                     onDelete={() => setDeleteTarget(p)}
                   />
                 ))}
+              </div>
+            </section>
+
+            {/* ── Próximos Eventos ── */}
+            <section>
+              <DashLabel>Próximos Compromissos</DashLabel>
+              <div style={{ marginTop: '0.85rem' }}>
+                <UpcomingEventsWidget />
               </div>
             </section>
 
