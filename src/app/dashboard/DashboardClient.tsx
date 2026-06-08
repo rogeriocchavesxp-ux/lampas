@@ -440,28 +440,48 @@ export default function DashboardClient({ user, projects: initialProjects, profi
 
   const modeConfig = selectedMode ? STUDY_MODE_REGISTRY[selectedMode] : null
 
+  const dashboardProjects = useMemo(() => {
+    const seen = new Set<string>()
+    return projects.filter(project => {
+      if (seen.has(project.id)) return false
+      seen.add(project.id)
+      return true
+    })
+  }, [projects])
+
+  const activeProjects = useMemo(
+    () => dashboardProjects.filter(project => project.status !== 'completed'),
+    [dashboardProjects],
+  )
+
+  const completedProjects = useMemo(
+    () => dashboardProjects.filter(project => project.status === 'completed'),
+    [dashboardProjects],
+  )
+
   const projectsByMode = useMemo(() => {
     const map = new Map<StudyModeId, Project[]>()
-    for (const p of projects) {
+    for (const p of dashboardProjects) {
       const mode = getModeConfig(p.study_mode ?? p.project_type)
       const arr = map.get(mode.id) ?? []
       arr.push(p)
       map.set(mode.id, arr)
     }
     return map
-  }, [projects])
+  }, [dashboardProjects])
 
   // Top 3 most recently updated — server already sorts by updated_at desc
-  const recentProjects = useMemo(() => projects.slice(0, 3), [projects])
+  const recentProjects = useMemo(() => dashboardProjects.slice(0, 3), [dashboardProjects])
 
-  const recentProjects4  = useMemo(() => projects.slice(0, 4), [projects])
-  const activeCount      = useMemo(() => projects.filter(p => p.status !== 'completed').length, [projects])
-  const completedCount   = useMemo(() => projects.filter(p => p.status === 'completed').length, [projects])
-  const studiedBooks     = useMemo(() => new Set(projects.map(p => p.book).filter((b): b is string => !!b && b !== '—')), [projects])
+  const recentActiveProjects4 = useMemo(() => activeProjects.slice(0, 4), [activeProjects])
+  const activeCount      = activeProjects.length
+  const completedCount   = completedProjects.length
+  const totalCount       = dashboardProjects.length
+  const studiedBooks     = useMemo(() => new Set(dashboardProjects.map(p => p.book).filter((b): b is string => !!b && b !== '—')), [dashboardProjects])
 
   const genreDistribution = useMemo(() => {
     const counts = new Map<StudyModeId, number>()
-    for (const p of projects) {
+    for (const p of dashboardProjects) {
       const id = getModeConfig(p.study_mode ?? p.project_type).id
       counts.set(id, (counts.get(id) ?? 0) + 1)
     }
@@ -472,19 +492,19 @@ export default function DashboardClient({ user, projects: initialProjects, profi
         label: GENRE_LABEL[id] ?? id,
         color: MODE_VISUALS[id]?.color ?? '#64748B',
       }))
-  }, [projects])
+  }, [dashboardProjects])
 
   const topBooks = useMemo(() => {
     const counts = new Map<string, number>()
-    for (const p of projects) {
+    for (const p of dashboardProjects) {
       if (p.book && p.book !== '—') counts.set(p.book, (counts.get(p.book) ?? 0) + 1)
     }
     return [...counts.entries()].sort((a, b) => b[1] - a[1]).slice(0, 6)
-  }, [projects])
+  }, [dashboardProjects])
 
   const publishedProjects = useMemo(
-    () => projects.filter(project => project.published),
-    [projects],
+    () => dashboardProjects.filter(project => project.published),
+    [dashboardProjects],
   )
 
   const publishedByCategory = useMemo(() => {
@@ -736,7 +756,7 @@ export default function DashboardClient({ user, projects: initialProjects, profi
               Bem-vindo de volta.
             </p>
             <h1 style={{ fontSize: '1.6rem', fontWeight: 800, letterSpacing: '-0.02em', color: 'var(--text-primary)', margin: '0 0 0.3rem' }}>
-              {projects.length === 0
+              {totalCount === 0
                 ? 'Comece seu primeiro estudo.'
                 : activeCount > 0
                   ? `${activeCount} ${activeCount === 1 ? 'estudo em andamento' : 'estudos em andamento'}.`
@@ -744,7 +764,7 @@ export default function DashboardClient({ user, projects: initialProjects, profi
             </h1>
             <p style={{ fontSize: '0.82rem', color: 'var(--text-muted)', margin: 0 }}>
               {completedCount > 0 ? `${completedCount} concluído${completedCount > 1 ? 's' : ''} · ` : ''}
-              {projects.length} no total
+              {totalCount} no total
               {studiedBooks.size > 0 ? ` · ${studiedBooks.size} ${studiedBooks.size === 1 ? 'livro bíblico' : 'livros bíblicos'}` : ''}
             </p>
           </div>
@@ -758,7 +778,7 @@ export default function DashboardClient({ user, projects: initialProjects, profi
           </button>
         </div>
 
-        {projects.length === 0 ? (
+        {totalCount === 0 ? (
           <EmptyDashboard onNew={openModal} />
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '2.5rem' }}>
@@ -767,7 +787,7 @@ export default function DashboardClient({ user, projects: initialProjects, profi
             <section>
               <DashLabel>Continuar Estudando</DashLabel>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(270px, 1fr))', gap: '0.85rem', marginTop: '0.85rem' }}>
-                {recentProjects4.map(p => (
+                {recentActiveProjects4.map(p => (
                   <StudyCard
                     key={p.id} project={p}
                     onClick={() => router.push(`/workspace/${p.id}`)}
@@ -839,7 +859,7 @@ export default function DashboardClient({ user, projects: initialProjects, profi
             <section>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '0.85rem' }}>
                 {([
-                  { label: 'Total',          value: projects.length,  color: 'var(--accent)', icon: '📚' },
+                  { label: 'Total',          value: totalCount,       color: 'var(--accent)', icon: '📚' },
                   { label: 'Em andamento',   value: activeCount,      color: '#D97706',       icon: '⏳' },
                   { label: 'Concluídos',     value: completedCount,   color: '#10B981',       icon: '✓'  },
                   { label: 'Livros bíblicos', value: studiedBooks.size, color: '#7C3AED',      icon: '🗺' },
@@ -857,7 +877,7 @@ export default function DashboardClient({ user, projects: initialProjects, profi
             </section>
 
             {/* ── Distribuição + Livros ── */}
-            {projects.length >= 2 && (
+            {totalCount >= 2 && (
               <section>
                 <CollapseHeader label="Distribuição" collapsed={collapsedAnalytics.has('distribuicao')} onToggle={() => toggleAnalytics('distribuicao')} />
                 {!collapsedAnalytics.has('distribuicao') && (
@@ -871,7 +891,7 @@ export default function DashboardClient({ user, projects: initialProjects, profi
                             <div key={g.id} style={{ display: 'flex', alignItems: 'center', gap: '0.45rem' }}>
                               <div style={{ width: 7, height: 7, borderRadius: '50%', background: g.color, flexShrink: 0 }} />
                               <span style={{ flex: 1, fontSize: '0.7rem', color: 'var(--text-secondary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{g.label}</span>
-                              <span style={{ fontSize: '0.66rem', color: 'var(--text-muted)', fontWeight: 600, flexShrink: 0 }}>{Math.round(g.count / projects.length * 100)}%</span>
+                              <span style={{ fontSize: '0.66rem', color: 'var(--text-muted)', fontWeight: 600, flexShrink: 0 }}>{Math.round(g.count / totalCount * 100)}%</span>
                             </div>
                           ))}
                         </div>
@@ -932,7 +952,7 @@ export default function DashboardClient({ user, projects: initialProjects, profi
               <CollapseHeader label="Atividade Recente" collapsed={collapsedAnalytics.has('recente')} onToggle={() => toggleAnalytics('recente')} />
               {!collapsedAnalytics.has('recente') && (
                 <div style={{ background: 'var(--surface)', border: '1px solid var(--border-subtle)', borderRadius: '12px', overflow: 'hidden', marginTop: '0.85rem' }}>
-                  {projects.slice(0, 8).map((p, i) => {
+                  {dashboardProjects.slice(0, 8).map((p, i) => {
                     const mode   = getModeConfig(p.study_mode ?? p.project_type)
                     const visual = MODE_VISUALS[mode.id as StudyModeId]
                     const isPassage = mode.passageBased
@@ -946,7 +966,7 @@ export default function DashboardClient({ user, projects: initialProjects, profi
                         style={{
                           display: 'flex', alignItems: 'center', gap: '0.85rem',
                           padding: '0.8rem 1.1rem',
-                          borderBottom: i < Math.min(projects.length, 8) - 1 ? '1px solid var(--border-subtle)' : 'none',
+                          borderBottom: i < Math.min(totalCount, 8) - 1 ? '1px solid var(--border-subtle)' : 'none',
                           cursor: 'pointer', transition: 'background 0.1s',
                         }}
                         onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = 'rgba(0,0,0,0.02)' }}

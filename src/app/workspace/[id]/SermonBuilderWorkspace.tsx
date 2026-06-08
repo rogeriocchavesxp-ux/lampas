@@ -1986,6 +1986,7 @@ export default function SermonBuilderWorkspace({
   const [readerMode, setReaderMode] = useState<'continuous' | 'paged'>('continuous')
   const [readerPage, setReaderPage] = useState(0)
   const [readerFullscreen, setReaderFullscreen] = useState(false)
+  const [readerTurnDirection, setReaderTurnDirection] = useState<'next' | 'prev' | null>(null)
   const [previewDocument, setPreviewDocument] = useState<{
     mode: PrintOutlineMode
     document: ReturnType<typeof buildFinalSermonDocument>
@@ -2004,6 +2005,8 @@ export default function SermonBuilderWorkspace({
   const sectionIdRef   = useRef(existingSection?.id)
   sectionIdRef.current = existingSection?.id
   const readerShellRef = useRef<HTMLDivElement | null>(null)
+  const readerPointerRef = useRef<{ id: number; x: number; y: number } | null>(null)
+  const readerTurnTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
   const saveTimer      = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   useEffect(() => {
@@ -2256,6 +2259,69 @@ export default function SermonBuilderWorkspace({
   useEffect(() => {
     setReaderPage(current => Math.min(current, Math.max(0, readerPageCount - 1)))
   }, [readerPageCount])
+
+  const turnReaderPage = useCallback((direction: 'next' | 'prev') => {
+    if (readerMode !== 'paged') return
+    setReaderPage(current => {
+      const next = direction === 'next'
+        ? Math.min(readerPageCount - 1, current + 1)
+        : Math.max(0, current - 1)
+      if (next !== current) {
+        setReaderTurnDirection(direction)
+        if (readerTurnTimer.current) clearTimeout(readerTurnTimer.current)
+        readerTurnTimer.current = setTimeout(() => setReaderTurnDirection(null), 260)
+      }
+      return next
+    })
+  }, [readerMode, readerPageCount])
+
+  useEffect(() => () => {
+    if (readerTurnTimer.current) clearTimeout(readerTurnTimer.current)
+  }, [])
+
+  useEffect(() => {
+    if (viewMode !== 'preview' || readerMode !== 'paged') return
+    function handleReaderKeydown(event: KeyboardEvent) {
+      const target = event.target as HTMLElement | null
+      const tagName = target?.tagName?.toLowerCase()
+      if (tagName === 'input' || tagName === 'textarea' || target?.isContentEditable) return
+      if (event.key === 'ArrowRight') {
+        event.preventDefault()
+        turnReaderPage('next')
+      }
+      if (event.key === 'ArrowLeft') {
+        event.preventDefault()
+        turnReaderPage('prev')
+      }
+    }
+    window.addEventListener('keydown', handleReaderKeydown)
+    return () => window.removeEventListener('keydown', handleReaderKeydown)
+  }, [readerMode, turnReaderPage, viewMode])
+
+  function handleReaderPointerDown(event: React.PointerEvent<HTMLDivElement>) {
+    if (readerMode !== 'paged' || event.pointerType === 'mouse' && event.button !== 0) return
+    readerPointerRef.current = { id: event.pointerId, x: event.clientX, y: event.clientY }
+    event.currentTarget.setPointerCapture?.(event.pointerId)
+  }
+
+  function handleReaderPointerUp(event: React.PointerEvent<HTMLDivElement>) {
+    if (readerMode !== 'paged') return
+    const start = readerPointerRef.current
+    if (!start || start.id !== event.pointerId) return
+    readerPointerRef.current = null
+    event.currentTarget.releasePointerCapture?.(event.pointerId)
+
+    const deltaX = event.clientX - start.x
+    const deltaY = event.clientY - start.y
+    const horizontal = Math.abs(deltaX)
+    const vertical = Math.abs(deltaY)
+    if (horizontal < 56 || horizontal < vertical * 1.25) return
+    turnReaderPage(deltaX < 0 ? 'next' : 'prev')
+  }
+
+  function handleReaderPointerCancel() {
+    readerPointerRef.current = null
+  }
 
   async function toggleReaderFullscreen() {
     const element = readerShellRef.current
@@ -2659,7 +2725,7 @@ export default function SermonBuilderWorkspace({
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
               <button
                 type="button"
-                onClick={() => setReaderPage(page => Math.max(0, page - 1))}
+                onClick={() => turnReaderPage('prev')}
                 disabled={readerCurrentPage === 0}
                 style={{ ...readerToolbarButton, opacity: readerCurrentPage === 0 ? 0.45 : 1, cursor: readerCurrentPage === 0 ? 'not-allowed' : 'pointer' }}
               >
@@ -2670,7 +2736,7 @@ export default function SermonBuilderWorkspace({
               </span>
               <button
                 type="button"
-                onClick={() => setReaderPage(page => Math.min(readerPageCount - 1, page + 1))}
+                onClick={() => turnReaderPage('next')}
                 disabled={readerCurrentPage >= readerPageCount - 1}
                 style={{ ...readerToolbarButton, opacity: readerCurrentPage >= readerPageCount - 1 ? 0.45 : 1, cursor: readerCurrentPage >= readerPageCount - 1 ? 'not-allowed' : 'pointer' }}
               >
@@ -2767,7 +2833,32 @@ export default function SermonBuilderWorkspace({
         </div>
 
         <style>{activePreviewDocument.document.css}</style>
-        <div dangerouslySetInnerHTML={{ __html: readerBody }} />
+        <div
+          onPointerDown={handleReaderPointerDown}
+          onPointerUp={handleReaderPointerUp}
+          onPointerCancel={handleReaderPointerCancel}
+          style={{
+            touchAction: readerMode === 'paged' ? 'pan-y' : 'auto',
+            cursor: readerMode === 'paged' ? 'grab' : 'auto',
+            userSelect: readerMode === 'paged' ? 'none' : 'auto',
+          }}
+          aria-live={readerMode === 'paged' ? 'polite' : undefined}
+        >
+          <div
+            key={readerMode === 'paged' ? readerCurrentPage : 'continuous'}
+            style={{
+              transform: readerTurnDirection === 'next'
+                ? 'translateX(-10px)'
+                : readerTurnDirection === 'prev'
+                  ? 'translateX(10px)'
+                  : 'translateX(0)',
+              opacity: readerTurnDirection ? 0.96 : 1,
+              transition: 'transform 220ms ease, opacity 220ms ease',
+              willChange: readerMode === 'paged' ? 'transform, opacity' : undefined,
+            }}
+            dangerouslySetInnerHTML={{ __html: readerBody }}
+          />
+        </div>
         {!publishedReader && renderSlidesPromptModal()}
       </div>
     )
