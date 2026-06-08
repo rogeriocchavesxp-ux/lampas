@@ -503,10 +503,12 @@ export default function DashboardClient({ user, projects: initialProjects, profi
   // Top 3 most recently updated — server already sorts by updated_at desc
   const recentProjects = useMemo(() => dashboardProjects.slice(0, 3), [dashboardProjects])
 
-  const recentActiveProjects4 = useMemo(() => activeProjects.slice(0, 4), [activeProjects])
+  const RECENT_LIMIT = 6
+  const recentActiveProjects4 = useMemo(() => activeProjects.slice(0, RECENT_LIMIT), [activeProjects])
   const activeCount      = activeProjects.length
   const completedCount   = completedProjects.length
   const totalCount       = dashboardProjects.length
+  // Invariant: totalCount === activeCount + completedCount (every project has status)
   const studiedBooks     = useMemo(() => new Set(dashboardProjects.map(p => p.book).filter((b): b is string => !!b && b !== '—')), [dashboardProjects])
 
   const genreDistribution = useMemo(() => {
