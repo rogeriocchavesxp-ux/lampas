@@ -13,10 +13,10 @@
   --text-secondary: #475569;
   --text-muted:     #94A3B8;
 
-  --accent:        #3B82F6;
-  --accent-hover:  #2563EB;
-  --accent-subtle: rgba(59, 130, 246, 0.08);
-  --brand:         #3B82F6;
+  --accent:        #1E4D8C;
+  --accent-hover:  #163A6B;
+  --accent-subtle: rgba(30, 77, 140, 0.08);
+  --brand:         #1E4D8C;
 
   --error:   #EF4444;
   --success: #10B981;

@@ -145,7 +145,7 @@ function LoginContent() {
                     type="text" value={name} onChange={e => setName(e.target.value)}
                     placeholder="Seu nome" required autoFocus
                     style={inputStyle}
-                    onFocus={e => { e.target.style.borderColor = 'var(--accent)'; e.target.style.boxShadow = '0 0 0 3px rgba(59,130,246,0.1)' }}
+                    onFocus={e => { e.target.style.borderColor = 'var(--accent)'; e.target.style.boxShadow = '0 0 0 3px rgba(30,77,140,0.1)' }}
                     onBlur={e => { e.target.style.borderColor = 'var(--border)'; e.target.style.boxShadow = 'none' }}
                   />
                 </div>
@@ -157,7 +157,7 @@ function LoginContent() {
                   type="email" value={email} onChange={e => setEmail(e.target.value)}
                   placeholder="seu@email.com" required autoFocus={mode === 'login'}
                   style={inputStyle}
-                  onFocus={e => { e.target.style.borderColor = 'var(--accent)'; e.target.style.boxShadow = '0 0 0 3px rgba(59,130,246,0.1)' }}
+                  onFocus={e => { e.target.style.borderColor = 'var(--accent)'; e.target.style.boxShadow = '0 0 0 3px rgba(30,77,140,0.1)' }}
                   onBlur={e => { e.target.style.borderColor = 'var(--border)'; e.target.style.boxShadow = 'none' }}
                 />
               </div>
@@ -168,7 +168,7 @@ function LoginContent() {
                   type="password" value={password} onChange={e => setPassword(e.target.value)}
                   placeholder={mode === 'signup' ? 'Mínimo 6 caracteres' : '••••••••'} required
                   style={inputStyle}
-                  onFocus={e => { e.target.style.borderColor = 'var(--accent)'; e.target.style.boxShadow = '0 0 0 3px rgba(59,130,246,0.1)' }}
+                  onFocus={e => { e.target.style.borderColor = 'var(--accent)'; e.target.style.boxShadow = '0 0 0 3px rgba(30,77,140,0.1)' }}
                   onBlur={e => { e.target.style.borderColor = 'var(--border)'; e.target.style.boxShadow = 'none' }}
                 />
               </div>

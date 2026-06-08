@@ -1,5 +1,8 @@
+'use client'
+
 import Link from 'next/link'
-import { ArrowRight } from 'lucide-react'
+import { useState } from 'react'
+import { ArrowRight, Menu, X } from 'lucide-react'
 import { LampasLogo, LampasMarkIcon } from '@/components/LampasLogo'
 import { PLANS, formatPrice } from '@/lib/plans'
 
@@ -43,7 +46,18 @@ const testimonials = [
 
 const PLAN_ORDER = ['free', 'iniciante', 'intermediario', 'avancado'] as const
 
+function getInitials(name: string) {
+  return name
+    .replace(/^(Pr\.|Dr\.|Prof\.)\s*/i, '')
+    .split(' ')
+    .filter(Boolean)
+    .slice(0, 2)
+    .map(w => w[0].toUpperCase())
+    .join('')
+}
+
 export default function HomePage() {
+  const [menuOpen, setMenuOpen] = useState(false)
   return (
     <main className="lp-shell">
 
@@ -60,8 +74,27 @@ export default function HomePage() {
         <div className="lp-header-actions">
           <Link href="/auth/login" className="lp-link-muted">Entrar</Link>
           <Link href="/auth/login" className="lp-btn-gold-sm">Começar grátis</Link>
+          <button
+            className="lp-hamburger"
+            aria-label={menuOpen ? 'Fechar menu' : 'Abrir menu'}
+            aria-expanded={menuOpen}
+            onClick={() => setMenuOpen(o => !o)}
+          >
+            {menuOpen ? <X size={20} /> : <Menu size={20} />}
+          </button>
         </div>
       </header>
+
+      {/* ── Mobile nav drawer ── */}
+      {menuOpen && (
+        <div className="lp-mobile-nav" role="dialog" aria-label="Menu de navegação">
+          <Link href="#processo" onClick={() => setMenuOpen(false)}>Método</Link>
+          <Link href="#recursos" onClick={() => setMenuOpen(false)}>Recursos</Link>
+          <Link href="#planos"   onClick={() => setMenuOpen(false)}>Planos</Link>
+          <Link href="/auth/login" onClick={() => setMenuOpen(false)} className="lp-mobile-nav-login">Entrar</Link>
+          <Link href="/auth/login" onClick={() => setMenuOpen(false)} className="lp-btn-gold lp-mobile-nav-cta">Começar grátis</Link>
+        </div>
+      )}
 
       {/* ── Hero ── */}
       <section className="lp-hero" id="inicio">
@@ -78,67 +111,13 @@ export default function HomePage() {
             </p>
             <div className="lp-hero-actions">
               <Link href="/auth/login" className="lp-btn-gold">
-                Começar gratuitamente <ArrowRight size={16} />
+                Começar grátis <ArrowRight size={16} />
               </Link>
               <Link href="#demo" className="lp-btn-ghost-dark">Ver como funciona</Link>
             </div>
           </div>
           <div className="lp-hero-mockup" aria-hidden="true">
             <WorkspaceMockup />
-          </div>
-        </div>
-      </section>
-
-      {/* ── Vinheta ── */}
-      <section className="lp-vinheta">
-        <div className="lp-video-wrap lp-vinheta-wrap">
-          <iframe
-            src="https://www.youtube.com/embed/yT5goMji1W8?rel=0&modestbranding=1"
-            title="Lampas — Vinheta"
-            frameBorder="0"
-            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-            allowFullScreen
-            className="lp-video"
-          />
-        </div>
-      </section>
-
-      {/* ── Depoimentos ── */}
-      <section className="lp-testimonials">
-        <div className="lp-inner">
-          <p className="lp-kicker">Quem já usa</p>
-          <h2 className="lp-h2">Pastores que estudam com o Lampas</h2>
-          <div className="lp-testimonials-grid">
-            {testimonials.map(({ quote, name, role }) => (
-              <article key={name} className="lp-testimonial-card">
-                <p className="lp-testimonial-quote">"{quote}"</p>
-                <div className="lp-testimonial-author">
-                  <div className="lp-testimonial-avatar" aria-hidden="true" />
-                  <div>
-                    <strong>{name}</strong>
-                    <span>{role}</span>
-                  </div>
-                </div>
-              </article>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ── Demo ── */}
-      <section className="lp-demo" id="demo">
-        <div className="lp-inner">
-          <p className="lp-kicker">Demonstração</p>
-          <h2 className="lp-h2">Veja o Lampas em ação</h2>
-          <div className="lp-video-wrap">
-            <iframe
-              src="https://www.youtube.com/embed/GeaGIJ72qcQ"
-              title="Lampas — Demonstração"
-              frameBorder="0"
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-              allowFullScreen
-              className="lp-video"
-            />
           </div>
         </div>
       </section>
@@ -191,6 +170,48 @@ export default function HomePage() {
                 <p>{line}</p>
               </article>
             ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ── Depoimentos ── */}
+      <section className="lp-testimonials">
+        <div className="lp-inner">
+          <p className="lp-kicker">Quem já usa</p>
+          <h2 className="lp-h2">Pastores que estudam com o Lampas</h2>
+          <div className="lp-testimonials-grid">
+            {testimonials.map(({ quote, name, role }) => (
+              <article key={name} className="lp-testimonial-card">
+                <p className="lp-testimonial-quote">"{quote}"</p>
+                <div className="lp-testimonial-author">
+                  <div className="lp-testimonial-avatar" aria-hidden="true">
+                    {getInitials(name)}
+                  </div>
+                  <div>
+                    <strong>{name}</strong>
+                    <span>{role}</span>
+                  </div>
+                </div>
+              </article>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ── Demo ── */}
+      <section className="lp-demo" id="demo">
+        <div className="lp-inner">
+          <p className="lp-kicker">Demonstração</p>
+          <h2 className="lp-h2">Veja o Lampas em ação</h2>
+          <div className="lp-video-wrap">
+            <iframe
+              src="https://www.youtube.com/embed/GeaGIJ72qcQ"
+              title="Lampas — Demonstração"
+              frameBorder="0"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+              allowFullScreen
+              className="lp-video"
+            />
           </div>
         </div>
       </section>
@@ -259,20 +280,19 @@ export default function HomePage() {
         <h2>O texto de domingo está esperando.</h2>
         <p>Do primeiro contato com a passagem ao sermão pronto — o Lampas acompanha cada etapa com método, profundidade e IA exegética.</p>
         <Link href="/auth/login" className="lp-btn-gold lp-btn-gold-lg">
-          Criar conta gratuita <ArrowRight size={16} />
+          Começar grátis <ArrowRight size={16} />
         </Link>
       </section>
 
       {/* ── Footer ── */}
       <footer className="lp-footer">
         <div className="lp-footer-brand">
-          <LampasLogo height={36} />
+          <LampasLogo height={36} variant="light" />
           <p>Estudo bíblico com profundidade, método e clareza.</p>
         </div>
         <nav className="lp-footer-nav" aria-label="Rodapé">
-          <Link href="#recursos">Exegese</Link>
-          <Link href="#recursos">Sermões</Link>
-          <Link href="#recursos">Estudos</Link>
+          <Link href="#recursos">Recursos</Link>
+          <Link href="#processo">Método</Link>
           <Link href="#planos">Planos</Link>
           <Link href="mailto:contato@lampas.com.br">Contato</Link>
         </nav>
@@ -634,20 +654,6 @@ export default function HomePage() {
         .ws-bar-w88  { width: 88%;  }
         .ws-bar-w55  { width: 55%;  }
 
-        /* ── Vinheta ─────────────────────────────────────── */
-        .lp-vinheta {
-          background: #070b12;
-          padding: 4rem 2rem;
-          display: flex;
-          justify-content: center;
-        }
-
-        .lp-vinheta-wrap {
-          max-width: 960px;
-          box-shadow: 0 16px 64px rgba(0,0,0,0.6);
-          border: 1px solid rgba(201,146,26,0.1);
-        }
-
         /* ── Testimonials ────────────────────────────────── */
         .lp-testimonials {
           padding: 7rem 0 6rem;
@@ -704,8 +710,16 @@ export default function HomePage() {
           height: 38px;
           border-radius: 50%;
           background: rgba(201,146,26,0.18);
-          border: 1px solid rgba(201,146,26,0.25);
+          border: 1px solid rgba(201,146,26,0.3);
           flex-shrink: 0;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-size: 0.7rem;
+          font-weight: 750;
+          color: #c9921a;
+          letter-spacing: 0.02em;
+          user-select: none;
         }
 
         .lp-testimonial-author strong {
@@ -1098,7 +1112,7 @@ export default function HomePage() {
 
         .lp-plans-note {
           text-align: center;
-          color: rgba(245,240,232,0.3);
+          color: rgba(245,240,232,0.45);
           font-size: 0.84rem;
         }
 
@@ -1143,7 +1157,7 @@ export default function HomePage() {
         .lp-footer-brand p {
           margin-top: 0.6rem;
           max-width: 320px;
-          color: rgba(245,240,232,0.3);
+          color: rgba(245,240,232,0.45);
           font-size: 0.85rem;
           line-height: 1.6;
         }
@@ -1163,6 +1177,67 @@ export default function HomePage() {
         }
 
         .lp-footer-nav a:hover { color: #f5f0e8; }
+
+        /* ── Hamburger & mobile nav ─────────────────────── */
+        .lp-hamburger {
+          display: none;
+          align-items: center;
+          justify-content: center;
+          width: 36px;
+          height: 36px;
+          background: transparent;
+          border: 1px solid rgba(201,146,26,0.3);
+          border-radius: 7px;
+          color: #64748b;
+          cursor: pointer;
+          transition: border-color 0.14s, color 0.14s;
+          flex-shrink: 0;
+        }
+
+        .lp-hamburger:hover {
+          border-color: rgba(201,146,26,0.6);
+          color: #0f172a;
+        }
+
+        .lp-mobile-nav {
+          position: fixed;
+          top: 64px;
+          left: 0;
+          right: 0;
+          z-index: 39;
+          background: rgba(245,240,232,0.97);
+          backdrop-filter: blur(16px);
+          -webkit-backdrop-filter: blur(16px);
+          border-bottom: 1px solid rgba(201,146,26,0.2);
+          display: flex;
+          flex-direction: column;
+          padding: 1.25rem 1.5rem 1.75rem;
+          gap: 0.25rem;
+          box-shadow: 0 8px 32px rgba(0,0,0,0.12);
+        }
+
+        .lp-mobile-nav a {
+          display: block;
+          padding: 0.75rem 0;
+          color: #475569;
+          font-size: 1rem;
+          font-weight: 500;
+          border-bottom: 1px solid rgba(201,146,26,0.1);
+          transition: color 0.14s;
+        }
+
+        .lp-mobile-nav a:hover { color: #0f172a; }
+
+        .lp-mobile-nav-login {
+          border-bottom: none !important;
+          margin-top: 0.25rem;
+        }
+
+        .lp-mobile-nav-cta {
+          margin-top: 0.75rem;
+          justify-content: center;
+          border-bottom: none !important;
+        }
 
         /* ── Responsive ──────────────────────────────────── */
         @media (max-width: 1080px) {
@@ -1201,6 +1276,8 @@ export default function HomePage() {
 
           .lp-nav { display: none; }
           .lp-link-muted { display: none; }
+          .lp-btn-gold-sm { display: none; }
+          .lp-hamburger { display: inline-flex; }
 
           .lp-hero-inner {
             padding: 3.5rem 1.25rem 3rem;

@@ -950,7 +950,7 @@ export default function SectionWorkspace({
             cursor: generatingAll ? 'wait' : 'pointer',
             fontFamily: 'inherit', letterSpacing: '-0.01em',
             transition: 'background 0.15s',
-            boxShadow: generatingAll ? 'none' : '0 1px 2px rgba(59,130,246,0.25), 0 2px 8px rgba(59,130,246,0.15)',
+            boxShadow: generatingAll ? 'none' : '0 1px 2px rgba(30,77,140,0.25), 0 2px 8px rgba(30,77,140,0.15)',
           }}
         >
           {generatingAll ? 'Gerando seção completa…' : 'Gerar seção completa com IA'}

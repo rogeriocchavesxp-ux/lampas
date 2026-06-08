@@ -107,7 +107,7 @@ interface NodeDef {
 
 const SERMAO_EPISTOLAR_LAYERS: Array<{ id: OverviewLayerId; label: string; subtitle: string; color: string }> = [
   { id: 'contexto_carta', label: 'Contexto da Carta', subtitle: 'Quem escreveu e para quem', color: '#6D28D9' },
-  { id: 'estrutura_texto', label: 'Estrutura do Texto', subtitle: 'Como o argumento se organiza', color: '#2563EB' },
+  { id: 'estrutura_texto', label: 'Estrutura do Texto', subtitle: 'Como o argumento se organiza', color: '#163A6B' },
   { id: 'sintese_exegetica', label: 'Síntese Exegética', subtitle: 'O que o texto ensina', color: '#D97706' },
   { id: 'sintese_homiletica', label: 'Síntese Homilética', subtitle: 'Como será comunicado', color: '#059669' },
 ]
@@ -243,8 +243,8 @@ const CARTA_BASE_NODES: NodeDef[] = [
   { key: 'vg_autor',         label: 'Autor',           icon: '✍',  angle: -90,  color: '#6D28D9', bg: '#F5F3FF', kind: 'card', sectionSlug: 'autor_destinatarios', sectionCardId: 'autor' },
   { key: 'vg_destinatarios', label: 'Destinatários',   icon: '📬', angle: -45,  color: '#7C3AED', bg: '#EDE9FE', kind: 'card', sectionSlug: 'autor_destinatarios', sectionCardId: 'destinatarios' },
   { key: 'vg_contexto',      label: 'Contexto Hist.',  icon: '📅', angle: 0,    color: '#4F46E5', bg: '#EEF2FF', kind: 'card', sectionSlug: 'contexto_historico' },
-  { key: 'vg_proposito',     label: 'Propósito',       icon: '🎯', angle: 45,   color: '#2563EB', bg: '#EFF6FF', kind: 'card', sectionSlug: 'ec_ocasiao', sectionCardId: 'proposito' },
-  { key: 'vg_estrutura',     label: 'Estrutura Geral', icon: '⊞',  angle: 90,   color: '#0369A1', bg: '#EFF6FF', kind: 'card', sectionSlug: 'ec_estrutura', sectionCardId: 'macroargumento' },
+  { key: 'vg_proposito',     label: 'Propósito',       icon: '🎯', angle: 45,   color: '#163A6B', bg: '#EEF3FA', kind: 'card', sectionSlug: 'ec_ocasiao', sectionCardId: 'proposito' },
+  { key: 'vg_estrutura',     label: 'Estrutura Geral', icon: '⊞',  angle: 90,   color: '#0369A1', bg: '#EEF3FA', kind: 'card', sectionSlug: 'ec_estrutura', sectionCardId: 'macroargumento' },
   { key: 'vg_temas',         label: 'Temas',           icon: '📖', angle: 135,  color: '#059669', bg: '#F0FDF4', kind: 'card', sectionSlug: 'ec_estrutura' },
   { key: 'vg_argumento',     label: 'Argumento',       icon: '⟶', angle: 180,  color: '#D97706', bg: '#FFFBEB', kind: 'card', sectionSlug: 'ec_argumento', sectionCardId: 'tese_central' },
   { key: 'vg_blocos',        label: 'Grandes Blocos',  icon: '▦',  angle: -135, color: '#475569', bg: '#F8FAFC', kind: 'card', sectionSlug: 'estrutura_livro', sectionCardId: 'divisoes_principais' },
@@ -265,9 +265,9 @@ const SERMAO_EPISTOLAR_NODES: NodeDef[] = [
   { key: 'sermao_vg_autor',         label: 'Autor',           icon: '✍', angle: -90, color: '#6D28D9', bg: '#F5F3FF', kind: 'card', layer: 'contexto_carta', sectionSlug: 'autor_destinatarios', sectionCardId: 'autor' },
   { key: 'sermao_vg_destinatarios', label: 'Destinatários',   icon: '📬', angle: 0,   color: '#7C3AED', bg: '#EDE9FE', kind: 'card', layer: 'contexto_carta', sectionSlug: 'autor_destinatarios', sectionCardId: 'destinatarios' },
   { key: 'sermao_vg_contexto',      label: 'Contexto Hist.',  icon: '📅', angle: 90,  color: '#4F46E5', bg: '#EEF2FF', kind: 'card', layer: 'contexto_carta', sectionSlug: 'contexto_historico' },
-  { key: 'sermao_vg_proposito',     label: 'Propósito',       icon: '🎯', angle: 180, color: '#2563EB', bg: '#EFF6FF', kind: 'card', layer: 'contexto_carta', sectionSlug: 'ec_ocasiao', sectionCardId: 'proposito' },
+  { key: 'sermao_vg_proposito',     label: 'Propósito',       icon: '🎯', angle: 180, color: '#163A6B', bg: '#EEF3FA', kind: 'card', layer: 'contexto_carta', sectionSlug: 'ec_ocasiao', sectionCardId: 'proposito' },
 
-  { key: 'sermao_vg_estrutura', label: 'Estrutura Geral', icon: '⊞', angle: -90, color: '#0369A1', bg: '#EFF6FF', kind: 'card', layer: 'estrutura_texto', sectionSlug: 'ec_estrutura', sectionCardId: 'macroargumento' },
+  { key: 'sermao_vg_estrutura', label: 'Estrutura Geral', icon: '⊞', angle: -90, color: '#0369A1', bg: '#EEF3FA', kind: 'card', layer: 'estrutura_texto', sectionSlug: 'ec_estrutura', sectionCardId: 'macroargumento' },
   { key: 'sermao_vg_blocos',    label: 'Grandes Blocos',  icon: '▦', angle: -30, color: '#475569', bg: '#F8FAFC', kind: 'card', layer: 'estrutura_texto', sectionSlug: 'estrutura_livro', sectionCardId: 'divisoes_principais' },
   { key: 'sermao_vg_divisoes',  label: 'Divisões',        icon: '⊞', angle: 30,  color: '#4338CA', bg: '#EEF2FF', kind: 'card', layer: 'estrutura_texto', cardIds: ['vg_divisoes'] },
   { key: 'sermao_vg_movimento', label: 'Movimento',       icon: '⟶', angle: 90,  color: '#4F46E5', bg: '#EEF2FF', kind: 'card', layer: 'estrutura_texto', cardIds: ['vg_movimento'] },
@@ -288,7 +288,7 @@ const MODE_NODES_MAP: Record<string, NodeDef[]> = {
   exegese_biblica: [
     { key: 'personagens',  label: 'Personagens',  icon: '👤', angle: -90,  color: '#D97706', bg: '#FFFBEB', kind: 'cls',  clsTypes: ['personagem', 'cargo'] },
     { key: 'lugares',      label: 'Lugares',       icon: '📍', angle: -45,  color: '#059669', bg: '#F0FDF4', kind: 'cls',  clsTypes: ['lugar'] },
-    { key: 'temas',        label: 'Temas',          icon: '📖', angle: 0,    color: '#2563EB', bg: '#EFF6FF', kind: 'cls',  clsTypes: ['tema'] },
+    { key: 'temas',        label: 'Temas',          icon: '📖', angle: 0,    color: '#163A6B', bg: '#EEF3FA', kind: 'cls',  clsTypes: ['tema'] },
     { key: 'termos',       label: 'Termos-Chave',  icon: '🔑', angle: 45,   color: '#EA580C', bg: '#FFF7ED', kind: 'cls',  clsTypes: ['termo_chave', 'repeticao'] },
     { key: 'grande_ideia', label: 'Grande Ideia',  icon: '💡', angle: 90,   color: '#D97706', bg: '#FEFCE8', kind: 'card', sectionSlug: 'sintese', sectionCardId: 'grande_ideia' },
     { key: 'estrutura',    label: 'Estrutura',     icon: '⊞',  angle: 135,  color: '#4F46E5', bg: '#EEF2FF', kind: 'card', sectionSlug: 'estrutura_literaria' },
@@ -303,11 +303,11 @@ const MODE_NODES_MAP: Record<string, NodeDef[]> = {
     { key: 'vg_advertencias', label: 'Advertências',  icon: '⚠',  angle: 64,   color: '#D97706', bg: '#FFFBEB', kind: 'card', cardIds: ['vg_advertencias'] },
     { key: 'vg_pecados',      label: 'Pecados',       icon: '✖',  angle: 116,  color: '#DC2626', bg: '#FEF2F2', kind: 'card', cardIds: ['vg_pecados'] },
     { key: 'vg_exemplos',     label: 'Exemplos',      icon: '⬆',  angle: 167,  color: '#4F46E5', bg: '#EEF2FF', kind: 'card', cardIds: ['vg_exemplos'] },
-    { key: 'vg_aplicacao',    label: 'Aplicação',     icon: '🎯', angle: 219,  color: '#0369A1', bg: '#EFF6FF', kind: 'card', cardIds: ['vg_aplicacao'] },
+    { key: 'vg_aplicacao',    label: 'Aplicação',     icon: '🎯', angle: 219,  color: '#0369A1', bg: '#EEF3FA', kind: 'card', cardIds: ['vg_aplicacao'] },
   ],
   estudo_biblico: [
-    { key: 'vg_tema',        label: 'Tema Principal', icon: '📖', angle: -90,  color: '#0369A1', bg: '#EFF6FF', kind: 'card', cardIds: ['vg_tema'] },
-    { key: 'vg_estrutura',   label: 'Estrutura',      icon: '⊞',  angle: -39,  color: '#2563EB', bg: '#EFF6FF', kind: 'card', cardIds: ['vg_estrutura'] },
+    { key: 'vg_tema',        label: 'Tema Principal', icon: '📖', angle: -90,  color: '#0369A1', bg: '#EEF3FA', kind: 'card', cardIds: ['vg_tema'] },
+    { key: 'vg_estrutura',   label: 'Estrutura',      icon: '⊞',  angle: -39,  color: '#163A6B', bg: '#EEF3FA', kind: 'card', cardIds: ['vg_estrutura'] },
     { key: 'vg_personagens', label: 'Personagens',    icon: '👤', angle: 13,   color: '#D97706', bg: '#FFFBEB', kind: 'cls',  clsTypes: ['personagem', 'cargo'] },
     { key: 'vg_perguntas',   label: 'Perguntas',      icon: '❓', angle: 64,   color: '#7C3AED', bg: '#F5F3FF', kind: 'card', cardIds: ['vg_perguntas'] },
     { key: 'vg_verdades',    label: 'Verdades',       icon: '💡', angle: 116,  color: '#D97706', bg: '#FFFBEB', kind: 'card', cardIds: ['vg_verdades'] },
@@ -316,7 +316,7 @@ const MODE_NODES_MAP: Record<string, NodeDef[]> = {
   ],
   estudo_de_salmos_sabedoria: [
     { key: 'ss_paralel',   label: 'Paralelismo', icon: '⇌', angle: -90, color: '#7C3AED', bg: '#EDE9FE', kind: 'card', sectionSlug: 'ss_paralelismo' },
-    { key: 'ss_estrutura', label: 'Estrutura',   icon: '⊞', angle: -18, color: '#2563EB', bg: '#EFF6FF', kind: 'card', sectionSlug: 'ss_estrutura' },
+    { key: 'ss_estrutura', label: 'Estrutura',   icon: '⊞', angle: -18, color: '#163A6B', bg: '#EEF3FA', kind: 'card', sectionSlug: 'ss_estrutura' },
     { key: 'ss_imagens',   label: 'Imagística',  icon: '🎨', angle: 54,  color: '#6D28D9', bg: '#F5F3FF', kind: 'card', sectionSlug: 'ss_imagistica' },
     { key: 'ss_temas',     label: 'Temas',       icon: '💡', angle: 126, color: '#B45309', bg: '#FEF3C7', kind: 'card', sectionSlug: 'ss_temas_sabedoria' },
     { key: 'ss_teologia',  label: 'Teologia',    icon: '🙏', angle: 198, color: '#059669', bg: '#F0FDF4', kind: 'card', sectionSlug: 'ss_teologia_adoracao' },
@@ -328,12 +328,12 @@ const MODE_NODES_MAP: Record<string, NodeDef[]> = {
     { key: 'pf_simbolos',  label: 'Símbolos',          icon: '🔮', angle: 45,   color: '#B45309', bg: '#FEF3C7', kind: 'card', cardIds: ['vg_simbolos'] },
     { key: 'pf_climax',    label: 'Clímax',            icon: '✦',  angle: 90,   color: '#D97706', bg: '#FFFBEB', kind: 'card', cardIds: ['vg_climax'] },
     { key: 'pf_cumprim',   label: 'Cumprimento',       icon: '✓',  angle: 135,  color: '#059669', bg: '#F0FDF4', kind: 'card', sectionSlug: 'progressao_revelacional', sectionCardId: 'promessa_cumprimento' },
-    { key: 'pf_eschato',   label: 'Escatologia',       icon: '⌚', angle: 180,  color: '#1E40AF', bg: '#EFF6FF', kind: 'card', cardIds: ['vg_escatologia'] },
+    { key: 'pf_eschato',   label: 'Escatologia',       icon: '⌚', angle: 180,  color: '#1E40AF', bg: '#EEF3FA', kind: 'card', cardIds: ['vg_escatologia'] },
     { key: 'pf_reino',     label: 'Reino de Deus',     icon: '👑', angle: -135, color: '#4F46E5', bg: '#EEF2FF', kind: 'card', cardIds: ['vg_reino'] },
   ],
   estudo_doutrinario: [
-    { key: 'vg_definicao',     label: 'Definição',       icon: '📖', angle: -90, color: '#1E40AF', bg: '#EFF6FF', kind: 'card', cardIds: ['vg_definicao'] },
-    { key: 'vg_questao',       label: 'Questão Central', icon: '❓', angle: -30, color: '#2563EB', bg: '#EFF6FF', kind: 'card', cardIds: ['vg_questao'] },
+    { key: 'vg_definicao',     label: 'Definição',       icon: '📖', angle: -90, color: '#1E40AF', bg: '#EEF3FA', kind: 'card', cardIds: ['vg_definicao'] },
+    { key: 'vg_questao',       label: 'Questão Central', icon: '❓', angle: -30, color: '#163A6B', bg: '#EEF3FA', kind: 'card', cardIds: ['vg_questao'] },
     { key: 'vg_passagens',     label: 'Passagens',       icon: '📜', angle: 30,  color: '#059669', bg: '#F0FDF4', kind: 'card', cardIds: ['vg_passagens'] },
     { key: 'vg_doutrinas',     label: 'Doutrinas Rel.',  icon: '⊞',  angle: 90,  color: '#4F46E5', bg: '#EEF2FF', kind: 'card', cardIds: ['vg_doutrinas'] },
     { key: 'vg_controversias', label: 'Controvérsias',   icon: '⚡', angle: 150, color: '#D97706', bg: '#FFFBEB', kind: 'card', cardIds: ['vg_controversias'] },
@@ -343,7 +343,7 @@ const MODE_NODES_MAP: Record<string, NodeDef[]> = {
     { key: 'vg_definicao',  label: 'Definição',         icon: '📖', angle: -90, color: '#065F46', bg: '#F0FDF4', kind: 'card', cardIds: ['vg_definicao'] },
     { key: 'vg_textos',     label: 'Textos Principais', icon: '📜', angle: -30, color: '#059669', bg: '#F0FDF4', kind: 'card', cardIds: ['vg_textos'] },
     { key: 'vg_canonico',   label: 'Desenv. Canônico',  icon: '⟶', angle: 30,  color: '#0F766E', bg: '#F0FDF4', kind: 'card', cardIds: ['vg_canonico'] },
-    { key: 'vg_aliancas',   label: 'Alianças',          icon: '🤝', angle: 90,  color: '#0369A1', bg: '#EFF6FF', kind: 'card', cardIds: ['vg_aliancas'] },
+    { key: 'vg_aliancas',   label: 'Alianças',          icon: '🤝', angle: 90,  color: '#0369A1', bg: '#EEF3FA', kind: 'card', cardIds: ['vg_aliancas'] },
     { key: 'vg_cristo',     label: 'Relação c/ Cristo', icon: '✚',  angle: 150, color: '#BE3455', bg: '#FFF1F2', kind: 'card', cardIds: ['vg_cristo'] },
     { key: 'vg_aplicacoes', label: 'Aplicações',        icon: '🎯', angle: 210, color: '#7C3AED', bg: '#F5F3FF', kind: 'card', cardIds: ['vg_aplicacoes'] },
   ],
@@ -484,7 +484,7 @@ export default function VisaoGeralWorkspace({
     preparar: 'Inicial', investigar: 'Investigativa', pregar: 'Homilética',
   }
   const PHASE_COLOR: Record<string, string> = {
-    preparar: '#D97706', investigar: '#2563EB', pregar: '#7C3AED',
+    preparar: '#D97706', investigar: '#163A6B', pregar: '#7C3AED',
   }
 
   const [mode,         setMode]        = useState<'visual' | 'structured'>('visual')

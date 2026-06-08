@@ -74,7 +74,7 @@ export const PLANS: Record<PlanId, Plan> = {
     name: 'Premium',
     priceMonthly: 8900,
     priceAnnual: 85400,
-    badge: 'Recomendado',
+    badge: 'Premium',
     limits: { aiPerMonth: -1, projects: -1 },
     features: [
       'IA sem limite — use o quanto precisar',

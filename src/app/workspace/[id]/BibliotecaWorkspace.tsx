@@ -91,7 +91,7 @@ const CATEGORIES: { key: BookCategory; label: string; icon: string }[] = [
 
 const TRUST: Record<TrustLevel, { label: string; color: string; bg: string; dot: string }> = {
   1: { label: 'Adicionado',     color: '#64748B', bg: '#F1F5F9', dot: '#94A3B8' },
-  2: { label: 'Validado',       color: '#2563EB', bg: '#EFF6FF', dot: '#3B82F6' },
+  2: { label: 'Validado',       color: '#163A6B', bg: '#EEF3FA', dot: '#1E4D8C' },
   3: { label: 'Revisado',       color: '#059669', bg: '#F0FDF4', dot: '#10B981' },
   4: { label: 'Oficial Lampas', color: '#D97706', bg: '#FEFCE8', dot: '#F59E0B' },
   5: { label: 'Fonte Primária', color: '#7C3AED', bg: '#FAF5FF', dot: '#8B5CF6' },
@@ -671,7 +671,7 @@ export default function BibliotecaWorkspace({ project, userId, onAskAI }: Props)
                       <div style={{ fontSize: '0.64rem', fontWeight: 700, color: '#94A3B8', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '6px' }}>Passagens cobertas</div>
                       <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap' }}>
                         {selected.bible_references.map(r => (
-                          <span key={r} style={{ fontSize: '0.73rem', background: '#EFF6FF', color: '#2563EB', borderRadius: '5px', padding: '2px 8px', border: '1px solid #BFDBFE' }}>{r}</span>
+                          <span key={r} style={{ fontSize: '0.73rem', background: '#EEF3FA', color: '#163A6B', borderRadius: '5px', padding: '2px 8px', border: '1px solid #BFDBFE' }}>{r}</span>
                         ))}
                       </div>
                     </div>
@@ -762,7 +762,7 @@ export default function BibliotecaWorkspace({ project, userId, onAskAI }: Props)
                     <div key={p.id} style={{ border: '1px solid #E2E8F0', borderRadius: '10px', overflow: 'hidden', marginBottom: '10px' }}>
                       <div style={{ padding: '8px 12px', background: '#F8FAFC', display: 'flex', alignItems: 'center', gap: '8px' }}>
                         {p.bible_ref && (
-                          <span style={{ fontSize: '0.7rem', background: '#EFF6FF', color: '#2563EB', borderRadius: '4px', padding: '2px 7px', border: '1px solid #BFDBFE', fontWeight: 600 }}>{p.bible_ref}</span>
+                          <span style={{ fontSize: '0.7rem', background: '#EEF3FA', color: '#163A6B', borderRadius: '4px', padding: '2px 7px', border: '1px solid #BFDBFE', fontWeight: 600 }}>{p.bible_ref}</span>
                         )}
                         {p.chapter && <span style={{ fontSize: '0.68rem', color: '#94A3B8' }}>Cap. {p.chapter}</span>}
                         {p.page_number && <span style={{ fontSize: '0.68rem', color: '#94A3B8' }}>p. {p.page_number}</span>}

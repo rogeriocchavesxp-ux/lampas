@@ -69,7 +69,7 @@ const CATEGORIES: { key: Category; label: string; icon: string }[] = [
 
 const TRUST: Record<TrustLevel, { label: string; color: string; bg: string; dot: string }> = {
   1: { label: 'Gerado por IA',    color: '#64748B', bg: '#F1F5F9', dot: '#94A3B8' },
-  2: { label: 'Revisado por IA',  color: '#2563EB', bg: '#EFF6FF', dot: '#3B82F6' },
+  2: { label: 'Revisado por IA',  color: '#163A6B', bg: '#EEF3FA', dot: '#1E4D8C' },
   3: { label: 'Revisado',         color: '#059669', bg: '#F0FDF4', dot: '#10B981' },
   4: { label: 'Oficial Lampas',   color: '#D97706', bg: '#FEFCE8', dot: '#F59E0B' },
 }
@@ -961,7 +961,7 @@ export default function DicionarioWorkspace({ project, userId, onAskAI }: Props)
                   <div style={{ fontSize: '0.64rem', fontWeight: 700, color: '#94A3B8', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '6px' }}>Referências Cruzadas</div>
                   <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap' }}>
                     {selected.cross_references.map(r => (
-                      <span key={r} style={{ fontSize: '0.73rem', background: '#EFF6FF', color: '#2563EB', borderRadius: '5px', padding: '2px 8px', border: '1px solid #BFDBFE' }}>{r}</span>
+                      <span key={r} style={{ fontSize: '0.73rem', background: '#EEF3FA', color: '#163A6B', borderRadius: '5px', padding: '2px 8px', border: '1px solid #BFDBFE' }}>{r}</span>
                     ))}
                   </div>
                 </div>

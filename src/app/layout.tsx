@@ -10,8 +10,8 @@ const inter = Inter({
 })
 
 export const metadata: Metadata = {
-  title: 'Lampas — Iluminando a sua jornada de estudo bíblico',
-  description: 'Iluminando a sua jornada de estudo bíblico com IA reformada',
+  title: 'Lampas — Exegese e Sermões com IA',
+  description: 'Exegese bíblica com rigor reformado. Prepare sermões com método, profundidade e IA — em português.',
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

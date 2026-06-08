@@ -74,8 +74,8 @@ export const KNOWLEDGE_TYPES: Record<KnowledgeItemType, KnowledgeTypeConfig> = {
     label: 'Artigo',
     plural: 'Artigos',
     icon: '📝',
-    color: '#2563EB',
-    bg: '#EFF6FF',
+    color: '#163A6B',
+    bg: '#EEF3FA',
     description: 'Teses, argumentos, evidências e crítica de artigos acadêmicos ou online.',
     metadataFields: [
       { key: 'author',       label: 'Autor' },
@@ -190,7 +190,7 @@ export const KNOWLEDGE_TYPES: Record<KnowledgeItemType, KnowledgeTypeConfig> = {
     plural: 'Sites',
     icon: '🌐',
     color: '#0369A1',
-    bg: '#EFF6FF',
+    bg: '#EEF3FA',
     description: 'Sites úteis, ideias principais, argumentos e aplicações ministeriais.',
     metadataFields: [
       { key: 'site_name',    label: 'Site' },
@@ -265,7 +265,7 @@ export const KNOWLEDGE_TYPES: Record<KnowledgeItemType, KnowledgeTypeConfig> = {
 export const KNOWLEDGE_STATUSES: Record<KnowledgeStatus, { label: string; color: string; bg: string }> = {
   captured: { label: 'Capturado', color: '#64748B', bg: '#F1F5F9' },
   processing: { label: 'Processando', color: '#D97706', bg: '#FFFBEB' },
-  processed: { label: 'Processado', color: '#2563EB', bg: '#EFF6FF' },
+  processed: { label: 'Processado', color: '#163A6B', bg: '#EEF3FA' },
   reviewed: { label: 'Revisado', color: '#059669', bg: '#F0FDF4' },
   archived: { label: 'Arquivado', color: '#94A3B8', bg: '#F8FAFC' },
 }

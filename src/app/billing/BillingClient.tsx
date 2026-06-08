@@ -119,8 +119,8 @@ export default function BillingClient({
 
         {message && (
           <div style={{
-            background: 'rgba(59,130,246,0.08)',
-            border: '1px solid rgba(59,130,246,0.22)',
+            background: 'rgba(30,77,140,0.08)',
+            border: '1px solid rgba(30,77,140,0.22)',
             borderRadius: '8px',
             padding: '0.85rem 1.2rem',
             marginBottom: '2rem',

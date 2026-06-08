@@ -928,7 +928,7 @@ function DetailView({ item, children, parent, onEdit, onDelete, onAsk, onSelectC
             </section>
 
             {item.source_url && (
-              <a href={item.source_url} target="_blank" rel="noreferrer" style={{ ...smallButtonStyle, textDecoration: 'none', justifyContent: 'center', color: '#2563EB' }}>
+              <a href={item.source_url} target="_blank" rel="noreferrer" style={{ ...smallButtonStyle, textDecoration: 'none', justifyContent: 'center', color: '#163A6B' }}>
                 <Link2 size={13} /> Abrir fonte
               </a>
             )}

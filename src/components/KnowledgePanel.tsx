@@ -590,7 +590,7 @@ function DetailPane({ item, ctx, onBack, onOpenFull }: {
 
       {item.source_url && (
         <a href={item.source_url} target="_blank" rel="noreferrer"
-          style={{ display: 'inline-flex', alignItems: 'center', gap: '0.3rem', fontSize: '0.72rem', color: '#2563EB', textDecoration: 'none', fontWeight: 600 }}>
+          style={{ display: 'inline-flex', alignItems: 'center', gap: '0.3rem', fontSize: '0.72rem', color: '#163A6B', textDecoration: 'none', fontWeight: 600 }}>
           <ExternalLink size={12} /> Abrir fonte
         </a>
       )}

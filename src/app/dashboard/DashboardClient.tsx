@@ -137,7 +137,7 @@ const MODE_ICONS: Record<StudyModeId, React.ReactNode> = {
 const MODE_VISUALS: Record<StudyModeId, { color: string; bg: string; border: string }> = {
   devocional:                  { color: '#BE3455', bg: 'rgba(190,52,85,0.08)',  border: 'rgba(190,52,85,0.18)' },
   sermao:                      { color: '#7C3AED', bg: 'rgba(124,58,237,0.08)', border: 'rgba(124,58,237,0.18)' },
-  estudo_biblico:               { color: '#2563EB', bg: 'rgba(37,99,235,0.08)',  border: 'rgba(37,99,235,0.18)' },
+  estudo_biblico:               { color: '#163A6B', bg: 'rgba(30,77,140,0.08)',  border: 'rgba(30,77,140,0.18)' },
   estudo_de_salmos_sabedoria:  { color: '#6D28D9', bg: 'rgba(109,40,217,0.08)', border: 'rgba(109,40,217,0.18)' },
   estudo_de_profecias:         { color: '#B45309', bg: 'rgba(180,83,9,0.08)',   border: 'rgba(180,83,9,0.18)' },
   estudo_narrativas:           { color: '#92400E', bg: 'rgba(146,64,14,0.08)', border: 'rgba(146,64,14,0.18)' },
@@ -146,7 +146,7 @@ const MODE_VISUALS: Record<StudyModeId, { color: string; bg: string; border: str
   estudo_termos:               { color: '#0D9488', bg: 'rgba(13,148,136,0.08)', border: 'rgba(13,148,136,0.18)' },
   exegese_biblica:             { color: '#0F766E', bg: 'rgba(15,118,110,0.08)', border: 'rgba(15,118,110,0.18)' },
   estudo_de_carta:             { color: '#475569', bg: 'rgba(71,85,105,0.08)',  border: 'rgba(71,85,105,0.18)' },
-  aula:                        { color: '#2563EB', bg: 'rgba(37,99,235,0.08)',  border: 'rgba(37,99,235,0.18)' },
+  aula:                        { color: '#163A6B', bg: 'rgba(30,77,140,0.08)',  border: 'rgba(30,77,140,0.18)' },
   artigo:                      { color: '#7C3AED', bg: 'rgba(124,58,237,0.08)', border: 'rgba(124,58,237,0.18)' },
   ebook:                       { color: '#0F766E', bg: 'rgba(15,118,110,0.08)', border: 'rgba(15,118,110,0.18)' },
   livro:                       { color: '#92400E', bg: 'rgba(146,64,14,0.08)',  border: 'rgba(146,64,14,0.18)' },
@@ -220,10 +220,10 @@ const UI_MODES: Array<{
   { id: 'devocional', group: 'produzir', emoji: '❤️', label: 'Devocional', color: '#BE3455',
     tagline: 'Do texto ao coração',
     description: 'Aplicação pastoral para edificação pessoal e familiar.' },
-  { id: 'aula', group: 'produzir', emoji: '🏫', label: 'Aula', color: '#2563EB',
+  { id: 'aula', group: 'produzir', emoji: '🏫', label: 'Aula', color: '#163A6B',
     tagline: 'Ensino estruturado',
     description: 'Conteúdo estruturado para ensino em classes, seminários e cursos.' },
-  { id: 'estudo_biblico', group: 'produzir', emoji: '📘', label: 'Estudo Bíblico', color: '#2563EB',
+  { id: 'estudo_biblico', group: 'produzir', emoji: '📘', label: 'Estudo Bíblico', color: '#163A6B',
     tagline: 'Formação cristã',
     description: 'Material para grupos, discipulado e formação cristã.' },
   { id: 'artigo', group: 'produzir', emoji: '📝', label: 'Artigo', color: '#475569',
@@ -379,16 +379,45 @@ function buildReferenceTitle(book: string, passageRef: string): string {
   return `${normalizedBook} ${normalizedRef}`
 }
 
+type SermonType = 'expositivo' | 'textual' | 'tematico'
+
+const SERMON_TYPE_OPTIONS: Array<{
+  id: SermonType
+  label: string
+  short: string
+  description: string
+}> = [
+  {
+    id: 'expositivo',
+    label: 'Sermão Expositivo',
+    short: 'Expositivo',
+    description: 'Desenvolve a mensagem a partir da intenção principal do texto bíblico, seguindo o fluxo natural da passagem.',
+  },
+  {
+    id: 'textual',
+    label: 'Sermão Textual',
+    short: 'Textual',
+    description: 'Estrutura a mensagem a partir de um texto específico, destacando divisões e argumentos presentes na própria passagem.',
+  },
+  {
+    id: 'tematico',
+    label: 'Sermão Temático',
+    short: 'Temático',
+    description: 'Organiza a mensagem em torno de um tema bíblico, utilizando múltiplas passagens para seu desenvolvimento.',
+  },
+]
+
 type ProjectForm = {
   title: string
   book: string
   passage_ref: string
   topic: string
   testament: '' | 'AT' | 'NT'
+  sermon_type: '' | SermonType
 }
 
 function createInitialForm(): ProjectForm {
-  return { title: '', book: '', passage_ref: '', topic: '', testament: '' }
+  return { title: '', book: '', passage_ref: '', topic: '', testament: '', sermon_type: '' }
 }
 
 // ── Component ──────────────────────────────────────────────────────────────
@@ -641,9 +670,11 @@ export default function DashboardClient({ user, projects: initialProjects, profi
 
     const isTopicProduction = ['aula', 'artigo', 'ebook', 'livro', 'palestra', 'curso', 'serie_mensagens'].includes(selectedUiMode)
     const isPassage     = selectedUiMode !== 'doutrinario' && selectedUiMode !== 'tematico' && selectedUiMode !== 'termos' && !isTopicProduction
+    const isSermon      = selectedUiMode === 'sermao'
     const generatedTitle = isPassage ? buildReferenceTitle(form.book, form.passage_ref) : form.topic.trim()
     const projectTitle  = form.title.trim() || generatedTitle
 
+    if (isSermon && !form.sermon_type)         { setCreateError('Escolha o tipo de sermão.'); return }
     if (isPassage && !form.testament)          { setCreateError('Escolha o testamento.'); return }
     if (isPassage && !form.book)               { setCreateError('Selecione o livro.'); return }
     if (isPassage && !form.passage_ref.trim()) { setCreateError('Passagem é obrigatória.'); return }
@@ -661,7 +692,12 @@ export default function DashboardClient({ user, projects: initialProjects, profi
       status:            'draft',
       study_mode:        selectedMode,
       project_type:      LEGACY_TYPE[selectedMode] ?? 'exegese',
-      meta:              isPassage ? { creation_ui_mode: selectedUiMode } : { topic: form.topic.trim(), creation_ui_mode: selectedUiMode },
+      meta:              isPassage
+        ? {
+          creation_ui_mode: selectedUiMode,
+          ...(isSermon ? { sermon_type: form.sermon_type } : {}),
+        }
+        : { topic: form.topic.trim(), creation_ui_mode: selectedUiMode },
       published:         false,
     }
 
@@ -772,7 +808,7 @@ export default function DashboardClient({ user, projects: initialProjects, profi
             background: 'var(--accent)', color: '#FFFFFF', border: 'none',
             borderRadius: '8px', padding: '0.62rem 1.15rem', fontWeight: 650,
             cursor: 'pointer', fontSize: '0.88rem', fontFamily: 'inherit',
-            boxShadow: '0 4px 12px rgba(59,130,246,0.18)', flexShrink: 0,
+            boxShadow: '0 4px 12px rgba(30,77,140,0.18)', flexShrink: 0,
           }}>
             + Novo Projeto
           </button>
@@ -1216,9 +1252,10 @@ export default function DashboardClient({ user, projects: initialProjects, profi
                   const uiMode        = UI_MODES.find(m => m.id === selectedUiMode)!
                   const isTopicProduction = ['aula', 'artigo', 'ebook', 'livro', 'palestra', 'curso', 'serie_mensagens'].includes(selectedUiMode)
                   const isPassage     = selectedUiMode !== 'doutrinario' && selectedUiMode !== 'tematico' && selectedUiMode !== 'termos' && !isTopicProduction
+                  const isSermon      = selectedUiMode === 'sermao'
                   const detectedLabel = selectedMode ? DETECTED_LABEL[selectedMode] : null
                   const canSubmit     = isPassage
-                    ? (selectedMode && form.book && form.passage_ref.trim() && form.testament)
+                    ? (selectedMode && form.book && form.passage_ref.trim() && form.testament && (!isSermon || form.sermon_type))
                     : form.topic.trim()
                   const titlePlaceholder = isPassage
                     ? buildReferenceTitle(form.book, form.passage_ref)
@@ -1272,6 +1309,75 @@ export default function DashboardClient({ user, projects: initialProjects, profi
                                 ))}
                               </select>
                             </FormField>
+
+                            {isSermon && (
+                              <FormField label="Tipo de Sermão">
+                                <div style={{
+                                  display: 'grid',
+                                  gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))',
+                                  gap: '0.55rem',
+                                }}>
+                                  {SERMON_TYPE_OPTIONS.map(option => {
+                                    const active = form.sermon_type === option.id
+                                    return (
+                                      <button
+                                        key={option.id}
+                                        type="button"
+                                        onClick={() => updatePassageForm({ sermon_type: option.id })}
+                                        style={{
+                                          textAlign: 'left',
+                                          padding: '0.75rem',
+                                          minHeight: '118px',
+                                          background: active ? `${uiMode.color}10` : 'var(--surface-2)',
+                                          border: `1.5px solid ${active ? uiMode.color : 'var(--border-subtle)'}`,
+                                          borderRadius: '10px',
+                                          cursor: 'pointer',
+                                          fontFamily: 'inherit',
+                                          transition: 'all 0.13s',
+                                        }}
+                                        onMouseEnter={e => {
+                                          if (!active) {
+                                            e.currentTarget.style.borderColor = `${uiMode.color}50`
+                                            e.currentTarget.style.background = `${uiMode.color}06`
+                                          }
+                                        }}
+                                        onMouseLeave={e => {
+                                          if (!active) {
+                                            e.currentTarget.style.borderColor = 'var(--border-subtle)'
+                                            e.currentTarget.style.background = 'var(--surface-2)'
+                                          }
+                                        }}
+                                      >
+                                        <div style={{
+                                          display: 'flex',
+                                          alignItems: 'center',
+                                          gap: '0.35rem',
+                                          marginBottom: '0.45rem',
+                                        }}>
+                                          <span style={{
+                                            color: active ? uiMode.color : 'var(--text-primary)',
+                                            fontSize: '0.82rem',
+                                            fontWeight: 800,
+                                            lineHeight: 1.2,
+                                          }}>
+                                            {option.short}
+                                          </span>
+                                          {active && <span style={{ marginLeft: 'auto', color: uiMode.color, fontSize: '0.75rem' }}>✓</span>}
+                                        </div>
+                                        <p style={{
+                                          margin: 0,
+                                          color: 'var(--text-muted)',
+                                          fontSize: '0.68rem',
+                                          lineHeight: 1.45,
+                                        }}>
+                                          {option.description}
+                                        </p>
+                                      </button>
+                                    )
+                                  })}
+                                </div>
+                              </FormField>
+                            )}
 
                             {/* Badge de gênero detectado (apenas para exegético) */}
                             {selectedUiMode === 'exegetico' && detectedLabel && (
@@ -1362,7 +1468,9 @@ export default function DashboardClient({ user, projects: initialProjects, profi
                           }}>
                             {creating ? 'Criando…'
                               : !isPassage ? 'Iniciar estudo →'
+                              : isSermon && !form.sermon_type ? 'Escolha o tipo de sermão'
                               : !form.book ? 'Selecione um livro'
+                              : !form.passage_ref.trim() ? 'Informe a passagem'
                               : `Iniciar ${detectedLabel ?? uiMode.label} →`}
                           </button>
                         </div>

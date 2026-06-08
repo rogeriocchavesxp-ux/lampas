@@ -47,7 +47,7 @@ const CLASS_DEF: Record<ClassType, ClassDef> = {
   personagem:     { emoji: '👤', label: 'Personagem',    color: '#D97706', sectionSlug: 'preparar_visao_geral', cardId: 'preparar_personagens',       sectionTitle: '4. Visão Geral' },
   lugar:          { emoji: '📍', label: 'Lugar',          color: '#10B981' },
   termo_chave:    { emoji: '🔑', label: 'Termo-Chave',   color: '#F97316' },
-  tema:           { emoji: '📖', label: 'Tema',           color: '#3B82F6', sectionSlug: 'preparar_visao_geral', cardId: 'preparar_tema_provavel',      sectionTitle: '4. Visão Geral' },
+  tema:           { emoji: '📖', label: 'Tema',           color: '#1E4D8C', sectionSlug: 'preparar_visao_geral', cardId: 'preparar_tema_provavel',      sectionTitle: '4. Visão Geral' },
   teologia:       { emoji: '✦',  label: 'Teologia',       color: '#8B5CF6' },
   conectivo:      { emoji: '→',  label: 'Conectivo',      color: '#0891B2' },
   verbo_principal:{ emoji: '⚡', label: 'Verbo Principal',color: '#7C3AED' },
@@ -69,7 +69,7 @@ const PRIMARY_CATS_PROPRIO:ClassType[] = ['conectivo', 'verbo_principal', 'prome
 const SECONDARY_CATS:      ClassType[] = ['tempo', 'instituicao', 'cargo', 'conflito', 'repeticao', 'objetivo', 'comentario', 'insight', 'observacao']
 
 const HCOLORS: Record<HColor, { bg: string; dot: string }> = {
-  yellow: { bg: '#FEF3C7', dot: '#F59E0B' }, blue:   { bg: '#DBEAFE', dot: '#3B82F6' },
+  yellow: { bg: '#FEF3C7', dot: '#F59E0B' }, blue:   { bg: '#D5E3F3', dot: '#1E4D8C' },
   green:  { bg: '#DCFCE7', dot: '#10B981' }, purple: { bg: '#EDE9FE', dot: '#8B5CF6' },
   orange: { bg: '#FFEDD5', dot: '#F97316' }, red:    { bg: '#FEE2E2', dot: '#EF4444' },
 }
@@ -164,7 +164,7 @@ export default function BibleFloatingWindow({ book, passageRef, testament, proje
   const supabase = useMemo(() => createClient(), [])
 
   const isAT  = testament === 'AT'
-  const accent = isAT ? '#D97706' : '#3B82F6'
+  const accent = isAT ? '#D97706' : '#1E4D8C'
   const origLang = isAT ? 'Hebraico' : 'Grego'
 
   // Window geometry

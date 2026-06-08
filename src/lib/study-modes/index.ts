@@ -201,10 +201,10 @@ const EXEGESE_BIBLICA: StudyModeConfig = {
     {
       id: 'investigar', roman: 'II', label: 'Investigar',
       description: 'Análise contextual, textual e teológica',
-      color: 'var(--accent)', bgActive: 'rgba(59,130,246,0.08)',
+      color: 'var(--accent)', bgActive: 'rgba(30,77,140,0.08)',
       modes: [{
         id: 'interpretar_inventio', label: 'Exegese', subtitle: 'Descobrir o significado',
-        color: 'var(--accent)', bgActive: 'rgba(59,130,246,0.08)',
+        color: 'var(--accent)', bgActive: 'rgba(30,77,140,0.08)',
         groups: [
           { id: 'investigar_visao_geral', label: 'Visão Geral' },
           { id: 'contextual', label: 'Estudo Contextual' },
@@ -295,10 +295,10 @@ const SERMAO: StudyModeConfig = {
     {
       id: 'investigar', roman: 'II', label: 'Investigar',
       description: 'Exegese compactada orientada para proclamação',
-      color: 'var(--accent)', bgActive: 'rgba(59,130,246,0.08)',
+      color: 'var(--accent)', bgActive: 'rgba(30,77,140,0.08)',
       modes: [{
         id: 'interpretar_inventio', label: 'Exegese', subtitle: 'O que o texto diz',
-        color: 'var(--accent)', bgActive: 'rgba(59,130,246,0.08)',
+        color: 'var(--accent)', bgActive: 'rgba(30,77,140,0.08)',
         groups: [
           { id: 'investigar_visao_geral', label: 'Visão Geral' },
           { id: 'contextual', label: 'Estudo Contextual' },
@@ -426,10 +426,10 @@ const ESTUDO_BIBLICO: StudyModeConfig = {
     {
       id: 'investigar', roman: 'II', label: 'Compreender',
       description: 'Análise do texto para ensino',
-      color: 'var(--accent)', bgActive: 'rgba(59,130,246,0.08)',
+      color: 'var(--accent)', bgActive: 'rgba(30,77,140,0.08)',
       modes: [{
         id: 'eb_compreender_mode', label: 'O Texto', subtitle: 'Análise e estrutura',
-        color: 'var(--accent)', bgActive: 'rgba(59,130,246,0.08)',
+        color: 'var(--accent)', bgActive: 'rgba(30,77,140,0.08)',
         groups: [
           { id: 'investigar_visao_geral', label: 'Visão Geral' },
           { id: 'eb_compreender', label: 'Texto, Temas e Termos' },
@@ -489,10 +489,10 @@ const ESTUDO_DOUTRINARIO: StudyModeConfig = {
     {
       id: 'investigar', roman: 'II', label: 'Investigar',
       description: 'História, formulação e controvérsias',
-      color: 'var(--accent)', bgActive: 'rgba(59,130,246,0.08)',
+      color: 'var(--accent)', bgActive: 'rgba(30,77,140,0.08)',
       modes: [{
         id: 'edt_investigar_mode', label: 'Investigação', subtitle: 'História e sistema',
-        color: 'var(--accent)', bgActive: 'rgba(59,130,246,0.08)',
+        color: 'var(--accent)', bgActive: 'rgba(30,77,140,0.08)',
         groups: [
           { id: 'investigar_visao_geral', label: 'Visão Geral' },
           { id: 'edt_historia_grp',         label: 'História da Doutrina' },
@@ -553,10 +553,10 @@ const ESTUDO_TEMATICO: StudyModeConfig = {
     {
       id: 'investigar', roman: 'II', label: 'Rastrear',
       description: 'O tema ao longo do cânone — AT, NT e síntese',
-      color: 'var(--accent)', bgActive: 'rgba(59,130,246,0.08)',
+      color: 'var(--accent)', bgActive: 'rgba(30,77,140,0.08)',
       modes: [{
         id: 'et_canonico_mode', label: 'Cânone', subtitle: 'Desenvolvimento canônico',
-        color: 'var(--accent)', bgActive: 'rgba(59,130,246,0.08)',
+        color: 'var(--accent)', bgActive: 'rgba(30,77,140,0.08)',
         groups: [
           { id: 'investigar_visao_geral', label: 'Visão Geral' },
           { id: 'et_at_grp',      label: 'Antigo Testamento' },
@@ -617,10 +617,10 @@ const ESTUDO_TERMOS: StudyModeConfig = {
     {
       id: 'investigar', roman: 'II', label: 'Investigar',
       description: 'Análise lexical, uso bíblico e desenvolvimento canônico',
-      color: '#2563EB', bgActive: 'rgba(37,99,235,0.08)',
+      color: '#163A6B', bgActive: 'rgba(30,77,140,0.08)',
       modes: [{
         id: 'termos_analise_mode', label: 'Análise', subtitle: 'Léxico e cânone',
-        color: '#2563EB', bgActive: 'rgba(37,99,235,0.08)',
+        color: '#163A6B', bgActive: 'rgba(30,77,140,0.08)',
         groups: [
           { id: 'termos_analisar_grp', label: 'Analisar' },
           { id: 'termos_rastrear_grp', label: 'Rastrear' },
@@ -650,7 +650,7 @@ const AULA = productionMode({
   id: 'aula',
   name: 'Aula',
   tagline: 'Ensino estruturado para formação cristã',
-  color: '#2563EB',
+  color: '#163A6B',
   audience: 'Professores · Líderes · Seminaristas',
   titlePlaceholder: 'Ex: Introdução à hermenêutica bíblica',
   topicLabel: 'Tema ou texto base',
@@ -661,7 +661,7 @@ const AULA = productionMode({
       roman: 'I',
       label: 'Preparar',
       description: 'Finalidade, público, tempo e base da aula',
-      color: '#2563EB',
+      color: '#163A6B',
       modeId: 'aula_planejamento',
       modeLabel: 'Planejamento',
       subtitle: 'Objetivos e público',
@@ -721,7 +721,7 @@ const ARTIGO = productionMode({
       roman: 'II',
       label: 'Pesquisar',
       description: 'Fontes, citações, evidências e objeções',
-      color: '#2563EB',
+      color: '#163A6B',
       modeId: 'artigo_pesquisa',
       modeLabel: 'Pesquisa',
       subtitle: 'Fontes e evidências',
@@ -924,7 +924,7 @@ const CURSO = productionMode({
       roman: 'II',
       label: 'Estruturar',
       description: 'Módulos, aulas e progressão didática',
-      color: '#2563EB',
+      color: '#163A6B',
       modeId: 'curso_estrutura_mode',
       modeLabel: 'Estrutura',
       subtitle: 'Módulos e aulas',

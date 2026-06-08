@@ -56,7 +56,7 @@ const CLASS_DEF: Record<ClassType, ClassDef> = {
   personagem:  { emoji: '👤', label: 'Personagem',   color: '#D97706', sectionSlug: 'preparar_visao_geral',           cardId: 'preparar_personagens',       sectionTitle: '4. Visão Geral da Passagem' },
   lugar:       { emoji: '📍', label: 'Lugar',         color: '#10B981' },
   termo_chave: { emoji: '🔑', label: 'Termo-Chave',  color: '#F97316' },
-  tema:        { emoji: '📖', label: 'Tema',          color: '#3B82F6', sectionSlug: 'preparar_visao_geral',           cardId: 'preparar_tema_provavel',      sectionTitle: '4. Visão Geral da Passagem' },
+  tema:        { emoji: '📖', label: 'Tema',          color: '#1E4D8C', sectionSlug: 'preparar_visao_geral',           cardId: 'preparar_tema_provavel',      sectionTitle: '4. Visão Geral da Passagem' },
   teologia:    { emoji: '✦',  label: 'Teologia',      color: '#8B5CF6' },
   tempo:       { emoji: '📅', label: 'Tempo',         color: '#6366F1' },
   instituicao: { emoji: '🏛️', label: 'Instituição',   color: '#7C3AED' },
@@ -78,7 +78,7 @@ const SECONDARY_CATS: ClassType[] = ['conectivo', 'verbo_principal', 'promessa',
 
 const HCOLORS: Record<HColor, { bg: string; dot: string }> = {
   yellow: { bg: '#FEF3C7', dot: '#F59E0B' },
-  blue:   { bg: '#DBEAFE', dot: '#3B82F6' },
+  blue:   { bg: '#D5E3F3', dot: '#1E4D8C' },
   green:  { bg: '#DCFCE7', dot: '#10B981' },
   purple: { bg: '#EDE9FE', dot: '#8B5CF6' },
   orange: { bg: '#FFEDD5', dot: '#F97316' },
