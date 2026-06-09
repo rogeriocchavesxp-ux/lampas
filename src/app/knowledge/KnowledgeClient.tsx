@@ -4,7 +4,7 @@ import { useMemo, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { CHILD_CONTENT, CONTAINER_TYPES, KNOWLEDGE_STATUSES, KNOWLEDGE_TYPES, type KnowledgeItemType, type KnowledgeStatus } from '@/lib/knowledge-base'
-import { ArrowLeft, Brain, Check, ChevronDown, ChevronRight, Link2, Plus, Search, Sparkles, Trash2, X } from 'lucide-react'
+import { ArrowLeft, Brain, Check, ChevronDown, ChevronLeft, ChevronRight, Link2, Plus, Search, Sparkles, Trash2, X } from 'lucide-react'
 import RichEditor, { type InsertMenuItem } from '@/components/RichEditor'
 
 type JsonRecord = Record<string, string>
@@ -227,6 +227,7 @@ export default function KnowledgeClient({ userId, initialItems, initialDashboard
   const [expandedContainers, setExpandedContainers] = useState<Set<string>>(new Set())
   const [creatingChildOf,    setCreatingChildOf]    = useState<KnowledgeItem | null>(null)
   const [choosingType,       setChoosingType]       = useState(false)
+  const [sidebarCollapsed,   setSidebarCollapsed]   = useState(false)
   const [groupBy,            setGroupBy]            = useState<'none' | 'type' | 'author' | 'category' | 'status'>('none')
   const [collapsedGroups,    setCollapsedGroups]    = useState<Set<string>>(new Set())
 
@@ -856,78 +857,104 @@ export default function KnowledgeClient({ userId, initialItems, initialDashboard
         )}
       </header>
 
-      <div style={{ flex: 1, minHeight: 0, display: 'grid', gridTemplateColumns: '275px 1fr' }}>
-        <aside style={{ borderRight: '1px solid #E2E8F0', background: '#FFFFFF', minHeight: 0, display: 'flex', flexDirection: 'column' }}>
-          {/* Compact stats + search */}
-          <div style={{ padding: '0.6rem 0.75rem', borderBottom: '1px solid #F1F5F9' }}>
-            <div style={{ display: 'flex', gap: '0.85rem', alignItems: 'baseline', marginBottom: '0.5rem' }}>
-              <span style={{ fontSize: '0.7rem', color: '#64748B' }}>
-                <span style={{ fontWeight: 800, color: '#0F172A', fontSize: '0.88rem', marginRight: '0.18rem' }}>{dashboard.total}</span>entidades
-              </span>
-              {dashboard.totalChildren > 0 && (
-                <span style={{ fontSize: '0.7rem', color: '#64748B' }}>
-                  <span style={{ fontWeight: 800, color: '#0F172A', fontSize: '0.88rem', marginRight: '0.18rem' }}>{dashboard.totalChildren}</span>conteúdos
-                </span>
+      <div style={{ flex: 1, minHeight: 0, display: 'grid', gridTemplateColumns: sidebarCollapsed ? '44px 1fr' : '275px 1fr', transition: 'grid-template-columns 0.18s ease' }}>
+        <aside style={{ borderRight: '1px solid #E2E8F0', background: '#FFFFFF', minHeight: 0, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+          {sidebarCollapsed ? (
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', paddingTop: '0.65rem', gap: '1rem' }}>
+              <button
+                onClick={() => setSidebarCollapsed(false)}
+                title="Expandir menu"
+                style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '30px', height: '30px', border: '1px solid #E2E8F0', borderRadius: '7px', background: '#FFFFFF', color: '#64748B', cursor: 'pointer', flexShrink: 0 }}
+              >
+                <ChevronRight size={14} />
+              </button>
+              {dashboard.total > 0 && (
+                <span style={{ fontSize: '0.65rem', fontWeight: 800, color: '#94A3B8' }}>{dashboard.total}</span>
               )}
             </div>
-            <div style={{ position: 'relative' }}>
-              <Search size={13} style={{ position: 'absolute', left: '0.6rem', top: '50%', transform: 'translateY(-50%)', color: '#94A3B8' }} />
-              <input value={query} onChange={e => setQuery(e.target.value)} placeholder="Título, autor, tema, doutrina…" style={{ ...inputStyle, paddingLeft: '1.85rem', fontSize: '0.78rem', padding: '0.42rem 0.6rem 0.42rem 1.85rem' }} />
-              {query && <button onClick={() => setQuery('')} style={{ position: 'absolute', right: '0.4rem', top: '50%', transform: 'translateY(-50%)', border: 'none', background: 'transparent', color: '#94A3B8', cursor: 'pointer', display: 'flex', padding: 0 }}><X size={12} /></button>}
-            </div>
-          </div>
-
-          {/* Type chips + groupBy */}
-          <div style={{ padding: '0.42rem 0.6rem', borderBottom: '1px solid #F1F5F9' }}>
-            <div style={{ display: 'flex', gap: '0.22rem', overflowX: 'auto', paddingBottom: '0.08rem', scrollbarWidth: 'none' }}>
-              <button onClick={() => setTypeFilter('all')} style={filterChip(typeFilter === 'all')}>Todos</button>
-              {TYPE_ORDER.map(type => {
-                const cfg = KNOWLEDGE_TYPES[type]
-                const active = typeFilter === type
-                return (
-                  <button key={type} onClick={() => setTypeFilter(active ? 'all' : type)} style={filterChip(active, cfg.color, cfg.bg)}>
-                    {cfg.icon} {cfg.label}
-                  </button>
-                )
-              })}
-            </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', marginTop: '0.32rem' }}>
-              <span style={{ fontSize: '0.57rem', color: '#94A3B8', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', flexShrink: 0 }}>Agrupar</span>
-              <div style={{ display: 'flex', gap: '0.18rem', overflowX: 'auto', scrollbarWidth: 'none' }}>
-                {(['none', 'type', 'author', 'category', 'status'] as const).map(g => (
-                  <button key={g} onClick={() => setGroupBy(g)} style={filterChip(groupBy === g)}>
-                    {g === 'none' ? 'Livre' : g === 'type' ? 'Tipo' : g === 'author' ? 'Autor' : g === 'category' ? 'Categ.' : 'Status'}
-                  </button>
-                ))}
-              </div>
-            </div>
-          </div>
-
-          <div style={{ flex: 1, overflowY: 'auto', padding: '0.3rem' }}>
-            {groupBy !== 'none' && groupedFiltered ? (
-              groupedFiltered.map(([groupKey, groupItems]) => {
-                const isGroupCollapsed = collapsedGroups.has(groupKey)
-                return (
-                  <div key={groupKey}>
-                    <button
-                      onClick={() => setCollapsedGroups(prev => { const n = new Set(prev); n.has(groupKey) ? n.delete(groupKey) : n.add(groupKey); return n })}
-                      style={{ width: '100%', display: 'flex', alignItems: 'center', gap: '0.35rem', padding: '0.32rem 0.5rem', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'inherit' }}
-                    >
-                      <span style={{ fontSize: '0.58rem', color: '#94A3B8', lineHeight: 1 }}>{isGroupCollapsed ? '▶' : '▼'}</span>
-                      <span style={{ fontSize: '0.68rem', fontWeight: 700, color: '#334155', flex: 1, textAlign: 'left' }}>{groupKey}</span>
-                      <span style={{ fontSize: '0.6rem', color: '#94A3B8', background: '#F1F5F9', padding: '0.1rem 0.38rem', borderRadius: '999px' }}>{groupItems.length}</span>
-                    </button>
-                    {!isGroupCollapsed && groupItems.map(item => renderSidebarItem(item))}
+          ) : (
+            <>
+              {/* Compact stats + search */}
+              <div style={{ padding: '0.6rem 0.75rem', borderBottom: '1px solid #F1F5F9' }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
+                  <div style={{ display: 'flex', gap: '0.85rem', alignItems: 'baseline' }}>
+                    <span style={{ fontSize: '0.7rem', color: '#64748B' }}>
+                      <span style={{ fontWeight: 800, color: '#0F172A', fontSize: '0.88rem', marginRight: '0.18rem' }}>{dashboard.total}</span>entidades
+                    </span>
+                    {dashboard.totalChildren > 0 && (
+                      <span style={{ fontSize: '0.7rem', color: '#64748B' }}>
+                        <span style={{ fontWeight: 800, color: '#0F172A', fontSize: '0.88rem', marginRight: '0.18rem' }}>{dashboard.totalChildren}</span>conteúdos
+                      </span>
+                    )}
                   </div>
-                )
-              })
-            ) : (
-              filtered.map(item => renderSidebarItem(item))
-            )}
-            {filtered.length === 0 && (
-              <div style={{ padding: '2rem 1rem', textAlign: 'center', color: '#94A3B8', fontSize: '0.82rem' }}>Nenhum item encontrado.</div>
-            )}
-          </div>
+                  <button
+                    onClick={() => setSidebarCollapsed(true)}
+                    title="Recolher menu"
+                    style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '24px', height: '24px', border: '1px solid #E2E8F0', borderRadius: '6px', background: 'transparent', color: '#94A3B8', cursor: 'pointer', flexShrink: 0 }}
+                  >
+                    <ChevronLeft size={12} />
+                  </button>
+                </div>
+                <div style={{ position: 'relative' }}>
+                  <Search size={13} style={{ position: 'absolute', left: '0.6rem', top: '50%', transform: 'translateY(-50%)', color: '#94A3B8' }} />
+                  <input value={query} onChange={e => setQuery(e.target.value)} placeholder="Título, autor, tema, doutrina…" style={{ ...inputStyle, paddingLeft: '1.85rem', fontSize: '0.78rem', padding: '0.42rem 0.6rem 0.42rem 1.85rem' }} />
+                  {query && <button onClick={() => setQuery('')} style={{ position: 'absolute', right: '0.4rem', top: '50%', transform: 'translateY(-50%)', border: 'none', background: 'transparent', color: '#94A3B8', cursor: 'pointer', display: 'flex', padding: 0 }}><X size={12} /></button>}
+                </div>
+              </div>
+
+              {/* Type chips + groupBy */}
+              <div style={{ padding: '0.42rem 0.6rem', borderBottom: '1px solid #F1F5F9' }}>
+                <div style={{ display: 'flex', gap: '0.22rem', overflowX: 'auto', paddingBottom: '0.08rem', scrollbarWidth: 'none' }}>
+                  <button onClick={() => setTypeFilter('all')} style={filterChip(typeFilter === 'all')}>Todos</button>
+                  {TYPE_ORDER.map(type => {
+                    const cfg = KNOWLEDGE_TYPES[type]
+                    const active = typeFilter === type
+                    return (
+                      <button key={type} onClick={() => setTypeFilter(active ? 'all' : type)} style={filterChip(active, cfg.color, cfg.bg)}>
+                        {cfg.icon} {cfg.label}
+                      </button>
+                    )
+                  })}
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', marginTop: '0.32rem' }}>
+                  <span style={{ fontSize: '0.57rem', color: '#94A3B8', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', flexShrink: 0 }}>Agrupar</span>
+                  <div style={{ display: 'flex', gap: '0.18rem', overflowX: 'auto', scrollbarWidth: 'none' }}>
+                    {(['none', 'type', 'author', 'category', 'status'] as const).map(g => (
+                      <button key={g} onClick={() => setGroupBy(g)} style={filterChip(groupBy === g)}>
+                        {g === 'none' ? 'Livre' : g === 'type' ? 'Tipo' : g === 'author' ? 'Autor' : g === 'category' ? 'Categ.' : 'Status'}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              <div style={{ flex: 1, overflowY: 'auto', padding: '0.3rem' }}>
+                {groupBy !== 'none' && groupedFiltered ? (
+                  groupedFiltered.map(([groupKey, groupItems]) => {
+                    const isGroupCollapsed = collapsedGroups.has(groupKey)
+                    return (
+                      <div key={groupKey}>
+                        <button
+                          onClick={() => setCollapsedGroups(prev => { const n = new Set(prev); n.has(groupKey) ? n.delete(groupKey) : n.add(groupKey); return n })}
+                          style={{ width: '100%', display: 'flex', alignItems: 'center', gap: '0.35rem', padding: '0.32rem 0.5rem', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'inherit' }}
+                        >
+                          <span style={{ fontSize: '0.58rem', color: '#94A3B8', lineHeight: 1 }}>{isGroupCollapsed ? '▶' : '▼'}</span>
+                          <span style={{ fontSize: '0.68rem', fontWeight: 700, color: '#334155', flex: 1, textAlign: 'left' }}>{groupKey}</span>
+                          <span style={{ fontSize: '0.6rem', color: '#94A3B8', background: '#F1F5F9', padding: '0.1rem 0.38rem', borderRadius: '999px' }}>{groupItems.length}</span>
+                        </button>
+                        {!isGroupCollapsed && groupItems.map(item => renderSidebarItem(item))}
+                      </div>
+                    )
+                  })
+                ) : (
+                  filtered.map(item => renderSidebarItem(item))
+                )}
+                {filtered.length === 0 && (
+                  <div style={{ padding: '2rem 1rem', textAlign: 'center', color: '#94A3B8', fontSize: '0.82rem' }}>Nenhum item encontrado.</div>
+                )}
+              </div>
+            </>
+          )}
         </aside>
 
         <main style={{ minHeight: 0, display: 'flex', flexDirection: 'column' }}>{rightContent}</main>
