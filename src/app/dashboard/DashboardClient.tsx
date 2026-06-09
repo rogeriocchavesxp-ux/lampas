@@ -451,23 +451,6 @@ export default function DashboardClient({ user, projects: initialProjects, profi
   const [deleteTarget,     setDeleteTarget]     = useState<Project | null>(null)
   const [deleteConfirming, setDeleteConfirming] = useState(false)
 
-  // All library sections start collapsed
-  const [collapsedSections, setCollapsedSections] = useState<Set<StudyModeId>>(
-    () => new Set(SECTION_ORDER),
-  )
-
-  // Analytics sections — all collapsed by default
-  const [collapsedAnalytics, setCollapsedAnalytics] = useState(
-    () => new Set(['distribuicao', 'genero', 'recente', 'mapa', 'todos']),
-  )
-  function toggleAnalytics(key: string) {
-    setCollapsedAnalytics(prev => {
-      const next = new Set(prev)
-      if (next.has(key)) next.delete(key); else next.add(key)
-      return next
-    })
-  }
-
   const modeConfig = selectedMode ? STUDY_MODE_REGISTRY[selectedMode] : null
 
   const dashboardProjects = useMemo(() => {
@@ -489,20 +472,6 @@ export default function DashboardClient({ user, projects: initialProjects, profi
     [dashboardProjects],
   )
 
-  const projectsByMode = useMemo(() => {
-    const map = new Map<StudyModeId, Project[]>()
-    for (const p of dashboardProjects) {
-      const mode = getModeConfig(p.study_mode ?? p.project_type)
-      const arr = map.get(mode.id) ?? []
-      arr.push(p)
-      map.set(mode.id, arr)
-    }
-    return map
-  }, [dashboardProjects])
-
-  // Top 3 most recently updated — server already sorts by updated_at desc
-  const recentProjects = useMemo(() => dashboardProjects.slice(0, 3), [dashboardProjects])
-
   const RECENT_LIMIT = 6
   const recentActiveProjects4 = useMemo(() => activeProjects.slice(0, RECENT_LIMIT), [activeProjects])
   const activeCount      = activeProjects.length
@@ -510,29 +479,6 @@ export default function DashboardClient({ user, projects: initialProjects, profi
   const totalCount       = dashboardProjects.length
   // Invariant: totalCount === activeCount + completedCount (every project has status)
   const studiedBooks     = useMemo(() => new Set(dashboardProjects.map(p => p.book).filter((b): b is string => !!b && b !== '—')), [dashboardProjects])
-
-  const genreDistribution = useMemo(() => {
-    const counts = new Map<StudyModeId, number>()
-    for (const p of dashboardProjects) {
-      const id = getModeConfig(p.study_mode ?? p.project_type).id
-      counts.set(id, (counts.get(id) ?? 0) + 1)
-    }
-    return [...counts.entries()]
-      .sort((a, b) => b[1] - a[1])
-      .map(([id, count]) => ({
-        id, count,
-        label: GENRE_LABEL[id] ?? id,
-        color: MODE_VISUALS[id]?.color ?? '#64748B',
-      }))
-  }, [dashboardProjects])
-
-  const topBooks = useMemo(() => {
-    const counts = new Map<string, number>()
-    for (const p of dashboardProjects) {
-      if (p.book && p.book !== '—') counts.set(p.book, (counts.get(p.book) ?? 0) + 1)
-    }
-    return [...counts.entries()].sort((a, b) => b[1] - a[1]).slice(0, 6)
-  }, [dashboardProjects])
 
   const publishedProjects = useMemo(
     () => dashboardProjects.filter(project => project.published),
@@ -579,20 +525,6 @@ export default function DashboardClient({ user, projects: initialProjects, profi
     } finally {
       setDeleteConfirming(false)
     }
-  }
-
-  // Modes with at least 1 project, in display order
-  const libraryModes = useMemo(
-    () => SECTION_ORDER.filter(id => (projectsByMode.get(id)?.length ?? 0) > 0),
-    [projectsByMode],
-  )
-
-  function toggleSection(id: StudyModeId) {
-    setCollapsedSections(prev => {
-      const next = new Set(prev)
-      if (next.has(id)) next.delete(id); else next.add(id)
-      return next
-    })
   }
 
   function openModal() {
@@ -892,182 +824,6 @@ export default function DashboardClient({ user, projects: initialProjects, profi
                   </div>
                 ))}
               </div>
-            </section>
-
-            {/* ── Distribuição + Livros ── */}
-            {totalCount >= 2 && (
-              <section>
-                <CollapseHeader label="Distribuição" collapsed={collapsedAnalytics.has('distribuicao')} onToggle={() => toggleAnalytics('distribuicao')} />
-                {!collapsedAnalytics.has('distribuicao') && (
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginTop: '0.85rem' }}>
-                    <div style={{ background: 'var(--surface)', border: '1px solid var(--border-subtle)', borderRadius: '12px', padding: '1.25rem' }}>
-                      <p style={{ fontSize: '0.68rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.09em', color: 'var(--text-muted)', margin: '0 0 1rem' }}>Por Gênero</p>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '1.25rem' }}>
-                        <DonutChart data={genreDistribution.map(g => ({ label: g.label, value: g.count, color: g.color }))} />
-                        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '0.42rem' }}>
-                          {genreDistribution.slice(0, 6).map(g => (
-                            <div key={g.id} style={{ display: 'flex', alignItems: 'center', gap: '0.45rem' }}>
-                              <div style={{ width: 7, height: 7, borderRadius: '50%', background: g.color, flexShrink: 0 }} />
-                              <span style={{ flex: 1, fontSize: '0.7rem', color: 'var(--text-secondary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{g.label}</span>
-                              <span style={{ fontSize: '0.66rem', color: 'var(--text-muted)', fontWeight: 600, flexShrink: 0 }}>{Math.round(g.count / totalCount * 100)}%</span>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    </div>
-                    <div style={{ background: 'var(--surface)', border: '1px solid var(--border-subtle)', borderRadius: '12px', padding: '1.25rem' }}>
-                      <p style={{ fontSize: '0.68rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.09em', color: 'var(--text-muted)', margin: '0 0 1rem' }}>Livros Mais Estudados</p>
-                      {topBooks.length === 0 ? (
-                        <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', margin: 0 }}>Nenhum livro registrado ainda.</p>
-                      ) : (
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.7rem' }}>
-                          {topBooks.map(([book, count], idx) => (
-                            <div key={book}>
-                              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.2rem' }}>
-                                <span style={{ fontSize: '0.78rem', color: 'var(--text-primary)', fontWeight: 500 }}>{book}</span>
-                                <span style={{ fontSize: '0.68rem', color: 'var(--text-muted)' }}>{count}</span>
-                              </div>
-                              <div style={{ height: 4, background: 'var(--surface-2)', borderRadius: 2 }}>
-                                <div style={{ height: 4, width: `${(count / (topBooks[0]?.[1] ?? 1)) * 100}%`, background: 'var(--accent)', borderRadius: 2, opacity: 1 - idx * 0.12 }} />
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                )}
-              </section>
-            )}
-
-            {/* ── Por Gênero ── */}
-            {genreDistribution.length >= 2 && (
-              <section>
-                <CollapseHeader label="Por Gênero" collapsed={collapsedAnalytics.has('genero')} onToggle={() => toggleAnalytics('genero')} />
-                {!collapsedAnalytics.has('genero') && (
-                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '0.75rem', marginTop: '0.85rem' }}>
-                    {genreDistribution.map(g => {
-                      const max = genreDistribution[0]?.count ?? 1
-                      return (
-                        <div key={g.id} style={{ background: 'var(--surface)', border: '1px solid var(--border-subtle)', borderRadius: '10px', padding: '0.9rem 1rem' }}>
-                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '0.55rem' }}>
-                            <span style={{ fontSize: '0.8rem', fontWeight: 600, color: g.color }}>{g.label}</span>
-                            <span style={{ fontSize: '0.68rem', color: 'var(--text-muted)' }}>{g.count}</span>
-                          </div>
-                          <div style={{ height: 5, background: 'var(--surface-2)', borderRadius: 3 }}>
-                            <div style={{ height: 5, width: `${Math.round((g.count / max) * 100)}%`, background: g.color, borderRadius: 3, opacity: 0.75 }} />
-                          </div>
-                        </div>
-                      )
-                    })}
-                  </div>
-                )}
-              </section>
-            )}
-
-            {/* ── Atividade Recente ── */}
-            <section>
-              <CollapseHeader label="Atividade Recente" collapsed={collapsedAnalytics.has('recente')} onToggle={() => toggleAnalytics('recente')} />
-              {!collapsedAnalytics.has('recente') && (
-                <div style={{ background: 'var(--surface)', border: '1px solid var(--border-subtle)', borderRadius: '12px', overflow: 'hidden', marginTop: '0.85rem' }}>
-                  {dashboardProjects.slice(0, 8).map((p, i) => {
-                    const mode   = getModeConfig(p.study_mode ?? p.project_type)
-                    const visual = MODE_VISUALS[mode.id as StudyModeId]
-                    const isPassage = mode.passageBased
-                    const ref = isPassage && p.book && p.book !== '—'
-                      ? `${p.book} ${p.passage_ref}`
-                      : p.passage_ref && p.passage_ref !== '—' ? p.passage_ref : null
-                    return (
-                      <div
-                        key={p.id}
-                        onClick={() => router.push(`/workspace/${p.id}`)}
-                        style={{
-                          display: 'flex', alignItems: 'center', gap: '0.85rem',
-                          padding: '0.8rem 1.1rem',
-                          borderBottom: i < Math.min(totalCount, 8) - 1 ? '1px solid var(--border-subtle)' : 'none',
-                          cursor: 'pointer', transition: 'background 0.1s',
-                        }}
-                        onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = 'rgba(0,0,0,0.02)' }}
-                        onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'transparent' }}
-                      >
-                        <div style={{ width: 28, height: 28, borderRadius: '50%', background: visual?.bg ?? 'var(--surface-2)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: visual?.color ?? 'var(--text-muted)', flexShrink: 0 }}>
-                          {isValidElement<{ width?: number; height?: number }>(MODE_ICONS[mode.id as StudyModeId])
-                            ? cloneElement(MODE_ICONS[mode.id as StudyModeId] as React.ReactElement<{ width?: number; height?: number }>, { width: 12, height: 12 })
-                            : MODE_ICONS[mode.id as StudyModeId]}
-                        </div>
-                        <div style={{ flex: 1, minWidth: 0 }}>
-                          <div style={{ fontSize: '0.82rem', fontWeight: 600, color: 'var(--text-primary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{p.title}</div>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', marginTop: '0.1rem' }}>
-                            <span style={{ fontSize: '0.68rem', color: visual?.color ?? 'var(--text-muted)', fontWeight: 500 }}>{mode.name}</span>
-                            {ref && <><span style={{ fontSize: '0.6rem', color: 'var(--border)' }}>·</span><span style={{ fontSize: '0.68rem', color: 'var(--text-muted)', fontStyle: 'italic', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{ref}</span></>}
-                          </div>
-                        </div>
-                        <div style={{ textAlign: 'right', flexShrink: 0 }}>
-                          <div style={{ fontSize: '0.68rem', color: 'var(--text-muted)' }}>{formatDate(p.updated_at)}</div>
-                          {p.status === 'completed' && (
-                            <div style={{ fontSize: '0.58rem', fontWeight: 700, color: '#10B981', background: 'rgba(16,185,129,0.1)', padding: '0.08rem 0.4rem', borderRadius: '99px', marginTop: '0.15rem', display: 'inline-block' }}>Concluído</div>
-                          )}
-                        </div>
-                      </div>
-                    )
-                  })}
-                </div>
-              )}
-            </section>
-
-            {/* ── Mapa Bíblico ── */}
-            {studiedBooks.size > 0 && (
-              <section>
-                <CollapseHeader label="Mapa Bíblico" collapsed={collapsedAnalytics.has('mapa')} onToggle={() => toggleAnalytics('mapa')} />
-                {!collapsedAnalytics.has('mapa') && <BibleMap studiedBooks={studiedBooks} />}
-              </section>
-            )}
-
-            {/* ── Todos os Estudos ── */}
-            <section>
-              <CollapseHeader label="Todos os Projetos" collapsed={collapsedAnalytics.has('todos')} onToggle={() => toggleAnalytics('todos')} />
-              {!collapsedAnalytics.has('todos') && <div style={{ marginTop: '0.85rem', border: '1px solid var(--border-subtle)', borderRadius: '10px', overflow: 'hidden', background: 'var(--surface)' }}>
-                {libraryModes.map((modeId, idx) => {
-                  const mode         = STUDY_MODE_REGISTRY[modeId]
-                  const visual       = modeVisual(modeId)
-                  const modeProjects = projectsByMode.get(modeId) ?? []
-                  const isCollapsed  = collapsedSections.has(modeId)
-                  const isLast       = idx === libraryModes.length - 1
-                  return (
-                    <div key={modeId} style={{ borderBottom: isLast ? 'none' : '1px solid var(--border-subtle)' }}>
-                      <button
-                        onClick={() => toggleSection(modeId)}
-                        style={{
-                          width: '100%', display: 'flex', alignItems: 'center',
-                          gap: '0.7rem', padding: '0.85rem 1.1rem',
-                          background: isCollapsed ? 'transparent' : `${visual.color}04`,
-                          border: 'none', cursor: 'pointer', fontFamily: 'inherit', transition: 'background 0.13s',
-                        }}
-                        onMouseEnter={e => { if (isCollapsed) e.currentTarget.style.background = 'rgba(15,23,42,0.025)' }}
-                        onMouseLeave={e => { if (isCollapsed) e.currentTarget.style.background = 'transparent' }}
-                      >
-                        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke={visual.color} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ transform: isCollapsed ? 'rotate(-90deg)' : 'rotate(0deg)', transition: 'transform 0.15s', flexShrink: 0, opacity: 0.75 }}>
-                          <path d="M6 9l6 6 6-6"/>
-                        </svg>
-                        <span style={{ color: visual.color, display: 'flex', flexShrink: 0 }}>{modeIcon(modeId, 14)}</span>
-                        <span style={{ flex: 1, textAlign: 'left', fontSize: '0.88rem', fontWeight: 600, color: isCollapsed ? 'var(--text-secondary)' : visual.color, transition: 'color 0.13s' }}>{mode.name}</span>
-                        <span style={{ fontSize: '0.72rem', fontWeight: 500, color: 'var(--text-muted)', background: 'var(--surface-2)', padding: '0.1rem 0.45rem', borderRadius: '999px', border: '1px solid var(--border-subtle)' }}>{modeProjects.length}</span>
-                      </button>
-                      {!isCollapsed && (
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem', padding: '0 1.1rem 1rem 2.8rem' }}>
-                          {modeProjects.map(p => (
-                            <ProjectCard
-                              key={p.id} project={p} mode={mode}
-                              onClick={() => router.push(`/workspace/${p.id}`)}
-                              onDelete={() => setDeleteTarget(p)}
-                            />
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                  )
-                })}
-              </div>}
             </section>
 
           </div>

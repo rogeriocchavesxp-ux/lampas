@@ -19,6 +19,7 @@ function isLink(item: DropItem): item is DropLink { return !('sep' in item) }
 
 const NAV: NavItem[] = [
   { id: 'painel', label: 'Painel', href: '/dashboard' },
+  { id: 'insights', label: 'Insights', href: '/insights' },
   {
     id: 'agenda', label: 'Agenda', highlight: true,
     items: [
