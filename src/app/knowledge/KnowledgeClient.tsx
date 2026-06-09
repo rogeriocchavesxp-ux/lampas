@@ -4,7 +4,7 @@ import { useMemo, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { CHILD_CONTENT, CONTAINER_TYPES, KNOWLEDGE_STATUSES, KNOWLEDGE_TYPES, type KnowledgeItemType, type KnowledgeStatus } from '@/lib/knowledge-base'
-import { ArrowLeft, Brain, Check, Link2, Plus, Search, Sparkles, Trash2, X } from 'lucide-react'
+import { ArrowLeft, Brain, Check, ChevronDown, ChevronRight, Link2, Plus, Search, Sparkles, Trash2, X } from 'lucide-react'
 import RichEditor, { type InsertMenuItem } from '@/components/RichEditor'
 
 type JsonRecord = Record<string, string>
@@ -678,7 +678,7 @@ export default function KnowledgeClient({ userId, initialItems, initialDashboard
                       🔗 Relações e Entidades
                     </div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                      <span style={{ fontSize: '0.65rem', color: '#94A3B8' }}>{collapsedBlocks.has('relations') ? '▸' : '▾'}</span>
+                      <span style={{ color: '#94A3B8', display: 'flex', alignItems: 'center' }}>{collapsedBlocks.has('relations') ? <ChevronRight size={13} strokeWidth={2.5} /> : <ChevronDown size={13} strokeWidth={2.5} />}</span>
                       <button
                         onClick={e => { e.stopPropagation(); removeBlock('relations') }}
                         style={{ border: 'none', background: 'transparent', color: '#CBD5E1', cursor: 'pointer', fontFamily: 'inherit', fontSize: '1rem', lineHeight: 1, padding: '0 0.1rem' }}
@@ -1095,9 +1095,13 @@ function CourseModulesEditor({
             {/* Módulo — cabeçalho principal */}
             <div
               onClick={() => !isEditingMod && toggleExpand(mod.id)}
-              style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', padding: '0.7rem 1rem', background: `${color}12`, cursor: 'pointer', userSelect: 'none' as const, borderBottom: isOpen ? `1.5px solid ${color}25` : 'none' }}
+              style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', padding: '0.7rem 1rem', background: `${color}12`, cursor: 'pointer', userSelect: 'none' as const, borderBottom: isOpen ? `1.5px solid ${color}25` : 'none', transition: 'background 0.12s' }}
+              onMouseEnter={e => { if (!isEditingMod) e.currentTarget.style.background = `${color}22` }}
+              onMouseLeave={e => { e.currentTarget.style.background = `${color}12` }}
             >
-              <span style={{ fontSize: '0.6rem', color, fontWeight: 800, flexShrink: 0 }}>{isOpen ? '▾' : '▸'}</span>
+              <span style={{ color, flexShrink: 0, display: 'flex', alignItems: 'center' }}>
+                {isOpen ? <ChevronDown size={16} strokeWidth={2.5} /> : <ChevronRight size={16} strokeWidth={2.5} />}
+              </span>
               {isEditingMod ? (
                 <input
                   autoFocus
@@ -1262,7 +1266,9 @@ function LessonItem({
         draggable
         onDragStart={e => { e.stopPropagation(); onDragStart() }}
         onDragEnd={e => { e.stopPropagation(); onDragEnd() }}
-        style={{ display: 'flex', alignItems: 'center', gap: '0.45rem', padding: '0.38rem 0.65rem', background: '#F7F9FC' }}
+        style={{ display: 'flex', alignItems: 'center', gap: '0.45rem', padding: '0.38rem 0.65rem', background: '#F7F9FC', transition: 'background 0.12s' }}
+        onMouseEnter={e => { e.currentTarget.style.background = '#EDF1F7' }}
+        onMouseLeave={e => { e.currentTarget.style.background = '#F7F9FC' }}
       >
         <span
           title="Arrastar para mover entre módulos"
@@ -1270,8 +1276,8 @@ function LessonItem({
         >⠿</span>
         <span
           onClick={() => setExpanded(v => !v)}
-          style={{ fontSize: '0.55rem', color: color + 'AA', fontWeight: 700, flexShrink: 0, cursor: 'pointer' }}
-        >{expanded ? '▾' : '▸'}</span>
+          style={{ color: color + 'BB', flexShrink: 0, cursor: 'pointer', display: 'flex', alignItems: 'center' }}
+        >{expanded ? <ChevronDown size={14} strokeWidth={2.5} /> : <ChevronRight size={14} strokeWidth={2.5} />}</span>
         <span style={{ fontSize: '0.6rem', color: '#B0BEC9', background: '#EEF2F8', minWidth: '1.4rem', textAlign: 'center', padding: '0.05rem 0.25rem', borderRadius: '4px', fontVariantNumeric: 'tabular-nums', flexShrink: 0 }}>{index + 1}</span>
         {editingTitle ? (
           <input
@@ -1474,9 +1480,13 @@ function CourseContentEditor({
       {showMandatorySummary && <div style={{ border: '1px solid #E2E8F0', borderRadius: '8px', overflow: 'hidden' }}>
         <div
           onClick={() => setCollapsedSummary(v => !v)}
-          style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.52rem 0.75rem', background: '#F8FAFC', cursor: 'pointer', userSelect: 'none' as const }}
+          style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.52rem 0.75rem', background: '#F8FAFC', cursor: 'pointer', userSelect: 'none' as const, transition: 'background 0.12s' }}
+          onMouseEnter={e => { e.currentTarget.style.background = '#EEF2F6' }}
+          onMouseLeave={e => { e.currentTarget.style.background = '#F8FAFC' }}
         >
-          <span style={{ fontSize: '0.58rem', color: '#64748B', fontWeight: 700, flexShrink: 0 }}>{collapsedSummary ? '▸' : '▾'}</span>
+          <span style={{ color: '#64748B', flexShrink: 0, display: 'flex', alignItems: 'center' }}>
+            {collapsedSummary ? <ChevronRight size={13} strokeWidth={2.5} /> : <ChevronDown size={13} strokeWidth={2.5} />}
+          </span>
           <span style={{ flex: 1, fontSize: '0.78rem', fontWeight: 750, color: '#0F172A' }}>Resumo</span>
           <span style={{ fontSize: '0.55rem', color: '#C8CED7', fontStyle: 'italic', letterSpacing: '0.01em' }}>obrigatório</span>
         </div>
@@ -1499,9 +1509,13 @@ function CourseContentEditor({
         <div key={block.id} style={{ border: `1px solid ${color}25`, borderRadius: '8px', overflow: 'hidden' }}>
           <div
             onClick={() => updateBlock(block.id, { collapsed: !block.collapsed })}
-            style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.52rem 0.75rem', background: `${color}0A`, cursor: 'pointer', userSelect: 'none' as const }}
+            style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.52rem 0.75rem', background: `${color}0A`, cursor: 'pointer', userSelect: 'none' as const, transition: 'background 0.12s' }}
+            onMouseEnter={e => { e.currentTarget.style.background = `${color}18` }}
+            onMouseLeave={e => { e.currentTarget.style.background = `${color}0A` }}
           >
-            <span style={{ fontSize: '0.58rem', color, fontWeight: 700, flexShrink: 0 }}>{block.collapsed ? '▸' : '▾'}</span>
+            <span style={{ color, flexShrink: 0, display: 'flex', alignItems: 'center' }}>
+              {block.collapsed ? <ChevronRight size={13} strokeWidth={2.5} /> : <ChevronDown size={13} strokeWidth={2.5} />}
+            </span>
             {editingBlockId === block.id ? (
               <input
                 autoFocus
@@ -1636,9 +1650,13 @@ function CourseStructureView({ item, color }: { item: KnowledgeItem; color: stri
               <div key={mod.id} style={{ border: `1px solid ${color}30`, borderRadius: '8px', overflow: 'hidden' }}>
                 <button
                   onClick={() => toggleModule(mod.id)}
-                  style={{ width: '100%', display: 'flex', alignItems: 'center', gap: '0.6rem', padding: '0.6rem 0.85rem', background: `${color}0C`, border: 'none', cursor: 'pointer', fontFamily: 'inherit', textAlign: 'left' }}
+                  style={{ width: '100%', display: 'flex', alignItems: 'center', gap: '0.6rem', padding: '0.6rem 0.85rem', background: `${color}0C`, border: 'none', cursor: 'pointer', fontFamily: 'inherit', textAlign: 'left', transition: 'background 0.12s' }}
+                  onMouseEnter={e => { e.currentTarget.style.background = `${color}1A` }}
+                  onMouseLeave={e => { e.currentTarget.style.background = `${color}0C` }}
                 >
-                  <span style={{ fontSize: '0.55rem', color, fontWeight: 800, flexShrink: 0 }}>{isExpanded ? '▾' : '▸'}</span>
+                  <span style={{ color, flexShrink: 0, display: 'flex', alignItems: 'center' }}>
+                    {isExpanded ? <ChevronDown size={15} strokeWidth={2.5} /> : <ChevronRight size={15} strokeWidth={2.5} />}
+                  </span>
                   <span style={{ flex: 1, fontSize: '0.86rem', fontWeight: 800, color: '#0F172A' }}>
                     Módulo {modIdx + 1} — {mod.name}
                   </span>
