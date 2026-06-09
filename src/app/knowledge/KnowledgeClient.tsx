@@ -91,6 +91,17 @@ interface Props {
 
 const TYPE_ORDER: KnowledgeItemType[] = ['book', 'article', 'podcast', 'lecture', 'course', 'site', 'video', 'personal_document']
 
+const TYPE_DESCRIPTIONS: Record<KnowledgeItemType, string> = {
+  book:              'Obra, comentário bíblico, teologia sistemática ou referência bibliográfica',
+  article:           'Artigo acadêmico, texto teológico, ensaio ou publicação periódica',
+  podcast:           'Episódio de podcast, série de áudio ou programa ministerial',
+  lecture:           'Palestra, conferência, seminário ou evento presencial',
+  course:            'Curso com módulos, unidades e aulas estruturadas',
+  site:              'Site, blog, página web ou recurso online',
+  video:             'Vídeo, série ou aula em formato audiovisual',
+  personal_document: 'Anotação, rascunho, reflexão pessoal ou documento próprio',
+}
+
 const KB_INSERT_MENU: InsertMenuItem[] = [
   { icon: '🏷', label: 'Palavra-chave', snippet: '<p>🏷 <strong>Palavra-chave:</strong> </p>' },
   { icon: '✝', label: 'Doutrina',       snippet: '<p>✝ <strong>Doutrina:</strong> </p>' },
@@ -215,6 +226,7 @@ export default function KnowledgeClient({ userId, initialItems, initialDashboard
   const [showBlockPicker, setShowBlockPicker] = useState(false)
   const [expandedContainers, setExpandedContainers] = useState<Set<string>>(new Set())
   const [creatingChildOf,    setCreatingChildOf]    = useState<KnowledgeItem | null>(null)
+  const [choosingType,       setChoosingType]       = useState(false)
   const [groupBy,            setGroupBy]            = useState<'none' | 'type' | 'author' | 'category' | 'status'>('none')
   const [collapsedGroups,    setCollapsedGroups]    = useState<Set<string>>(new Set())
 
@@ -293,6 +305,7 @@ export default function KnowledgeClient({ userId, initialItems, initialDashboard
     const nextOrder = parent
       ? items.filter(i => i.parent_id === parent.id).length
       : 0
+    setChoosingType(false)
     setDraft({ ...EMPTY_ITEM, item_type: type, parent_id: parent?.id ?? null, order_index: nextOrder })
     setCreatingChildOf(parent ?? null)
     setActiveBlocks([])
@@ -485,7 +498,44 @@ export default function KnowledgeClient({ userId, initialItems, initialDashboard
     )
   }
 
-  const rightContent = editing ? (() => {
+  const rightContent = choosingType ? (
+    <div style={{ flex: 1, overflowY: 'auto', padding: '2rem 2.5rem', background: '#FFFFFF' }}>
+      <div style={{ maxWidth: '700px', margin: '0 auto' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '2rem' }}>
+          <div>
+            <div style={{ fontSize: '1.3rem', fontWeight: 850, color: '#0F172A', letterSpacing: '-0.02em' }}>Novo conhecimento</div>
+            <div style={{ marginTop: '0.3rem', fontSize: '0.82rem', color: '#64748B' }}>Escolha o tipo de conteúdo que deseja capturar</div>
+          </div>
+          <button
+            onClick={() => setChoosingType(false)}
+            style={{ border: '1px solid #E2E8F0', background: '#FFFFFF', borderRadius: '7px', padding: '0.45rem 0.8rem', cursor: 'pointer', fontFamily: 'inherit', fontSize: '0.8rem', color: '#64748B' }}
+          >
+            Cancelar
+          </button>
+        </div>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '0.75rem' }}>
+          {TYPE_ORDER.map(type => {
+            const cfg = KNOWLEDGE_TYPES[type]
+            return (
+              <button
+                key={type}
+                onClick={() => openCreate(type)}
+                style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: '0.6rem', border: `1.5px solid ${cfg.color}25`, background: cfg.bg, borderRadius: '12px', padding: '1.1rem 1rem', cursor: 'pointer', fontFamily: 'inherit', textAlign: 'left', transition: 'all 0.14s' }}
+                onMouseEnter={e => { e.currentTarget.style.borderColor = cfg.color + '70'; e.currentTarget.style.boxShadow = `0 4px 12px ${cfg.color}18` }}
+                onMouseLeave={e => { e.currentTarget.style.borderColor = cfg.color + '25'; e.currentTarget.style.boxShadow = 'none' }}
+              >
+                <span style={{ fontSize: '1.55rem', lineHeight: 1 }}>{cfg.icon}</span>
+                <div>
+                  <div style={{ fontSize: '0.85rem', fontWeight: 800, color: cfg.color, marginBottom: '0.2rem' }}>{cfg.label}</div>
+                  <div style={{ fontSize: '0.7rem', color: '#64748B', lineHeight: 1.45 }}>{TYPE_DESCRIPTIONS[type]}</div>
+                </div>
+              </button>
+            )
+          })}
+        </div>
+      </div>
+    </div>
+  ) : editing ? (() => {
     const hasRelations = activeBlocks.includes('relations')
     const typeLabels   = TYPE_SECTION_LABELS[draft.item_type]
 
@@ -800,7 +850,7 @@ export default function KnowledgeClient({ userId, initialItems, initialDashboard
           </div>
         </div>
         {items.length > 0 && (
-          <button onClick={() => openCreate()} style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', border: 'none', background: '#B45309', color: '#FFFFFF', borderRadius: '8px', padding: '0.5rem 0.85rem', fontSize: '0.8rem', fontWeight: 750, cursor: 'pointer', fontFamily: 'inherit' }}>
+          <button onClick={() => { setChoosingType(true); setEditing(false) }} style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', border: 'none', background: '#B45309', color: '#FFFFFF', borderRadius: '8px', padding: '0.5rem 0.85rem', fontSize: '0.8rem', fontWeight: 750, cursor: 'pointer', fontFamily: 'inherit' }}>
             <Plus size={14} /> Novo conhecimento
           </button>
         )}
