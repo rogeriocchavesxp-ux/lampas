@@ -1422,6 +1422,113 @@ function CourseContentEditor({
   )
 }
 
+function CourseStructureView({ item, color }: { item: KnowledgeItem; color: string }) {
+  const modules: CourseModule[] = (() => {
+    try { return JSON.parse(item.content?.['modules'] ?? '[]') } catch { return [] }
+  })()
+
+  const [expandedModules, setExpandedModules] = useState<Set<string>>(() => new Set(modules.map(m => m.id)))
+
+  const totalLessons = modules.reduce((sum, m) => sum + m.lessons.length, 0)
+
+  function toggleModule(id: string) {
+    setExpandedModules(prev => { const n = new Set(prev); n.has(id) ? n.delete(id) : n.add(id); return n })
+  }
+
+  return (
+    <section style={{ ...detailSectionStyle, marginBottom: '1rem' }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.85rem' }}>
+        <SectionTitle title="Estrutura do Curso" color={color} />
+        {modules.length > 0 && (
+          <span style={{ fontSize: '0.72rem', color: '#64748B', fontWeight: 700 }}>
+            {modules.length} {modules.length === 1 ? 'módulo' : 'módulos'} · {totalLessons} {totalLessons === 1 ? 'aula' : 'aulas'}
+          </span>
+        )}
+      </div>
+
+      {modules.length === 0 ? (
+        <div style={{ color: '#94A3B8', fontSize: '0.82rem', textAlign: 'center', padding: '0.75rem 0' }}>
+          Nenhum módulo adicionado ainda. Clique em Editar para adicionar a estrutura do curso.
+        </div>
+      ) : (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.55rem' }}>
+          {modules.map((mod, modIdx) => {
+            const isExpanded = expandedModules.has(mod.id)
+            return (
+              <div key={mod.id} style={{ border: `1px solid ${color}30`, borderRadius: '8px', overflow: 'hidden' }}>
+                <button
+                  onClick={() => toggleModule(mod.id)}
+                  style={{ width: '100%', display: 'flex', alignItems: 'center', gap: '0.6rem', padding: '0.6rem 0.85rem', background: `${color}0C`, border: 'none', cursor: 'pointer', fontFamily: 'inherit', textAlign: 'left' }}
+                >
+                  <span style={{ fontSize: '0.55rem', color, fontWeight: 800, flexShrink: 0 }}>{isExpanded ? '▾' : '▸'}</span>
+                  <span style={{ flex: 1, fontSize: '0.86rem', fontWeight: 800, color: '#0F172A' }}>
+                    Módulo {modIdx + 1} — {mod.name}
+                  </span>
+                  <span style={{ fontSize: '0.62rem', color, background: `${color}15`, border: `1px solid ${color}28`, padding: '0.12rem 0.45rem', borderRadius: '999px', fontWeight: 700, flexShrink: 0 }}>
+                    {mod.lessons.length} {mod.lessons.length === 1 ? 'aula' : 'aulas'}
+                  </span>
+                </button>
+
+                {isExpanded && (
+                  <div style={{ padding: '0.5rem 0.85rem 0.65rem', background: '#FAFBFC' }}>
+                    {mod.description && (
+                      <div style={{ fontSize: '0.76rem', color: '#64748B', marginBottom: '0.5rem', fontStyle: 'italic' }}>
+                        {mod.description}
+                      </div>
+                    )}
+                    {mod.lessons.length === 0 ? (
+                      <div style={{ fontSize: '0.78rem', color: '#94A3B8', padding: '0.35rem 0', fontStyle: 'italic' }}>
+                        Nenhuma aula adicionada neste módulo.
+                      </div>
+                    ) : (
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.28rem', paddingLeft: '0.7rem', borderLeft: `2px solid ${color}22` }}>
+                        {mod.lessons.map((lesson, lessonIdx) => {
+                          const blockCount = (lesson.blocks ?? []).length
+                          const hasSummary = !!(lesson.summary?.trim())
+                          const lessonStatus = (!hasSummary && blockCount === 0) ? 'empty' : (hasSummary && blockCount > 0) ? 'complete' : 'partial'
+                          const statusStyle = lessonStatus === 'complete'
+                            ? { color: '#059669', background: '#D1FAE5' }
+                            : lessonStatus === 'partial'
+                            ? { color: '#D97706', background: '#FEF3C7' }
+                            : { color: '#94A3B8', background: '#F1F5F9' }
+                          return (
+                            <div key={lesson.id} style={{ display: 'flex', alignItems: 'flex-start', gap: '0.5rem', padding: '0.42rem 0.6rem', background: '#FFFFFF', border: '1px solid #EEF2F7', borderRadius: '6px' }}>
+                              <span style={{ fontSize: '0.65rem', color: '#B0BEC9', background: '#EEF2F8', minWidth: '1.3rem', textAlign: 'center', padding: '0.05rem 0.22rem', borderRadius: '4px', flexShrink: 0, marginTop: '0.1rem', fontVariantNumeric: 'tabular-nums' }}>{lessonIdx + 1}</span>
+                              <div style={{ flex: 1, minWidth: 0 }}>
+                                <div style={{ fontSize: '0.82rem', fontWeight: 700, color: '#0F172A' }}>{lesson.title}</div>
+                                {lesson.professor && (
+                                  <div style={{ fontSize: '0.7rem', color: '#64748B', marginTop: '0.08rem' }}>{lesson.professor}</div>
+                                )}
+                                {lesson.description && (
+                                  <div style={{ fontSize: '0.7rem', color: '#94A3B8', marginTop: '0.05rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{lesson.description}</div>
+                                )}
+                              </div>
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '0.3rem', flexShrink: 0 }}>
+                                {blockCount > 0 && (
+                                  <span style={{ fontSize: '0.6rem', color: '#64748B', background: '#F1F5F9', padding: '0.1rem 0.35rem', borderRadius: '999px', fontWeight: 700 }}>
+                                    {blockCount}b
+                                  </span>
+                                )}
+                                <span style={{ fontSize: '0.6rem', fontWeight: 700, padding: '0.1rem 0.38rem', borderRadius: '999px', ...statusStyle }}>
+                                  {lessonStatus === 'complete' ? 'completo' : lessonStatus === 'partial' ? 'parcial' : 'vazio'}
+                                </span>
+                              </div>
+                            </div>
+                          )
+                        })}
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            )
+          })}
+        </div>
+      )}
+    </section>
+  )
+}
+
 function DetailView({ item, children, parent, allItems, onEdit, onDelete, onAsk, onSelectChild, onSelectRelated, onAddChild, onBackToParent }: {
   item: KnowledgeItem
   children: KnowledgeItem[]
@@ -1501,8 +1608,10 @@ function DetailView({ item, children, parent, allItems, onEdit, onDelete, onAsk,
           </section>
         )}
 
-        {/* ── Conteúdos internos — apenas para contêineres ── */}
-        {CONTAINER_TYPES.has(item.item_type) && (
+        {/* ── Conteúdos internos ── */}
+        {item.item_type === 'course' ? (
+          <CourseStructureView item={item} color={cfg.color} />
+        ) : CONTAINER_TYPES.has(item.item_type) && (
           <section style={{ ...detailSectionStyle, marginBottom: '1rem' }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.75rem' }}>
               <SectionTitle
