@@ -146,7 +146,7 @@ function isHtmlContent(value: string): boolean {
 }
 
 function getItemContextualSubtitle(item: KnowledgeItem): string | null {
-  const m = item.metadata
+  const m = (item.metadata ?? {}) as Record<string, string>
   switch (item.item_type) {
     case 'course': {
       const parts = [m['institution'], m['course_name']].filter(v => v && v.trim())
@@ -369,6 +369,13 @@ export default function KnowledgeClient({ userId, initialItems, initialDashboard
       ? await supabase.from('knowledge_items').update(payload).eq('id', selected.id).select().single()
       : await supabase.from('knowledge_items').insert(payload).select().single()
 
+    if (result.error) {
+      console.error('saveItem error:', result.error)
+      setToast(`Erro ao salvar: ${result.error.message}`)
+      setTimeout(() => setToast(''), 4000)
+      setSaving(false)
+      return
+    }
     if (result.data) {
       const saved = result.data as KnowledgeItem
       setItems(prev => selected ? prev.map(item => item.id === saved.id ? saved : item) : [saved, ...prev])
@@ -1030,17 +1037,18 @@ function CourseModulesEditor({
   }
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.55rem' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
       {modules.map((mod, modIdx) => {
         const isOpen = expanded.has(mod.id)
         const isEditingMod = editingModuleId === mod.id
         return (
-          <div key={mod.id} style={{ border: `1px solid ${color}30`, borderRadius: '8px', overflow: 'hidden' }}>
+          <div key={mod.id} style={{ border: `1.5px solid ${color}45`, borderRadius: '10px', overflow: 'hidden', boxShadow: `0 1px 5px ${color}12` }}>
+            {/* Módulo — cabeçalho principal */}
             <div
               onClick={() => !isEditingMod && toggleExpand(mod.id)}
-              style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.55rem 0.75rem', background: `${color}0A`, cursor: 'pointer', userSelect: 'none' as const }}
+              style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', padding: '0.7rem 1rem', background: `${color}12`, cursor: 'pointer', userSelect: 'none' as const, borderBottom: isOpen ? `1.5px solid ${color}25` : 'none' }}
             >
-              <span style={{ fontSize: '0.58rem', color, fontWeight: 700, flexShrink: 0 }}>{isOpen ? '▾' : '▸'}</span>
+              <span style={{ fontSize: '0.6rem', color, fontWeight: 800, flexShrink: 0 }}>{isOpen ? '▾' : '▸'}</span>
               {isEditingMod ? (
                 <input
                   autoFocus
@@ -1049,21 +1057,21 @@ function CourseModulesEditor({
                   onClick={e => e.stopPropagation()}
                   onBlur={() => setEditingModuleId(null)}
                   onKeyDown={e => { if (e.key === 'Enter') setEditingModuleId(null) }}
-                  style={{ ...inputStyle, flex: 1, fontSize: '0.82rem', fontWeight: 700, padding: '0.22rem 0.45rem' }}
+                  style={{ ...inputStyle, flex: 1, fontSize: '0.88rem', fontWeight: 800, padding: '0.25rem 0.5rem' }}
                 />
               ) : (
-                <span style={{ flex: 1, fontSize: '0.82rem', fontWeight: 750, color: '#0F172A' }}>
+                <span style={{ flex: 1, fontSize: '0.88rem', fontWeight: 800, color: '#0F172A', letterSpacing: '-0.01em' }}>
                   Módulo {modIdx + 1} — {mod.name}
                 </span>
               )}
-              <div onClick={e => e.stopPropagation()} style={{ display: 'flex', alignItems: 'center', gap: '0.3rem', flexShrink: 0 }}>
-                <span style={{ fontSize: '0.6rem', color: '#94A3B8', background: '#F1F5F9', padding: '0.1rem 0.35rem', borderRadius: '999px' }}>
+              <div onClick={e => e.stopPropagation()} style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', flexShrink: 0 }}>
+                <span style={{ fontSize: '0.62rem', color, background: `${color}18`, border: `1px solid ${color}30`, padding: '0.15rem 0.5rem', borderRadius: '999px', fontWeight: 700 }}>
                   {mod.lessons.length} {mod.lessons.length === 1 ? 'aula' : 'aulas'}
                 </span>
                 <button
                   onClick={() => { setEditingModuleId(mod.id); setExpanded(prev => new Set([...prev, mod.id])) }}
                   title="Renomear"
-                  style={{ border: 'none', background: 'transparent', color: '#94A3B8', cursor: 'pointer', padding: '0.1rem', fontSize: '0.8rem', lineHeight: 1 }}
+                  style={{ border: 'none', background: 'transparent', color: `${color}80`, cursor: 'pointer', padding: '0.1rem', fontSize: '0.8rem', lineHeight: 1 }}
                 >✎</button>
                 <button
                   onClick={() => deleteModule(mod.id)}
@@ -1074,14 +1082,15 @@ function CourseModulesEditor({
             </div>
 
             {isOpen && (
-              <div style={{ padding: '0.6rem 0.75rem 0.75rem', borderTop: `1px solid ${color}20` }}>
+              <div style={{ padding: '0.85rem 1rem 1rem', background: '#FAFBFC' }}>
                 <input
                   value={mod.description}
                   onChange={e => updateModule(mod.id, { description: e.target.value })}
                   placeholder="Descrição do módulo (opcional)"
-                  style={{ ...inputStyle, fontSize: '0.78rem', marginBottom: '0.6rem', color: '#64748B' }}
+                  style={{ ...inputStyle, fontSize: '0.78rem', marginBottom: '0.75rem', color: '#64748B', background: '#FFFFFF' }}
                 />
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem', marginBottom: '0.45rem' }}>
+                {/* Aulas — recuadas e com linha conectora */}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem', marginBottom: '0.65rem', paddingLeft: '0.85rem', borderLeft: `2px solid ${color}25` }}>
                   {mod.lessons.map((lesson, lessonIdx) => (
                     <LessonItem
                       key={lesson.id}
@@ -1096,7 +1105,7 @@ function CourseModulesEditor({
                 </div>
                 <button
                   onClick={() => addLesson(mod.id)}
-                  style={{ width: '100%', border: `1.5px dashed ${color}40`, background: 'transparent', borderRadius: '6px', padding: '0.38rem', cursor: 'pointer', fontFamily: 'inherit', fontSize: '0.75rem', color, fontWeight: 650, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.3rem' }}
+                  style={{ width: '100%', border: `1.5px dashed ${color}35`, background: 'transparent', borderRadius: '6px', padding: '0.38rem', cursor: 'pointer', fontFamily: 'inherit', fontSize: '0.74rem', color: color + 'CC', fontWeight: 650, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.3rem' }}
                 >
                   + Adicionar Aula
                 </button>
@@ -1108,7 +1117,7 @@ function CourseModulesEditor({
 
       <button
         onClick={addModule}
-        style={{ width: '100%', border: `1.5px dashed ${color}55`, background: 'transparent', borderRadius: '8px', padding: '0.55rem', cursor: 'pointer', fontFamily: 'inherit', fontSize: '0.8rem', color, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.35rem' }}
+        style={{ width: '100%', border: `2px dashed ${color}55`, background: `${color}06`, borderRadius: '10px', padding: '0.7rem', cursor: 'pointer', fontFamily: 'inherit', fontSize: '0.82rem', color, fontWeight: 750, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.4rem' }}
       >
         + Adicionar Módulo / Unidade
       </button>
@@ -1135,14 +1144,14 @@ function LessonItem({
   const [editingTitle, setEditingTitle] = useState(false)
 
   return (
-    <div style={{ border: '1px solid #E2E8F0', borderRadius: '6px', overflow: 'hidden' }}>
-      {/* Header */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem', padding: '0.4rem 0.6rem', background: '#F8FAFC' }}>
+    <div style={{ border: '1px solid #DDE5EE', borderRadius: '7px', overflow: 'hidden', background: '#FFFFFF' }}>
+      {/* Header — subordinado ao módulo */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem', padding: '0.38rem 0.65rem', background: '#F7F9FC' }}>
         <span
           onClick={() => setExpanded(v => !v)}
-          style={{ fontSize: '0.58rem', color, fontWeight: 700, flexShrink: 0, cursor: 'pointer' }}
+          style={{ fontSize: '0.55rem', color: color + 'AA', fontWeight: 700, flexShrink: 0, cursor: 'pointer' }}
         >{expanded ? '▾' : '▸'}</span>
-        <span style={{ fontSize: '0.63rem', color: '#CBD5E1', minWidth: '1.1rem', textAlign: 'right', fontVariantNumeric: 'tabular-nums', flexShrink: 0 }}>{index + 1}</span>
+        <span style={{ fontSize: '0.6rem', color: '#B0BEC9', background: '#EEF2F8', minWidth: '1.4rem', textAlign: 'center', padding: '0.05rem 0.25rem', borderRadius: '4px', fontVariantNumeric: 'tabular-nums', flexShrink: 0 }}>{index + 1}</span>
         {editingTitle ? (
           <input
             autoFocus
@@ -1150,45 +1159,45 @@ function LessonItem({
             onChange={e => onUpdate({ title: e.target.value })}
             onBlur={() => setEditingTitle(false)}
             onKeyDown={e => { if (e.key === 'Enter') setEditingTitle(false) }}
-            style={{ ...inputStyle, flex: 1, fontSize: '0.8rem', padding: '0.2rem 0.4rem' }}
+            style={{ ...inputStyle, flex: 1, fontSize: '0.78rem', padding: '0.2rem 0.4rem' }}
           />
         ) : (
           <span
             onClick={() => setExpanded(v => !v)}
-            style={{ flex: 1, fontSize: '0.8rem', fontWeight: 650, color: '#334155', cursor: 'pointer' }}
+            style={{ flex: 1, fontSize: '0.78rem', fontWeight: 700, color: '#334155', cursor: 'pointer' }}
           >{lesson.title}</span>
         )}
         <button
           onClick={() => setEditingTitle(v => !v)}
           title="Renomear aula"
-          style={{ border: 'none', background: 'transparent', color: '#94A3B8', cursor: 'pointer', padding: '0.1rem', fontSize: '0.8rem', lineHeight: 1 }}
+          style={{ border: 'none', background: 'transparent', color: '#B0BEC9', cursor: 'pointer', padding: '0.1rem', fontSize: '0.75rem', lineHeight: 1 }}
         >✎</button>
         <button
           onClick={onDelete}
           title="Remover aula"
-          style={{ border: 'none', background: 'transparent', color: '#FCA5A5', cursor: 'pointer', padding: '0.1rem', fontSize: '1rem', lineHeight: 1 }}
+          style={{ border: 'none', background: 'transparent', color: '#FCA5A5', cursor: 'pointer', padding: '0.1rem', fontSize: '0.9rem', lineHeight: 1 }}
         >×</button>
       </div>
 
       {/* Body */}
       {expanded && (
-        <div style={{ padding: '0.65rem 0.75rem', borderTop: '1px solid #E2E8F0', display: 'flex', flexDirection: 'column', gap: '0.85rem' }}>
+        <div style={{ borderTop: '1px solid #EBF0F8', display: 'flex', flexDirection: 'column' }}>
           {/* Informações da Aula */}
-          <div>
-            <div style={{ fontSize: '0.62rem', fontWeight: 800, color: '#94A3B8', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '0.42rem' }}>
+          <div style={{ padding: '0.6rem 0.75rem', background: '#FFFFFF' }}>
+            <div style={{ fontSize: '0.56rem', fontWeight: 800, color: '#B0B8C5', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '0.4rem', paddingBottom: '0.28rem', borderBottom: '1px solid #EEF2F7' }}>
               Informações da Aula
             </div>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
-              <input value={lesson.professor ?? ''} onChange={e => onUpdate({ professor: e.target.value })} placeholder="Professor (opcional)" style={{ ...inputStyle, fontSize: '0.78rem' }} />
-              <input value={lesson.description} onChange={e => onUpdate({ description: e.target.value })} placeholder="Descrição (opcional)" style={{ ...inputStyle, fontSize: '0.78rem' }} />
-              <input value={lesson.video_url} onChange={e => onUpdate({ video_url: e.target.value })} placeholder="Link do vídeo (opcional)" style={{ ...inputStyle, fontSize: '0.78rem' }} />
-              <input value={lesson.material} onChange={e => onUpdate({ material: e.target.value })} placeholder="Material complementar (opcional)" style={{ ...inputStyle, fontSize: '0.78rem' }} />
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.32rem' }}>
+              <input value={lesson.professor ?? ''} onChange={e => onUpdate({ professor: e.target.value })} placeholder="Professor (opcional)" style={{ ...inputStyle, fontSize: '0.76rem' }} />
+              <input value={lesson.description} onChange={e => onUpdate({ description: e.target.value })} placeholder="Descrição (opcional)" style={{ ...inputStyle, fontSize: '0.76rem' }} />
+              <input value={lesson.video_url} onChange={e => onUpdate({ video_url: e.target.value })} placeholder="Link do vídeo (opcional)" style={{ ...inputStyle, fontSize: '0.76rem' }} />
+              <input value={lesson.material} onChange={e => onUpdate({ material: e.target.value })} placeholder="Material complementar (opcional)" style={{ ...inputStyle, fontSize: '0.76rem' }} />
             </div>
           </div>
 
-          {/* Conteúdo da Aula */}
-          <div>
-            <div style={{ fontSize: '0.62rem', fontWeight: 800, color: '#94A3B8', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '0.42rem' }}>
+          {/* Conteúdo da Aula — subnível com fundo e borda distinta */}
+          <div style={{ padding: '0.65rem 0.75rem 0.75rem', background: '#F4F7FB', borderTop: '1.5px dashed #DDE5EE' }}>
+            <div style={{ fontSize: '0.56rem', fontWeight: 800, color: '#94A3B8', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '0.55rem', paddingBottom: '0.28rem', borderBottom: '1px solid #DDE5EE' }}>
               Conteúdo da Aula
             </div>
             <CourseContentEditor
@@ -1291,7 +1300,7 @@ function CourseContentEditor({
         >
           <span style={{ fontSize: '0.58rem', color: '#64748B', fontWeight: 700, flexShrink: 0 }}>{collapsedSummary ? '▸' : '▾'}</span>
           <span style={{ flex: 1, fontSize: '0.78rem', fontWeight: 750, color: '#0F172A' }}>Resumo</span>
-          <span style={{ fontSize: '0.6rem', color: '#CBD5E1', background: '#F1F5F9', padding: '0.1rem 0.4rem', borderRadius: '999px' }}>obrigatório</span>
+          <span style={{ fontSize: '0.55rem', color: '#C8CED7', fontStyle: 'italic', letterSpacing: '0.01em' }}>obrigatório</span>
         </div>
         {!collapsedSummary && (
           <div style={{ padding: '0.75rem', borderTop: '1px solid #E2E8F0' }}>
@@ -1360,7 +1369,7 @@ function CourseContentEditor({
       <div style={{ position: 'relative' }}>
         <button
           onClick={() => setShowBlockPicker(v => !v)}
-          style={{ width: '100%', border: `1.5px dashed ${color}45`, background: 'transparent', borderRadius: '8px', padding: '0.6rem', cursor: 'pointer', fontFamily: 'inherit', fontSize: '0.8rem', color, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.35rem' }}
+          style={{ width: '100%', border: '1px dashed #CBD5E1', background: 'transparent', borderRadius: '6px', padding: '0.42rem', cursor: 'pointer', fontFamily: 'inherit', fontSize: '0.73rem', color: '#94A3B8', fontWeight: 650, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.3rem' }}
         >
           + Adicionar Bloco
         </button>
