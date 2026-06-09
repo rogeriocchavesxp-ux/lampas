@@ -983,6 +983,8 @@ function CourseModulesEditor({
   const [editingModuleId, setEditingModuleId] = useState<string | null>(null)
   const [dragging, setDragging] = useState<{ moduleId: string; lessonId: string } | null>(null)
   const [dragOverModuleId, setDragOverModuleId] = useState<string | null>(null)
+  const [dragOverLessonId, setDragOverLessonId] = useState<string | null>(null)
+  const [dropPosition, setDropPosition] = useState<'before' | 'after'>('after')
 
   function newId(prefix: string) {
     return `${prefix}_${Date.now()}_${Math.floor(Math.random() * 9999)}`
@@ -1048,6 +1050,33 @@ function CourseModulesEditor({
       return m
     }))
     setExpanded(prev => new Set([...prev, toModuleId]))
+  }
+
+  function reorderLesson(moduleId: string, lessonId: string, targetLessonId: string, position: 'before' | 'after') {
+    if (lessonId === targetLessonId) return
+    onChange(modules.map(m => {
+      if (m.id !== moduleId) return m
+      const without = m.lessons.filter(l => l.id !== lessonId)
+      const moved = m.lessons.find(l => l.id === lessonId)!
+      const targetIdx = without.findIndex(l => l.id === targetLessonId)
+      if (targetIdx === -1) return m
+      const at = position === 'before' ? targetIdx : targetIdx + 1
+      const reordered = [...without.slice(0, at), moved, ...without.slice(at)]
+      return { ...m, lessons: reordered.map((l, i) => ({ ...l, order: i })) }
+    }))
+  }
+
+  function reorderLessonByOffset(moduleId: string, lessonId: string, offset: 'up' | 'down' | 'first' | 'last') {
+    onChange(modules.map(m => {
+      if (m.id !== moduleId) return m
+      const lessons = [...m.lessons]
+      const idx = lessons.findIndex(l => l.id === lessonId)
+      if (idx === -1) return m
+      const [lesson] = lessons.splice(idx, 1)
+      const newIdx = offset === 'first' ? 0 : offset === 'last' ? lessons.length : offset === 'up' ? Math.max(0, idx - 1) : Math.min(lessons.length, idx + 1)
+      lessons.splice(newIdx, 0, lesson)
+      return { ...m, lessons: lessons.map((l, i) => ({ ...l, order: i })) }
+    }))
   }
 
   return (
@@ -1125,7 +1154,15 @@ function CourseModulesEditor({
                       currentModuleId={mod.id}
                       onMoveToModule={targetId => moveLesson(mod.id, lesson.id, targetId)}
                       onDragStart={() => setDragging({ moduleId: mod.id, lessonId: lesson.id })}
-                      onDragEnd={() => { setDragging(null); setDragOverModuleId(null) }}
+                      onDragEnd={() => { setDragging(null); setDragOverModuleId(null); setDragOverLessonId(null) }}
+                      activeDragModuleId={dragging?.moduleId ?? null}
+                      activeDragLessonId={dragging?.lessonId ?? null}
+                      dragOverState={dragOverLessonId === lesson.id ? dropPosition : null}
+                      onDragOverLesson={pos => { setDragOverLessonId(lesson.id); setDropPosition(pos) }}
+                      onDragLeaveLesson={() => setDragOverLessonId(prev => prev === lesson.id ? null : prev)}
+                      onDropOnLesson={pos => { if (dragging) { reorderLesson(mod.id, dragging.lessonId, lesson.id, pos); setDragging(null); setDragOverLessonId(null); setDragOverModuleId(null) } }}
+                      onReorder={action => reorderLessonByOffset(mod.id, lesson.id, action)}
+                      lessonCount={mod.lessons.length}
                     />
                   ))}
                 </div>
@@ -1164,6 +1201,14 @@ function LessonItem({
   onMoveToModule,
   onDragStart,
   onDragEnd,
+  activeDragModuleId,
+  activeDragLessonId,
+  dragOverState,
+  onDragOverLesson,
+  onDragLeaveLesson,
+  onDropOnLesson,
+  onReorder,
+  lessonCount,
 }: {
   lesson: CourseLesson
   index: number
@@ -1177,13 +1222,41 @@ function LessonItem({
   onMoveToModule: (targetModuleId: string) => void
   onDragStart: () => void
   onDragEnd: () => void
+  activeDragModuleId: string | null
+  activeDragLessonId: string | null
+  dragOverState: 'before' | 'after' | null
+  onDragOverLesson: (position: 'before' | 'after') => void
+  onDragLeaveLesson: () => void
+  onDropOnLesson: (position: 'before' | 'after') => void
+  onReorder: (action: 'up' | 'down' | 'first' | 'last') => void
+  lessonCount: number
 }) {
   const [expanded, setExpanded] = useState(false)
   const [editingTitle, setEditingTitle] = useState(false)
   const [showMoveMenu, setShowMoveMenu] = useState(false)
 
   return (
-    <div style={{ border: '1px solid #DDE5EE', borderRadius: '7px', overflow: 'hidden', background: '#FFFFFF', opacity: isDragging ? 0.4 : 1, transition: 'opacity 0.15s' }}>
+    <div
+      onDragOver={e => {
+        if (activeDragModuleId === currentModuleId && activeDragLessonId !== lesson.id) {
+          e.preventDefault()
+          e.stopPropagation()
+          const rect = e.currentTarget.getBoundingClientRect()
+          onDragOverLesson(e.clientY < rect.top + rect.height / 2 ? 'before' : 'after')
+        }
+      }}
+      onDragLeave={e => { const rt = e.relatedTarget as Node | null; if (rt === null || !e.currentTarget.contains(rt)) onDragLeaveLesson() }}
+      onDrop={e => {
+        if (activeDragModuleId === currentModuleId && activeDragLessonId && activeDragLessonId !== lesson.id) {
+          e.preventDefault()
+          e.stopPropagation()
+          const rect = e.currentTarget.getBoundingClientRect()
+          onDropOnLesson(e.clientY < rect.top + rect.height / 2 ? 'before' : 'after')
+        }
+      }}
+    >
+      {dragOverState === 'before' && <div style={{ height: '2px', background: color, borderRadius: '2px', marginBottom: '3px', opacity: 0.85 }} />}
+      <div style={{ border: '1px solid #DDE5EE', borderRadius: '7px', overflow: 'hidden', background: '#FFFFFF', opacity: isDragging ? 0.4 : 1, transition: 'opacity 0.15s' }}>
       {/* Header */}
       <div
         draggable
@@ -1220,29 +1293,57 @@ function LessonItem({
           title="Renomear aula"
           style={{ border: 'none', background: 'transparent', color: '#B0BEC9', cursor: 'pointer', padding: '0.1rem', fontSize: '0.75rem', lineHeight: 1 }}
         >✎</button>
-        {modules.length > 1 && (
+        {(modules.length > 1 || lessonCount > 1) && (
           <div style={{ position: 'relative', flexShrink: 0 }}>
             <button
               onClick={e => { e.stopPropagation(); setShowMoveMenu(v => !v) }}
-              title="Mover para outro módulo"
+              title="Mover aula"
               style={{ border: 'none', background: showMoveMenu ? `${color}18` : 'transparent', color: showMoveMenu ? color : '#B0BEC9', cursor: 'pointer', padding: '0.12rem 0.28rem', borderRadius: '4px', fontSize: '0.68rem', lineHeight: 1, fontWeight: 800, transition: 'all 0.1s' }}
             >⇄</button>
             {showMoveMenu && (
               <div style={{ position: 'absolute', right: 0, top: 'calc(100% + 4px)', zIndex: 200, background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: '8px', boxShadow: '0 6px 20px rgba(0,0,0,0.12)', overflow: 'hidden', minWidth: '185px' }}>
-                <div style={{ padding: '0.32rem 0.7rem 0.26rem', fontSize: '0.56rem', fontWeight: 800, color: '#94A3B8', textTransform: 'uppercase', letterSpacing: '0.08em', borderBottom: '1px solid #F1F5F9' }}>
-                  Mover para
-                </div>
-                {modules.filter(m => m.id !== currentModuleId).map(m => (
-                  <button
-                    key={m.id}
-                    onClick={e => { e.stopPropagation(); onMoveToModule(m.id); setShowMoveMenu(false) }}
-                    style={{ width: '100%', display: 'flex', alignItems: 'center', border: 'none', background: 'transparent', padding: '0.42rem 0.7rem', cursor: 'pointer', fontFamily: 'inherit', fontSize: '0.78rem', color: '#334155', textAlign: 'left' }}
-                    onMouseEnter={e => { e.currentTarget.style.background = `${color}0F` }}
-                    onMouseLeave={e => { e.currentTarget.style.background = 'transparent' }}
-                  >
-                    Módulo {modules.findIndex(mod => mod.id === m.id) + 1} — {m.name}
-                  </button>
-                ))}
+                {modules.length > 1 && (
+                  <>
+                    <div style={{ padding: '0.32rem 0.7rem 0.26rem', fontSize: '0.56rem', fontWeight: 800, color: '#94A3B8', textTransform: 'uppercase', letterSpacing: '0.08em', borderBottom: '1px solid #F1F5F9' }}>
+                      Mover para módulo
+                    </div>
+                    {modules.filter(m => m.id !== currentModuleId).map(m => (
+                      <button
+                        key={m.id}
+                        onClick={e => { e.stopPropagation(); onMoveToModule(m.id); setShowMoveMenu(false) }}
+                        style={{ width: '100%', display: 'flex', alignItems: 'center', border: 'none', background: 'transparent', padding: '0.42rem 0.7rem', cursor: 'pointer', fontFamily: 'inherit', fontSize: '0.78rem', color: '#334155', textAlign: 'left' }}
+                        onMouseEnter={e => { e.currentTarget.style.background = `${color}0F` }}
+                        onMouseLeave={e => { e.currentTarget.style.background = 'transparent' }}
+                      >
+                        Módulo {modules.findIndex(mod => mod.id === m.id) + 1} — {m.name}
+                      </button>
+                    ))}
+                  </>
+                )}
+                {modules.length > 1 && lessonCount > 1 && <div style={{ borderTop: '1px solid #F1F5F9' }} />}
+                {lessonCount > 1 && (
+                  <>
+                    <div style={{ padding: '0.32rem 0.7rem 0.26rem', fontSize: '0.56rem', fontWeight: 800, color: '#94A3B8', textTransform: 'uppercase', letterSpacing: '0.08em', borderBottom: '1px solid #F1F5F9' }}>
+                      Ordem no módulo
+                    </div>
+                    {([
+                      { action: 'up' as const,    label: '↑ Mover para cima',    disabled: index === 0 },
+                      { action: 'down' as const,  label: '↓ Mover para baixo',   disabled: index === lessonCount - 1 },
+                      { action: 'first' as const, label: '⬆ Início do módulo',   disabled: index === 0 },
+                      { action: 'last' as const,  label: '⬇ Fim do módulo',      disabled: index === lessonCount - 1 },
+                    ] as const).map(({ action, label, disabled }) => (
+                      <button
+                        key={action}
+                        onClick={e => { e.stopPropagation(); if (!disabled) { onReorder(action); setShowMoveMenu(false) } }}
+                        style={{ width: '100%', display: 'flex', alignItems: 'center', border: 'none', background: 'transparent', padding: '0.42rem 0.7rem', cursor: disabled ? 'default' : 'pointer', fontFamily: 'inherit', fontSize: '0.78rem', color: disabled ? '#CBD5E1' : '#334155', textAlign: 'left' }}
+                        onMouseEnter={e => { if (!disabled) e.currentTarget.style.background = `${color}0F` }}
+                        onMouseLeave={e => { e.currentTarget.style.background = 'transparent' }}
+                      >
+                        {label}
+                      </button>
+                    ))}
+                  </>
+                )}
               </div>
             )}
           </div>
@@ -1287,6 +1388,8 @@ function LessonItem({
           </div>
         </div>
       )}
+    </div>
+      {dragOverState === 'after' && <div style={{ height: '2px', background: color, borderRadius: '2px', marginTop: '3px', opacity: 0.85 }} />}
     </div>
   )
 }
