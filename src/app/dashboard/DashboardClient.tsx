@@ -1,9 +1,8 @@
 'use client'
 
 import { useState, useMemo, useEffect, cloneElement, isValidElement } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
-import { LampasLogo } from '@/components/LampasLogo'
 import type { User } from '@supabase/supabase-js'
 import type { Project, Profile } from '@/types/database'
 import {
@@ -430,8 +429,9 @@ interface Props {
 }
 
 export default function DashboardClient({ user, projects: initialProjects, profile }: Props) {
-  const router  = useRouter()
-  const supabase = useMemo(() => createClient(), [])
+  const router       = useRouter()
+  const searchParams = useSearchParams()
+  const supabase     = useMemo(() => createClient(), [])
 
   // Local projects list — allows optimistic removal on delete
   const [projects, setProjects] = useState<Project[]>(initialProjects)
@@ -609,6 +609,15 @@ export default function DashboardClient({ user, projects: initialProjects, profi
 
   function closeModal() { setShowNew(false) }
 
+  // Auto-open modal when navigated with ?new=1 (from TopNav)
+  useEffect(() => {
+    if (searchParams.get('new') === '1') {
+      openModal()
+      router.replace('/dashboard', { scroll: false })
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
   function selectUiMode(uid: UiModeId) {
     setSelectedUiMode(uid)
     setCreateError(null)
@@ -658,11 +667,6 @@ export default function DashboardClient({ user, projects: initialProjects, profi
   function updateTitle(value: string) {
     setTitleEdited(true)
     setForm(current => ({ ...current, title: value }))
-  }
-
-  async function handleSignOut() {
-    await supabase.auth.signOut()
-    router.push('/auth/login')
   }
 
   async function handleCreate(e: React.FormEvent) {
@@ -735,61 +739,20 @@ export default function DashboardClient({ user, projects: initialProjects, profi
   return (
     <div style={{ minHeight: '100vh', background: 'var(--background)' }}>
 
-      {/* ── Header ── */}
+      {/* ── Sub-header ── */}
       <header style={{
         borderBottom: '1px solid var(--border-subtle)', padding: '0 2rem',
-        height: '56px', display: 'flex', alignItems: 'center',
-        justifyContent: 'space-between', background: 'var(--surface)',
+        height: '44px', display: 'flex', alignItems: 'center',
+        background: 'var(--surface)',
       }}>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '1px' }}>
-          <LampasLogo height={30} />
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem', paddingLeft: '38px' }}>
-            <span style={{
-              fontSize: '0.58rem', color: 'var(--text-muted)',
-              letterSpacing: '0.08em', textTransform: 'uppercase',
-              fontWeight: 500, lineHeight: 1,
-            }}>
-              Estude. Interprete. Comunique.
-            </span>
-            <span style={{ fontSize: '0.52rem', color: 'var(--border)', lineHeight: 1 }}>·</span>
-            <span style={{ fontSize: '0.58rem', color: 'var(--text-muted)', fontWeight: 600, lineHeight: 1, letterSpacing: '0.04em' }}>
-              v{pkg.version}
-            </span>
-          </div>
-        </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-          <span style={{ color: 'var(--text-muted)', fontSize: '0.82rem' }}>{user.email}</span>
-          <button onClick={() => router.push('/agenda')} style={{
-            background: 'transparent', border: '1px solid var(--border)',
-            color: 'var(--text-secondary)', padding: '0.3rem 0.75rem',
-            borderRadius: '6px', cursor: 'pointer', fontSize: '0.82rem', fontFamily: 'inherit',
-          }}
-            onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--accent)'; e.currentTarget.style.color = 'var(--accent)' }}
-            onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.color = 'var(--text-secondary)' }}
-          >Agenda</button>
-          <button onClick={() => router.push('/billing')} style={{
-            background: 'transparent', border: '1px solid var(--border)',
-            color: 'var(--text-secondary)', padding: '0.3rem 0.75rem',
-            borderRadius: '6px', cursor: 'pointer', fontSize: '0.82rem', fontFamily: 'inherit',
-          }}
-            onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--accent)'; e.currentTarget.style.color = 'var(--accent)' }}
-            onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.color = 'var(--text-secondary)' }}
-          >Planos</button>
-          {profile?.role === 'admin' && (
-            <button onClick={() => router.push('/admin/billing')} style={{
-              background: 'transparent', border: '1px solid var(--border)',
-              color: 'var(--text-secondary)', padding: '0.3rem 0.75rem',
-              borderRadius: '6px', cursor: 'pointer', fontSize: '0.82rem', fontFamily: 'inherit',
-            }}
-              onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--accent)'; e.currentTarget.style.color = 'var(--accent)' }}
-              onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.color = 'var(--text-secondary)' }}
-            >Admin</button>
-          )}
-          <button onClick={handleSignOut} style={{
-            background: 'transparent', border: '1px solid var(--border)',
-            color: 'var(--text-secondary)', padding: '0.3rem 0.75rem',
-            borderRadius: '6px', cursor: 'pointer', fontSize: '0.82rem', fontFamily: 'inherit',
-          }}>Sair</button>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem' }}>
+          <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)', letterSpacing: '0.08em', textTransform: 'uppercase', fontWeight: 600 }}>
+            Painel
+          </span>
+          <span style={{ fontSize: '0.55rem', color: 'var(--border)' }}>·</span>
+          <span style={{ fontSize: '0.68rem', color: 'var(--text-muted)', fontWeight: 500 }}>
+            v{pkg.version}
+          </span>
         </div>
       </header>
 

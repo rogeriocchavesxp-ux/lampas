@@ -1,3 +1,4 @@
+import { Suspense } from 'react'
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { syncMercadoPagoSubscriptionForUser } from '@/lib/billing-sync'
@@ -18,10 +19,12 @@ export default async function DashboardPage() {
   ])
 
   return (
-    <DashboardClient
-      user={user!}
-      projects={projects || []}
-      profile={profile}
-    />
+    <Suspense fallback={null}>
+      <DashboardClient
+        user={user!}
+        projects={projects || []}
+        profile={profile}
+      />
+    </Suspense>
   )
 }

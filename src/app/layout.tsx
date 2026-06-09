@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
 import './globals.css'
 import KnowledgePanelWrapper from '@/components/KnowledgePanelWrapper'
+import TopNav from '@/components/nav/TopNav'
 
 const inter = Inter({
   subsets: ['latin'],
@@ -18,6 +19,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="pt-BR" className={`h-full ${inter.variable}`}>
       <body className="h-full">
+        <TopNav />
         {children}
         <KnowledgePanelWrapper />
       </body>
