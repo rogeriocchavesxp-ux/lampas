@@ -9,6 +9,32 @@ import RichEditor, { type InsertMenuItem } from '@/components/RichEditor'
 
 type JsonRecord = Record<string, string>
 
+interface CourseLesson {
+  id: string
+  title: string
+  description: string
+  video_url: string
+  material: string
+  order: number
+}
+
+interface CourseModule {
+  id: string
+  name: string
+  description: string
+  order: number
+  lessons: CourseLesson[]
+}
+
+interface CourseContentBlock {
+  id: string
+  key: string
+  label: string
+  value: string
+  collapsed: boolean
+  order: number
+}
+
 interface KnowledgeItem {
   id: string
   user_id: string
@@ -493,67 +519,117 @@ export default function KnowledgeClient({ userId, initialItems, initialDashboard
           {/* Campos — largura total */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem' }}>
 
-              {/* ── Campos básicos — comuns a todos os tipos ── */}
-              <section style={{ border: '1px solid #E2E8F0', borderRadius: '8px', padding: '1rem' }}>
-                <SectionTitle title="Campos Básicos" />
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
-                  <Field label="Título" value={draft.title} onChange={v => setDraft(p => ({ ...p, title: v }))} />
-                  <Field label="Subtítulo" value={draft.subtitle ?? ''} onChange={v => setDraft(p => ({ ...p, subtitle: v }))} />
-                  <Field label="Categoria" value={draft.category ?? ''} onChange={v => setDraft(p => ({ ...p, category: v }))} />
-                  <Field label="Subcategoria" value={draft.subcategory ?? ''} onChange={v => setDraft(p => ({ ...p, subcategory: v }))} />
-                  <Field label="URL / Fonte" value={draft.source_url ?? ''} onChange={v => setDraft(p => ({ ...p, source_url: v }))} />
-                  <div>
-                    <label style={labelStyle}>Status</label>
-                    <select value={draft.status} onChange={e => setDraft(p => ({ ...p, status: e.target.value as KnowledgeStatus }))} style={inputStyle}>
-                      {Object.entries(KNOWLEDGE_STATUSES).map(([key, value]) => <option key={key} value={key}>{value.label}</option>)}
-                    </select>
-                  </div>
-                </div>
-                <div style={{ marginTop: '0.75rem' }}>
-                  <label style={labelStyle}>Resumo</label>
-                  <RichEditor
-                    value={draft.summary ?? ''}
-                    onChange={v => setDraft(p => ({ ...p, summary: v }))}
-                    placeholder="Registre a ideia central e por que este conteúdo importa."
-                    moduleColor={currentDraftType.color}
-                    minHeight={100}
-                    insertMenu={KB_INSERT_MENU}
-                  />
-                </div>
-              </section>
+              {draft.item_type === 'course' ? (
+                <>
+                  {/* ── Seção 1: Dados da Instituição ── */}
+                  <section style={{ border: `1px solid ${currentDraftType.color}25`, borderRadius: '8px', padding: '1rem' }}>
+                    <SectionTitle title="Dados da Instituição" color={currentDraftType.color} />
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
+                      <Field label="Instituição" value={draft.metadata?.['institution'] ?? ''} onChange={v => setDraft(p => ({ ...p, metadata: { ...p.metadata, institution: v } }))} />
+                      <Field label="Professor" value={draft.metadata?.['teacher'] ?? ''} onChange={v => setDraft(p => ({ ...p, metadata: { ...p.metadata, teacher: v } }))} />
+                    </div>
+                  </section>
 
-              {/* ── Metadados do tipo (Obra / Episódio / Evento…) — automático ── */}
-              {currentDraftType.metadataFields.length > 0 && (
-                <section style={{ border: `1px solid ${currentDraftType.color}25`, borderRadius: '8px', padding: '1rem' }}>
-                  <SectionTitle title={typeLabels.metadata} color={currentDraftType.color} />
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
-                    {currentDraftType.metadataFields.map(field => (
-                      <Field key={field.key} label={field.label} type={field.type} value={draft.metadata?.[field.key] ?? ''} onChange={v => setDraft(p => ({ ...p, metadata: { ...p.metadata, [field.key]: v } }))} />
-                    ))}
-                  </div>
-                </section>
-              )}
+                  {/* ── Seção 2: Dados do Curso ── */}
+                  <section style={{ border: '1px solid #E2E8F0', borderRadius: '8px', padding: '1rem' }}>
+                    <SectionTitle title="Dados do Curso" />
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
+                      <Field label="Título" value={draft.title} onChange={v => setDraft(p => ({ ...p, title: v }))} />
+                      <Field label="Subtítulo" value={draft.subtitle ?? ''} onChange={v => setDraft(p => ({ ...p, subtitle: v }))} />
+                      <Field label="Categoria" value={draft.category ?? ''} onChange={v => setDraft(p => ({ ...p, category: v }))} />
+                      <Field label="Carga Horária" value={draft.metadata?.['workload'] ?? ''} onChange={v => setDraft(p => ({ ...p, metadata: { ...p.metadata, workload: v } }))} />
+                      <Field label="URL / Fonte" value={draft.source_url ?? ''} onChange={v => setDraft(p => ({ ...p, source_url: v }))} />
+                    </div>
+                  </section>
 
-              {/* ── Conteúdo do tipo (Livro / Episódio / Palestra…) — automático ── */}
-              {currentDraftType.contentFields.length > 0 && (
-                <section style={{ border: `1px solid ${currentDraftType.color}25`, borderRadius: '8px', padding: '1rem' }}>
-                  <SectionTitle title={typeLabels.content} color={currentDraftType.color} />
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                    {currentDraftType.contentFields.map(field => (
-                      <div key={field.key}>
-                        <label style={labelStyle}>{field.label}</label>
-                        <RichEditor
-                          value={draft.content?.[field.key] ?? ''}
-                          onChange={v => setDraft(p => ({ ...p, content: { ...p.content, [field.key]: v } }))}
-                          placeholder={field.key}
-                          moduleColor={currentDraftType.color}
-                          minHeight={(field.rows ?? 3) * 36}
-                          insertMenu={KB_INSERT_MENU}
-                        />
+                  {/* ── Seção 3: Estrutura do Curso (Módulos e Aulas) ── */}
+                  <section style={{ border: `1px solid ${currentDraftType.color}25`, borderRadius: '8px', padding: '1rem' }}>
+                    <SectionTitle title="Estrutura do Curso" color={currentDraftType.color} />
+                    <CourseModulesEditor
+                      modules={(() => { try { return JSON.parse(draft.content?.['modules'] ?? '[]') } catch { return [] } })()}
+                      onChange={modules => setDraft(p => ({ ...p, content: { ...p.content, modules: JSON.stringify(modules) } }))}
+                      color={currentDraftType.color}
+                    />
+                  </section>
+
+                  {/* ── Seção 4: Conteúdo do Curso ── */}
+                  <section style={{ border: '1px solid #E2E8F0', borderRadius: '8px', padding: '1rem' }}>
+                    <SectionTitle title="Conteúdo do Curso" />
+                    <CourseContentEditor
+                      summary={draft.summary ?? ''}
+                      onSummaryChange={v => setDraft(p => ({ ...p, summary: v }))}
+                      blocks={(() => { try { return JSON.parse(draft.content?.['course_blocks'] ?? '[]') } catch { return [] } })()}
+                      onBlocksChange={blocks => setDraft(p => ({ ...p, content: { ...p.content, course_blocks: JSON.stringify(blocks) } }))}
+                      color={currentDraftType.color}
+                      insertMenu={KB_INSERT_MENU}
+                    />
+                  </section>
+                </>
+              ) : (
+                <>
+                  {/* ── Campos básicos — comuns a todos os tipos ── */}
+                  <section style={{ border: '1px solid #E2E8F0', borderRadius: '8px', padding: '1rem' }}>
+                    <SectionTitle title="Campos Básicos" />
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
+                      <Field label="Título" value={draft.title} onChange={v => setDraft(p => ({ ...p, title: v }))} />
+                      <Field label="Subtítulo" value={draft.subtitle ?? ''} onChange={v => setDraft(p => ({ ...p, subtitle: v }))} />
+                      <Field label="Categoria" value={draft.category ?? ''} onChange={v => setDraft(p => ({ ...p, category: v }))} />
+                      <Field label="Subcategoria" value={draft.subcategory ?? ''} onChange={v => setDraft(p => ({ ...p, subcategory: v }))} />
+                      <Field label="URL / Fonte" value={draft.source_url ?? ''} onChange={v => setDraft(p => ({ ...p, source_url: v }))} />
+                      <div>
+                        <label style={labelStyle}>Status</label>
+                        <select value={draft.status} onChange={e => setDraft(p => ({ ...p, status: e.target.value as KnowledgeStatus }))} style={inputStyle}>
+                          {Object.entries(KNOWLEDGE_STATUSES).map(([key, value]) => <option key={key} value={key}>{value.label}</option>)}
+                        </select>
                       </div>
-                    ))}
-                  </div>
-                </section>
+                    </div>
+                    <div style={{ marginTop: '0.75rem' }}>
+                      <label style={labelStyle}>Resumo</label>
+                      <RichEditor
+                        value={draft.summary ?? ''}
+                        onChange={v => setDraft(p => ({ ...p, summary: v }))}
+                        placeholder="Registre a ideia central e por que este conteúdo importa."
+                        moduleColor={currentDraftType.color}
+                        minHeight={100}
+                        insertMenu={KB_INSERT_MENU}
+                      />
+                    </div>
+                  </section>
+
+                  {/* ── Metadados do tipo (Obra / Episódio / Evento…) — automático ── */}
+                  {currentDraftType.metadataFields.length > 0 && (
+                    <section style={{ border: `1px solid ${currentDraftType.color}25`, borderRadius: '8px', padding: '1rem' }}>
+                      <SectionTitle title={typeLabels.metadata} color={currentDraftType.color} />
+                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
+                        {currentDraftType.metadataFields.map(field => (
+                          <Field key={field.key} label={field.label} type={field.type} value={draft.metadata?.[field.key] ?? ''} onChange={v => setDraft(p => ({ ...p, metadata: { ...p.metadata, [field.key]: v } }))} />
+                        ))}
+                      </div>
+                    </section>
+                  )}
+
+                  {/* ── Conteúdo do tipo (Livro / Episódio / Palestra…) — automático ── */}
+                  {currentDraftType.contentFields.length > 0 && (
+                    <section style={{ border: `1px solid ${currentDraftType.color}25`, borderRadius: '8px', padding: '1rem' }}>
+                      <SectionTitle title={typeLabels.content} color={currentDraftType.color} />
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                        {currentDraftType.contentFields.map(field => (
+                          <div key={field.key}>
+                            <label style={labelStyle}>{field.label}</label>
+                            <RichEditor
+                              value={draft.content?.[field.key] ?? ''}
+                              onChange={v => setDraft(p => ({ ...p, content: { ...p.content, [field.key]: v } }))}
+                              placeholder={field.key}
+                              moduleColor={currentDraftType.color}
+                              minHeight={(field.rows ?? 3) * 36}
+                              insertMenu={KB_INSERT_MENU}
+                            />
+                          </div>
+                        ))}
+                      </div>
+                    </section>
+                  )}
+                </>
               )}
 
               {/* ── Relações e Entidades — bloco opcional ── */}
@@ -855,6 +931,372 @@ function ListField({ label, value, onChange }: { label: string; value: string[];
 
 function SectionTitle({ title, color = '#0F172A' }: { title: string; color?: string }) {
   return <div style={{ fontSize: '0.72rem', color, fontWeight: 850, marginBottom: '0.75rem', letterSpacing: '-0.01em' }}>{title}</div>
+}
+
+function CourseModulesEditor({
+  modules,
+  onChange,
+  color,
+}: {
+  modules: CourseModule[]
+  onChange: (modules: CourseModule[]) => void
+  color: string
+}) {
+  const [expanded, setExpanded] = useState<Set<string>>(() => new Set(modules.map(m => m.id)))
+  const [editingModuleId, setEditingModuleId] = useState<string | null>(null)
+  const [editingLessonId, setEditingLessonId] = useState<string | null>(null)
+
+  function newId(prefix: string) {
+    return `${prefix}_${Date.now()}_${Math.floor(Math.random() * 9999)}`
+  }
+
+  function toggleExpand(id: string) {
+    setExpanded(prev => { const n = new Set(prev); n.has(id) ? n.delete(id) : n.add(id); return n })
+  }
+
+  function addModule() {
+    const mod: CourseModule = { id: newId('mod'), name: `Módulo ${modules.length + 1}`, description: '', order: modules.length, lessons: [] }
+    setExpanded(prev => new Set([...prev, mod.id]))
+    setEditingModuleId(mod.id)
+    onChange([...modules, mod])
+  }
+
+  function updateModule(id: string, patch: Partial<Omit<CourseModule, 'id' | 'lessons'>>) {
+    onChange(modules.map(m => m.id === id ? { ...m, ...patch } : m))
+  }
+
+  function deleteModule(id: string) {
+    onChange(modules.filter(m => m.id !== id).map((m, i) => ({ ...m, order: i })))
+  }
+
+  function addLesson(moduleId: string) {
+    const mod = modules.find(m => m.id === moduleId)
+    if (!mod) return
+    const lesson: CourseLesson = { id: newId('lesson'), title: `Aula ${mod.lessons.length + 1}`, description: '', video_url: '', material: '', order: mod.lessons.length }
+    setEditingLessonId(lesson.id)
+    onChange(modules.map(m => m.id === moduleId ? { ...m, lessons: [...m.lessons, lesson] } : m))
+  }
+
+  function updateLesson(moduleId: string, lessonId: string, patch: Partial<Omit<CourseLesson, 'id'>>) {
+    onChange(modules.map(m => {
+      if (m.id !== moduleId) return m
+      return { ...m, lessons: m.lessons.map(l => l.id === lessonId ? { ...l, ...patch } : l) }
+    }))
+  }
+
+  function deleteLesson(moduleId: string, lessonId: string) {
+    onChange(modules.map(m => {
+      if (m.id !== moduleId) return m
+      return { ...m, lessons: m.lessons.filter(l => l.id !== lessonId).map((l, i) => ({ ...l, order: i })) }
+    }))
+  }
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.55rem' }}>
+      {modules.map((mod, modIdx) => {
+        const isOpen = expanded.has(mod.id)
+        const isEditingMod = editingModuleId === mod.id
+        return (
+          <div key={mod.id} style={{ border: `1px solid ${color}30`, borderRadius: '8px', overflow: 'hidden' }}>
+            <div
+              onClick={() => !isEditingMod && toggleExpand(mod.id)}
+              style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.55rem 0.75rem', background: `${color}0A`, cursor: 'pointer', userSelect: 'none' as const }}
+            >
+              <span style={{ fontSize: '0.58rem', color, fontWeight: 700, flexShrink: 0 }}>{isOpen ? '▾' : '▸'}</span>
+              {isEditingMod ? (
+                <input
+                  autoFocus
+                  value={mod.name}
+                  onChange={e => updateModule(mod.id, { name: e.target.value })}
+                  onClick={e => e.stopPropagation()}
+                  onBlur={() => setEditingModuleId(null)}
+                  onKeyDown={e => { if (e.key === 'Enter') setEditingModuleId(null) }}
+                  style={{ ...inputStyle, flex: 1, fontSize: '0.82rem', fontWeight: 700, padding: '0.22rem 0.45rem' }}
+                />
+              ) : (
+                <span style={{ flex: 1, fontSize: '0.82rem', fontWeight: 750, color: '#0F172A' }}>
+                  Módulo {modIdx + 1} — {mod.name}
+                </span>
+              )}
+              <div onClick={e => e.stopPropagation()} style={{ display: 'flex', alignItems: 'center', gap: '0.3rem', flexShrink: 0 }}>
+                <span style={{ fontSize: '0.6rem', color: '#94A3B8', background: '#F1F5F9', padding: '0.1rem 0.35rem', borderRadius: '999px' }}>
+                  {mod.lessons.length} {mod.lessons.length === 1 ? 'aula' : 'aulas'}
+                </span>
+                <button
+                  onClick={() => { setEditingModuleId(mod.id); setExpanded(prev => new Set([...prev, mod.id])) }}
+                  title="Renomear"
+                  style={{ border: 'none', background: 'transparent', color: '#94A3B8', cursor: 'pointer', padding: '0.1rem', fontSize: '0.8rem', lineHeight: 1 }}
+                >✎</button>
+                <button
+                  onClick={() => deleteModule(mod.id)}
+                  title="Remover módulo"
+                  style={{ border: 'none', background: 'transparent', color: '#FCA5A5', cursor: 'pointer', padding: '0.1rem', fontSize: '1rem', lineHeight: 1 }}
+                >×</button>
+              </div>
+            </div>
+
+            {isOpen && (
+              <div style={{ padding: '0.6rem 0.75rem 0.75rem', borderTop: `1px solid ${color}20` }}>
+                <input
+                  value={mod.description}
+                  onChange={e => updateModule(mod.id, { description: e.target.value })}
+                  placeholder="Descrição do módulo (opcional)"
+                  style={{ ...inputStyle, fontSize: '0.78rem', marginBottom: '0.6rem', color: '#64748B' }}
+                />
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.3rem', marginBottom: '0.45rem' }}>
+                  {mod.lessons.map((lesson, lessonIdx) => {
+                    const isEditingLesson = editingLessonId === lesson.id
+                    return (
+                      <div key={lesson.id} style={{ border: '1px solid #E2E8F0', borderRadius: '6px', overflow: 'hidden' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem', padding: '0.38rem 0.6rem', background: '#F8FAFC' }}>
+                          <span style={{ fontSize: '0.63rem', color: '#CBD5E1', minWidth: '1.1rem', textAlign: 'right', fontVariantNumeric: 'tabular-nums', flexShrink: 0 }}>{lessonIdx + 1}</span>
+                          {isEditingLesson ? (
+                            <input
+                              autoFocus
+                              value={lesson.title}
+                              onChange={e => updateLesson(mod.id, lesson.id, { title: e.target.value })}
+                              onKeyDown={e => { if (e.key === 'Enter') setEditingLessonId(null) }}
+                              style={{ ...inputStyle, flex: 1, fontSize: '0.8rem', padding: '0.2rem 0.4rem' }}
+                            />
+                          ) : (
+                            <span style={{ flex: 1, fontSize: '0.8rem', fontWeight: 650, color: '#334155' }}>{lesson.title}</span>
+                          )}
+                          <button
+                            onClick={() => setEditingLessonId(isEditingLesson ? null : lesson.id)}
+                            title="Editar aula"
+                            style={{ border: 'none', background: 'transparent', color: '#94A3B8', cursor: 'pointer', padding: '0.1rem', fontSize: '0.8rem', lineHeight: 1 }}
+                          >✎</button>
+                          <button
+                            onClick={() => deleteLesson(mod.id, lesson.id)}
+                            title="Remover aula"
+                            style={{ border: 'none', background: 'transparent', color: '#FCA5A5', cursor: 'pointer', padding: '0.1rem', fontSize: '1rem', lineHeight: 1 }}
+                          >×</button>
+                        </div>
+                        {isEditingLesson && (
+                          <div style={{ padding: '0.5rem 0.6rem', display: 'flex', flexDirection: 'column', gap: '0.38rem', borderTop: '1px solid #E2E8F0' }}>
+                            <input value={lesson.description} onChange={e => updateLesson(mod.id, lesson.id, { description: e.target.value })} placeholder="Descrição (opcional)" style={{ ...inputStyle, fontSize: '0.78rem' }} />
+                            <input value={lesson.video_url} onChange={e => updateLesson(mod.id, lesson.id, { video_url: e.target.value })} placeholder="Link do vídeo (opcional)" style={{ ...inputStyle, fontSize: '0.78rem' }} />
+                            <input value={lesson.material} onChange={e => updateLesson(mod.id, lesson.id, { material: e.target.value })} placeholder="Material complementar (opcional)" style={{ ...inputStyle, fontSize: '0.78rem' }} />
+                          </div>
+                        )}
+                      </div>
+                    )
+                  })}
+                </div>
+                <button
+                  onClick={() => addLesson(mod.id)}
+                  style={{ width: '100%', border: `1.5px dashed ${color}40`, background: 'transparent', borderRadius: '6px', padding: '0.38rem', cursor: 'pointer', fontFamily: 'inherit', fontSize: '0.75rem', color, fontWeight: 650, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.3rem' }}
+                >
+                  + Adicionar Aula
+                </button>
+              </div>
+            )}
+          </div>
+        )
+      })}
+
+      <button
+        onClick={addModule}
+        style={{ width: '100%', border: `1.5px dashed ${color}55`, background: 'transparent', borderRadius: '8px', padding: '0.55rem', cursor: 'pointer', fontFamily: 'inherit', fontSize: '0.8rem', color, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.35rem' }}
+      >
+        + Adicionar Módulo / Unidade
+      </button>
+    </div>
+  )
+}
+
+const COURSE_PRESET_BLOCKS: Array<{ key: string; label: string }> = [
+  { key: 'main_learnings',      label: 'Aprendizados' },
+  { key: 'exercises',           label: 'Exercícios' },
+  { key: 'applications',        label: 'Aplicações' },
+  { key: 'next_steps',          label: 'Próximos Passos' },
+  { key: 'bibliography',        label: 'Bibliografia' },
+  { key: 'resources',           label: 'Recursos Complementares' },
+  { key: 'recommended_readings',label: 'Leituras Recomendadas' },
+  { key: 'evaluation',          label: 'Avaliação' },
+  { key: 'projects',            label: 'Projetos' },
+  { key: 'notes',               label: 'Observações' },
+]
+
+function CourseContentEditor({
+  summary,
+  onSummaryChange,
+  blocks,
+  onBlocksChange,
+  color,
+  insertMenu,
+}: {
+  summary: string
+  onSummaryChange: (v: string) => void
+  blocks: CourseContentBlock[]
+  onBlocksChange: (blocks: CourseContentBlock[]) => void
+  color: string
+  insertMenu: InsertMenuItem[]
+}) {
+  const [collapsedSummary, setCollapsedSummary] = useState(false)
+  const [showBlockPicker, setShowBlockPicker] = useState(false)
+  const [showCustomInput, setShowCustomInput] = useState(false)
+  const [customName, setCustomName] = useState('')
+  const [editingBlockId, setEditingBlockId] = useState<string | null>(null)
+
+  const usedKeys = new Set(blocks.map(b => b.key))
+  const availablePresets = COURSE_PRESET_BLOCKS.filter(p => !usedKeys.has(p.key))
+
+  function newBlockId() { return `block_${Date.now()}_${Math.floor(Math.random() * 9999)}` }
+
+  function addPresetBlock(preset: { key: string; label: string }) {
+    const block: CourseContentBlock = { id: newBlockId(), key: preset.key, label: preset.label, value: '', collapsed: false, order: blocks.length }
+    onBlocksChange([...blocks, block])
+    setShowBlockPicker(false)
+  }
+
+  function addCustomBlock() {
+    if (!customName.trim()) return
+    const block: CourseContentBlock = { id: newBlockId(), key: `custom_${Date.now()}`, label: customName.trim(), value: '', collapsed: false, order: blocks.length }
+    onBlocksChange([...blocks, block])
+    setCustomName('')
+    setShowCustomInput(false)
+    setShowBlockPicker(false)
+  }
+
+  function updateBlock(id: string, patch: Partial<Omit<CourseContentBlock, 'id'>>) {
+    onBlocksChange(blocks.map(b => b.id === id ? { ...b, ...patch } : b))
+  }
+
+  function removeBlock(id: string) {
+    onBlocksChange(blocks.filter(b => b.id !== id).map((b, i) => ({ ...b, order: i })))
+  }
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.55rem' }}>
+      {/* Resumo — não removível */}
+      <div style={{ border: '1px solid #E2E8F0', borderRadius: '8px', overflow: 'hidden' }}>
+        <div
+          onClick={() => setCollapsedSummary(v => !v)}
+          style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.52rem 0.75rem', background: '#F8FAFC', cursor: 'pointer', userSelect: 'none' as const }}
+        >
+          <span style={{ fontSize: '0.58rem', color: '#64748B', fontWeight: 700, flexShrink: 0 }}>{collapsedSummary ? '▸' : '▾'}</span>
+          <span style={{ flex: 1, fontSize: '0.78rem', fontWeight: 750, color: '#0F172A' }}>Resumo</span>
+          <span style={{ fontSize: '0.6rem', color: '#CBD5E1', background: '#F1F5F9', padding: '0.1rem 0.4rem', borderRadius: '999px' }}>obrigatório</span>
+        </div>
+        {!collapsedSummary && (
+          <div style={{ padding: '0.75rem', borderTop: '1px solid #E2E8F0' }}>
+            <RichEditor
+              value={summary}
+              onChange={onSummaryChange}
+              placeholder="Registre a ideia central e por que este conteúdo importa."
+              moduleColor={color}
+              minHeight={100}
+              insertMenu={insertMenu}
+            />
+          </div>
+        )}
+      </div>
+
+      {/* Blocos dinâmicos */}
+      {blocks.map(block => (
+        <div key={block.id} style={{ border: `1px solid ${color}25`, borderRadius: '8px', overflow: 'hidden' }}>
+          <div
+            onClick={() => updateBlock(block.id, { collapsed: !block.collapsed })}
+            style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.52rem 0.75rem', background: `${color}0A`, cursor: 'pointer', userSelect: 'none' as const }}
+          >
+            <span style={{ fontSize: '0.58rem', color, fontWeight: 700, flexShrink: 0 }}>{block.collapsed ? '▸' : '▾'}</span>
+            {editingBlockId === block.id ? (
+              <input
+                autoFocus
+                value={block.label}
+                onChange={e => updateBlock(block.id, { label: e.target.value })}
+                onClick={e => e.stopPropagation()}
+                onBlur={() => setEditingBlockId(null)}
+                onKeyDown={e => { if (e.key === 'Enter') setEditingBlockId(null) }}
+                style={{ ...inputStyle, flex: 1, fontSize: '0.78rem', fontWeight: 700, padding: '0.2rem 0.4rem' }}
+              />
+            ) : (
+              <span style={{ flex: 1, fontSize: '0.78rem', fontWeight: 750, color: '#0F172A' }}>{block.label}</span>
+            )}
+            <div onClick={e => e.stopPropagation()} style={{ display: 'flex', gap: '0.3rem', flexShrink: 0 }}>
+              <button
+                onClick={() => setEditingBlockId(block.id)}
+                title="Renomear bloco"
+                style={{ border: 'none', background: 'transparent', color: '#94A3B8', cursor: 'pointer', padding: '0.1rem', fontSize: '0.8rem', lineHeight: 1 }}
+              >✎</button>
+              <button
+                onClick={() => removeBlock(block.id)}
+                title="Remover bloco"
+                style={{ border: 'none', background: 'transparent', color: '#FCA5A5', cursor: 'pointer', padding: '0.1rem', fontSize: '1rem', lineHeight: 1 }}
+              >×</button>
+            </div>
+          </div>
+          {!block.collapsed && (
+            <div style={{ padding: '0.75rem', borderTop: `1px solid ${color}20` }}>
+              <RichEditor
+                value={block.value}
+                onChange={v => updateBlock(block.id, { value: v })}
+                placeholder={block.label}
+                moduleColor={color}
+                minHeight={108}
+                insertMenu={insertMenu}
+              />
+            </div>
+          )}
+        </div>
+      ))}
+
+      {/* + Adicionar Bloco */}
+      <div style={{ position: 'relative' }}>
+        <button
+          onClick={() => setShowBlockPicker(v => !v)}
+          style={{ width: '100%', border: `1.5px dashed ${color}45`, background: 'transparent', borderRadius: '8px', padding: '0.6rem', cursor: 'pointer', fontFamily: 'inherit', fontSize: '0.8rem', color, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.35rem' }}
+        >
+          + Adicionar Bloco
+        </button>
+        {showBlockPicker && (
+          <div style={{ position: 'absolute', bottom: 'calc(100% + 6px)', left: 0, right: 0, zIndex: 50, background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: '9px', boxShadow: '0 8px 24px rgba(0,0,0,0.1)', overflow: 'hidden' }}>
+            {availablePresets.map(preset => (
+              <button
+                key={preset.key}
+                onClick={() => addPresetBlock(preset)}
+                style={{ width: '100%', display: 'flex', alignItems: 'center', border: 'none', background: 'transparent', padding: '0.52rem 0.85rem', cursor: 'pointer', fontFamily: 'inherit', fontSize: '0.82rem', color: '#334155', textAlign: 'left' }}
+                onMouseEnter={e => { e.currentTarget.style.background = '#F8FAFC' }}
+                onMouseLeave={e => { e.currentTarget.style.background = 'transparent' }}
+              >
+                {preset.label}
+              </button>
+            ))}
+            {availablePresets.length > 0 && <div style={{ borderTop: '1px solid #F1F5F9' }} />}
+            {!showCustomInput ? (
+              <button
+                onClick={() => setShowCustomInput(true)}
+                style={{ width: '100%', display: 'flex', alignItems: 'center', border: 'none', background: 'transparent', padding: '0.52rem 0.85rem', cursor: 'pointer', fontFamily: 'inherit', fontSize: '0.82rem', color, fontWeight: 700, textAlign: 'left' }}
+                onMouseEnter={e => { e.currentTarget.style.background = '#F8FAFC' }}
+                onMouseLeave={e => { e.currentTarget.style.background = 'transparent' }}
+              >
+                + Novo Bloco Personalizado
+              </button>
+            ) : (
+              <div style={{ padding: '0.5rem 0.85rem', display: 'flex', gap: '0.4rem' }}>
+                <input
+                  autoFocus
+                  value={customName}
+                  onChange={e => setCustomName(e.target.value)}
+                  onKeyDown={e => { if (e.key === 'Enter') addCustomBlock(); if (e.key === 'Escape') { setShowCustomInput(false); setCustomName('') } }}
+                  placeholder="Nome do bloco"
+                  style={{ ...inputStyle, flex: 1, fontSize: '0.8rem', padding: '0.3rem 0.5rem' }}
+                />
+                <button
+                  onClick={addCustomBlock}
+                  disabled={!customName.trim()}
+                  style={{ border: 'none', background: color, color: '#FFF', borderRadius: '6px', padding: '0.3rem 0.65rem', cursor: 'pointer', fontFamily: 'inherit', fontSize: '0.78rem', fontWeight: 700, opacity: !customName.trim() ? 0.5 : 1 }}
+                >
+                  Criar
+                </button>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+    </div>
+  )
 }
 
 function DetailView({ item, children, parent, allItems, onEdit, onDelete, onAsk, onSelectChild, onSelectRelated, onAddChild, onBackToParent }: {
