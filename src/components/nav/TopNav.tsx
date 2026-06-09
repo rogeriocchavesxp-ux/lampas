@@ -10,8 +10,12 @@ export const NAV_HEIGHT = 52
 
 const HIDE_ON_PATHS = ['/auth/login', '/auth/callback', '/auth/reset', '/']
 
-type DropItem = { label: string; href: string; badge?: string }
-type NavItem  = { id: string; label: string; href?: string; highlight?: boolean; items?: DropItem[] }
+type DropLink    = { label: string; href: string; badge?: string }
+type DropSep     = { sep: true; label: string }
+type DropItem    = DropLink | DropSep
+type NavItem     = { id: string; label: string; href?: string; highlight?: boolean; items?: DropItem[] }
+
+function isLink(item: DropItem): item is DropLink { return !('sep' in item) }
 
 const NAV: NavItem[] = [
   { id: 'painel', label: 'Painel', href: '/dashboard' },
@@ -28,10 +32,16 @@ const NAV: NavItem[] = [
   {
     id: 'base', label: 'Base de Conhecimento',
     items: [
-      { label: 'Texto Original',        href: '/knowledge' },
-      { label: 'Dicionário Lampas',     href: '/knowledge', badge: 'Em breve' },
-      { label: 'Referências Cruzadas',  href: '/knowledge', badge: 'Em breve' },
-      { label: 'Catecismos',            href: '/knowledge', badge: 'Em breve' },
+      { sep: true, label: 'Repositório' },
+      { label: 'Biblioteca',           href: '/knowledge' },
+      { label: 'Sistemática',          href: '/knowledge' },
+      { label: 'Bíblica',              href: '/knowledge' },
+      { sep: true, label: 'Referência' },
+      { label: 'Catecismos',           href: '/knowledge' },
+      { label: 'Dicionário Lampas',    href: '/knowledge' },
+      { label: 'Referências Cruzadas', href: '/knowledge' },
+      { sep: true, label: 'Anotações' },
+      { label: 'Colagens',             href: '/knowledge' },
     ],
   },
   {
@@ -46,16 +56,25 @@ const NAV: NavItem[] = [
   {
     id: 'ferramentas', label: 'Ferramentas',
     items: [
-      { label: 'Texto Original',  href: '/knowledge' },
-      { label: 'Slides',          href: '#', badge: 'Em breve' },
-      { label: 'Exportar PDF',    href: '#', badge: 'Em breve' },
+      { label: 'Texto Original',       href: '/knowledge' },
+      { label: 'Dicionário Lampas',    href: '/knowledge' },
+      { label: 'Biblioteca',           href: '/knowledge' },
+      { label: 'Referências Cruzadas', href: '/knowledge' },
+      { label: 'Colagens',             href: '/knowledge' },
+      { sep: true, label: 'Teologia' },
+      { label: 'Sistemática',          href: '/knowledge' },
+      { label: 'Bíblica',              href: '/knowledge' },
+      { label: 'Catecismos',           href: '/knowledge' },
     ],
   },
   {
     id: 'publicacoes', label: 'Publicações',
     items: [
-      { label: 'Meus Conteúdos',       href: '#', badge: 'Em breve' },
-      { label: 'Sermões Publicados',   href: '#', badge: 'Em breve' },
+      { label: 'Meus Conteúdos',      href: '#', badge: 'Em breve' },
+      { label: 'Sermões Publicados',  href: '#', badge: 'Em breve' },
+      { sep: true, label: 'Exportar' },
+      { label: 'Slides',              href: '#', badge: 'Em breve' },
+      { label: 'Exportar PDF',        href: '#', badge: 'Em breve' },
     ],
   },
 ]
@@ -358,14 +377,18 @@ function NavButton({ item, active, open, onToggle, onNavigate }: {
 
       {open && item.items && (
         <Dropdown style={{ left: 0, minWidth: '210px' }}>
-          {item.items.map(sub => (
-            <DropItem
-              key={sub.href + sub.label}
-              label={sub.label}
-              badge={sub.badge}
-              onClick={() => onNavigate(sub.href)}
-            />
-          ))}
+          {item.items.map((sub, i) =>
+            !isLink(sub) ? (
+              <DropSepHeader key={`sep-${i}`} label={sub.label} first={i === 0} />
+            ) : (
+              <DropItem
+                key={sub.href + sub.label + i}
+                label={sub.label}
+                badge={sub.badge}
+                onClick={() => onNavigate(sub.href)}
+              />
+            )
+          )}
         </Dropdown>
       )}
     </div>
@@ -389,8 +412,18 @@ function Dropdown({ children, style }: { children: React.ReactNode; style?: Reac
   )
 }
 
-function DropSection({ children }: { children: React.ReactNode }) {
-  return <div>{children}</div>
+function DropSepHeader({ label, first }: { label: string; first?: boolean }) {
+  return (
+    <div style={{
+      padding: first ? '0.3rem 0.75rem 0.2rem' : '0.55rem 0.75rem 0.2rem',
+      fontSize: '0.63rem', fontWeight: 700,
+      color: 'var(--text-muted)',
+      textTransform: 'uppercase', letterSpacing: '0.07em',
+      ...(first ? {} : { borderTop: '1px solid var(--border-subtle)' }),
+    }}>
+      {label}
+    </div>
+  )
 }
 
 function DropDivider() {
@@ -449,26 +482,32 @@ function MobileNavItem({ item, onNavigate }: { item: NavItem; onNavigate: (href:
       </button>
       {open && item.items && (
         <div style={{ paddingLeft: '1.5rem', paddingBottom: '0.25rem' }}>
-          {item.items.map(sub => (
-            <button
-              key={sub.href + sub.label}
-              onClick={() => onNavigate(sub.href)}
-              style={{
-                display: 'flex', alignItems: 'center', gap: '0.5rem',
-                width: '100%', padding: '0.5rem 1rem',
-                background: 'none', border: 'none',
-                fontSize: '0.84rem', color: 'var(--text-secondary)',
-                cursor: 'pointer', fontFamily: 'inherit', textAlign: 'left',
-              }}
-            >
-              {sub.label}
-              {sub.badge && (
-                <span style={{ fontSize: '0.6rem', padding: '0.1rem 0.3rem', background: 'var(--surface-3)', color: 'var(--text-muted)', borderRadius: '3px' }}>
-                  {sub.badge}
-                </span>
-              )}
-            </button>
-          ))}
+          {item.items.map((sub, i) =>
+            !isLink(sub) ? (
+              <div key={`sep-${i}`} style={{ padding: '0.35rem 1rem 0.1rem', fontSize: '0.62rem', color: 'var(--text-muted)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                {sub.label}
+              </div>
+            ) : (
+              <button
+                key={sub.href + sub.label + i}
+                onClick={() => onNavigate(sub.href)}
+                style={{
+                  display: 'flex', alignItems: 'center', gap: '0.5rem',
+                  width: '100%', padding: '0.5rem 1rem',
+                  background: 'none', border: 'none',
+                  fontSize: '0.84rem', color: 'var(--text-secondary)',
+                  cursor: 'pointer', fontFamily: 'inherit', textAlign: 'left',
+                }}
+              >
+                {sub.label}
+                {sub.badge && (
+                  <span style={{ fontSize: '0.6rem', padding: '0.1rem 0.3rem', background: 'var(--surface-3)', color: 'var(--text-muted)', borderRadius: '3px' }}>
+                    {sub.badge}
+                  </span>
+                )}
+              </button>
+            )
+          )}
         </div>
       )}
     </div>

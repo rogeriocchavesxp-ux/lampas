@@ -1,7 +1,6 @@
 import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
 import './globals.css'
-import KnowledgePanelWrapper from '@/components/KnowledgePanelWrapper'
 import TopNav from '@/components/nav/TopNav'
 
 const inter = Inter({
@@ -21,7 +20,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body className="h-full">
         <TopNav />
         {children}
-        <KnowledgePanelWrapper />
       </body>
     </html>
   )
