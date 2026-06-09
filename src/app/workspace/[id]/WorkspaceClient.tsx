@@ -39,6 +39,7 @@ import {
   Sparkles, BookMarked, Flame, MessageSquareText, Layers, Book, Library,
   BookCopy, Link2, Paperclip, ChevronDown, ChevronRight, ChevronUp,
   MapPin, Network, TrendingUp, LayoutTemplate, Mic, Brain, Megaphone,
+  AlignJustify, GitBranch, Palette, Tag,
   type LucideIcon,
 } from 'lucide-react'
 import { LampasLogo, LampasMarkIcon } from '@/components/LampasLogo'
@@ -119,6 +120,12 @@ const GROUP_ICONS: Record<string, LucideIcon> = {
   contextual:                Landmark,
   textual:                   Languages,
   teologico:                 GraduationCap,
+  // Investigar — Salmos e Sabedoria
+  ss_paralelismo_grp:        AlignJustify,
+  ss_estrutura_grp:          GitBranch,
+  ss_imagistica_grp:         Palette,
+  ss_temas_grp:              Tag,
+  ss_teologia_grp:           BookMarked,
   // Pregar — Sermão
   sermao_dispositio:         LayoutTemplate,
   sermao_elocutio:           Mic,
