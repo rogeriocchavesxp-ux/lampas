@@ -30,7 +30,7 @@ export interface KnowledgeTypeConfig {
   bg: string
   description: string
   metadataFields: Array<{ key: string; label: string; type?: 'text' | 'number' | 'date' | 'url' }>
-  contentFields: Array<{ key: string; label: string; rows?: number }>
+  contentFields: Array<{ key: string; label: string; rows?: number; optional?: boolean }>
   aiActions: Array<{ label: string; prompt: string }>
 }
 
@@ -52,14 +52,18 @@ export const KNOWLEDGE_TYPES: Record<KnowledgeItemType, KnowledgeTypeConfig> = {
       { key: 'isbn',      label: 'ISBN' },
     ],
     contentFields: [
-      { key: 'general_summary',    label: 'Resumo',                   rows: 5 },
-      { key: 'resenha',            label: 'Resenha',                   rows: 5 },
-      { key: 'fichamento',         label: 'Fichamento',                rows: 6 },
-      { key: 'main_arguments',     label: 'Argumentos principais',     rows: 4 },
-      { key: 'important_quotes',   label: 'Citações relevantes',       rows: 5 },
-      { key: 'applications',       label: 'Aplicações',                rows: 4 },
-      { key: 'doctrines_present',  label: 'Doutrinas presentes',       rows: 3 },
-      { key: 'biblical_texts_used', label: 'Textos bíblicos utilizados', rows: 3 },
+      { key: 'general_summary',     label: 'Resumo',                    rows: 5 },
+      { key: 'resenha',             label: 'Resenha',                   rows: 5, optional: true },
+      { key: 'fichamento',          label: 'Fichamento',                rows: 6, optional: true },
+      { key: 'main_arguments',      label: 'Argumentos principais',     rows: 4, optional: true },
+      { key: 'important_quotes',    label: 'Citações relevantes',       rows: 5, optional: true },
+      { key: 'applications',        label: 'Aplicações',                rows: 4, optional: true },
+      { key: 'doctrines_present',   label: 'Doutrinas presentes',       rows: 3, optional: true },
+      { key: 'biblical_texts_used', label: 'Textos bíblicos utilizados', rows: 3, optional: true },
+      { key: 'personal_notes',      label: 'Observações pessoais',      rows: 4, optional: true },
+      { key: 'relation_sermons',    label: 'Relações com sermões',      rows: 3, optional: true },
+      { key: 'relation_courses',    label: 'Relações com cursos',       rows: 3, optional: true },
+      { key: 'relation_doctrines',  label: 'Relações com doutrinas',    rows: 3, optional: true },
     ],
     aiActions: [
       { label: 'Gerar Resumo',      prompt: 'Gere um resumo geral desta obra, destacando tese, estrutura e contribuição teológica.' },

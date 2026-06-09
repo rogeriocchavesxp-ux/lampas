@@ -354,6 +354,10 @@ export default function KnowledgeClient({ userId, initialItems, initialDashboard
     // Auto-expõe relações se o item já tiver dados relacionais
     const blocks: string[] = []
     if ([item.authors, item.doctrines, item.themes, item.bible_references, item.people, item.institutions, item.books_mentioned, item.tags].some(arr => arr.length > 0)) blocks.push('relations')
+    // Auto-expõe campos opcionais que já têm conteúdo
+    KNOWLEDGE_TYPES[item.item_type].contentFields
+      .filter(f => f.optional && item.content?.[f.key])
+      .forEach(f => blocks.push(f.key))
     setActiveBlocks(blocks)
     setCollapsedBlocks(new Set())
     setShowBlockPicker(false)
@@ -576,7 +580,12 @@ export default function KnowledgeClient({ userId, initialItems, initialDashboard
       </div>
     </div>
   ) : editing ? (() => {
-    const hasRelations = activeBlocks.includes('relations')
+    const hasRelations            = activeBlocks.includes('relations')
+    const requiredContentFields   = currentDraftType.contentFields.filter(f => !f.optional)
+    const optionalContentFields   = currentDraftType.contentFields.filter(f => f.optional)
+    const activeOptionalFields    = optionalContentFields.filter(f => activeBlocks.includes(f.key))
+    const availableOptionalFields = optionalContentFields.filter(f => !activeBlocks.includes(f.key))
+    const hasAvailableBlocks      = availableOptionalFields.length > 0 || !hasRelations
     const typeLabels   = TYPE_SECTION_LABELS[draft.item_type]
 
     return (
@@ -733,12 +742,12 @@ export default function KnowledgeClient({ userId, initialItems, initialDashboard
                     </section>
                   )}
 
-                  {/* ── Conteúdo do tipo (Livro / Episódio / Palestra…) — automático ── */}
-                  {currentDraftType.contentFields.length > 0 && (
+                  {/* ── Conteúdo do tipo (campos obrigatórios) ── */}
+                  {requiredContentFields.length > 0 && (
                     <section style={{ border: `1px solid ${currentDraftType.color}25`, borderRadius: '8px', padding: '1rem' }}>
                       <SectionTitle title={typeLabels.content} color={currentDraftType.color} />
                       <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                        {currentDraftType.contentFields.map(field => (
+                        {requiredContentFields.map(field => (
                           <div key={field.key}>
                             <label style={labelStyle}>{field.label}</label>
                             <RichEditor
@@ -754,6 +763,38 @@ export default function KnowledgeClient({ userId, initialItems, initialDashboard
                       </div>
                     </section>
                   )}
+
+                  {/* ── Campos opcionais ativos ── */}
+                  {activeOptionalFields.map(field => (
+                    <section key={field.key} style={{ border: `1px solid ${currentDraftType.color}20`, borderRadius: '8px', overflow: 'hidden' }}>
+                      <div
+                        onClick={() => toggleCollapse(field.key)}
+                        style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0.6rem 0.85rem', background: `${currentDraftType.color}08`, cursor: 'pointer', userSelect: 'none' as const }}
+                      >
+                        <div style={{ fontSize: '0.72rem', fontWeight: 850, color: '#334155' }}>{field.label}</div>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                          <span style={{ color: '#94A3B8', display: 'flex', alignItems: 'center' }}>{collapsedBlocks.has(field.key) ? <ChevronRight size={13} strokeWidth={2.5} /> : <ChevronDown size={13} strokeWidth={2.5} />}</span>
+                          <button
+                            onClick={e => { e.stopPropagation(); removeBlock(field.key) }}
+                            style={{ border: 'none', background: 'transparent', color: '#CBD5E1', cursor: 'pointer', fontFamily: 'inherit', fontSize: '1rem', lineHeight: 1, padding: '0 0.1rem' }}
+                            title="Remover bloco"
+                          >×</button>
+                        </div>
+                      </div>
+                      {!collapsedBlocks.has(field.key) && (
+                        <div style={{ padding: '1rem' }}>
+                          <RichEditor
+                            value={draft.content?.[field.key] ?? ''}
+                            onChange={v => setDraft(p => ({ ...p, content: { ...p.content, [field.key]: v } }))}
+                            placeholder={`Preencha ${field.label.toLowerCase()}…`}
+                            moduleColor={currentDraftType.color}
+                            minHeight={(field.rows ?? 3) * 36}
+                            insertMenu={KB_INSERT_MENU}
+                          />
+                        </div>
+                      )}
+                    </section>
+                  ))}
                 </>
               )}
 
@@ -793,8 +834,8 @@ export default function KnowledgeClient({ userId, initialItems, initialDashboard
                 </section>
               )}
 
-              {/* ── Adicionar bloco (só Relações se ainda não adicionado) ── */}
-              {!hasRelations && (
+              {/* ── Adicionar bloco ── */}
+              {hasAvailableBlocks && (
                 <div style={{ position: 'relative' }}>
                   <button
                     onClick={() => setShowBlockPicker(v => !v)}
@@ -803,14 +844,28 @@ export default function KnowledgeClient({ userId, initialItems, initialDashboard
                     <span style={{ fontSize: '1rem', lineHeight: 1 }}>+</span> Adicionar bloco
                   </button>
                   {showBlockPicker && (
-                    <div style={{ position: 'absolute', bottom: 'calc(100% + 6px)', left: 0, zIndex: 50, minWidth: '220px', background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: '9px', boxShadow: '0 8px 24px rgba(0,0,0,0.1)', overflow: 'hidden' }}>
-                      <button onClick={() => addBlock('relations')}
-                        style={{ width: '100%', display: 'flex', alignItems: 'center', gap: '0.55rem', border: 'none', background: 'transparent', padding: '0.65rem 0.9rem', cursor: 'pointer', fontFamily: 'inherit', fontSize: '0.82rem', color: '#334155', textAlign: 'left' }}
-                        onMouseEnter={e => { e.currentTarget.style.background = '#F8FAFC' }}
-                        onMouseLeave={e => { e.currentTarget.style.background = 'transparent' }}
-                      >
-                        🔗 Relações e Entidades
-                      </button>
+                    <div style={{ position: 'absolute', bottom: 'calc(100% + 6px)', left: 0, zIndex: 50, minWidth: '240px', background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: '9px', boxShadow: '0 8px 24px rgba(0,0,0,0.1)', overflow: 'hidden' }}>
+                      {availableOptionalFields.map(field => (
+                        <button key={field.key} onClick={() => addBlock(field.key)}
+                          style={{ width: '100%', display: 'flex', alignItems: 'center', gap: '0.55rem', border: 'none', background: 'transparent', padding: '0.6rem 0.9rem', cursor: 'pointer', fontFamily: 'inherit', fontSize: '0.82rem', color: '#334155', textAlign: 'left' }}
+                          onMouseEnter={e => { e.currentTarget.style.background = '#F8FAFC' }}
+                          onMouseLeave={e => { e.currentTarget.style.background = 'transparent' }}
+                        >
+                          {field.label}
+                        </button>
+                      ))}
+                      {availableOptionalFields.length > 0 && !hasRelations && (
+                        <div style={{ height: '1px', background: '#F1F5F9', margin: '0.2rem 0' }} />
+                      )}
+                      {!hasRelations && (
+                        <button onClick={() => addBlock('relations')}
+                          style={{ width: '100%', display: 'flex', alignItems: 'center', gap: '0.55rem', border: 'none', background: 'transparent', padding: '0.6rem 0.9rem', cursor: 'pointer', fontFamily: 'inherit', fontSize: '0.82rem', color: '#334155', textAlign: 'left' }}
+                          onMouseEnter={e => { e.currentTarget.style.background = '#F8FAFC' }}
+                          onMouseLeave={e => { e.currentTarget.style.background = 'transparent' }}
+                        >
+                          🔗 Relações e Entidades
+                        </button>
+                      )}
                     </div>
                   )}
                 </div>
