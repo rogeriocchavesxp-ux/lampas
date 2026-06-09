@@ -1569,6 +1569,116 @@ function DetailView({ item, children, parent, allItems, onEdit, onDelete, onAsk,
       .map(r => r.item)
   })()
 
+  const [aiPanel, setAiPanel] = useState<{ label: string; content: string; loading: boolean } | null>(null)
+
+  function stripHtmlTags(html: string): string {
+    return html.replace(/<[^>]+>/g, '').replace(/&nbsp;/g, ' ').replace(/&amp;/g, '&').replace(/\n{3,}/g, '\n\n').trim()
+  }
+
+  const COURSE_ACTION_DETAILS: Record<string, string> = {
+    'Consolidar Aulas': 'Analise o curso abaixo e produza uma consolidação completa com:\n1. Síntese geral do curso\n2. Principais temas e conceitos abordados\n3. Resumo por módulo (parágrafo por módulo)\n4. Resumo por aula (uma sentença por aula)\n5. Pontos centrais de aprendizado\n6. Possíveis aplicações práticas e ministeriais',
+    'Criar Revisão': 'Com base no curso abaixo, crie um material completo de revisão com:\n1. Resumo executivo para estudo (5–8 linhas)\n2. Principais conceitos e termos-chave (lista comentada)\n3. 5 questões objetivas com gabarito\n4. 3 questões discursivas com pontos de resposta esperados\n5. Pontos essenciais para memorização',
+    'Criar Mapa Mental': 'Com base no curso abaixo, crie um mapa mental textual hierárquico usando apenas indentação. Formato:\n\nCurso: [nome]\n  Módulo 1 — [nome]\n    Aula 1 — [nome]\n      Tema central\n      Conceitos principais\n        - conceito\n      Aplicações\n    Aula 2 — [nome]\n      ...\n  Módulo 2 — [nome]\n    ...',
+  }
+
+  async function handleCourseAI(action: { label: string; prompt: string }) {
+    if (aiPanel?.loading) return
+
+    const modules: CourseModule[] = (() => { try { return JSON.parse(item.content?.['modules'] ?? '[]') } catch { return [] } })()
+    const generalBlocks: CourseContentBlock[] = (() => { try { return JSON.parse(item.content?.['general_blocks'] ?? '[]') } catch { return [] } })()
+    const m = (item.metadata ?? {}) as Record<string, string>
+
+    const lines: string[] = [
+      `Curso: ${item.title}`,
+      item.subtitle ? `Subtítulo: ${item.subtitle}` : '',
+      m.institution ? `Instituição: ${m.institution}` : '',
+      m.course_name ? `Formação: ${m.course_name}` : '',
+      m.workload ? `Carga Horária: ${m.workload}` : '',
+    ].filter(Boolean)
+
+    if (generalBlocks.length > 0) {
+      lines.push('\n=== DADOS GERAIS ===')
+      for (const block of generalBlocks) {
+        const val = stripHtmlTags(block.value)
+        if (val) lines.push(`\n${block.label}:\n${val}`)
+      }
+    }
+
+    if (modules.length > 0) {
+      lines.push('\n=== ESTRUTURA DO CURSO ===')
+      for (let mi = 0; mi < modules.length; mi++) {
+        const mod = modules[mi]
+        lines.push(`\nMódulo ${mi + 1} — ${mod.name}`)
+        if (mod.description) lines.push(`  ${mod.description}`)
+        if (mod.lessons.length === 0) {
+          lines.push('  (Nenhuma aula cadastrada)')
+        } else {
+          for (let li = 0; li < mod.lessons.length; li++) {
+            const lesson = mod.lessons[li]
+            lines.push(`  Aula ${li + 1} — ${lesson.title}`)
+            if (lesson.professor) lines.push(`    Professor: ${lesson.professor}`)
+            if (lesson.description) lines.push(`    ${lesson.description}`)
+            const summary = stripHtmlTags(lesson.summary ?? '')
+            if (summary) lines.push(`    Resumo: ${summary}`)
+            for (const block of (lesson.blocks ?? [])) {
+              const val = stripHtmlTags(block.value)
+              if (val) lines.push(`    ${block.label}: ${val.slice(0, 400)}`)
+            }
+          }
+        }
+      }
+    }
+
+    const instruction = COURSE_ACTION_DETAILS[action.label] ?? action.prompt
+    const fullPrompt = `${instruction}\n\n---\n\n${lines.join('\n')}`
+
+    setAiPanel({ label: action.label, content: '', loading: true })
+
+    try {
+      const res = await fetch('/api/knowledge/ai', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ prompt: fullPrompt }),
+      })
+
+      if (!res.ok) {
+        const errBody = await res.json().catch(() => ({ error: 'Falha na requisição' }))
+        setAiPanel({ label: action.label, content: `Erro: ${errBody.error ?? 'Falha na requisição'}`, loading: false })
+        return
+      }
+
+      const reader = res.body!.getReader()
+      const decoder = new TextDecoder()
+      let accumulated = ''
+
+      while (true) {
+        const { done, value } = await reader.read()
+        if (done) break
+        const chunk = decoder.decode(value, { stream: true })
+        for (const line of chunk.split('\n')) {
+          if (!line.startsWith('data: ')) continue
+          const data = line.slice(6)
+          if (data === '[DONE]') break
+          try {
+            const parsed = JSON.parse(data)
+            if (parsed.delta?.text) {
+              accumulated += parsed.delta.text
+              setAiPanel(prev => prev ? { ...prev, content: accumulated } : null)
+            }
+            if (parsed.error) {
+              setAiPanel(prev => prev ? { ...prev, content: `Erro: ${parsed.error}`, loading: false } : null)
+              return
+            }
+          } catch { /* ignore SSE parse errors */ }
+        }
+      }
+
+      setAiPanel(prev => prev ? { ...prev, loading: false } : null)
+    } catch {
+      setAiPanel({ label: action.label, content: 'Erro ao conectar com a IA. Tente novamente.', loading: false })
+    }
+  }
+
   return (
     <div style={{ flex: 1, overflowY: 'auto', background: '#FFFFFF', padding: '1.35rem 1.6rem 4rem' }}>
       <div style={{ maxWidth: '980px' }}>
@@ -1654,6 +1764,41 @@ function DetailView({ item, children, parent, allItems, onEdit, onDelete, onAsk,
           </section>
         )}
 
+        {/* Painel de resultado da IA — apenas para cursos */}
+        {item.item_type === 'course' && aiPanel && (
+          <section style={{ ...detailSectionStyle, marginBottom: '1rem' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.75rem' }}>
+              <SectionTitle title={aiPanel.label} color={cfg.color} />
+              <div style={{ display: 'flex', gap: '0.4rem' }}>
+                {!aiPanel.loading && aiPanel.content && (
+                  <button
+                    onClick={() => navigator.clipboard.writeText(aiPanel.content)}
+                    style={{ ...smallButtonStyle, fontSize: '0.72rem', padding: '0.32rem 0.6rem', color: cfg.color, borderColor: cfg.color + '40' }}
+                  >
+                    Copiar
+                  </button>
+                )}
+                <button
+                  onClick={() => setAiPanel(null)}
+                  style={{ border: 'none', background: 'transparent', color: '#94A3B8', cursor: 'pointer', fontSize: '1.1rem', lineHeight: 1, padding: '0 0.2rem' }}
+                  title="Fechar"
+                >×</button>
+              </div>
+            </div>
+            {aiPanel.loading && !aiPanel.content && (
+              <div style={{ color: '#94A3B8', fontSize: '0.82rem', fontStyle: 'italic', padding: '0.5rem 0' }}>
+                Gerando...
+              </div>
+            )}
+            {aiPanel.content && (
+              <div style={{ whiteSpace: 'pre-wrap', fontSize: '0.85rem', color: '#334155', lineHeight: 1.75, borderTop: aiPanel.loading ? `1px dashed ${cfg.color}30` : 'none', paddingTop: aiPanel.loading ? '0.75rem' : 0 }}>
+                {aiPanel.content}
+                {aiPanel.loading && <span style={{ display: 'inline-block', width: '0.5em', height: '1em', background: cfg.color, marginLeft: '2px', opacity: 0.7, animation: 'none' }}>|</span>}
+              </div>
+            )}
+          </section>
+        )}
+
         <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1.7fr) minmax(260px, 0.8fr)', gap: '1rem', alignItems: 'start' }}>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
             {contentEntries.length > 0 ? contentEntries.map(entry => (
@@ -1676,11 +1821,19 @@ function DetailView({ item, children, parent, allItems, onEdit, onDelete, onAsk,
             <section style={detailSectionStyle}>
               <SectionTitle title="IA especializada" />
               <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
-                {cfg.aiActions.map(action => (
-                  <button key={action.label} onClick={() => onAsk(action.prompt, item)} style={{ ...smallButtonStyle, justifyContent: 'flex-start', color: cfg.color, borderColor: cfg.color + '35' }}>
-                    <Sparkles size={13} /> {action.label}
-                  </button>
-                ))}
+                {cfg.aiActions.map(action => {
+                  const isCourseActive = item.item_type === 'course' && aiPanel?.loading && aiPanel.label === action.label
+                  return (
+                    <button
+                      key={action.label}
+                      onClick={() => item.item_type === 'course' ? handleCourseAI(action) : onAsk(action.prompt, item)}
+                      disabled={item.item_type === 'course' && !!aiPanel?.loading}
+                      style={{ ...smallButtonStyle, justifyContent: 'flex-start', color: cfg.color, borderColor: cfg.color + '35', opacity: item.item_type === 'course' && aiPanel?.loading && !isCourseActive ? 0.45 : 1, cursor: item.item_type === 'course' && aiPanel?.loading ? 'wait' : 'pointer' }}
+                    >
+                      <Sparkles size={13} /> {isCourseActive ? 'Gerando...' : action.label}
+                    </button>
+                  )
+                })}
               </div>
             </section>
 
