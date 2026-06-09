@@ -1187,10 +1187,10 @@ function LessonItem({
             <div style={{ fontSize: '0.56rem', fontWeight: 800, color: '#B0B8C5', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '0.4rem', paddingBottom: '0.28rem', borderBottom: '1px solid #EEF2F7' }}>
               Informações da Aula
             </div>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.32rem' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.32rem' }}>
               <input value={lesson.professor ?? ''} onChange={e => onUpdate({ professor: e.target.value })} placeholder="Professor (opcional)" style={{ ...inputStyle, fontSize: '0.76rem' }} />
-              <input value={lesson.description} onChange={e => onUpdate({ description: e.target.value })} placeholder="Descrição (opcional)" style={{ ...inputStyle, fontSize: '0.76rem' }} />
               <input value={lesson.video_url} onChange={e => onUpdate({ video_url: e.target.value })} placeholder="Link do vídeo (opcional)" style={{ ...inputStyle, fontSize: '0.76rem' }} />
+              <input value={lesson.description} onChange={e => onUpdate({ description: e.target.value })} placeholder="Descrição (opcional)" style={{ ...inputStyle, fontSize: '0.76rem' }} />
               <input value={lesson.material} onChange={e => onUpdate({ material: e.target.value })} placeholder="Material complementar (opcional)" style={{ ...inputStyle, fontSize: '0.76rem' }} />
             </div>
           </div>
