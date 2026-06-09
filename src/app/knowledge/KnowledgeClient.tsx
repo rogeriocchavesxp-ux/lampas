@@ -981,6 +981,8 @@ function CourseModulesEditor({
 }) {
   const [expanded, setExpanded] = useState<Set<string>>(() => new Set(modules.map(m => m.id)))
   const [editingModuleId, setEditingModuleId] = useState<string | null>(null)
+  const [dragging, setDragging] = useState<{ moduleId: string; lessonId: string } | null>(null)
+  const [dragOverModuleId, setDragOverModuleId] = useState<string | null>(null)
 
   function newId(prefix: string) {
     return `${prefix}_${Date.now()}_${Math.floor(Math.random() * 9999)}`
@@ -1036,13 +1038,31 @@ function CourseModulesEditor({
     }))
   }
 
+  function moveLesson(fromModuleId: string, lessonId: string, toModuleId: string) {
+    if (fromModuleId === toModuleId) return
+    const lesson = modules.find(m => m.id === fromModuleId)?.lessons.find(l => l.id === lessonId)
+    if (!lesson) return
+    onChange(modules.map(m => {
+      if (m.id === fromModuleId) return { ...m, lessons: m.lessons.filter(l => l.id !== lessonId).map((l, i) => ({ ...l, order: i })) }
+      if (m.id === toModuleId) return { ...m, lessons: [...m.lessons, { ...lesson, order: m.lessons.length }] }
+      return m
+    }))
+    setExpanded(prev => new Set([...prev, toModuleId]))
+  }
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
       {modules.map((mod, modIdx) => {
         const isOpen = expanded.has(mod.id)
         const isEditingMod = editingModuleId === mod.id
         return (
-          <div key={mod.id} style={{ border: `1.5px solid ${color}45`, borderRadius: '10px', overflow: 'hidden', boxShadow: `0 1px 5px ${color}12` }}>
+          <div
+            key={mod.id}
+            style={{ border: `1.5px solid ${dragging && dragOverModuleId === mod.id ? color + 'AA' : color + '45'}`, borderRadius: '10px', overflow: 'hidden', boxShadow: dragging && dragOverModuleId === mod.id ? `0 0 0 3px ${color}25` : `0 1px 5px ${color}12`, transition: 'border-color 0.15s, box-shadow 0.15s' }}
+            onDragOver={e => { e.preventDefault(); if (dragging && dragging.moduleId !== mod.id) setDragOverModuleId(mod.id) }}
+            onDragLeave={e => { const rt = e.relatedTarget as Node | null; if (rt === null || !e.currentTarget.contains(rt)) setDragOverModuleId(prev => prev === mod.id ? null : prev) }}
+            onDrop={e => { e.preventDefault(); if (dragging && dragging.moduleId !== mod.id) moveLesson(dragging.moduleId, dragging.lessonId, mod.id); setDragging(null); setDragOverModuleId(null) }}
+          >
             {/* Módulo — cabeçalho principal */}
             <div
               onClick={() => !isEditingMod && toggleExpand(mod.id)}
@@ -1100,6 +1120,12 @@ function CourseModulesEditor({
                       insertMenu={insertMenu}
                       onUpdate={patch => updateLesson(mod.id, lesson.id, patch)}
                       onDelete={() => deleteLesson(mod.id, lesson.id)}
+                      isDragging={dragging?.moduleId === mod.id && dragging?.lessonId === lesson.id}
+                      modules={modules.map(m => ({ id: m.id, name: m.name }))}
+                      currentModuleId={mod.id}
+                      onMoveToModule={targetId => moveLesson(mod.id, lesson.id, targetId)}
+                      onDragStart={() => setDragging({ moduleId: mod.id, lessonId: lesson.id })}
+                      onDragEnd={() => { setDragging(null); setDragOverModuleId(null) }}
                     />
                   ))}
                 </div>
@@ -1132,6 +1158,12 @@ function LessonItem({
   insertMenu,
   onUpdate,
   onDelete,
+  isDragging,
+  modules,
+  currentModuleId,
+  onMoveToModule,
+  onDragStart,
+  onDragEnd,
 }: {
   lesson: CourseLesson
   index: number
@@ -1139,14 +1171,30 @@ function LessonItem({
   insertMenu: InsertMenuItem[]
   onUpdate: (patch: Partial<Omit<CourseLesson, 'id'>>) => void
   onDelete: () => void
+  isDragging: boolean
+  modules: Array<{ id: string; name: string }>
+  currentModuleId: string
+  onMoveToModule: (targetModuleId: string) => void
+  onDragStart: () => void
+  onDragEnd: () => void
 }) {
   const [expanded, setExpanded] = useState(false)
   const [editingTitle, setEditingTitle] = useState(false)
+  const [showMoveMenu, setShowMoveMenu] = useState(false)
 
   return (
-    <div style={{ border: '1px solid #DDE5EE', borderRadius: '7px', overflow: 'hidden', background: '#FFFFFF' }}>
-      {/* Header — subordinado ao módulo */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem', padding: '0.38rem 0.65rem', background: '#F7F9FC' }}>
+    <div style={{ border: '1px solid #DDE5EE', borderRadius: '7px', overflow: 'hidden', background: '#FFFFFF', opacity: isDragging ? 0.4 : 1, transition: 'opacity 0.15s' }}>
+      {/* Header */}
+      <div
+        draggable
+        onDragStart={e => { e.stopPropagation(); onDragStart() }}
+        onDragEnd={e => { e.stopPropagation(); onDragEnd() }}
+        style={{ display: 'flex', alignItems: 'center', gap: '0.45rem', padding: '0.38rem 0.65rem', background: '#F7F9FC' }}
+      >
+        <span
+          title="Arrastar para mover entre módulos"
+          style={{ fontSize: '0.7rem', color: '#CBD5E1', flexShrink: 0, lineHeight: 1, cursor: 'grab', userSelect: 'none' as const }}
+        >⠿</span>
         <span
           onClick={() => setExpanded(v => !v)}
           style={{ fontSize: '0.55rem', color: color + 'AA', fontWeight: 700, flexShrink: 0, cursor: 'pointer' }}
@@ -1172,6 +1220,33 @@ function LessonItem({
           title="Renomear aula"
           style={{ border: 'none', background: 'transparent', color: '#B0BEC9', cursor: 'pointer', padding: '0.1rem', fontSize: '0.75rem', lineHeight: 1 }}
         >✎</button>
+        {modules.length > 1 && (
+          <div style={{ position: 'relative', flexShrink: 0 }}>
+            <button
+              onClick={e => { e.stopPropagation(); setShowMoveMenu(v => !v) }}
+              title="Mover para outro módulo"
+              style={{ border: 'none', background: showMoveMenu ? `${color}18` : 'transparent', color: showMoveMenu ? color : '#B0BEC9', cursor: 'pointer', padding: '0.12rem 0.28rem', borderRadius: '4px', fontSize: '0.68rem', lineHeight: 1, fontWeight: 800, transition: 'all 0.1s' }}
+            >⇄</button>
+            {showMoveMenu && (
+              <div style={{ position: 'absolute', right: 0, top: 'calc(100% + 4px)', zIndex: 200, background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: '8px', boxShadow: '0 6px 20px rgba(0,0,0,0.12)', overflow: 'hidden', minWidth: '185px' }}>
+                <div style={{ padding: '0.32rem 0.7rem 0.26rem', fontSize: '0.56rem', fontWeight: 800, color: '#94A3B8', textTransform: 'uppercase', letterSpacing: '0.08em', borderBottom: '1px solid #F1F5F9' }}>
+                  Mover para
+                </div>
+                {modules.filter(m => m.id !== currentModuleId).map(m => (
+                  <button
+                    key={m.id}
+                    onClick={e => { e.stopPropagation(); onMoveToModule(m.id); setShowMoveMenu(false) }}
+                    style={{ width: '100%', display: 'flex', alignItems: 'center', border: 'none', background: 'transparent', padding: '0.42rem 0.7rem', cursor: 'pointer', fontFamily: 'inherit', fontSize: '0.78rem', color: '#334155', textAlign: 'left' }}
+                    onMouseEnter={e => { e.currentTarget.style.background = `${color}0F` }}
+                    onMouseLeave={e => { e.currentTarget.style.background = 'transparent' }}
+                  >
+                    Módulo {modules.findIndex(mod => mod.id === m.id) + 1} — {m.name}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
         <button
           onClick={onDelete}
           title="Remover aula"
