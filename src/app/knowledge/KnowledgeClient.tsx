@@ -159,6 +159,8 @@ export default function KnowledgeClient({ userId, initialItems, initialDashboard
   const [showBlockPicker, setShowBlockPicker] = useState(false)
   const [expandedContainers, setExpandedContainers] = useState<Set<string>>(new Set())
   const [creatingChildOf,    setCreatingChildOf]    = useState<KnowledgeItem | null>(null)
+  const [groupBy,            setGroupBy]            = useState<'none' | 'type' | 'author' | 'category' | 'status'>('none')
+  const [collapsedGroups,    setCollapsedGroups]    = useState<Set<string>>(new Set())
 
   const selected = items.find(item => item.id === selectedId) ?? null
   const currentDraftType = KNOWLEDGE_TYPES[draft.item_type]
@@ -207,6 +209,22 @@ export default function KnowledgeClient({ userId, initialItems, initialDashboard
       ].filter(Boolean).some(value => String(value).toLowerCase().includes(q))
     })
   }, [items, query, typeFilter])
+
+  const groupedFiltered = useMemo(() => {
+    if (groupBy === 'none') return null
+    const groups = new Map<string, KnowledgeItem[]>()
+    filtered.forEach(item => {
+      let key: string
+      if (groupBy === 'type')     key = KNOWLEDGE_TYPES[item.item_type].label
+      else if (groupBy === 'author')   key = item.authors[0] ?? 'Sem autor'
+      else if (groupBy === 'category') key = item.category ?? 'Sem categoria'
+      else                             key = KNOWLEDGE_STATUSES[item.status].label
+      const arr = groups.get(key) ?? []
+      arr.push(item)
+      groups.set(key, arr)
+    })
+    return [...groups.entries()].sort((a, b) => b[1].length - a[1].length)
+  }, [filtered, groupBy])
 
   // Filhos de um contêiner, ordenados
   function childrenOf(parentId: string): KnowledgeItem[] {
@@ -339,6 +357,72 @@ export default function KnowledgeClient({ userId, initialItems, initialDashboard
     localStorage.setItem('lampas_pending_ai_prompt', prompt)
     setToast('Prompt preparado para a IA do Lampas')
     setTimeout(() => setToast(''), 2500)
+  }
+
+  function renderSidebarItem(item: KnowledgeItem) {
+    const cfg      = KNOWLEDGE_TYPES[item.item_type]
+    const active   = selectedId === item.id && !editing
+    const isContainer = CONTAINER_TYPES.has(item.item_type)
+    const children    = isContainer ? childrenOf(item.id) : []
+    const expanded    = expandedContainers.has(item.id)
+    const childLabel  = CHILD_CONTENT[item.item_type]
+    const status      = KNOWLEDGE_STATUSES[item.status]
+
+    return (
+      <div key={item.id} style={{ marginBottom: '0.12rem' }}>
+        <div style={{ display: 'flex', alignItems: 'stretch', borderRadius: '7px', border: `1px solid ${active ? cfg.color + '55' : 'transparent'}`, background: active ? cfg.bg : 'transparent' }}>
+          <button
+            onClick={() => { setSelectedId(item.id); setEditing(false); void supabase.rpc('increment_knowledge_item_query_count', { p_id: item.id }) }}
+            style={{ flex: 1, textAlign: 'left', border: 'none', background: 'transparent', padding: '0.42rem 0.55rem', cursor: 'pointer', fontFamily: 'inherit', minWidth: 0 }}
+          >
+            {/* Line 1: icon + title */}
+            <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.3rem' }}>
+              <span style={{ fontSize: '0.78rem', lineHeight: 1, flexShrink: 0 }}>{cfg.icon}</span>
+              <div style={{ fontSize: '0.8rem', fontWeight: 750, color: '#0F172A', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', flex: 1 }}>{item.title}</div>
+            </div>
+            {/* Line 2: author · type + badges */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.3rem', marginTop: '0.1rem', overflow: 'hidden' }}>
+              <span style={{ fontSize: '0.62rem', color: '#94A3B8', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', flex: '0 1 auto', minWidth: 0 }}>
+                {item.authors[0] ? `${item.authors[0]} · ` : ''}{cfg.label}
+              </span>
+              <div style={{ display: 'flex', gap: '0.18rem', flexShrink: 0 }}>
+                <Badge color={status.color} bg={status.bg}>{status.label}</Badge>
+                {isContainer && children.length > 0 && (
+                  <Badge color={cfg.color} bg={cfg.bg}>{children.length} {children.length === 1 ? childLabel?.singular : childLabel?.plural}</Badge>
+                )}
+              </div>
+            </div>
+          </button>
+          {isContainer && children.length > 0 && (
+            <button
+              onClick={() => setExpandedContainers(prev => { const n = new Set(prev); n.has(item.id) ? n.delete(item.id) : n.add(item.id); return n })}
+              style={{ border: 'none', background: 'transparent', padding: '0 0.45rem', cursor: 'pointer', color: '#CBD5E1', fontSize: '0.6rem', flexShrink: 0 }}
+              title={expanded ? 'Recolher' : 'Expandir'}
+            >
+              {expanded ? '▴' : '▾'}
+            </button>
+          )}
+        </div>
+        {isContainer && expanded && children.length > 0 && (
+          <div style={{ marginLeft: '0.9rem', marginTop: '0.08rem', borderLeft: `2px solid ${cfg.color}30`, paddingLeft: '0.45rem' }}>
+            {children.map(child => {
+              const childActive = selectedId === child.id && !editing
+              return (
+                <button
+                  key={child.id}
+                  onClick={() => { setSelectedId(child.id); setEditing(false); void supabase.rpc('increment_knowledge_item_query_count', { p_id: child.id }) }}
+                  style={{ width: '100%', textAlign: 'left', border: `1px solid ${childActive ? cfg.color + '40' : 'transparent'}`, background: childActive ? cfg.bg : 'transparent', borderRadius: '5px', padding: '0.28rem 0.45rem', cursor: 'pointer', fontFamily: 'inherit', marginBottom: '0.08rem', display: 'flex', alignItems: 'center', gap: '0.3rem' }}
+                >
+                  <span style={{ fontSize: '0.7rem', color: '#94A3B8', flexShrink: 0 }}>{childLabel?.icon}</span>
+                  <div style={{ fontSize: '0.74rem', fontWeight: 700, color: '#334155', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', flex: 1 }}>{child.title}</div>
+                  <Badge color={KNOWLEDGE_STATUSES[child.status].color} bg={KNOWLEDGE_STATUSES[child.status].bg}>{KNOWLEDGE_STATUSES[child.status].label}</Badge>
+                </button>
+              )
+            })}
+          </div>
+        )}
+      </div>
+    )
   }
 
   const rightContent = editing ? (() => {
@@ -565,10 +649,12 @@ export default function KnowledgeClient({ userId, initialItems, initialDashboard
       item={selected}
       children={childrenOf(selected.id)}
       parent={selected.parent_id ? items.find(i => i.id === selected.parent_id) : undefined}
+      allItems={items}
       onEdit={() => openEdit(selected)}
       onDelete={() => deleteItem(selected)}
       onAsk={askAI}
       onSelectChild={child => { setSelectedId(child.id); setEditing(false) }}
+      onSelectRelated={rel => { setSelectedId(rel.id); setEditing(false) }}
       onAddChild={() => openCreate(selected.item_type, selected)}
       onBackToParent={selected.parent_id ? () => setSelectedId(selected.parent_id!) : undefined}
     />
@@ -609,99 +695,74 @@ export default function KnowledgeClient({ userId, initialItems, initialDashboard
         )}
       </header>
 
-      <div style={{ flex: 1, minHeight: 0, display: 'grid', gridTemplateColumns: '330px 1fr' }}>
+      <div style={{ flex: 1, minHeight: 0, display: 'grid', gridTemplateColumns: '275px 1fr' }}>
         <aside style={{ borderRight: '1px solid #E2E8F0', background: '#FFFFFF', minHeight: 0, display: 'flex', flexDirection: 'column' }}>
-          <div style={{ padding: '0.9rem', borderBottom: '1px solid #F1F5F9' }}>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.45rem', marginBottom: '0.8rem' }}>
-              <StatCard label="Entidades" value={dashboard.total} icon="🧠" />
-              <StatCard label="Conteúdos" value={dashboard.totalChildren} icon="📄" />
+          {/* Compact stats + search */}
+          <div style={{ padding: '0.6rem 0.75rem', borderBottom: '1px solid #F1F5F9' }}>
+            <div style={{ display: 'flex', gap: '0.85rem', alignItems: 'baseline', marginBottom: '0.5rem' }}>
+              <span style={{ fontSize: '0.7rem', color: '#64748B' }}>
+                <span style={{ fontWeight: 800, color: '#0F172A', fontSize: '0.88rem', marginRight: '0.18rem' }}>{dashboard.total}</span>entidades
+              </span>
+              {dashboard.totalChildren > 0 && (
+                <span style={{ fontSize: '0.7rem', color: '#64748B' }}>
+                  <span style={{ fontWeight: 800, color: '#0F172A', fontSize: '0.88rem', marginRight: '0.18rem' }}>{dashboard.totalChildren}</span>conteúdos
+                </span>
+              )}
             </div>
             <div style={{ position: 'relative' }}>
-              <Search size={14} style={{ position: 'absolute', left: '0.65rem', top: '50%', transform: 'translateY(-50%)', color: '#94A3B8' }} />
-              <input value={query} onChange={e => setQuery(e.target.value)} placeholder="Buscar por autor, doutrina, texto..." style={{ ...inputStyle, paddingLeft: '2rem' }} />
-              {query && <button onClick={() => setQuery('')} style={{ position: 'absolute', right: '0.45rem', top: '50%', transform: 'translateY(-50%)', border: 'none', background: 'transparent', color: '#94A3B8', cursor: 'pointer' }}><X size={13} /></button>}
+              <Search size={13} style={{ position: 'absolute', left: '0.6rem', top: '50%', transform: 'translateY(-50%)', color: '#94A3B8' }} />
+              <input value={query} onChange={e => setQuery(e.target.value)} placeholder="Título, autor, tema, doutrina…" style={{ ...inputStyle, paddingLeft: '1.85rem', fontSize: '0.78rem', padding: '0.42rem 0.6rem 0.42rem 1.85rem' }} />
+              {query && <button onClick={() => setQuery('')} style={{ position: 'absolute', right: '0.4rem', top: '50%', transform: 'translateY(-50%)', border: 'none', background: 'transparent', color: '#94A3B8', cursor: 'pointer', display: 'flex', padding: 0 }}><X size={12} /></button>}
             </div>
           </div>
 
-          <div style={{ padding: '0.65rem 0.75rem', borderBottom: '1px solid #F1F5F9', display: 'flex', gap: '0.35rem', flexWrap: 'wrap' }}>
-            <button onClick={() => setTypeFilter('all')} style={filterButton(typeFilter === 'all')}>Todos</button>
-            {TYPE_ORDER.map(type => {
-              const cfg = KNOWLEDGE_TYPES[type]
-              return <button key={type} onClick={() => setTypeFilter(typeFilter === type ? 'all' : type)} style={filterButton(typeFilter === type, cfg.color, cfg.bg)}>{cfg.icon}</button>
-            })}
+          {/* Type chips + groupBy */}
+          <div style={{ padding: '0.42rem 0.6rem', borderBottom: '1px solid #F1F5F9' }}>
+            <div style={{ display: 'flex', gap: '0.22rem', overflowX: 'auto', paddingBottom: '0.08rem', scrollbarWidth: 'none' }}>
+              <button onClick={() => setTypeFilter('all')} style={filterChip(typeFilter === 'all')}>Todos</button>
+              {TYPE_ORDER.map(type => {
+                const cfg = KNOWLEDGE_TYPES[type]
+                const active = typeFilter === type
+                return (
+                  <button key={type} onClick={() => setTypeFilter(active ? 'all' : type)} style={filterChip(active, cfg.color, cfg.bg)}>
+                    {cfg.icon} {cfg.label}
+                  </button>
+                )
+              })}
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', marginTop: '0.32rem' }}>
+              <span style={{ fontSize: '0.57rem', color: '#94A3B8', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', flexShrink: 0 }}>Agrupar</span>
+              <div style={{ display: 'flex', gap: '0.18rem', overflowX: 'auto', scrollbarWidth: 'none' }}>
+                {(['none', 'type', 'author', 'category', 'status'] as const).map(g => (
+                  <button key={g} onClick={() => setGroupBy(g)} style={filterChip(groupBy === g)}>
+                    {g === 'none' ? 'Livre' : g === 'type' ? 'Tipo' : g === 'author' ? 'Autor' : g === 'category' ? 'Categ.' : 'Status'}
+                  </button>
+                ))}
+              </div>
+            </div>
           </div>
 
-          <div style={{ flex: 1, overflowY: 'auto', padding: '0.45rem' }}>
-            {filtered.map(item => {
-              const cfg = KNOWLEDGE_TYPES[item.item_type]
-              const active = selectedId === item.id && !editing
-              const isContainer = CONTAINER_TYPES.has(item.item_type)
-              const children = isContainer ? childrenOf(item.id) : []
-              const expanded = expandedContainers.has(item.id)
-              const childLabel = CHILD_CONTENT[item.item_type]
-
-              return (
-                <div key={item.id} style={{ marginBottom: '0.2rem' }}>
-                  {/* Linha do item raiz */}
-                  <div style={{ display: 'flex', alignItems: 'stretch', borderRadius: '8px', border: `1px solid ${active ? cfg.color + '55' : 'transparent'}`, background: active ? cfg.bg : 'transparent' }}>
+          <div style={{ flex: 1, overflowY: 'auto', padding: '0.3rem' }}>
+            {groupBy !== 'none' && groupedFiltered ? (
+              groupedFiltered.map(([groupKey, groupItems]) => {
+                const isGroupCollapsed = collapsedGroups.has(groupKey)
+                return (
+                  <div key={groupKey}>
                     <button
-                      onClick={() => { setSelectedId(item.id); setEditing(false); void supabase.rpc('increment_knowledge_item_query_count', { p_id: item.id }) }}
-                      style={{ flex: 1, textAlign: 'left', border: 'none', background: 'transparent', padding: '0.65rem 0.7rem', cursor: 'pointer', fontFamily: 'inherit' }}
+                      onClick={() => setCollapsedGroups(prev => { const n = new Set(prev); n.has(groupKey) ? n.delete(groupKey) : n.add(groupKey); return n })}
+                      style={{ width: '100%', display: 'flex', alignItems: 'center', gap: '0.35rem', padding: '0.32rem 0.5rem', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'inherit' }}
                     >
-                      <div style={{ display: 'flex', gap: '0.55rem', alignItems: 'flex-start' }}>
-                        <span style={{ fontSize: '1rem', lineHeight: 1.1 }}>{cfg.icon}</span>
-                        <div style={{ minWidth: 0, flex: 1 }}>
-                          <div style={{ fontSize: '0.84rem', fontWeight: 750, color: '#0F172A', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{item.title}</div>
-                          <div style={{ fontSize: '0.68rem', color: '#64748B', marginTop: '0.12rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                            {item.authors[0] ?? cfg.label}{item.bible_references[0] ? ` · ${item.bible_references[0]}` : ''}
-                          </div>
-                          <div style={{ marginTop: '0.35rem', display: 'flex', gap: '0.25rem', flexWrap: 'wrap' }}>
-                            <Badge color={KNOWLEDGE_STATUSES[item.status].color} bg={KNOWLEDGE_STATUSES[item.status].bg}>{KNOWLEDGE_STATUSES[item.status].label}</Badge>
-                            {isContainer && children.length > 0 && (
-                              <Badge color={cfg.color} bg={cfg.bg}>{children.length} {children.length === 1 ? childLabel?.singular : childLabel?.plural}</Badge>
-                            )}
-                          </div>
-                        </div>
-                      </div>
+                      <span style={{ fontSize: '0.58rem', color: '#94A3B8', lineHeight: 1 }}>{isGroupCollapsed ? '▶' : '▼'}</span>
+                      <span style={{ fontSize: '0.68rem', fontWeight: 700, color: '#334155', flex: 1, textAlign: 'left' }}>{groupKey}</span>
+                      <span style={{ fontSize: '0.6rem', color: '#94A3B8', background: '#F1F5F9', padding: '0.1rem 0.38rem', borderRadius: '999px' }}>{groupItems.length}</span>
                     </button>
-                    {/* Botão expand — só para contêineres com filhos */}
-                    {isContainer && children.length > 0 && (
-                      <button
-                        onClick={() => setExpandedContainers(prev => { const n = new Set(prev); n.has(item.id) ? n.delete(item.id) : n.add(item.id); return n })}
-                        style={{ border: 'none', background: 'transparent', padding: '0 0.6rem', cursor: 'pointer', color: '#94A3B8', fontSize: '0.7rem' }}
-                        title={expanded ? 'Recolher' : 'Expandir'}
-                      >
-                        {expanded ? '▴' : '▾'}
-                      </button>
-                    )}
+                    {!isGroupCollapsed && groupItems.map(item => renderSidebarItem(item))}
                   </div>
-
-                  {/* Filhos — visíveis quando expandido */}
-                  {isContainer && expanded && children.length > 0 && (
-                    <div style={{ marginLeft: '1.25rem', marginTop: '0.15rem', borderLeft: `2px solid ${cfg.color}30`, paddingLeft: '0.6rem' }}>
-                      {children.map(child => {
-                        const childActive = selectedId === child.id && !editing
-                        return (
-                          <button
-                            key={child.id}
-                            onClick={() => { setSelectedId(child.id); setEditing(false); void supabase.rpc('increment_knowledge_item_query_count', { p_id: child.id }) }}
-                            style={{ width: '100%', textAlign: 'left', border: `1px solid ${childActive ? cfg.color + '40' : 'transparent'}`, background: childActive ? cfg.bg : 'transparent', borderRadius: '6px', padding: '0.45rem 0.6rem', cursor: 'pointer', fontFamily: 'inherit', marginBottom: '0.15rem', display: 'flex', alignItems: 'center', gap: '0.45rem' }}
-                          >
-                            <span style={{ fontSize: '0.82rem', color: '#94A3B8' }}>{childLabel?.icon}</span>
-                            <div style={{ minWidth: 0, flex: 1 }}>
-                              <div style={{ fontSize: '0.79rem', fontWeight: 700, color: '#334155', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{child.title}</div>
-                              <div style={{ fontSize: '0.64rem', color: '#94A3B8' }}>
-                                {KNOWLEDGE_STATUSES[child.status].label}
-                              </div>
-                            </div>
-                          </button>
-                        )
-                      })}
-                    </div>
-                  )}
-                </div>
-              )
-            })}
+                )
+              })
+            ) : (
+              filtered.map(item => renderSidebarItem(item))
+            )}
             {filtered.length === 0 && (
               <div style={{ padding: '2rem 1rem', textAlign: 'center', color: '#94A3B8', fontSize: '0.82rem' }}>Nenhum item encontrado.</div>
             )}
@@ -757,6 +818,23 @@ function filterButton(active: boolean, color = '#0F172A', bg = '#F1F5F9'): React
   }
 }
 
+function filterChip(active: boolean, color = '#334155', bg = '#F1F5F9'): React.CSSProperties {
+  return {
+    border: `1px solid ${active ? color + '55' : '#E2E8F0'}`,
+    background: active ? bg : 'transparent',
+    color: active ? color : '#94A3B8',
+    borderRadius: '999px',
+    padding: '0.18rem 0.45rem',
+    cursor: 'pointer',
+    fontFamily: 'inherit',
+    fontSize: '0.62rem',
+    fontWeight: 700,
+    whiteSpace: 'nowrap',
+    flexShrink: 0,
+    transition: 'all 0.1s',
+  }
+}
+
 function Field({ label, value, onChange, type = 'text' }: { label: string; value: string; onChange: (value: string) => void; type?: string }) {
   return (
     <div>
@@ -779,14 +857,16 @@ function SectionTitle({ title, color = '#0F172A' }: { title: string; color?: str
   return <div style={{ fontSize: '0.72rem', color, fontWeight: 850, marginBottom: '0.75rem', letterSpacing: '-0.01em' }}>{title}</div>
 }
 
-function DetailView({ item, children, parent, onEdit, onDelete, onAsk, onSelectChild, onAddChild, onBackToParent }: {
+function DetailView({ item, children, parent, allItems, onEdit, onDelete, onAsk, onSelectChild, onSelectRelated, onAddChild, onBackToParent }: {
   item: KnowledgeItem
   children: KnowledgeItem[]
   parent?: KnowledgeItem
+  allItems: KnowledgeItem[]
   onEdit: () => void
   onDelete: () => void
   onAsk: (prompt: string, item: KnowledgeItem) => void
   onSelectChild: (child: KnowledgeItem) => void
+  onSelectRelated: (item: KnowledgeItem) => void
   onAddChild: () => void
   onBackToParent?: () => void
 }) {
@@ -798,6 +878,24 @@ function DetailView({ item, children, parent, onEdit, onDelete, onAsk, onSelectC
   const metadataEntries = cfg.metadataFields
     .map(field => ({ ...field, value: item.metadata?.[field.key] ?? '' }))
     .filter(field => field.value.trim())
+
+  const relatedItems = (() => {
+    const candidates = allItems.filter(c => !c.parent_id && c.id !== item.id)
+    return candidates
+      .map(c => {
+        let score = 0
+        if (item.authors[0] && c.authors.includes(item.authors[0])) score += 3
+        score += item.tags.filter(t => c.tags.includes(t)).length * 2
+        score += item.themes.filter(t => c.themes.includes(t)).length
+        score += item.doctrines.filter(d => c.doctrines.includes(d)).length
+        if (item.category && c.category === item.category) score += 2
+        return { item: c, score }
+      })
+      .filter(r => r.score > 0)
+      .sort((a, b) => b.score - a.score)
+      .slice(0, 5)
+      .map(r => r.item)
+  })()
 
   return (
     <div style={{ flex: 1, overflowY: 'auto', background: '#FFFFFF', padding: '1.35rem 1.6rem 4rem' }}>
@@ -926,6 +1024,29 @@ function DetailView({ item, children, parent, onEdit, onDelete, onAsk, onSelectC
               <TagGroup label="Instituições" values={item.institutions} />
               <TagGroup label="Tags" values={item.tags} />
             </section>
+
+            {relatedItems.length > 0 && (
+              <section style={detailSectionStyle}>
+                <SectionTitle title="Relacionados" />
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.3rem' }}>
+                  {relatedItems.map(r => {
+                    const rcfg = KNOWLEDGE_TYPES[r.item_type]
+                    return (
+                      <button
+                        key={r.id}
+                        onClick={() => onSelectRelated(r)}
+                        style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', border: '1px solid #E2E8F0', background: '#F8FAFC', borderRadius: '6px', padding: '0.4rem 0.6rem', cursor: 'pointer', fontFamily: 'inherit', textAlign: 'left', transition: 'border-color 0.1s' }}
+                        onMouseEnter={e => { e.currentTarget.style.borderColor = rcfg.color + '55'; e.currentTarget.style.background = rcfg.bg }}
+                        onMouseLeave={e => { e.currentTarget.style.borderColor = '#E2E8F0'; e.currentTarget.style.background = '#F8FAFC' }}
+                      >
+                        <span style={{ fontSize: '0.75rem', flexShrink: 0 }}>{rcfg.icon}</span>
+                        <span style={{ fontSize: '0.78rem', fontWeight: 600, color: '#334155', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', flex: 1 }}>{r.title}</span>
+                      </button>
+                    )
+                  })}
+                </div>
+              </section>
+            )}
 
             {item.source_url && (
               <a href={item.source_url} target="_blank" rel="noreferrer" style={{ ...smallButtonStyle, textDecoration: 'none', justifyContent: 'center', color: '#163A6B' }}>
