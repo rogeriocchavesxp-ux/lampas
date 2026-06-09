@@ -12,10 +12,13 @@ type JsonRecord = Record<string, string>
 interface CourseLesson {
   id: string
   title: string
+  professor: string
   description: string
   video_url: string
   material: string
   order: number
+  summary: string
+  blocks: CourseContentBlock[]
 }
 
 interface CourseModule {
@@ -140,6 +143,33 @@ const EMPTY_ITEM: Omit<KnowledgeItem, 'id' | 'user_id' | 'query_count' | 'create
 
 function isHtmlContent(value: string): boolean {
   return /<\/?[a-z][\s\S]*>/i.test(value.trim())
+}
+
+function getItemContextualSubtitle(item: KnowledgeItem): string | null {
+  const m = item.metadata
+  switch (item.item_type) {
+    case 'course': {
+      const parts = [m['institution'], m['course_name']].filter(v => v && v.trim())
+      return parts.join(' · ') || item.authors[0] || null
+    }
+    case 'book':
+    case 'article':
+    case 'podcast':
+      return item.authors[0] || null
+    case 'site':
+      if (item.source_url) {
+        try { return new URL(item.source_url).hostname.replace(/^www\./, '') } catch { return null }
+      }
+      return item.category || null
+    case 'video':
+      return m['channel'] || item.authors[0] || null
+    case 'lecture':
+      return m['event'] || m['conference'] || item.authors[0] || null
+    case 'personal_document':
+      return item.category || item.authors[0] || null
+    default:
+      return item.authors[0] || null
+  }
 }
 
 function splitList(value: string): string[] {
@@ -406,17 +436,14 @@ export default function KnowledgeClient({ userId, initialItems, initialDashboard
               <span style={{ fontSize: '0.78rem', lineHeight: 1, flexShrink: 0 }}>{cfg.icon}</span>
               <div style={{ fontSize: '0.8rem', fontWeight: 750, color: '#0F172A', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', flex: 1 }}>{item.title}</div>
             </div>
-            {/* Line 2: author · type + badges */}
+            {/* Line 2: type · contextual subtitle */}
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.3rem', marginTop: '0.1rem', overflow: 'hidden' }}>
               <span style={{ fontSize: '0.62rem', color: '#94A3B8', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', flex: '0 1 auto', minWidth: 0 }}>
-                {item.authors[0] ? `${item.authors[0]} · ` : ''}{cfg.label}
+                {(() => { const sub = getItemContextualSubtitle(item); return sub ? `${cfg.label} · ${sub}` : cfg.label })()}
               </span>
-              <div style={{ display: 'flex', gap: '0.18rem', flexShrink: 0 }}>
-                <Badge color={status.color} bg={status.bg}>{status.label}</Badge>
-                {isContainer && children.length > 0 && (
-                  <Badge color={cfg.color} bg={cfg.bg}>{children.length} {children.length === 1 ? childLabel?.singular : childLabel?.plural}</Badge>
-                )}
-              </div>
+              {isContainer && children.length > 0 && (
+                <Badge color={cfg.color} bg={cfg.bg}>{children.length} {children.length === 1 ? childLabel?.singular : childLabel?.plural}</Badge>
+              )}
             </div>
           </button>
           {isContainer && children.length > 0 && (
@@ -526,7 +553,7 @@ export default function KnowledgeClient({ userId, initialItems, initialDashboard
                     <SectionTitle title="Dados da Instituição" color={currentDraftType.color} />
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
                       <Field label="Instituição" value={draft.metadata?.['institution'] ?? ''} onChange={v => setDraft(p => ({ ...p, metadata: { ...p.metadata, institution: v } }))} />
-                      <Field label="Professor" value={draft.metadata?.['teacher'] ?? ''} onChange={v => setDraft(p => ({ ...p, metadata: { ...p.metadata, teacher: v } }))} />
+                      <Field label="Curso / Formação" value={draft.metadata?.['course_name'] ?? ''} onChange={v => setDraft(p => ({ ...p, metadata: { ...p.metadata, course_name: v } }))} />
                     </div>
                   </section>
 
@@ -542,24 +569,25 @@ export default function KnowledgeClient({ userId, initialItems, initialDashboard
                     </div>
                   </section>
 
-                  {/* ── Seção 3: Estrutura do Curso (Módulos e Aulas) ── */}
+                  {/* ── Seção 3: Dados Gerais do Curso ── */}
+                  <section style={{ border: '1px solid #E2E8F0', borderRadius: '8px', padding: '1rem' }}>
+                    <SectionTitle title="Dados Gerais do Curso" />
+                    <CourseContentEditor
+                      blocks={(() => { try { return JSON.parse(draft.content?.['general_blocks'] ?? '[]') } catch { return [] } })()}
+                      onBlocksChange={blocks => setDraft(p => ({ ...p, content: { ...p.content, general_blocks: JSON.stringify(blocks) } }))}
+                      color={currentDraftType.color}
+                      insertMenu={KB_INSERT_MENU}
+                      showMandatorySummary={false}
+                      presets={COURSE_GENERAL_BLOCKS}
+                    />
+                  </section>
+
+                  {/* ── Seção 4: Estrutura do Curso (Módulos e Aulas) ── */}
                   <section style={{ border: `1px solid ${currentDraftType.color}25`, borderRadius: '8px', padding: '1rem' }}>
                     <SectionTitle title="Estrutura do Curso" color={currentDraftType.color} />
                     <CourseModulesEditor
                       modules={(() => { try { return JSON.parse(draft.content?.['modules'] ?? '[]') } catch { return [] } })()}
                       onChange={modules => setDraft(p => ({ ...p, content: { ...p.content, modules: JSON.stringify(modules) } }))}
-                      color={currentDraftType.color}
-                    />
-                  </section>
-
-                  {/* ── Seção 4: Conteúdo do Curso ── */}
-                  <section style={{ border: '1px solid #E2E8F0', borderRadius: '8px', padding: '1rem' }}>
-                    <SectionTitle title="Conteúdo do Curso" />
-                    <CourseContentEditor
-                      summary={draft.summary ?? ''}
-                      onSummaryChange={v => setDraft(p => ({ ...p, summary: v }))}
-                      blocks={(() => { try { return JSON.parse(draft.content?.['course_blocks'] ?? '[]') } catch { return [] } })()}
-                      onBlocksChange={blocks => setDraft(p => ({ ...p, content: { ...p.content, course_blocks: JSON.stringify(blocks) } }))}
                       color={currentDraftType.color}
                       insertMenu={KB_INSERT_MENU}
                     />
@@ -937,14 +965,15 @@ function CourseModulesEditor({
   modules,
   onChange,
   color,
+  insertMenu,
 }: {
   modules: CourseModule[]
   onChange: (modules: CourseModule[]) => void
   color: string
+  insertMenu: InsertMenuItem[]
 }) {
   const [expanded, setExpanded] = useState<Set<string>>(() => new Set(modules.map(m => m.id)))
   const [editingModuleId, setEditingModuleId] = useState<string | null>(null)
-  const [editingLessonId, setEditingLessonId] = useState<string | null>(null)
 
   function newId(prefix: string) {
     return `${prefix}_${Date.now()}_${Math.floor(Math.random() * 9999)}`
@@ -972,8 +1001,17 @@ function CourseModulesEditor({
   function addLesson(moduleId: string) {
     const mod = modules.find(m => m.id === moduleId)
     if (!mod) return
-    const lesson: CourseLesson = { id: newId('lesson'), title: `Aula ${mod.lessons.length + 1}`, description: '', video_url: '', material: '', order: mod.lessons.length }
-    setEditingLessonId(lesson.id)
+    const lesson: CourseLesson = {
+      id: newId('lesson'),
+      title: `Aula ${mod.lessons.length + 1}`,
+      professor: '',
+      description: '',
+      video_url: '',
+      material: '',
+      order: mod.lessons.length,
+      summary: '',
+      blocks: [],
+    }
     onChange(modules.map(m => m.id === moduleId ? { ...m, lessons: [...m.lessons, lesson] } : m))
   }
 
@@ -1043,45 +1081,18 @@ function CourseModulesEditor({
                   placeholder="Descrição do módulo (opcional)"
                   style={{ ...inputStyle, fontSize: '0.78rem', marginBottom: '0.6rem', color: '#64748B' }}
                 />
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.3rem', marginBottom: '0.45rem' }}>
-                  {mod.lessons.map((lesson, lessonIdx) => {
-                    const isEditingLesson = editingLessonId === lesson.id
-                    return (
-                      <div key={lesson.id} style={{ border: '1px solid #E2E8F0', borderRadius: '6px', overflow: 'hidden' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem', padding: '0.38rem 0.6rem', background: '#F8FAFC' }}>
-                          <span style={{ fontSize: '0.63rem', color: '#CBD5E1', minWidth: '1.1rem', textAlign: 'right', fontVariantNumeric: 'tabular-nums', flexShrink: 0 }}>{lessonIdx + 1}</span>
-                          {isEditingLesson ? (
-                            <input
-                              autoFocus
-                              value={lesson.title}
-                              onChange={e => updateLesson(mod.id, lesson.id, { title: e.target.value })}
-                              onKeyDown={e => { if (e.key === 'Enter') setEditingLessonId(null) }}
-                              style={{ ...inputStyle, flex: 1, fontSize: '0.8rem', padding: '0.2rem 0.4rem' }}
-                            />
-                          ) : (
-                            <span style={{ flex: 1, fontSize: '0.8rem', fontWeight: 650, color: '#334155' }}>{lesson.title}</span>
-                          )}
-                          <button
-                            onClick={() => setEditingLessonId(isEditingLesson ? null : lesson.id)}
-                            title="Editar aula"
-                            style={{ border: 'none', background: 'transparent', color: '#94A3B8', cursor: 'pointer', padding: '0.1rem', fontSize: '0.8rem', lineHeight: 1 }}
-                          >✎</button>
-                          <button
-                            onClick={() => deleteLesson(mod.id, lesson.id)}
-                            title="Remover aula"
-                            style={{ border: 'none', background: 'transparent', color: '#FCA5A5', cursor: 'pointer', padding: '0.1rem', fontSize: '1rem', lineHeight: 1 }}
-                          >×</button>
-                        </div>
-                        {isEditingLesson && (
-                          <div style={{ padding: '0.5rem 0.6rem', display: 'flex', flexDirection: 'column', gap: '0.38rem', borderTop: '1px solid #E2E8F0' }}>
-                            <input value={lesson.description} onChange={e => updateLesson(mod.id, lesson.id, { description: e.target.value })} placeholder="Descrição (opcional)" style={{ ...inputStyle, fontSize: '0.78rem' }} />
-                            <input value={lesson.video_url} onChange={e => updateLesson(mod.id, lesson.id, { video_url: e.target.value })} placeholder="Link do vídeo (opcional)" style={{ ...inputStyle, fontSize: '0.78rem' }} />
-                            <input value={lesson.material} onChange={e => updateLesson(mod.id, lesson.id, { material: e.target.value })} placeholder="Material complementar (opcional)" style={{ ...inputStyle, fontSize: '0.78rem' }} />
-                          </div>
-                        )}
-                      </div>
-                    )
-                  })}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem', marginBottom: '0.45rem' }}>
+                  {mod.lessons.map((lesson, lessonIdx) => (
+                    <LessonItem
+                      key={lesson.id}
+                      lesson={lesson}
+                      index={lessonIdx}
+                      color={color}
+                      insertMenu={insertMenu}
+                      onUpdate={patch => updateLesson(mod.id, lesson.id, patch)}
+                      onDelete={() => deleteLesson(mod.id, lesson.id)}
+                    />
+                  ))}
                 </div>
                 <button
                   onClick={() => addLesson(mod.id)}
@@ -1105,6 +1116,97 @@ function CourseModulesEditor({
   )
 }
 
+function LessonItem({
+  lesson,
+  index,
+  color,
+  insertMenu,
+  onUpdate,
+  onDelete,
+}: {
+  lesson: CourseLesson
+  index: number
+  color: string
+  insertMenu: InsertMenuItem[]
+  onUpdate: (patch: Partial<Omit<CourseLesson, 'id'>>) => void
+  onDelete: () => void
+}) {
+  const [expanded, setExpanded] = useState(false)
+  const [editingTitle, setEditingTitle] = useState(false)
+
+  return (
+    <div style={{ border: '1px solid #E2E8F0', borderRadius: '6px', overflow: 'hidden' }}>
+      {/* Header */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem', padding: '0.4rem 0.6rem', background: '#F8FAFC' }}>
+        <span
+          onClick={() => setExpanded(v => !v)}
+          style={{ fontSize: '0.58rem', color, fontWeight: 700, flexShrink: 0, cursor: 'pointer' }}
+        >{expanded ? '▾' : '▸'}</span>
+        <span style={{ fontSize: '0.63rem', color: '#CBD5E1', minWidth: '1.1rem', textAlign: 'right', fontVariantNumeric: 'tabular-nums', flexShrink: 0 }}>{index + 1}</span>
+        {editingTitle ? (
+          <input
+            autoFocus
+            value={lesson.title}
+            onChange={e => onUpdate({ title: e.target.value })}
+            onBlur={() => setEditingTitle(false)}
+            onKeyDown={e => { if (e.key === 'Enter') setEditingTitle(false) }}
+            style={{ ...inputStyle, flex: 1, fontSize: '0.8rem', padding: '0.2rem 0.4rem' }}
+          />
+        ) : (
+          <span
+            onClick={() => setExpanded(v => !v)}
+            style={{ flex: 1, fontSize: '0.8rem', fontWeight: 650, color: '#334155', cursor: 'pointer' }}
+          >{lesson.title}</span>
+        )}
+        <button
+          onClick={() => setEditingTitle(v => !v)}
+          title="Renomear aula"
+          style={{ border: 'none', background: 'transparent', color: '#94A3B8', cursor: 'pointer', padding: '0.1rem', fontSize: '0.8rem', lineHeight: 1 }}
+        >✎</button>
+        <button
+          onClick={onDelete}
+          title="Remover aula"
+          style={{ border: 'none', background: 'transparent', color: '#FCA5A5', cursor: 'pointer', padding: '0.1rem', fontSize: '1rem', lineHeight: 1 }}
+        >×</button>
+      </div>
+
+      {/* Body */}
+      {expanded && (
+        <div style={{ padding: '0.65rem 0.75rem', borderTop: '1px solid #E2E8F0', display: 'flex', flexDirection: 'column', gap: '0.85rem' }}>
+          {/* Informações da Aula */}
+          <div>
+            <div style={{ fontSize: '0.62rem', fontWeight: 800, color: '#94A3B8', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '0.42rem' }}>
+              Informações da Aula
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
+              <input value={lesson.professor ?? ''} onChange={e => onUpdate({ professor: e.target.value })} placeholder="Professor (opcional)" style={{ ...inputStyle, fontSize: '0.78rem' }} />
+              <input value={lesson.description} onChange={e => onUpdate({ description: e.target.value })} placeholder="Descrição (opcional)" style={{ ...inputStyle, fontSize: '0.78rem' }} />
+              <input value={lesson.video_url} onChange={e => onUpdate({ video_url: e.target.value })} placeholder="Link do vídeo (opcional)" style={{ ...inputStyle, fontSize: '0.78rem' }} />
+              <input value={lesson.material} onChange={e => onUpdate({ material: e.target.value })} placeholder="Material complementar (opcional)" style={{ ...inputStyle, fontSize: '0.78rem' }} />
+            </div>
+          </div>
+
+          {/* Conteúdo da Aula */}
+          <div>
+            <div style={{ fontSize: '0.62rem', fontWeight: 800, color: '#94A3B8', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '0.42rem' }}>
+              Conteúdo da Aula
+            </div>
+            <CourseContentEditor
+              summary={lesson.summary ?? ''}
+              onSummaryChange={v => onUpdate({ summary: v })}
+              blocks={lesson.blocks ?? []}
+              onBlocksChange={blocks => onUpdate({ blocks })}
+              color={color}
+              insertMenu={insertMenu}
+              showMandatorySummary={true}
+            />
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
+
 const COURSE_PRESET_BLOCKS: Array<{ key: string; label: string }> = [
   { key: 'main_learnings',      label: 'Aprendizados' },
   { key: 'exercises',           label: 'Exercícios' },
@@ -1118,20 +1220,32 @@ const COURSE_PRESET_BLOCKS: Array<{ key: string; label: string }> = [
   { key: 'notes',               label: 'Observações' },
 ]
 
+const COURSE_GENERAL_BLOCKS: Array<{ key: string; label: string }> = [
+  { key: 'objective',           label: 'Objetivo do Curso' },
+  { key: 'audience',            label: 'Público-alvo' },
+  { key: 'prerequisites',       label: 'Pré-requisitos' },
+  { key: 'certification',       label: 'Certificação' },
+  { key: 'general_bibliography',label: 'Bibliografia Geral' },
+]
+
 function CourseContentEditor({
-  summary,
+  summary = '',
   onSummaryChange,
   blocks,
   onBlocksChange,
   color,
   insertMenu,
+  showMandatorySummary = true,
+  presets = COURSE_PRESET_BLOCKS,
 }: {
-  summary: string
-  onSummaryChange: (v: string) => void
+  summary?: string
+  onSummaryChange?: (v: string) => void
   blocks: CourseContentBlock[]
   onBlocksChange: (blocks: CourseContentBlock[]) => void
   color: string
   insertMenu: InsertMenuItem[]
+  showMandatorySummary?: boolean
+  presets?: Array<{ key: string; label: string }>
 }) {
   const [collapsedSummary, setCollapsedSummary] = useState(false)
   const [showBlockPicker, setShowBlockPicker] = useState(false)
@@ -1140,7 +1254,7 @@ function CourseContentEditor({
   const [editingBlockId, setEditingBlockId] = useState<string | null>(null)
 
   const usedKeys = new Set(blocks.map(b => b.key))
-  const availablePresets = COURSE_PRESET_BLOCKS.filter(p => !usedKeys.has(p.key))
+  const availablePresets = presets.filter(p => !usedKeys.has(p.key))
 
   function newBlockId() { return `block_${Date.now()}_${Math.floor(Math.random() * 9999)}` }
 
@@ -1170,7 +1284,7 @@ function CourseContentEditor({
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '0.55rem' }}>
       {/* Resumo — não removível */}
-      <div style={{ border: '1px solid #E2E8F0', borderRadius: '8px', overflow: 'hidden' }}>
+      {showMandatorySummary && <div style={{ border: '1px solid #E2E8F0', borderRadius: '8px', overflow: 'hidden' }}>
         <div
           onClick={() => setCollapsedSummary(v => !v)}
           style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.52rem 0.75rem', background: '#F8FAFC', cursor: 'pointer', userSelect: 'none' as const }}
@@ -1183,7 +1297,7 @@ function CourseContentEditor({
           <div style={{ padding: '0.75rem', borderTop: '1px solid #E2E8F0' }}>
             <RichEditor
               value={summary}
-              onChange={onSummaryChange}
+              onChange={onSummaryChange ?? (() => {})}
               placeholder="Registre a ideia central e por que este conteúdo importa."
               moduleColor={color}
               minHeight={100}
@@ -1191,7 +1305,7 @@ function CourseContentEditor({
             />
           </div>
         )}
-      </div>
+      </div>}
 
       {/* Blocos dinâmicos */}
       {blocks.map(block => (
