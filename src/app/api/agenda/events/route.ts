@@ -1,6 +1,17 @@
 import { createClient } from '@/lib/supabase/server'
 import type { CreateAgendaEvent } from '@/types/agenda'
 
+const DB_ERROR_MAP: Record<string, string> = {
+  ends_after_starts: 'O término deve ser posterior ao início.',
+}
+
+function mapDbError(msg: string): string {
+  for (const [key, friendly] of Object.entries(DB_ERROR_MAP)) {
+    if (msg.includes(key)) return friendly
+  }
+  return 'Erro interno. Tente novamente.'
+}
+
 export async function GET(req: Request) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
@@ -58,7 +69,7 @@ export async function POST(req: Request) {
     .select()
     .single()
 
-  if (error) return Response.json({ error: error.message }, { status: 500 })
+  if (error) return Response.json({ error: mapDbError(error.message) }, { status: 500 })
 
   return Response.json({ data }, { status: 201 })
 }

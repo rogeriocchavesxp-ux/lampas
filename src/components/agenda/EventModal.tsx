@@ -14,55 +14,68 @@ interface Props {
 }
 
 const EMPTY_FORM: CreateAgendaEvent = {
-  title:       '',
-  event_type:  'pregacao',
-  description: null,
-  starts_at:   '',
-  ends_at:     '',
-  all_day:     false,
-  location:    null,
+  title:        '',
+  event_type:   'pregacao',
+  description:  null,
+  starts_at:    '',
+  ends_at:      '',
+  all_day:      false,
+  location:     null,
   organization: null,
-  status:      'confirmado',
-  project_id:  null,
-  color:       null,
-  meta:        {},
+  status:       'confirmado',
+  project_id:   null,
+  color:        null,
+  meta:         {},
 }
 
-function toLocalDatetimeValue(iso: string): string {
+function isoToDatePart(iso: string): string {
   if (!iso) return ''
-  try {
-    const d = parseISO(iso)
-    return format(d, "yyyy-MM-dd'T'HH:mm")
-  } catch {
-    return ''
-  }
+  try { return format(parseISO(iso), 'yyyy-MM-dd') } catch { return '' }
 }
 
-function toISOFromLocal(local: string): string {
-  if (!local) return ''
-  return new Date(local).toISOString()
+function isoToTimePart(iso: string): string {
+  if (!iso) return ''
+  try { return format(parseISO(iso), 'HH:mm') } catch { return '' }
+}
+
+function partsToISO(date: string, time: string): string {
+  if (!date) return ''
+  return new Date(`${date}T${time || '00:00'}`).toISOString()
+}
+
+function addOneMinute(time: string): string {
+  if (!time) return '00:01'
+  const [h, m] = time.split(':').map(Number)
+  const total  = h * 60 + m + 1
+  return `${String(Math.floor(total / 60) % 24).padStart(2, '0')}:${String(total % 60).padStart(2, '0')}`
+}
+
+const DB_ERROR_MAP: Record<string, string> = {
+  ends_after_starts: 'O término deve ser posterior ao início.',
+}
+
+function mapApiError(raw: string): string {
+  for (const [key, msg] of Object.entries(DB_ERROR_MAP)) {
+    if (raw.includes(key)) return msg
+  }
+  return 'Erro ao salvar. Tente novamente.'
 }
 
 export default function EventModal({ eventId, defaultDate, onClose, onSaved, onDeleted }: Props) {
-  const isCreate = !eventId
-  const [form, setForm]     = useState<CreateAgendaEvent>(EMPTY_FORM)
-  const [saving, setSaving] = useState(false)
+  const isCreate       = !eventId
+  const [form, setForm]       = useState<CreateAgendaEvent>(EMPTY_FORM)
+  const [saving, setSaving]   = useState(false)
   const [deleting, setDeleting] = useState(false)
-  const [error, setError]   = useState<string | null>(null)
-  const [loaded, setLoaded] = useState(isCreate)
+  const [error, setError]     = useState<string | null>(null)
+  const [loaded, setLoaded]   = useState(isCreate)
 
   useEffect(() => {
     if (isCreate) {
       const base = defaultDate ?? new Date()
       const end  = new Date(base.getTime() + 60 * 60 * 1000)
-      setForm({
-        ...EMPTY_FORM,
-        starts_at: base.toISOString(),
-        ends_at:   end.toISOString(),
-      })
+      setForm({ ...EMPTY_FORM, starts_at: base.toISOString(), ends_at: end.toISOString() })
       return
     }
-
     fetch(`/api/agenda/events/${eventId}`)
       .then(r => r.json())
       .then(({ data }) => {
@@ -88,27 +101,49 @@ export default function EventModal({ eventId, defaultDate, onClose, onSaved, onD
 
   function update(patch: Partial<CreateAgendaEvent>) {
     setForm(f => ({ ...f, ...patch }))
+    setError(null)
   }
+
+  function handleStartChange(date: string, time: string) {
+    const newStart  = partsToISO(date, time)
+    if (!newStart) return
+    const startMs   = new Date(newStart).getTime()
+    const endMs     = form.ends_at ? new Date(form.ends_at).getTime() : 0
+    const updates: Partial<CreateAgendaEvent> = { starts_at: newStart }
+    if (endMs <= startMs) {
+      updates.ends_at = new Date(startMs + 60 * 60 * 1000).toISOString()
+    }
+    setForm(f => ({ ...f, ...updates }))
+    setError(null)
+  }
+
+  const startDate = isoToDatePart(form.starts_at)
+  const startTime = isoToTimePart(form.starts_at)
+  const endDate   = isoToDatePart(form.ends_at)
+  const endTime   = isoToTimePart(form.ends_at)
+
+  const dateError =
+    form.starts_at && form.ends_at && new Date(form.ends_at) <= new Date(form.starts_at)
+      ? 'O término deve ser posterior ao início.'
+      : null
+
+  const endTimeMin = endDate === startDate ? addOneMinute(startTime) : undefined
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
+    if (dateError) { setError(dateError); return }
     setSaving(true)
     setError(null)
     try {
-      const body = {
-        ...form,
-        starts_at: form.starts_at,
-        ends_at:   form.ends_at,
-      }
       const url    = isCreate ? '/api/agenda/events' : `/api/agenda/events/${eventId}`
       const method = isCreate ? 'POST' : 'PATCH'
       const res    = await fetch(url, {
         method,
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(body),
+        body: JSON.stringify(form),
       })
       const json = await res.json()
-      if (!res.ok) { setError(json.error ?? 'Erro ao salvar'); return }
+      if (!res.ok) { setError(mapApiError(json.error ?? '')); return }
       onSaved(json.data)
     } catch {
       setError('Erro ao salvar. Tente novamente.')
@@ -158,9 +193,7 @@ export default function EventModal({ eventId, defaultDate, onClose, onSaved, onD
             <button
               onClick={onClose}
               style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)', fontSize: '1.2rem', lineHeight: 1, padding: '0.1rem' }}
-            >
-              ×
-            </button>
+            >×</button>
           </div>
 
           {!loaded ? (
@@ -171,7 +204,6 @@ export default function EventModal({ eventId, defaultDate, onClose, onSaved, onD
             <form onSubmit={handleSubmit}>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
 
-                {/* Título */}
                 <ModalField label="Título">
                   <input
                     value={form.title}
@@ -182,7 +214,6 @@ export default function EventModal({ eventId, defaultDate, onClose, onSaved, onD
                   />
                 </ModalField>
 
-                {/* Tipo */}
                 <ModalField label="Tipo">
                   <select
                     value={form.event_type}
@@ -195,29 +226,53 @@ export default function EventModal({ eventId, defaultDate, onClose, onSaved, onD
                   </select>
                 </ModalField>
 
-                {/* Data início / fim */}
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
-                  <ModalField label="Início">
+                {/* Início */}
+                <ModalField label="Início">
+                  <div style={{ display: 'flex', gap: '0.5rem' }}>
                     <input
-                      type="datetime-local"
-                      value={toLocalDatetimeValue(form.starts_at)}
-                      onChange={e => update({ starts_at: toISOFromLocal(e.target.value) })}
+                      type="date"
+                      value={startDate}
+                      onChange={e => handleStartChange(e.target.value, startTime)}
                       required
-                      style={inputStyle}
+                      style={{ ...inputStyle, flex: 1 }}
                     />
-                  </ModalField>
-                  <ModalField label="Fim">
                     <input
-                      type="datetime-local"
-                      value={toLocalDatetimeValue(form.ends_at)}
-                      onChange={e => update({ ends_at: toISOFromLocal(e.target.value) })}
+                      type="time"
+                      value={startTime}
+                      onChange={e => handleStartChange(startDate, e.target.value)}
                       required
-                      style={inputStyle}
+                      style={{ ...inputStyle, width: '110px', flex: 'none' }}
                     />
-                  </ModalField>
-                </div>
+                  </div>
+                </ModalField>
 
-                {/* Local */}
+                {/* Fim */}
+                <ModalField label="Fim">
+                  <div style={{ display: 'flex', gap: '0.5rem' }}>
+                    <input
+                      type="date"
+                      value={endDate}
+                      min={startDate}
+                      onChange={e => update({ ends_at: partsToISO(e.target.value, endTime) })}
+                      required
+                      style={{ ...inputStyle, flex: 1, borderColor: dateError ? '#EF4444' : undefined }}
+                    />
+                    <input
+                      type="time"
+                      value={endTime}
+                      min={endTimeMin}
+                      onChange={e => update({ ends_at: partsToISO(endDate, e.target.value) })}
+                      required
+                      style={{ ...inputStyle, width: '110px', flex: 'none', borderColor: dateError ? '#EF4444' : undefined }}
+                    />
+                  </div>
+                  {dateError && (
+                    <p style={{ margin: '0.3rem 0 0', fontSize: '0.78rem', color: '#EF4444' }}>
+                      {dateError}
+                    </p>
+                  )}
+                </ModalField>
+
                 <ModalField label="Local">
                   <input
                     value={form.location ?? ''}
@@ -227,7 +282,6 @@ export default function EventModal({ eventId, defaultDate, onClose, onSaved, onD
                   />
                 </ModalField>
 
-                {/* Organização */}
                 <ModalField label="Organização">
                   <input
                     value={form.organization ?? ''}
@@ -237,7 +291,6 @@ export default function EventModal({ eventId, defaultDate, onClose, onSaved, onD
                   />
                 </ModalField>
 
-                {/* Status */}
                 <ModalField label="Status">
                   <select
                     value={form.status}
@@ -250,7 +303,6 @@ export default function EventModal({ eventId, defaultDate, onClose, onSaved, onD
                   </select>
                 </ModalField>
 
-                {/* Descrição */}
                 <ModalField label="Descrição">
                   <textarea
                     value={form.description ?? ''}
@@ -303,10 +355,10 @@ export default function EventModal({ eventId, defaultDate, onClose, onSaved, onD
                   </button>
                   <button
                     type="submit"
-                    disabled={saving || !form.title || !form.starts_at || !form.ends_at}
+                    disabled={saving || !form.title || !form.starts_at || !form.ends_at || !!dateError}
                     style={{
                       flex: 2, padding: '0.62rem',
-                      background: saving ? 'var(--surface-3)' : color,
+                      background: saving || !!dateError ? 'var(--surface-3)' : color,
                       color: '#FFFFFF', border: 'none',
                       borderRadius: '8px', fontWeight: 600,
                       cursor: saving ? 'wait' : 'pointer',

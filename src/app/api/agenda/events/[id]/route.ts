@@ -1,6 +1,17 @@
 import { createClient } from '@/lib/supabase/server'
 import type { UpdateAgendaEvent } from '@/types/agenda'
 
+const DB_ERROR_MAP: Record<string, string> = {
+  ends_after_starts: 'O término deve ser posterior ao início.',
+}
+
+function mapDbError(msg: string): string {
+  for (const [key, friendly] of Object.entries(DB_ERROR_MAP)) {
+    if (msg.includes(key)) return friendly
+  }
+  return 'Erro interno. Tente novamente.'
+}
+
 export async function GET(
   _req: Request,
   { params }: { params: Promise<{ id: string }> },
@@ -46,7 +57,7 @@ export async function PATCH(
     .select()
     .single()
 
-  if (error) return Response.json({ error: error.message }, { status: 500 })
+  if (error) return Response.json({ error: mapDbError(error.message) }, { status: 500 })
   if (!data) return Response.json({ error: 'Não encontrado' }, { status: 404 })
 
   return Response.json({ data })
