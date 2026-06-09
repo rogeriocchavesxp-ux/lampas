@@ -13,7 +13,7 @@ export default async function DashboardPage() {
   await syncMercadoPagoSubscriptionForUser(uid).catch(() => null)
 
   const [{ data: projects }, { data: profile }] = await Promise.all([
-    supabase.from('projects').select('*').eq('user_id', uid).is('deleted_at', null).order('updated_at', { ascending: false }),
+    supabase.from('projects').select('*').eq('user_id', uid).is('deleted_at', null).or('is_demo.is.null,is_demo.eq.false').order('updated_at', { ascending: false }),
     supabase.from('profiles').select('*').eq('id', uid).single(),
   ])
 

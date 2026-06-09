@@ -9,8 +9,10 @@ import RichEditor from '@/components/RichEditor'
 import { ChevronDown, ChevronUp, MoreHorizontal } from 'lucide-react'
 import ResearchGuidePanel from './ResearchGuidePanel'
 import CardHelpTooltip from './CardHelpTooltip'
+import HelpIcon from '@/components/help/HelpIcon'
 import { getResearchGuide } from '@/lib/research-guides'
 import { getCardHelp } from '@/lib/card-help'
+import { HELP_CONTENT } from '@/lib/help-content'
 
 type CardState = 'idle' | 'generating' | 'saving' | 'saved'
 type WorkspaceCard = SectionDef['cards'][number]
@@ -676,10 +678,9 @@ export default function SectionWorkspace({
                     {card.title}
                   </span>
                   {(() => {
+                    if (HELP_CONTENT[card.id]) return <HelpIcon cardId={card.id} onAskAI={onAskAI} />
                     const help = getCardHelp(card.id)
-                    return help
-                      ? <CardHelpTooltip help={help} />
-                      : null
+                    return help ? <CardHelpTooltip help={help} /> : null
                   })()}
                 </span>
 

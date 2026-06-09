@@ -13,6 +13,7 @@ import {
   type StudyModeConfig,
 } from '@/lib/study-modes'
 import pkg from '../../../package.json'
+import UpcomingEventsWidget from '@/components/agenda/UpcomingEventsWidget'
 
 const LEGACY_TYPE: Record<StudyModeId, string> = {
   exegese_biblica:             'exegese',
@@ -502,10 +503,12 @@ export default function DashboardClient({ user, projects: initialProjects, profi
   // Top 3 most recently updated — server already sorts by updated_at desc
   const recentProjects = useMemo(() => dashboardProjects.slice(0, 3), [dashboardProjects])
 
-  const recentActiveProjects4 = useMemo(() => activeProjects.slice(0, 4), [activeProjects])
+  const RECENT_LIMIT = 6
+  const recentActiveProjects4 = useMemo(() => activeProjects.slice(0, RECENT_LIMIT), [activeProjects])
   const activeCount      = activeProjects.length
   const completedCount   = completedProjects.length
   const totalCount       = dashboardProjects.length
+  // Invariant: totalCount === activeCount + completedCount (every project has status)
   const studiedBooks     = useMemo(() => new Set(dashboardProjects.map(p => p.book).filter((b): b is string => !!b && b !== '—')), [dashboardProjects])
 
   const genreDistribution = useMemo(() => {
@@ -756,6 +759,14 @@ export default function DashboardClient({ user, projects: initialProjects, profi
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
           <span style={{ color: 'var(--text-muted)', fontSize: '0.82rem' }}>{user.email}</span>
+          <button onClick={() => router.push('/agenda')} style={{
+            background: 'transparent', border: '1px solid var(--border)',
+            color: 'var(--text-secondary)', padding: '0.3rem 0.75rem',
+            borderRadius: '6px', cursor: 'pointer', fontSize: '0.82rem', fontFamily: 'inherit',
+          }}
+            onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--accent)'; e.currentTarget.style.color = 'var(--accent)' }}
+            onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.color = 'var(--text-secondary)' }}
+          >Agenda</button>
           <button onClick={() => router.push('/billing')} style={{
             background: 'transparent', border: '1px solid var(--border)',
             color: 'var(--text-secondary)', padding: '0.3rem 0.75rem',
@@ -793,10 +804,10 @@ export default function DashboardClient({ user, projects: initialProjects, profi
             </p>
             <h1 style={{ fontSize: '1.6rem', fontWeight: 800, letterSpacing: '-0.02em', color: 'var(--text-primary)', margin: '0 0 0.3rem' }}>
               {totalCount === 0
-                ? 'Comece seu primeiro estudo.'
+                ? 'Comece seu primeiro projeto.'
                 : activeCount > 0
-                  ? `${activeCount} ${activeCount === 1 ? 'estudo em andamento' : 'estudos em andamento'}.`
-                  : 'Todos os estudos concluídos.'}
+                  ? `${activeCount} ${activeCount === 1 ? 'projeto ativo' : 'projetos ativos'}.`
+                  : 'Todos os projetos concluídos.'}
             </h1>
             <p style={{ fontSize: '0.82rem', color: 'var(--text-muted)', margin: 0 }}>
               {completedCount > 0 ? `${completedCount} concluído${completedCount > 1 ? 's' : ''} · ` : ''}
@@ -830,6 +841,14 @@ export default function DashboardClient({ user, projects: initialProjects, profi
                     onDelete={() => setDeleteTarget(p)}
                   />
                 ))}
+              </div>
+            </section>
+
+            {/* ── Próximos Eventos ── */}
+            <section>
+              <DashLabel>Próximos Compromissos</DashLabel>
+              <div style={{ marginTop: '0.85rem' }}>
+                <UpcomingEventsWidget />
               </div>
             </section>
 
@@ -1043,7 +1062,7 @@ export default function DashboardClient({ user, projects: initialProjects, profi
 
             {/* ── Todos os Estudos ── */}
             <section>
-              <CollapseHeader label="Todos os Estudos" collapsed={collapsedAnalytics.has('todos')} onToggle={() => toggleAnalytics('todos')} />
+              <CollapseHeader label="Todos os Projetos" collapsed={collapsedAnalytics.has('todos')} onToggle={() => toggleAnalytics('todos')} />
               {!collapsedAnalytics.has('todos') && <div style={{ marginTop: '0.85rem', border: '1px solid var(--border-subtle)', borderRadius: '10px', overflow: 'hidden', background: 'var(--surface)' }}>
                 {libraryModes.map((modeId, idx) => {
                   const mode         = STUDY_MODE_REGISTRY[modeId]
@@ -1276,6 +1295,21 @@ export default function DashboardClient({ user, projects: initialProjects, profi
                       <form onSubmit={handleCreate} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
                         {isPassage ? (
                           <>
+                            {isSermon && (
+                              <FormField label="Tipo de Sermão">
+                                <select
+                                  value={form.sermon_type}
+                                  onChange={e => updatePassageForm({ sermon_type: e.target.value as SermonType })}
+                                  required
+                                >
+                                  <option value="">Selecione o tipo</option>
+                                  {SERMON_TYPE_OPTIONS.map(o => (
+                                    <option key={o.id} value={o.id}>{o.label}</option>
+                                  ))}
+                                </select>
+                              </FormField>
+                            )}
+
                             <FormField label="Testamento">
                               <div style={{ display: 'flex', gap: '0.5rem' }}>
                                 {(['AT', 'NT'] as const).map(t => (
@@ -1309,75 +1343,6 @@ export default function DashboardClient({ user, projects: initialProjects, profi
                                 ))}
                               </select>
                             </FormField>
-
-                            {isSermon && (
-                              <FormField label="Tipo de Sermão">
-                                <div style={{
-                                  display: 'grid',
-                                  gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))',
-                                  gap: '0.55rem',
-                                }}>
-                                  {SERMON_TYPE_OPTIONS.map(option => {
-                                    const active = form.sermon_type === option.id
-                                    return (
-                                      <button
-                                        key={option.id}
-                                        type="button"
-                                        onClick={() => updatePassageForm({ sermon_type: option.id })}
-                                        style={{
-                                          textAlign: 'left',
-                                          padding: '0.75rem',
-                                          minHeight: '118px',
-                                          background: active ? `${uiMode.color}10` : 'var(--surface-2)',
-                                          border: `1.5px solid ${active ? uiMode.color : 'var(--border-subtle)'}`,
-                                          borderRadius: '10px',
-                                          cursor: 'pointer',
-                                          fontFamily: 'inherit',
-                                          transition: 'all 0.13s',
-                                        }}
-                                        onMouseEnter={e => {
-                                          if (!active) {
-                                            e.currentTarget.style.borderColor = `${uiMode.color}50`
-                                            e.currentTarget.style.background = `${uiMode.color}06`
-                                          }
-                                        }}
-                                        onMouseLeave={e => {
-                                          if (!active) {
-                                            e.currentTarget.style.borderColor = 'var(--border-subtle)'
-                                            e.currentTarget.style.background = 'var(--surface-2)'
-                                          }
-                                        }}
-                                      >
-                                        <div style={{
-                                          display: 'flex',
-                                          alignItems: 'center',
-                                          gap: '0.35rem',
-                                          marginBottom: '0.45rem',
-                                        }}>
-                                          <span style={{
-                                            color: active ? uiMode.color : 'var(--text-primary)',
-                                            fontSize: '0.82rem',
-                                            fontWeight: 800,
-                                            lineHeight: 1.2,
-                                          }}>
-                                            {option.short}
-                                          </span>
-                                          {active && <span style={{ marginLeft: 'auto', color: uiMode.color, fontSize: '0.75rem' }}>✓</span>}
-                                        </div>
-                                        <p style={{
-                                          margin: 0,
-                                          color: 'var(--text-muted)',
-                                          fontSize: '0.68rem',
-                                          lineHeight: 1.45,
-                                        }}>
-                                          {option.description}
-                                        </p>
-                                      </button>
-                                    )
-                                  })}
-                                </div>
-                              </FormField>
-                            )}
 
                             {/* Badge de gênero detectado (apenas para exegético) */}
                             {selectedUiMode === 'exegetico' && detectedLabel && (
@@ -1467,7 +1432,7 @@ export default function DashboardClient({ user, projects: initialProjects, profi
                             fontFamily: 'inherit', fontSize: '0.9rem', transition: 'background 0.15s',
                           }}>
                             {creating ? 'Criando…'
-                              : !isPassage ? 'Iniciar estudo →'
+                              : !isPassage ? 'Iniciar projeto →'
                               : isSermon && !form.sermon_type ? 'Escolha o tipo de sermão'
                               : !form.book ? 'Selecione um livro'
                               : !form.passage_ref.trim() ? 'Informe a passagem'
@@ -1501,7 +1466,7 @@ export default function DashboardClient({ user, projects: initialProjects, profi
             boxShadow: '0 8px 32px rgba(15,23,42,0.15)',
           }}>
             <h3 style={{ fontSize: '1rem', fontWeight: 700, marginBottom: '0.35rem', color: 'var(--text-primary)' }}>
-              Excluir estudo?
+              Excluir projeto?
             </h3>
             <p style={{ fontSize: '0.84rem', color: 'var(--text-muted)', marginBottom: '1.25rem' }}>
               Esta ação não poderá ser desfeita.
@@ -1551,7 +1516,7 @@ export default function DashboardClient({ user, projects: initialProjects, profi
                   fontFamily: 'inherit', fontSize: '0.88rem', transition: 'background 0.12s',
                 }}
               >
-                {deleteConfirming ? 'Excluindo…' : 'Excluir estudo'}
+                {deleteConfirming ? 'Excluindo…' : 'Excluir projeto'}
               </button>
             </div>
           </div>
@@ -2181,7 +2146,7 @@ function EmptyDashboard({ onNew }: { onNew: () => void }) {
           cursor: 'pointer', fontSize: '0.8rem', fontFamily: 'inherit',
           padding: 0,
         }}>
-          Criar meu próprio estudo
+          Criar meu próprio projeto
         </button>
       </div>
     </div>

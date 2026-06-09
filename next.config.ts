@@ -1,7 +1,16 @@
 import type { NextConfig } from 'next'
 import { withSentryConfig } from '@sentry/nextjs'
 
-const nextConfig: NextConfig = {}
+const nextConfig: NextConfig = {
+  transpilePackages: [
+    '@fullcalendar/core',
+    '@fullcalendar/react',
+    '@fullcalendar/daygrid',
+    '@fullcalendar/timegrid',
+    '@fullcalendar/list',
+    '@fullcalendar/interaction',
+  ],
+}
 
 // Sentry só é ativado quando a auth token está disponível (produção configurada).
 // Sem SENTRY_AUTH_TOKEN o build do Vercel falha — disabling gracefully.
