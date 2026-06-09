@@ -291,11 +291,9 @@ export default function TopNav() {
 
             {openDrop === 'user' && (
               <Dropdown style={{ right: 0, minWidth: '180px' }}>
-                <DropSection>
-                  <div style={{ padding: '0.5rem 0.85rem 0.4rem', fontSize: '0.72rem', color: 'var(--text-muted)', fontWeight: 500 }}>
-                    {user?.email}
-                  </div>
-                </DropSection>
+                <div style={{ padding: '0.5rem 0.85rem 0.4rem', fontSize: '0.72rem', color: 'var(--text-muted)', fontWeight: 500 }}>
+                  {user?.email}
+                </div>
                 <DropDivider />
                 <DropItem label="Planos" onClick={() => { setOpenDrop(null); router.push('/billing') }} />
                 {isAdmin && <DropItem label="Admin" onClick={() => { setOpenDrop(null); router.push('/admin/billing') }} />}
