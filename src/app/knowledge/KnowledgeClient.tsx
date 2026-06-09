@@ -228,6 +228,10 @@ export default function KnowledgeClient({ userId, initialItems, initialDashboard
   const [creatingChildOf,    setCreatingChildOf]    = useState<KnowledgeItem | null>(null)
   const [choosingType,       setChoosingType]       = useState(false)
   const [sidebarCollapsed,   setSidebarCollapsed]   = useState(false)
+  const [showHelp,           setShowHelp]           = useState(() => {
+    if (typeof window === 'undefined') return false
+    return !localStorage.getItem('lampas_kb_help_seen')
+  })
   const [groupBy,            setGroupBy]            = useState<'none' | 'type' | 'author' | 'category' | 'status'>('none')
   const [collapsedGroups,    setCollapsedGroups]    = useState<Set<string>>(new Set())
 
@@ -314,6 +318,11 @@ export default function KnowledgeClient({ userId, initialItems, initialDashboard
     setShowBlockPicker(false)
     setEditing(true)
     setSelectedId('')
+  }
+
+  function closeHelp() {
+    localStorage.setItem('lampas_kb_help_seen', '1')
+    setShowHelp(false)
   }
 
   function openEdit(item: KnowledgeItem) {
@@ -502,18 +511,48 @@ export default function KnowledgeClient({ userId, initialItems, initialDashboard
   const rightContent = choosingType ? (
     <div style={{ flex: 1, overflowY: 'auto', padding: '2rem 2.5rem', background: '#FFFFFF' }}>
       <div style={{ maxWidth: '700px', margin: '0 auto' }}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '2rem' }}>
+
+        {/* Header row */}
+        <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '1.1rem' }}>
           <div>
-            <div style={{ fontSize: '1.3rem', fontWeight: 850, color: '#0F172A', letterSpacing: '-0.02em' }}>Novo conhecimento</div>
-            <div style={{ marginTop: '0.3rem', fontSize: '0.82rem', color: '#64748B' }}>Escolha o tipo de conteúdo que deseja capturar</div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem' }}>
+              <div style={{ fontSize: '1.3rem', fontWeight: 850, color: '#0F172A', letterSpacing: '-0.02em' }}>Novo conhecimento</div>
+              <button
+                onClick={() => setShowHelp(v => !v)}
+                title="Ajuda"
+                style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '20px', height: '20px', border: '1px solid #CBD5E1', borderRadius: '50%', background: 'transparent', color: '#94A3B8', cursor: 'pointer', fontSize: '0.65rem', fontWeight: 700, fontFamily: 'inherit', flexShrink: 0 }}
+              >
+                ?
+              </button>
+            </div>
+            <p style={{ margin: '0.55rem 0 0', fontSize: '0.82rem', color: '#64748B', lineHeight: 1.65, maxWidth: '560px' }}>
+              A Base de Conhecimento é o lugar onde você armazena livros, cursos, artigos, vídeos, documentos e outros materiais que poderão alimentar seus estudos, sermões, aulas e produções futuras. Pense nela como seu segundo cérebro teológico e ministerial.
+            </p>
           </div>
           <button
             onClick={() => setChoosingType(false)}
-            style={{ border: '1px solid #E2E8F0', background: '#FFFFFF', borderRadius: '7px', padding: '0.45rem 0.8rem', cursor: 'pointer', fontFamily: 'inherit', fontSize: '0.8rem', color: '#64748B' }}
+            style={{ border: '1px solid #E2E8F0', background: '#FFFFFF', borderRadius: '7px', padding: '0.45rem 0.8rem', cursor: 'pointer', fontFamily: 'inherit', fontSize: '0.8rem', color: '#64748B', flexShrink: 0, marginLeft: '1rem' }}
           >
             Cancelar
           </button>
         </div>
+
+        {/* Help panel */}
+        {showHelp && (
+          <div style={{ display: 'flex', alignItems: 'flex-start', gap: '0.85rem', background: '#FFFBEB', border: '1px solid #FDE68A', borderRadius: '10px', padding: '0.85rem 1rem', marginBottom: '1.5rem' }}>
+            <div style={{ flex: 1, fontSize: '0.82rem', color: '#92400E', lineHeight: 1.65 }}>
+              Este espaço serve para guardar e organizar materiais de referência. Depois, esses conteúdos poderão ser consultados, relacionados e usados como apoio em estudos, sermões, cursos e publicações.
+            </div>
+            <button
+              onClick={closeHelp}
+              style={{ flexShrink: 0, border: 'none', background: '#FEF3C7', borderRadius: '6px', padding: '0.3rem 0.75rem', cursor: 'pointer', fontFamily: 'inherit', fontSize: '0.75rem', fontWeight: 700, color: '#92400E' }}
+            >
+              Entendi
+            </button>
+          </div>
+        )}
+
+        {/* Cards grid */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '0.75rem' }}>
           {TYPE_ORDER.map(type => {
             const cfg = KNOWLEDGE_TYPES[type]
