@@ -1,54 +1,36 @@
 -- =============================================
--- AGENDA MINISTERIAL — Migration 025
+-- AGENDA MINISTERIAL — Migration 025 (idempotente)
 -- =============================================
 
 -- =============================================
--- ENUM types
+-- ENUM types (idempotentes via DO blocks)
 -- =============================================
-CREATE TYPE agenda_event_type AS ENUM (
-  'pregacao',
-  'estudo_biblico',
-  'ebd',
-  'palestra',
-  'conferencia',
-  'congresso',
-  'casamento',
-  'batismo',
-  'santa_ceia',
-  'atendimento_pastoral',
-  'reuniao',
-  'curso',
-  'live',
-  'gravacao',
-  'outro'
-);
+DO $$ BEGIN
+  CREATE TYPE agenda_event_type AS ENUM (
+    'pregacao','estudo_biblico','ebd','palestra','conferencia',
+    'congresso','casamento','batismo','santa_ceia',
+    'atendimento_pastoral','reuniao','curso','live','gravacao','outro'
+  );
+EXCEPTION WHEN duplicate_object THEN null; END $$;
 
-CREATE TYPE agenda_event_status AS ENUM (
-  'confirmado',
-  'tentativo',
-  'cancelado'
-);
+DO $$ BEGIN
+  CREATE TYPE agenda_event_status AS ENUM ('confirmado','tentativo','cancelado');
+EXCEPTION WHEN duplicate_object THEN null; END $$;
 
-CREATE TYPE agenda_sermon_status AS ENUM (
-  'planejada',
-  'em_preparacao',
-  'pronta',
-  'pregada'
-);
+DO $$ BEGIN
+  CREATE TYPE agenda_sermon_status AS ENUM ('planejada','em_preparacao','pronta','pregada');
+EXCEPTION WHEN duplicate_object THEN null; END $$;
 
-CREATE TYPE agenda_pastoral_category AS ENUM (
-  'aconselhamento',
-  'casamento',
-  'discipulado',
-  'visita',
-  'hospital',
-  'outro'
-);
+DO $$ BEGIN
+  CREATE TYPE agenda_pastoral_category AS ENUM (
+    'aconselhamento','casamento','discipulado','visita','hospital','outro'
+  );
+EXCEPTION WHEN duplicate_object THEN null; END $$;
 
 -- =============================================
--- AGENDA_EVENTS — tabela central
+-- AGENDA_EVENTS
 -- =============================================
-CREATE TABLE public.agenda_events (
+CREATE TABLE IF NOT EXISTS public.agenda_events (
   id              uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id         uuid NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
   project_id      uuid REFERENCES public.projects(id) ON DELETE SET NULL,
@@ -80,24 +62,26 @@ CREATE TABLE public.agenda_events (
 
 ALTER TABLE public.agenda_events ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "agenda_events: owner full access" ON public.agenda_events;
 CREATE POLICY "agenda_events: owner full access"
   ON public.agenda_events FOR ALL
   USING (auth.uid() = user_id)
   WITH CHECK (auth.uid() = user_id);
 
-CREATE INDEX idx_agenda_events_user_id    ON public.agenda_events(user_id);
-CREATE INDEX idx_agenda_events_starts_at  ON public.agenda_events(starts_at);
-CREATE INDEX idx_agenda_events_project_id ON public.agenda_events(project_id);
-CREATE INDEX idx_agenda_events_user_date  ON public.agenda_events(user_id, starts_at DESC);
+CREATE INDEX IF NOT EXISTS idx_agenda_events_user_id    ON public.agenda_events(user_id);
+CREATE INDEX IF NOT EXISTS idx_agenda_events_starts_at  ON public.agenda_events(starts_at);
+CREATE INDEX IF NOT EXISTS idx_agenda_events_project_id ON public.agenda_events(project_id);
+CREATE INDEX IF NOT EXISTS idx_agenda_events_user_date  ON public.agenda_events(user_id, starts_at DESC);
 
+DROP TRIGGER IF EXISTS set_updated_at_agenda_events ON public.agenda_events;
 CREATE TRIGGER set_updated_at_agenda_events
   BEFORE UPDATE ON public.agenda_events
   FOR EACH ROW EXECUTE PROCEDURE public.set_updated_at();
 
 -- =============================================
--- AGENDA_SERMONS — submódulo Pregações
+-- AGENDA_SERMONS
 -- =============================================
-CREATE TABLE public.agenda_sermons (
+CREATE TABLE IF NOT EXISTS public.agenda_sermons (
   id              uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id         uuid NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
   event_id        uuid REFERENCES public.agenda_events(id) ON DELETE SET NULL,
@@ -124,24 +108,26 @@ CREATE TABLE public.agenda_sermons (
 
 ALTER TABLE public.agenda_sermons ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "agenda_sermons: owner full access" ON public.agenda_sermons;
 CREATE POLICY "agenda_sermons: owner full access"
   ON public.agenda_sermons FOR ALL
   USING (auth.uid() = user_id)
   WITH CHECK (auth.uid() = user_id);
 
-CREATE INDEX idx_agenda_sermons_user_id    ON public.agenda_sermons(user_id);
-CREATE INDEX idx_agenda_sermons_event_id   ON public.agenda_sermons(event_id);
-CREATE INDEX idx_agenda_sermons_project_id ON public.agenda_sermons(project_id);
-CREATE INDEX idx_agenda_sermons_scheduled  ON public.agenda_sermons(scheduled_at DESC NULLS LAST);
+CREATE INDEX IF NOT EXISTS idx_agenda_sermons_user_id    ON public.agenda_sermons(user_id);
+CREATE INDEX IF NOT EXISTS idx_agenda_sermons_event_id   ON public.agenda_sermons(event_id);
+CREATE INDEX IF NOT EXISTS idx_agenda_sermons_project_id ON public.agenda_sermons(project_id);
+CREATE INDEX IF NOT EXISTS idx_agenda_sermons_scheduled  ON public.agenda_sermons(scheduled_at DESC NULLS LAST);
 
+DROP TRIGGER IF EXISTS set_updated_at_agenda_sermons ON public.agenda_sermons;
 CREATE TRIGGER set_updated_at_agenda_sermons
   BEFORE UPDATE ON public.agenda_sermons
   FOR EACH ROW EXECUTE PROCEDURE public.set_updated_at();
 
 -- =============================================
--- AGENDA_PASTORAL_CARE — Atendimentos Pastorais
+-- AGENDA_PASTORAL_CARE
 -- =============================================
-CREATE TABLE public.agenda_pastoral_care (
+CREATE TABLE IF NOT EXISTS public.agenda_pastoral_care (
   id              uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id         uuid NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
   event_id        uuid REFERENCES public.agenda_events(id) ON DELETE SET NULL,
@@ -165,23 +151,25 @@ CREATE TABLE public.agenda_pastoral_care (
 
 ALTER TABLE public.agenda_pastoral_care ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "agenda_pastoral_care: owner only" ON public.agenda_pastoral_care;
 CREATE POLICY "agenda_pastoral_care: owner only"
   ON public.agenda_pastoral_care FOR ALL
   USING (auth.uid() = user_id)
   WITH CHECK (auth.uid() = user_id);
 
-CREATE INDEX idx_pastoral_care_user_id      ON public.agenda_pastoral_care(user_id);
-CREATE INDEX idx_pastoral_care_scheduled_at ON public.agenda_pastoral_care(scheduled_at DESC);
-CREATE INDEX idx_pastoral_care_category     ON public.agenda_pastoral_care(user_id, category);
+CREATE INDEX IF NOT EXISTS idx_pastoral_care_user_id      ON public.agenda_pastoral_care(user_id);
+CREATE INDEX IF NOT EXISTS idx_pastoral_care_scheduled_at ON public.agenda_pastoral_care(scheduled_at DESC);
+CREATE INDEX IF NOT EXISTS idx_pastoral_care_category     ON public.agenda_pastoral_care(user_id, category);
 
+DROP TRIGGER IF EXISTS set_updated_at_agenda_pastoral_care ON public.agenda_pastoral_care;
 CREATE TRIGGER set_updated_at_agenda_pastoral_care
   BEFORE UPDATE ON public.agenda_pastoral_care
   FOR EACH ROW EXECUTE PROCEDURE public.set_updated_at();
 
 -- =============================================
--- AGENDA_GOOGLE_TOKENS — OAuth tokens por usuário
+-- AGENDA_GOOGLE_TOKENS
 -- =============================================
-CREATE TABLE public.agenda_google_tokens (
+CREATE TABLE IF NOT EXISTS public.agenda_google_tokens (
   id                  uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id             uuid NOT NULL UNIQUE REFERENCES auth.users(id) ON DELETE CASCADE,
 
@@ -205,19 +193,21 @@ CREATE TABLE public.agenda_google_tokens (
 
 ALTER TABLE public.agenda_google_tokens ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "agenda_google_tokens: owner only" ON public.agenda_google_tokens;
 CREATE POLICY "agenda_google_tokens: owner only"
   ON public.agenda_google_tokens FOR ALL
   USING (auth.uid() = user_id)
   WITH CHECK (auth.uid() = user_id);
 
+DROP TRIGGER IF EXISTS set_updated_at_agenda_google_tokens ON public.agenda_google_tokens;
 CREATE TRIGGER set_updated_at_agenda_google_tokens
   BEFORE UPDATE ON public.agenda_google_tokens
   FOR EACH ROW EXECUTE PROCEDURE public.set_updated_at();
 
 -- =============================================
--- AGENDA_SYNC_LOG — auditoria de sincronizações
+-- AGENDA_SYNC_LOG
 -- =============================================
-CREATE TABLE public.agenda_sync_log (
+CREATE TABLE IF NOT EXISTS public.agenda_sync_log (
   id              uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id         uuid NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
   direction       text NOT NULL CHECK (direction IN ('import', 'export')),
@@ -233,12 +223,13 @@ CREATE TABLE public.agenda_sync_log (
 
 ALTER TABLE public.agenda_sync_log ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "agenda_sync_log: owner read" ON public.agenda_sync_log;
 CREATE POLICY "agenda_sync_log: owner read"
   ON public.agenda_sync_log FOR SELECT
   USING (auth.uid() = user_id);
 
-CREATE INDEX idx_sync_log_user_id    ON public.agenda_sync_log(user_id);
-CREATE INDEX idx_sync_log_created_at ON public.agenda_sync_log(created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_sync_log_user_id    ON public.agenda_sync_log(user_id);
+CREATE INDEX IF NOT EXISTS idx_sync_log_created_at ON public.agenda_sync_log(created_at DESC);
 
 -- =============================================
 -- RPCs
