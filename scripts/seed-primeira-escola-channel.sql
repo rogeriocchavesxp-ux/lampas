@@ -5,7 +5,7 @@ INSERT INTO public.editorial_channels (slug, name, domain, description, accent_c
 VALUES (
   'primeira-escola',
   'Primeira Escola',
-  'primeiraescola.com.br',
+  'www.primeiraescola.com.br',
   'Portal de educação cristã e recursos para a família',
   '#2d6a4f',
   true
