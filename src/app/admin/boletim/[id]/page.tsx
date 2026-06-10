@@ -2,6 +2,8 @@ import Link from 'next/link'
 import { redirect, notFound } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import BoletimForm from '../BoletimForm'
+import ChannelPublisher from '../ChannelPublisher'
+import { listChannels, listPublications } from '../../hub/actions'
 
 export default async function EditarEntradaPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
@@ -12,7 +14,7 @@ export default async function EditarEntradaPage({ params }: { params: Promise<{ 
 
   const { data: profile } = await supabase
     .from('profiles')
-    .select('role')
+    .select('role, is_hub_editor')
     .eq('id', user.id)
     .maybeSingle()
 
@@ -25,6 +27,18 @@ export default async function EditarEntradaPage({ params }: { params: Promise<{ 
     .maybeSingle()
 
   if (!entry) notFound()
+
+  const isHubEditor = profile?.is_hub_editor === true
+  const [channels, publications] = isHubEditor
+    ? await Promise.all([listChannels(), listPublications('boletim', id)])
+    : [[], []]
+
+  const cardStyle: React.CSSProperties = {
+    border: '1px solid var(--border)',
+    borderRadius: 12,
+    background: 'var(--surface)',
+    padding: '2rem',
+  }
 
   return (
     <main style={{ minHeight: '100vh', background: 'var(--background)', padding: '2rem' }}>
@@ -40,14 +54,20 @@ export default async function EditarEntradaPage({ params }: { params: Promise<{ 
           </p>
         </div>
 
-        <div style={{
-          border: '1px solid var(--border)',
-          borderRadius: 12,
-          background: 'var(--surface)',
-          padding: '2rem',
-        }}>
+        <div style={cardStyle}>
           <BoletimForm entry={entry} />
         </div>
+
+        {isHubEditor && (
+          <div style={{ ...cardStyle, marginTop: '1.5rem' }}>
+            <ChannelPublisher
+              contentType="boletim"
+              contentId={id}
+              channels={channels}
+              publications={publications}
+            />
+          </div>
+        )}
 
       </div>
     </main>
