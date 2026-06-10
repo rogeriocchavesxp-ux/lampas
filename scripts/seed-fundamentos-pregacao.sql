@@ -15,7 +15,15 @@ BEGIN
   LIMIT 1;
 
   IF v_course_id IS NULL THEN
-    RAISE EXCEPTION 'Curso "Fundamentos da Pregação Bíblica" não encontrado em knowledge_items.';
+    INSERT INTO public.knowledge_items (user_id, item_type, title, status, content)
+    VALUES (
+      'ce67d04b-3743-4393-b44e-1e468b6fb066',
+      'course',
+      'Fundamentos da Pregação Bíblica',
+      'captured',
+      '{}'::jsonb
+    )
+    RETURNING id INTO v_course_id;
   END IF;
 
   v_modules_json := $modules$[
