@@ -85,6 +85,16 @@ const MODULE_COLORS: Record<string, string> = {
   pronuntiatio: '#F97316',
 }
 
+const LEIA_ASSIMILE_SUGGESTIONS = [
+  'Leia o texto lentamente.',
+  'Leia o texto mais de uma vez.',
+  'Leia o texto em voz alta.',
+  'Leia blocos maiores e menores da passagem.',
+  'Observe palavras repetidas.',
+  'Observe mudanças de assunto.',
+  'Procure ouvir o texto antes de analisá-lo.',
+]
+
 function modeTheme(mode: SectionDef['communicationMode']): { color: string; bg: string; label: string } {
   if (mode === 'sermao') return { color: 'var(--ai)', bg: 'rgba(139,92,246,0.08)', label: 'Sermão' }
   if (mode === 'estudo_biblico') return { color: '#10B981', bg: 'rgba(16,185,129,0.08)', label: 'Estudo Bíblico' }
@@ -133,6 +143,7 @@ export default function SectionWorkspace({
   }, [existingSection])
 
   const isPalestraConstruir = sectionDef.slug === 'palestra_construir'
+  const isTabLayout        = sectionDef.slug === 'preparar_leia_assimile'
 
   const loadDynamicPointCards = useCallback((): DynamicPointCard[] => {
     if (!isPalestraConstruir) return []
@@ -156,6 +167,7 @@ export default function SectionWorkspace({
   const [cardContent, setCardContent]   = useState<Record<string, string>>(loadCards)
   const [dynamicPointCards, setDynamicPointCards] = useState<DynamicPointCard[]>(loadDynamicPointCards)
   const [expandedCards, setExpandedCards] = useState<Set<string>>(() => new Set([sectionDef.cards[0]?.id]))
+  const [activeTab, setActiveTab]        = useState<string>(() => sectionDef.cards[0]?.id ?? '')
   const [editingCards, setEditingCards]   = useState<Set<string>>(() => new Set())
   const [questionsOpen, setQuestionsOpen] = useState(false)
   const [saving, setSaving]               = useState(false)
@@ -552,7 +564,164 @@ export default function SectionWorkspace({
 
       {/* ── Cards ─────────────────────────────────────────────────────────── */}
       <div>
-        {activeCards.map((card, idx) => {
+        {isTabLayout ? (
+          <>
+            {/* Tab bar */}
+            <div style={{
+              display: 'flex', borderBottom: '1px solid var(--border-subtle)',
+              marginBottom: '1.5rem',
+            }}>
+              {activeCards.map(card => {
+                const text   = toDisplayText(cardContent[card.id] ?? '')
+                const status = fieldStatus(text)
+                const isActive = activeTab === card.id
+                return (
+                  <button
+                    key={card.id}
+                    onClick={() => setActiveTab(card.id)}
+                    style={{
+                      background: 'none', border: 'none', cursor: 'pointer',
+                      fontFamily: 'inherit', padding: '0.55rem 0.9rem',
+                      fontSize: '0.83rem', fontWeight: isActive ? '600' : '400',
+                      color: isActive ? 'var(--text-primary)' : 'var(--text-muted)',
+                      borderBottom: isActive ? `2px solid ${moduleColor}` : '2px solid transparent',
+                      marginBottom: '-1px', transition: 'color 0.12s',
+                      display: 'flex', alignItems: 'center', gap: '0.35rem',
+                      whiteSpace: 'nowrap',
+                    }}
+                  >
+                    <span style={{
+                      fontSize: '0.65rem',
+                      color: status === 'reviewed' ? 'var(--success)' : status === 'draft' ? 'var(--accent)' : 'var(--border)',
+                    }}>
+                      {status === 'reviewed' ? '✓' : status === 'draft' ? '◐' : '○'}
+                    </span>
+                    {card.title}
+                  </button>
+                )
+              })}
+            </div>
+
+            {/* Active tab content */}
+            {activeCards.map(card => {
+              if (card.id !== activeTab) return null
+              const content        = cardContent[card.id] ?? ''
+              const displayContent = normalizeStoredHtml(content)
+              const displayText    = toDisplayText(content)
+              const hasContent     = displayText.trim().length > 0
+              const isEditing      = editingCards.has(card.id) || !hasContent
+              const state          = cardStates[card.id] ?? 'idle'
+              const isWorking      = state === 'generating' || state === 'saving'
+              const errorMessage   = cardErrors[card.id]
+              return (
+                <div key={card.id}>
+                  {/* Reading suggestions — Leitura tab only */}
+                  {card.id === 'preparar_leitura_lenta' && (
+                    <div style={{
+                      marginBottom: '1.25rem', padding: '0.75rem 1rem',
+                      background: 'var(--surface)', border: '1px solid var(--border-subtle)',
+                      borderRadius: '10px',
+                    }}>
+                      <p style={{
+                        fontSize: '0.69rem', fontWeight: 600, letterSpacing: '0.07em',
+                        textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: '0.5rem',
+                      }}>
+                        Sugestões para esta etapa
+                      </p>
+                      <ul style={{ margin: 0, padding: '0 0 0 1.1rem' }}>
+                        {LEIA_ASSIMILE_SUGGESTIONS.map((s, i) => (
+                          <li key={i} style={{ fontSize: '0.82rem', color: 'var(--text-muted)', lineHeight: '1.65' }}>
+                            {s}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+
+                  {errorMessage && (
+                    <div style={{
+                      marginBottom: '0.75rem', padding: '0.65rem 0.75rem',
+                      border: '1px solid rgba(185,28,28,0.22)', borderRadius: '8px',
+                      background: 'rgba(254,242,242,0.9)', color: '#B91C1C',
+                      fontSize: '0.78rem', lineHeight: 1.45,
+                    }}>
+                      {errorMessage}
+                    </div>
+                  )}
+
+                  {isEditing ? (
+                    <RichEditor
+                      value={content}
+                      onChange={html => scheduleAutosave(card.id, html)}
+                      placeholder={card.placeholder}
+                      moduleColor={moduleColor}
+                      minHeight={200}
+                    />
+                  ) : (
+                    <div style={{
+                      width: '100%', background: 'var(--surface)',
+                      border: '1px solid var(--border)', borderRadius: '8px',
+                      padding: '1rem 1.1rem', boxSizing: 'border-box', minHeight: '5rem',
+                    }}>
+                      {isHtmlContent(displayContent) ? (
+                        <div
+                          className="rich-content-display"
+                          dangerouslySetInnerHTML={{ __html: displayContent }}
+                          style={{ fontFamily: 'var(--font-serif), Georgia, serif', fontSize: '0.9rem', lineHeight: '1.78', color: 'var(--text-primary)' }}
+                        />
+                      ) : (
+                        <MarkdownRenderer content={displayContent} moduleColor={moduleColor} />
+                      )}
+                    </div>
+                  )}
+
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '0.5rem' }}>
+                    {hasContent && (
+                      <button
+                        onClick={() => toggleEdit(card.id)}
+                        style={{
+                          background: 'transparent', border: 'none', cursor: 'pointer',
+                          fontFamily: 'inherit', fontSize: '0.71rem',
+                          color: 'var(--text-muted)', padding: 0, transition: 'color 0.12s',
+                        }}
+                        onMouseEnter={e => { e.currentTarget.style.color = 'var(--text-secondary)' }}
+                        onMouseLeave={e => { e.currentTarget.style.color = 'var(--text-muted)' }}
+                      >
+                        {isEditing ? '← Visualizar' : 'Editar'}
+                      </button>
+                    )}
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginLeft: 'auto' }}>
+                      {state !== 'idle' && (
+                        <span style={{
+                          fontSize: '0.7rem', fontStyle: 'italic',
+                          color: state === 'saved' ? 'var(--success)' : 'var(--text-muted)',
+                        }}>
+                          {state === 'generating' ? 'gerando…' : state === 'saving' ? 'salvando…' : 'salvo ✓'}
+                        </span>
+                      )}
+                      <button
+                        onClick={() => generateCard(card.id)}
+                        disabled={isWorking || generatingAll}
+                        style={{
+                          background: 'transparent', border: 'none',
+                          cursor: isWorking ? 'wait' : 'pointer',
+                          fontFamily: 'inherit', fontSize: '0.71rem',
+                          color: 'var(--text-muted)', padding: 0, transition: 'color 0.12s',
+                          opacity: isWorking ? 0.5 : 1,
+                        }}
+                        onMouseEnter={e => { if (!isWorking) e.currentTarget.style.color = 'var(--accent)' }}
+                        onMouseLeave={e => { e.currentTarget.style.color = 'var(--text-muted)' }}
+                      >
+                        Gerar com IA
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )
+            })}
+          </>
+        ) : null}
+        {!isTabLayout && activeCards.map((card, idx) => {
           const content   = cardContent[card.id] ?? ''
           const displayContent = normalizeStoredHtml(content)
           const displayText = toDisplayText(content)

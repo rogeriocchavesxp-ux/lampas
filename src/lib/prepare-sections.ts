@@ -50,12 +50,10 @@ export const PREPARE_SECTIONS: SectionDef[] = [
     ],
     relevantAuthors: ['Eugene Peterson', 'John Stott', 'Gordon Fee', 'Douglas Stuart'],
     cards: [
-      card('preparar_leitura_lenta', 'Leitura lenta', 'Registre como foi a leitura lenta da passagem. O que ficou mais evidente quando você desacelerou?', 'Guie-me em uma leitura lenta desta passagem, priorizando observação simples e reverente.'),
-      card('preparar_multiplas_leituras', 'Múltiplas leituras', 'Anote diferenças percebidas entre a primeira, segunda e terceira leitura. O que cresceu em clareza?', 'Sugira um roteiro de múltiplas leituras para assimilar esta passagem antes da exegese técnica.'),
-      card('preparar_comparacao_traducoes', 'Comparação de traduções', 'Compare traduções em português e registre diferenças que chamam atenção, sem ainda resolver tecnicamente todos os detalhes.', 'Ajude-me a comparar traduções desta passagem em nível inicial, observando diferenças relevantes sem aprofundar gramática ainda.'),
-      card('preparar_leitura_voz_alta', 'Leitura em voz alta', 'Registre o ritmo, o tom, as pausas naturais e as emoções percebidas ao ler o texto em voz alta.', 'Ajude-me a perceber o tom e o movimento da passagem por meio de leitura em voz alta.'),
-      card('preparar_ideia_inicial', 'Ideia central inicial', 'Escreva, em linguagem provisória, qual parece ser a ideia central da passagem neste primeiro contato.', 'Ajude-me a formular uma ideia central inicial e provisória para esta passagem, sem fechar a exegese cedo demais.'),
-      card('preparar_tensoes_repeticoes', 'Tensões e repetições', 'Liste tensões, contrastes, palavras repetidas, emoções dominantes e movimentos aparentes do texto.', 'Faça perguntas de observação inicial sobre tensões, repetições, emoções e movimentos desta passagem.'),
+      card('preparar_leitura_lenta', 'Leitura', 'Registre o que percebeu no primeiro contato com o texto. O que ficou mais evidente? Que palavras, emoções ou imagens chamaram atenção?', 'Guie-me em uma leitura lenta e reverente desta passagem, priorizando observação simples antes de qualquer análise técnica.'),
+      card('preparar_comparacao_traducoes', 'Comparação', 'Compare traduções em português e registre diferenças que chamam atenção, sem ainda resolver tecnicamente todos os detalhes.', 'Ajude-me a comparar traduções desta passagem em nível inicial, observando diferenças relevantes sem aprofundar gramática ainda.'),
+      card('preparar_ideia_inicial', 'Ideia Central', 'Escreva, em linguagem provisória, qual parece ser a ideia central da passagem neste primeiro contato.', 'Ajude-me a formular uma ideia central inicial e provisória para esta passagem, sem fechar a exegese cedo demais.'),
+      card('preparar_tensoes_repeticoes', 'Tensões', 'Liste tensões, contrastes, palavras repetidas, emoções dominantes e movimentos aparentes do texto.', 'Faça perguntas de observação inicial sobre tensões, repetições, emoções e movimentos desta passagem.'),
     ],
   },
   {
