@@ -662,17 +662,8 @@ export default function BibleFloatingWindow({ book, passageRef, testament, proje
     const segs = buildProprioSegs(proprioText)
     return (
       <div style={{ padding: '1rem 1.25rem 1.5rem', display: 'flex', flexDirection: 'column', gap: '0.65rem' }}>
-        {/* Toolbar */}
-        <div style={{ display: 'flex', gap: '0.4rem', alignItems: 'center', flexShrink: 0 }}>
-          <span style={{ fontSize: '0.6rem', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.06em', flex: 1 }}>
-            Selecione trechos para marcar
-          </span>
-          <button onClick={() => setProprioEditing(true)} style={{ background: 'transparent', border: '1px solid var(--border)', borderRadius: '6px', padding: '0.2rem 0.55rem', fontSize: '0.62rem', color: 'var(--text-muted)', cursor: 'pointer', fontFamily: 'inherit' }}>
-            Editar
-          </button>
-        </div>
-        {/* Anotações rápidas legend */}
-        <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap' }}>
+        {/* Toolbar — categorias + Editar em uma única barra */}
+        <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap', alignItems: 'center' }}>
           {PRIMARY_CATS_PROPRIO.map(t => {
             const d = CLASS_DEF[t]
             return (
@@ -681,6 +672,10 @@ export default function BibleFloatingWindow({ book, passageRef, testament, proje
               </span>
             )
           })}
+          <div style={{ width: '1px', height: '14px', background: 'var(--border)', margin: '0 2px', flexShrink: 0 }} />
+          <button onClick={() => setProprioEditing(true)} style={{ background: 'transparent', border: '1px solid var(--border)', borderRadius: '4px', padding: '1px 6px', fontSize: '0.58rem', fontWeight: 600, color: 'var(--text-muted)', cursor: 'pointer', fontFamily: 'inherit' }}>
+            ✎ Editar
+          </button>
         </div>
         {/* Texto anotável */}
         <div data-verse="0" style={{ fontFamily: "'EB Garamond', Georgia, serif", fontSize: '1.02rem', lineHeight: '1.95', color: 'var(--text-primary)', whiteSpace: 'pre-wrap', wordBreak: 'break-word', userSelect: 'text', cursor: 'text' }}>
