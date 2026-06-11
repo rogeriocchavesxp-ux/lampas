@@ -80,16 +80,18 @@ function toPlainText(value: string): string {
 
 // ── Canvas ────────────────────────────────────────────────────────────────────
 
-const CW      = 800
-const CH      = 540
-const CX      = 400
-const CY      = 270
-const RADIUS  = 205
-const PANEL_W = 300
+const CW        = 800
+const CH        = 540
+const CX        = 400
+const CY        = 270
+const RADIUS    = 205
+const PANEL_W   = 300
+const OBS_COLOR = '#0F766E'
+const OBS_BG    = '#F0FDFA'
 
 // ── Node definitions ──────────────────────────────────────────────────────────
 
-type NodeKind = 'cls' | 'card'
+type NodeKind = 'cls' | 'card' | 'obs'
 type OverviewLayerId = 'contexto_carta' | 'estrutura_texto' | 'sintese_exegetica' | 'sintese_homiletica'
 
 interface NodeDef {
@@ -367,6 +369,27 @@ const MODE_NODES_MAP: Record<string, NodeDef[]> = {
   ],
 }
 
+// ── Observações Pessoais ──────────────────────────────────────────────────────
+
+const OBS_CARD_LABELS: Record<string, string> = {
+  preparar_leitura_lenta:          'Leitura lenta',
+  preparar_multiplas_leituras:     'Múltiplas leituras',
+  preparar_comparacao_traducoes:   'Comparação de traduções',
+  preparar_leitura_voz_alta:       'Leitura em voz alta',
+  preparar_ideia_inicial:          'Ideia central inicial',
+  preparar_tensoes_repeticoes:     'Tensões e repetições',
+  preparar_observacoes_livres:     'Observações livres',
+  preparar_perguntas_dificuldades: 'Perguntas e dificuldades',
+  preparar_conexoes_iniciais:      'Conexões iniciais',
+  preparar_marcacoes:              'Marcações e destaques',
+  preparar_modo_imersao:           'Modo Imersão',
+}
+
+const OBS_NODE: NodeDef = {
+  key: 'obs_pessoais', label: 'Observações Pessoais', icon: '📝',
+  angle: 0, color: OBS_COLOR, bg: OBS_BG, kind: 'obs',
+}
+
 // ── Prompt de IA por modo (para o botão "Organizar com IA" em cada nó) ────────
 
 function buildVGNodePrompt(project: Project, node: NodeDef): string {
@@ -455,12 +478,14 @@ export default function VisaoGeralWorkspace({
 
   // Nós adaptativos ao modo de estudo
   const allNodes = useMemo<NodeDef[]>(
-    () => getOverviewNodes(project),
+    () => [...getOverviewNodes(project), OBS_NODE],
     [project.study_mode, project.book],
   )
   const [activeLayer, setActiveLayer] = useState<OverviewLayerId>('contexto_carta')
   const nodes = useMemo<NodeDef[]>(
-    () => isLayeredSermon ? allNodes.filter(node => node.layer === activeLayer) : allNodes,
+    () => isLayeredSermon
+      ? allNodes.filter(node => node.layer === activeLayer || node.kind === 'obs')
+      : allNodes,
     [allNodes, activeLayer, isLayeredSermon],
   )
   const effectiveSectionDef = useMemo(
@@ -600,6 +625,19 @@ export default function VisaoGeralWorkspace({
     [existingSection],
   )
 
+  const obsContent = useMemo(() => {
+    const entries: Array<{ label: string; value: string }> = []
+    for (const slug of ['preparar_leia_assimile', 'preparar_primeiras_impressoes']) {
+      const section = allSections.find(s => s.slug === slug)
+      if (!section) continue
+      const sCards = (section.content as { cards?: Record<string, string> } | null)?.cards ?? {}
+      for (const [key, val] of Object.entries(sCards)) {
+        if (val?.trim()) entries.push({ label: OBS_CARD_LABELS[key] ?? key.replace(/_/g, ' '), value: toPlainText(val) })
+      }
+    }
+    return entries
+  }, [allSections])
+
   // ── Node data helpers ──────────────────────────────────────────────────────
   const getLinkedSection = (node: NodeDef): Section | undefined =>
     node.sectionSlug ? allSections.find(section => section.slug === node.sectionSlug) : undefined
@@ -626,6 +664,7 @@ export default function VisaoGeralWorkspace({
       : []
 
   const getCardText = (node: NodeDef): string =>
+    node.kind === 'obs' ? obsContent.map(e => `${e.label}: ${e.value}`).join('\n\n') :
     node.sectionSlug
       ? getLinkedCardEntries(node).map(([, value]) => value).join('\n\n')
       : node.kind === 'card' && node.cardIds
@@ -633,6 +672,7 @@ export default function VisaoGeralWorkspace({
       : ''
 
   const getCount = (node: NodeDef): number =>
+    node.kind === 'obs' ? obsContent.length :
     node.sectionSlug
       ? getLinkedCardEntries(node).length
       : node.kind === 'cls' ? getClsItems(node).length : (getCardText(node) ? 1 : 0)
@@ -643,6 +683,7 @@ export default function VisaoGeralWorkspace({
   }
 
   const totalItems = nodes.reduce((s, n) => s + getCount(n), 0)
+  const canvasNodes = nodes.filter(n => n.kind !== 'obs')
 
   // ── Abrir modal de evolução das fases ─────────────────────────────────────
   const openEvolution = useCallback(async () => {
@@ -1080,8 +1121,11 @@ export default function VisaoGeralWorkspace({
         <>
           <div ref={wrapRef} style={{ display: 'flex', gap: `${PANEL_GAP}px`, alignItems: 'flex-start' }}>
 
+            {/* Left column: canvas + obs button */}
+            <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: '8px' }}>
+
             {/* Canvas */}
-            <div style={{ position: 'relative', height: `${scaledH}px`, flex: 1, minWidth: 0, transition: 'all 0.25s ease' }}>
+            <div style={{ position: 'relative', height: `${scaledH}px`, transition: 'all 0.25s ease' }}>
               <div style={{
                 position: 'absolute', top: 0, left: 0,
                 width: `${CW}px`, height: `${CH}px`,
@@ -1094,7 +1138,7 @@ export default function VisaoGeralWorkspace({
                   width={CW} height={CH} viewBox={`0 0 ${CW} ${CH}`}
                 >
                   <defs>
-                    {nodes.map(node => {
+                    {canvasNodes.map(node => {
                       const { x: nx, y: ny } = nodeXY(node.angle, node.radius ?? RADIUS)
                       return (
                         <linearGradient key={`g-${node.key}`} id={`grad-${node.key}`}
@@ -1105,7 +1149,7 @@ export default function VisaoGeralWorkspace({
                         </linearGradient>
                       )
                     })}
-                    {nodes.map(node => {
+                    {canvasNodes.map(node => {
                       const { x: nx, y: ny } = nodeXY(node.angle, node.radius ?? RADIUS)
                       return (
                         <linearGradient key={`ga-${node.key}`} id={`grad-active-${node.key}`}
@@ -1118,7 +1162,7 @@ export default function VisaoGeralWorkspace({
                     })}
                   </defs>
 
-                  {nodes.map(node => {
+                  {canvasNodes.map(node => {
                     const { x: nx, y: ny } = nodeXY(node.angle, node.radius ?? RADIUS)
                     const isHov = hoveredNode === node.key
                     const isAct = activePanel === node.key
@@ -1208,7 +1252,7 @@ export default function VisaoGeralWorkspace({
                 </button>
 
                 {/* ── Outer nodes ── */}
-                {nodes.map(node => {
+                {canvasNodes.map(node => {
                   const { x: nx, y: ny } = nodeXY(node.angle, node.radius ?? RADIUS)
                   const count   = getCount(node)
                   const hasData = count > 0
@@ -1269,6 +1313,51 @@ export default function VisaoGeralWorkspace({
               </div>
             </div>
 
+            {/* OBS button */}
+            {(() => {
+              const isActive = activePanel === 'obs_pessoais'
+              const hasData  = obsContent.length > 0
+              return (
+                <button
+                  onClick={() => setActivePanel(isActive ? null : 'obs_pessoais')}
+                  style={{
+                    display: 'flex', alignItems: 'center', gap: '8px',
+                    background: isActive ? OBS_BG : '#FFFFFF',
+                    border: `1.5px solid ${isActive ? OBS_COLOR : (hasData ? OBS_COLOR + '45' : '#E2E8F0')}`,
+                    borderRadius: '13px', padding: '10px 16px',
+                    cursor: 'pointer', fontFamily: 'inherit', userSelect: 'none', width: '100%',
+                    boxShadow: isActive
+                      ? `0 0 0 4px ${OBS_COLOR}18, 0 4px 18px ${OBS_COLOR}20, 0 1px 4px rgba(0,0,0,0.06)`
+                      : hasData
+                        ? '0 2px 8px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04)'
+                        : '0 1px 2px rgba(0,0,0,0.03)',
+                    outline: 'none', textAlign: 'left',
+                    transition: 'all 0.18s cubic-bezier(0.16,1,0.3,1)',
+                  }}
+                >
+                  <span style={{ fontSize: '1rem', lineHeight: 1, flexShrink: 0 }}>📝</span>
+                  <span style={{
+                    fontSize: '0.64rem', fontWeight: 700, letterSpacing: '0.05em',
+                    textTransform: 'uppercase', color: hasData ? OBS_COLOR : '#94A3B8',
+                  }}>
+                    Observações Pessoais
+                  </span>
+                  {hasData ? (
+                    <span style={{
+                      fontSize: '0.65rem', fontWeight: 800, color: OBS_COLOR,
+                      background: OBS_COLOR + '18', borderRadius: '20px',
+                      padding: '2px 8px', marginLeft: 'auto', lineHeight: 1, flexShrink: 0,
+                    }}>
+                      {obsContent.length}
+                    </span>
+                  ) : (
+                    <span style={{ fontSize: '0.55rem', color: '#CBD5E1', marginLeft: 'auto', letterSpacing: '0.08em' }}>vazio</span>
+                  )}
+                </button>
+              )
+            })()}
+            </div>{/* end left column */}
+
             {/* ── Side panel ── */}
             {activeNode && (
               <div style={{
@@ -1324,6 +1413,36 @@ export default function VisaoGeralWorkspace({
 
                 {/* Panel body */}
                 <div style={{ flex: 1, overflowY: 'auto', padding: activeItem && activeNode.kind === 'cls' ? '0' : '8px' }}>
+
+                  {/* ── OBSERVAÇÕES PESSOAIS ── */}
+                  {activeNode.kind === 'obs' && (
+                    obsContent.length === 0 ? (
+                      <div style={{ padding: '18px 10px', textAlign: 'center' }}>
+                        <div style={{ fontSize: '0.79rem', color: '#94A3B8', fontStyle: 'italic', lineHeight: 1.5 }}>
+                          Nenhuma observação registrada ainda.
+                        </div>
+                        <div style={{ fontSize: '0.7rem', color: OBS_COLOR, marginTop: '6px', lineHeight: 1.4 }}>
+                          Preencha &quot;Leia e Assimile&quot; e &quot;Primeiras Impressões&quot; para ver o resumo aqui.
+                        </div>
+                      </div>
+                    ) : (
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                        {obsContent.map((entry, i) => (
+                          <div key={i} style={{
+                            padding: '8px 10px', borderRadius: '8px',
+                            background: '#F8FAFC', border: '1px solid #E2E8F0',
+                          }}>
+                            <div style={{ fontSize: '0.58rem', fontWeight: 800, color: OBS_COLOR, textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: '3px' }}>
+                              {entry.label}
+                            </div>
+                            <div style={{ fontSize: '0.76rem', color: '#334155', lineHeight: 1.5, overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical' }}>
+                              {entry.value}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )
+                  )}
 
                   {/* ── DETAIL VIEW — termo selecionado ── */}
                   {activeItem && activeNode.kind === 'cls' && (() => {
@@ -1747,8 +1866,15 @@ export default function VisaoGeralWorkspace({
                     )}
                     <button
                       onClick={() => {
-                        if (activeNode.sectionSlug) onNavigate?.(activeNode.sectionSlug)
-                        else onAskAI(buildVGNodePrompt(project, activeNode))
+                        if (activeNode.kind === 'obs') {
+                          const ref = isPassageMode ? `${project.book} ${project.passage_ref}` : project.passage_ref
+                          const content = obsContent.map(e => `**${e.label}**:\n${e.value}`).join('\n\n')
+                          onAskAI(`Aqui estão as observações pessoais sobre ${ref}, coletadas nas etapas "Leia e Assimile" e "Primeiras Impressões":\n\n${content}\n\nReorganize essas observações em três grupos, sem adicionar conteúdo novo:\n\n1. **Temas observados** — elementos, conceitos e ideias percebidos no texto\n2. **Tensões observadas** — contrastes, conflitos, questões e dificuldades notadas\n3. **Impressões iniciais** — reações, emoções, conexões e percepções pessoais\n\nMantenha rigorosamente apenas o que foi escrito. Não acrescente explicações ou conteúdo ausente nas notas.`)
+                        } else if (activeNode.sectionSlug) {
+                          onNavigate?.(activeNode.sectionSlug)
+                        } else {
+                          onAskAI(buildVGNodePrompt(project, activeNode))
+                        }
                       }}
                       style={{
                         display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '5px',
@@ -1759,9 +1885,9 @@ export default function VisaoGeralWorkspace({
                       onMouseEnter={e => { e.currentTarget.style.borderColor = '#8B5CF6'; e.currentTarget.style.color = '#7C3AED' }}
                       onMouseLeave={e => { e.currentTarget.style.borderColor = '#E2E8F0'; e.currentTarget.style.color = '#64748B' }}
                     >
-                      {activeNode.sectionSlug
-                        ? <><BookOpen size={11} strokeWidth={1.75} /> Abrir seção</>
-                        : <><Sparkles size={11} strokeWidth={1.75} /> Organizar com IA</>}
+                      {activeNode.kind === 'obs' || !activeNode.sectionSlug
+                        ? <><Sparkles size={11} strokeWidth={1.75} /> Organizar com IA</>
+                        : <><BookOpen size={11} strokeWidth={1.75} /> Abrir seção</>}
                     </button>
                   </div>
                 )}
