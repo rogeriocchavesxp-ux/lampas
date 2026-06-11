@@ -15,6 +15,7 @@ type ClassType =
   | 'tempo' | 'instituicao' | 'cargo' | 'conflito' | 'repeticao'
   | 'objetivo' | 'comentario' | 'insight' | 'observacao'
   | 'conectivo' | 'verbo_principal' | 'promessa' | 'imperativo'
+  | 'ambiente' | 'tensao' | 'climax' | 'resolucao' | 'desfecho'
 
 type HColor = 'yellow' | 'blue' | 'green' | 'purple' | 'orange' | 'red'
 type MenuState = 'main' | 'colors' | 'more'
@@ -62,10 +63,15 @@ const CLASS_DEF: Record<ClassType, ClassDef> = {
   comentario:     { emoji: '📝', label: 'Comentário',    color: '#64748B' },
   insight:        { emoji: '💡', label: 'Insight',        color: '#F59E0B' },
   observacao:     { emoji: '📌', label: 'Observação',    color: '#D97706', sectionSlug: 'preparar_primeiras_impressoes', cardId: 'preparar_observacoes_livres', sectionTitle: '3. Impressões' },
+  ambiente:       { emoji: '🗺', label: 'Ambiente',      color: '#92400E' },
+  tensao:         { emoji: '🔥', label: 'Tensão',        color: '#BE123C', sectionSlug: 'preparar_leia_assimile',          cardId: 'preparar_tensoes_repeticoes',  sectionTitle: '2. Leia e Assimile' },
+  climax:         { emoji: '▲',  label: 'Clímax',        color: '#B45309', sectionSlug: 'preparar_visao_geral',            cardId: 'preparar_climax',              sectionTitle: '4. Visão Geral' },
+  resolucao:      { emoji: '✓',  label: 'Resolução',     color: '#065F46' },
+  desfecho:       { emoji: '■',  label: 'Desfecho',      color: '#4338CA' },
 }
 
 const PRIMARY_CATS:        ClassType[] = ['personagem', 'lugar', 'termo_chave', 'tema', 'teologia']
-const PRIMARY_CATS_PROPRIO:ClassType[] = ['conectivo', 'verbo_principal', 'promessa', 'imperativo', 'personagem', 'tema']
+const PRIMARY_CATS_PROPRIO:ClassType[] = ['conectivo', 'verbo_principal', 'promessa', 'imperativo', 'personagem', 'ambiente', 'tema', 'tensao', 'climax', 'resolucao', 'desfecho']
 const SECONDARY_CATS:      ClassType[] = ['tempo', 'instituicao', 'cargo', 'conflito', 'repeticao', 'objetivo', 'comentario', 'insight', 'observacao']
 
 const HCOLORS: Record<HColor, { bg: string; dot: string }> = {

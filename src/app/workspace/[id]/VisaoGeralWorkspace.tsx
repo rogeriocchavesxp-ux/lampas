@@ -16,6 +16,8 @@ type ClassType =
   | 'personagem' | 'lugar' | 'tema' | 'termo_chave' | 'conflito' | 'repeticao'
   | 'teologia' | 'tempo' | 'instituicao' | 'cargo' | 'objetivo'
   | 'comentario' | 'insight' | 'observacao'
+  | 'conectivo' | 'verbo_principal' | 'promessa' | 'imperativo'
+  | 'ambiente' | 'tensao' | 'climax' | 'resolucao' | 'desfecho'
 
 interface Classification {
   id: string; type: ClassType; selectedText: string
@@ -40,6 +42,8 @@ const TYPE_LABELS: Record<ClassType, string> = {
   conflito: 'Conflito', repeticao: 'Repetição', teologia: 'Teologia', tempo: 'Tempo',
   instituicao: 'Instituição', cargo: 'Cargo', objetivo: 'Objetivo',
   comentario: 'Comentário', insight: 'Insight', observacao: 'Observação',
+  conectivo: 'Conectivo', verbo_principal: 'Verbo Principal', promessa: 'Promessa', imperativo: 'Imperativo',
+  ambiente: 'Ambiente', tensao: 'Tensão', climax: 'Clímax', resolucao: 'Resolução', desfecho: 'Desfecho',
 }
 
 // ── Storage ───────────────────────────────────────────────────────────────────
