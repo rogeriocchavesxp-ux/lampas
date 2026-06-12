@@ -17,18 +17,16 @@ export const PREPARE_SECTIONS: SectionDef[] = [
     objective:
       'Iniciar o estudo de modo reverente e pastoral, permitindo que o texto forme o coração do intérprete antes que ele comece a analisá-lo tecnicamente.',
     keyQuestions: [
-      'Como este texto chama você à dependência de Deus?',
-      'O que precisa ser confessado, pedido ou rendido antes do estudo?',
+      'Como este texto chama você à dependência e adoração?',
+      'Por que você está estudando esta passagem agora?',
       'Que necessidade pastoral está diante de você e da congregação?',
-      'Como o estudo pode nascer de oração, e não apenas de técnica?',
+      'Qual é o contexto de comunicação e o perfil do público?',
     ],
     relevantAuthors: ['João Calvino', 'John Owen', 'Martyn Lloyd-Jones', 'John Stott', 'Sinclair Ferguson'],
     cards: [
-      card('preparar_oracao', 'Oração', 'Escreva uma oração honesta diante de Deus antes de estudar o texto. Registre dependência, pedidos, confissão, temor santo e desejo pastoral.', 'Conduza-me em uma oração pastoral e reverente antes de estudar esta passagem, sem tecnicismo e com foco em dependência de Deus.'),
-      card('preparar_pedidos', 'Pedidos e dependência', 'Liste pedidos específicos: iluminação, humildade, fidelidade ao texto, amor pela igreja, coragem pastoral e obediência pessoal.', 'Ajude-me a formular pedidos espirituais específicos para estudar e comunicar esta passagem com fidelidade.'),
-      card('preparar_percepcoes', 'Percepções espirituais', 'Registre percepções iniciais sobre o que Deus parece expor, consolar, corrigir ou despertar em você por meio do texto.', 'Faça perguntas devocionais suaves que me ajudem a perceber como esta passagem trabalha meu coração.'),
-      card('preparar_objetivo_estudo', 'Objetivo do estudo', 'Defina por que você está estudando esta passagem agora e que fruto pastoral espera desse processo.', 'Ajude-me a formular um objetivo espiritual e pastoral para o estudo desta passagem.'),
-      card('preparar_ocasiiao_publico', 'Ocasião e público', 'Descreva a ocasião, o público, a série, o contexto ministerial e a necessidade pastoral que cercam este estudo.', 'Ajude-me a discernir a ocasião, o público e a necessidade pastoral relacionados a esta passagem.'),
+      card('preparar_oracao', 'Oração', 'Escreva uma oração honesta diante de Deus antes de estudar. Inclua: dependência de Deus, adoração, confissão, pedidos específicos, temor santo e disposição para ouvir a Palavra.', 'Conduza-me em uma oração pastoral e reverente antes de estudar esta passagem, sem tecnicismo, com foco em dependência, adoração, confissão e temor de Deus.'),
+      card('preparar_objetivo_estudo', 'Objetivo do estudo', 'Por que você está estudando esta passagem agora? (Sermão / Aula / Devocional / Aconselhamento / Crescimento pessoal / Outro). Que fruto pastoral espera desse processo?', 'Ajude-me a formular um objetivo claro e pastoral para o estudo desta passagem, considerando a ocasião e o fruto esperado.'),
+      card('preparar_ocasiiao_publico', 'Ocasião e público', 'Descreva o contexto de comunicação, o perfil dos ouvintes e o ambiente ministerial: série, culto, grupo, contexto, necessidade dominante.', 'Ajude-me a descrever a ocasião, o perfil do público e o ambiente ministerial relacionados a esta passagem.'),
     ],
   },
   {

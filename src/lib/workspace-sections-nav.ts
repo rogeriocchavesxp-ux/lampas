@@ -32,14 +32,6 @@ export const WORKSPACE_SECTIONS_NAV: SectionNav[] = [
         "title": "Oração"
       },
       {
-        "id": "preparar_pedidos",
-        "title": "Pedidos e dependência"
-      },
-      {
-        "id": "preparar_percepcoes",
-        "title": "Percepções espirituais"
-      },
-      {
         "id": "preparar_objetivo_estudo",
         "title": "Objetivo do estudo"
       },
