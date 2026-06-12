@@ -96,7 +96,7 @@ const OBS_BG    = '#F0FDFA'
 
 // ── Node definitions ──────────────────────────────────────────────────────────
 
-type NodeKind = 'cls' | 'card' | 'obs'
+type NodeKind = 'cls' | 'card' | 'obs' | 'phase'
 type OverviewLayerId = 'contexto_carta' | 'estrutura_texto' | 'sintese_exegetica' | 'sintese_homiletica'
 
 interface NodeDef {
@@ -395,6 +395,21 @@ const OBS_NODE: NodeDef = {
   angle: 0, color: OBS_COLOR, bg: OBS_BG, kind: 'obs',
 }
 
+// ── Nós por fase (Preparar / Investigar) ─────────────────────────────────────
+
+const PREPARAR_PHASE_NODES: NodeDef[] = [
+  { key: 'phase_preparacao_espiritual', label: 'Preparação Espiritual', icon: '🙏', angle: -90,  color: '#D97706', bg: '#FFFBEB', kind: 'phase', sectionSlug: 'preparacao_espiritual' },
+  { key: 'phase_leia_assimile',         label: 'Leia e Assimile',       icon: '📖', angle: -18,  color: '#059669', bg: '#F0FDF4', kind: 'phase', sectionSlug: 'preparar_leia_assimile' },
+  { key: 'phase_primeiras_impressoes',  label: 'Primeiras Impressões',  icon: '💬', angle: 54,   color: '#4F46E5', bg: '#EEF2FF', kind: 'phase', sectionSlug: 'preparar_primeiras_impressoes' },
+  { key: 'phase_visao_geral_prep',      label: 'Visão Geral',           icon: '⊞',  angle: 126,  color: '#163A6B', bg: '#EEF3FA', kind: 'phase', sectionSlug: 'preparar_visao_geral' },
+]
+
+const INVESTIGAR_PHASE_NODES: NodeDef[] = [
+  { key: 'phase_estudo_contextual', label: 'Estudo Contextual', icon: '📅', angle: -90, color: '#B45309', bg: '#FEF3C7', kind: 'phase', sectionSlug: 'contexto_historico' },
+  { key: 'phase_estudo_textual',    label: 'Estudo Textual',    icon: '🔑', angle: 30,  color: '#163A6B', bg: '#EEF3FA', kind: 'phase', sectionSlug: 'analise_textual' },
+  { key: 'phase_estudo_teologico',  label: 'Estudo Teológico',  icon: '✚',  angle: 150, color: '#7C3AED', bg: '#F5F3FF', kind: 'phase', sectionSlug: 'contexto_canonico' },
+]
+
 // ── Prompt de IA por modo (para o botão "Organizar com IA" em cada nó) ────────
 
 function buildVGNodePrompt(project: Project, node: NodeDef): string {
@@ -427,10 +442,10 @@ Diretriz: use a base interpretativa da carta antes de formular implicações hom
   return prompts[mode] ?? prompts.exegese_biblica
 }
 
-function getOverviewNodes(project: Project): NodeDef[] {
-  if (isEpistolarySermon(project)) {
-    return SERMAO_EPISTOLAR_NODES
-  }
+function getOverviewNodes(project: Project, sectionSlug: string): NodeDef[] {
+  if (sectionSlug === 'preparar_visao_geral') return PREPARAR_PHASE_NODES
+  if (sectionSlug === 'investigar_visao_geral') return INVESTIGAR_PHASE_NODES
+  if (isEpistolarySermon(project)) return SERMAO_EPISTOLAR_NODES
   return MODE_NODES_MAP[project.study_mode ?? ''] ?? MODE_NODES_MAP.exegese_biblica
 }
 
@@ -481,10 +496,10 @@ export default function VisaoGeralWorkspace({
 
   const isLayeredSermon = isEpistolarySermon(project)
 
-  // Nós adaptativos ao modo de estudo
+  // Nós adaptativos ao modo de estudo / fase
   const allNodes = useMemo<NodeDef[]>(
-    () => [...getOverviewNodes(project), OBS_NODE],
-    [project.study_mode, project.book],
+    () => [...getOverviewNodes(project, sectionDef.slug), OBS_NODE],
+    [project.study_mode, project.book, sectionDef.slug],
   )
   const [activeLayer, setActiveLayer] = useState<OverviewLayerId>('contexto_carta')
   const nodes = useMemo<NodeDef[]>(
@@ -516,6 +531,9 @@ export default function VisaoGeralWorkspace({
   const PHASE_COLOR: Record<string, string> = {
     preparar: '#D97706', investigar: '#163A6B', pregar: '#7C3AED',
   }
+
+  const [mounted,      setMounted]     = useState(false)
+  useEffect(() => { const t = requestAnimationFrame(() => setMounted(true)); return () => cancelAnimationFrame(t) }, [])
 
   const [mode,         setMode]        = useState<'visual' | 'structured'>('visual')
   const [activePanel,  setActivePanel] = useState<string | null>(null)
@@ -1081,7 +1099,14 @@ export default function VisaoGeralWorkspace({
   function handleCanvasMU() {
     const drag = nodeDragRef.current
     if (drag) {
-      if (!drag.moved) setActivePanel(p => p === drag.key ? null : drag.key)
+      if (!drag.moved) {
+        const clickedNode = allNodes.find(n => n.key === drag.key)
+        if (clickedNode?.kind === 'phase' && clickedNode.sectionSlug && onNavigate) {
+          onNavigate(clickedNode.sectionSlug)
+        } else {
+          setActivePanel(p => p === drag.key ? null : drag.key)
+        }
+      }
       nodeDragRef.current = null
     }
     panStartRef.current = null
@@ -1097,7 +1122,7 @@ export default function VisaoGeralWorkspace({
   // ── Render ─────────────────────────────────────────────────────────────────
   return (
     <>
-    <div style={{ padding: '1.25rem 1.5rem 2rem' }}>
+    <div style={{ padding: '1.25rem 1.5rem 2rem', opacity: mounted ? 1 : 0, transition: 'opacity 0.25s ease' }}>
 
       {/* ── Header ─────────────────────────────────────────────────────────── */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1.1rem', gap: '0.75rem', flexWrap: 'wrap' }}>
@@ -1490,7 +1515,9 @@ export default function VisaoGeralWorkspace({
                         }}>
                           {node.label}
                         </span>
-                        {hasData ? (
+                        {node.kind === 'phase' ? (
+                          <span style={{ fontSize: '0.55rem', color: node.color, marginTop: '3px', letterSpacing: '0.06em', opacity: 0.7 }}>→ ir</span>
+                        ) : hasData ? (
                           <span style={{
                             fontSize: '0.65rem', fontWeight: 800, color: node.color,
                             background: node.color + '18', borderRadius: '20px',
@@ -1503,8 +1530,8 @@ export default function VisaoGeralWorkspace({
                         )}
                       </button>
 
-                      {/* Expand button — shown on hover */}
-                      {hoveredNode === node.key && (
+                      {/* Expand button — shown on hover (not for phase navigation nodes) */}
+                      {hoveredNode === node.key && node.kind !== 'phase' && (
                         <button
                           onMouseDown={e => e.stopPropagation()}
                           onClick={e => { e.stopPropagation(); openFloatingWindow(node) }}
