@@ -37,7 +37,7 @@ import BibliotecaWorkspace from './BibliotecaWorkspace'
 import {
   Heart, BookOpen, FileText, Crosshair, Landmark, Languages, GraduationCap,
   Sparkles, BookMarked, Flame, MessageSquareText, Layers, Book, Library,
-  BookCopy, Link2, Paperclip, ChevronDown, ChevronRight, ChevronUp,
+  BookCopy, Link2, Paperclip, ChevronDown, ChevronRight, ChevronLeft, ChevronUp,
   MapPin, Network, TrendingUp, LayoutTemplate, Mic, Brain, Megaphone,
   AlignJustify, GitBranch, Palette, Tag, X,
   type LucideIcon,
@@ -186,6 +186,13 @@ function getCanonFor(slug: string, phases: NavPhase[] = NAV_PHASES): string | un
     }
   }
   return undefined
+}
+
+function getSlugLabel(slug: string): string {
+  return getSectionNavBySlug(slug)?.shortTitle
+    ?? getSynthesisBySlug(slug)?.shortTitle
+    ?? getToolAreaBySlug(slug)?.shortTitle
+    ?? slug
 }
 
 function statusDot(status: 'empty' | 'draft' | 'reviewed' | undefined): string {
@@ -538,6 +545,38 @@ export default function WorkspaceClient({ user, project, initialSections }: Prop
   const progressTotal = phaseProgress.reduce((sum, phase) => sum + phase.total, 0)
   const progressDone = phaseProgress.reduce((sum, phase) => sum + phase.done, 0)
   const pct = progressTotal > 0 ? Math.round((progressDone / progressTotal) * 100) : 0
+
+  const orderedSlugs = useMemo(() => {
+    const slugs: string[] = []
+    for (const ph of navPhases) {
+      for (const mo of ph.modes) {
+        for (const gr of mo.groups) {
+          const isUtilityGroup = isToolSlug(gr.id) || gr.id === 'colagens' || gr.id === 'comentario_expositivo'
+          if (isUtilityGroup) {
+            const tool = getToolAreaBySlug(gr.id)
+            slugs.push(tool?.slug ?? gr.id)
+            continue
+          }
+          const secs = getSectionsByGroupNav(gr.id)
+          if (secs.length === 0) continue
+          const isSingleSection = secs.length === 1 && !SYNTHESIS_DEFS[gr.id]
+          if (isSingleSection) {
+            slugs.push(secs[0].slug)
+          } else {
+            for (const s of secs) slugs.push(s.slug)
+            const syn = SYNTHESIS_DEFS[gr.id]
+            if (syn) slugs.push(syn.slug)
+          }
+        }
+      }
+    }
+    return slugs
+  }, [navPhases])
+
+  const currentNavIdx = orderedSlugs.indexOf(activeSlug)
+  const prevSlug = currentNavIdx > 0 ? orderedSlugs[currentNavIdx - 1] : null
+  const nextSlug = currentNavIdx >= 0 && currentNavIdx < orderedSlugs.length - 1
+    ? orderedSlugs[currentNavIdx + 1] : null
 
   const activeGroupId = getGroupFor(activeSlug)
   const activeGroupLabel = activeGroupId
@@ -1917,6 +1956,31 @@ export default function WorkspaceClient({ user, project, initialSections }: Prop
           zIndex: 100,
         }}>
 
+          {/* ← Voltar */}
+          <button
+            onClick={() => { if (prevSlug) navigate(prevSlug) }}
+            title={prevSlug ? getSlugLabel(prevSlug) : ''}
+            style={{
+              height: '44px', flexShrink: 0,
+              border: '1.5px solid var(--border-subtle)',
+              borderRadius: '10px', background: 'transparent',
+              cursor: prevSlug ? 'pointer' : 'default',
+              fontFamily: 'inherit',
+              display: 'flex', alignItems: 'center', gap: '3px',
+              padding: '0 10px',
+              fontSize: '0.75rem', fontWeight: 600,
+              color: prevSlug ? 'var(--text-secondary)' : 'var(--text-muted)',
+              opacity: prevSlug ? 1 : 0.3,
+              transition: 'all 0.15s',
+              whiteSpace: 'nowrap',
+            }}
+            onMouseEnter={e => { if (prevSlug) e.currentTarget.style.borderColor = 'var(--border)' }}
+            onMouseLeave={e => { if (prevSlug) e.currentTarget.style.borderColor = 'var(--border-subtle)' }}
+          >
+            <ChevronLeft size={13} strokeWidth={2.2} />
+            Voltar
+          </button>
+
           {/* Main phases (Preparar / Investigar / Comunicar) with progress fill */}
           {(() => {
             const mainPhases = navPhases.filter(p => p.id !== 'ferramentas')
@@ -2031,6 +2095,43 @@ export default function WorkspaceClient({ user, project, initialSections }: Prop
               </button>
             )
           })}
+
+          {/* Divider */}
+          <div style={{ width: '1px', height: '28px', background: 'var(--border-subtle)', flexShrink: 0, margin: '0 2px' }} />
+
+          {/* Avançar → */}
+          {(() => {
+            const nextPhaseColor = nextSlug
+              ? (navPhases.find(p => p.id === getPhaseFor(nextSlug))?.color ?? activePhase?.color)
+              : activePhase?.color
+            const isLast = !nextSlug && currentNavIdx >= 0
+            return (
+              <button
+                onClick={() => { if (nextSlug) navigate(nextSlug) }}
+                title={nextSlug ? getSlugLabel(nextSlug) : isLast ? 'Estudo concluído' : ''}
+                style={{
+                  height: '44px', flexShrink: 0,
+                  border: `1.5px solid ${nextSlug ? `${nextPhaseColor}55` : isLast ? 'var(--success)' : 'var(--border-subtle)'}`,
+                  borderRadius: '10px',
+                  background: nextSlug ? `${nextPhaseColor}09` : isLast ? 'rgba(0,200,100,0.05)' : 'transparent',
+                  cursor: nextSlug ? 'pointer' : 'default',
+                  fontFamily: 'inherit',
+                  display: 'flex', alignItems: 'center', gap: '3px',
+                  padding: '0 10px',
+                  fontSize: '0.75rem', fontWeight: 600,
+                  color: nextSlug ? (nextPhaseColor ?? 'var(--text-secondary)') : isLast ? 'var(--success)' : 'var(--text-muted)',
+                  opacity: nextSlug || isLast ? 1 : 0.3,
+                  transition: 'all 0.15s',
+                  whiteSpace: 'nowrap',
+                }}
+                onMouseEnter={e => { if (nextSlug) e.currentTarget.style.borderColor = `${nextPhaseColor}88` }}
+                onMouseLeave={e => { if (nextSlug) e.currentTarget.style.borderColor = `${nextPhaseColor}55` }}
+              >
+                {isLast ? 'Concluir' : 'Avançar'}
+                <ChevronRight size={13} strokeWidth={2.2} />
+              </button>
+            )
+          })()}
 
         </div>
       )}
