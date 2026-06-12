@@ -12,7 +12,7 @@ export default async function KnowledgePage() {
     supabase
       .from('knowledge_items')
       .select('*')
-      .eq('user_id', user.id)
+      .or(`user_id.eq.${user.id},is_template.eq.true`)
       .order('updated_at', { ascending: false }),
     supabase
       .from('v_knowledge_dashboard')
