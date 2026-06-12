@@ -640,7 +640,7 @@ export default function WorkspaceClient({ user, project, initialSections }: Prop
   }
 
   return (
-    <div style={{ height: '100vh', display: 'flex', flexDirection: 'column', background: 'var(--background)', paddingBottom: focusMode ? 0 : '52px', boxSizing: 'border-box' }}>
+    <div style={{ height: '100vh', display: 'flex', flexDirection: 'column', background: 'var(--background)', paddingBottom: focusMode ? 0 : '60px', boxSizing: 'border-box' }}>
 
       {/* ── Topbar ────────────────────────────────────────────────────────── */}
       {/* Grid 1fr auto 1fr garante centro real no viewport, independente dos pesos laterais */}
@@ -1726,10 +1726,10 @@ export default function WorkspaceClient({ user, project, initialSections }: Prop
         const progress = phaseProgress.find(p => p.id === phase.id)
         return (
           <>
-            <div onClick={() => setOpenPhasePopover(null)} style={{ position: 'fixed', inset: '0 0 52px 0', zIndex: 98 }} />
+            <div onClick={() => setOpenPhasePopover(null)} style={{ position: 'fixed', inset: '0 0 60px 0', zIndex: 98 }} />
             <div style={{
               position: 'fixed',
-              bottom: '60px',
+              bottom: '68px',
               left: `clamp(8px, calc(${(phaseIdx + 0.5) / navPhases.length * 100}% - 145px), calc(100% - 298px))`,
               width: '290px',
               maxHeight: 'calc(100vh - 120px)',
@@ -1858,31 +1858,131 @@ export default function WorkspaceClient({ user, project, initialSections }: Prop
         )
       })()}
 
-      {/* ── Bottom Nav Bar ─────────────────────────────────────────── */}
+      {/* ── Bottom Nav Bar — progresso + navegação ──────────────── */}
       {!focusMode && (
-        <div style={{ position: 'fixed', bottom: 0, left: 0, right: 0, height: '52px', background: 'var(--surface)', borderTop: '1px solid var(--border-subtle)', display: 'flex', alignItems: 'stretch', zIndex: 100 }}>
-          {navPhases.map((phase, phaseIdx) => {
-            const progress = phaseProgress.find(p => p.id === phase.id)
-            const isOpen = openPhasePopover === phase.id
-            const isActivePhase = activePhase?.id === phase.id
+        <div style={{
+          position: 'fixed', bottom: 0, left: 0, right: 0, height: '60px',
+          background: 'var(--surface)', borderTop: '1px solid var(--border-subtle)',
+          display: 'flex', alignItems: 'center',
+          padding: '0 10px', gap: '4px',
+          zIndex: 100,
+        }}>
+
+          {/* Main phases (Preparar / Investigar / Comunicar) with progress fill */}
+          {(() => {
+            const mainPhases = navPhases.filter(p => p.id !== 'ferramentas')
+            return mainPhases.flatMap((phase, idx) => {
+              const progress = phaseProgress.find(p => p.id === phase.id)
+              const isOpen    = openPhasePopover === phase.id
+              const isActive  = activePhase?.id === phase.id
+              const pct       = progress?.pct ?? 0
+              const prevPct   = idx > 0 ? (phaseProgress.find(p => p.id === mainPhases[idx - 1].id)?.pct ?? 0) : 0
+
+              const connector = idx > 0 ? (
+                <div key={`con-${phase.id}`} style={{
+                  width: '14px', flexShrink: 0, height: '2px', borderRadius: '1px',
+                  background: prevPct === 100 ? `${mainPhases[idx - 1].color}55` : 'var(--border-subtle)',
+                  transition: 'background 0.5s',
+                }} />
+              ) : null
+
+              const btn = (
+                <button
+                  key={phase.id}
+                  onClick={() => setOpenPhasePopover(isOpen ? null : phase.id)}
+                  style={{
+                    position: 'relative', overflow: 'hidden',
+                    flex: 1, minWidth: 0, height: '44px',
+                    border: `1.5px solid ${isActive || isOpen ? phase.color : pct > 0 ? `${phase.color}35` : 'var(--border-subtle)'}`,
+                    borderRadius: '10px', background: 'var(--surface)',
+                    cursor: 'pointer', fontFamily: 'inherit',
+                    display: 'flex', alignItems: 'center', padding: '0 12px', gap: '6px',
+                    transition: 'border-color 0.15s',
+                  }}
+                  onMouseEnter={e => { if (!isActive && !isOpen) e.currentTarget.style.borderColor = `${phase.color}55` }}
+                  onMouseLeave={e => { if (!isActive && !isOpen) e.currentTarget.style.borderColor = pct > 0 ? `${phase.color}35` : 'var(--border-subtle)' }}
+                >
+                  {/* Progress fill (behind content) */}
+                  {pct > 0 && (
+                    <div style={{
+                      position: 'absolute', left: 0, top: 0, bottom: 0, pointerEvents: 'none',
+                      width: `${pct}%`,
+                      background: `${phase.color}${pct === 100 ? '14' : '0B'}`,
+                      transition: 'width 0.6s ease',
+                    }} />
+                  )}
+                  {/* Roman numeral */}
+                  <span style={{
+                    position: 'relative', zIndex: 1, flexShrink: 0,
+                    fontSize: '0.58rem', fontWeight: 800, letterSpacing: '0.05em',
+                    color: isActive || isOpen ? phase.color : 'var(--text-muted)', lineHeight: 1,
+                  }}>{phase.roman}</span>
+                  {/* Phase name */}
+                  <span style={{
+                    position: 'relative', zIndex: 1, flex: 1, minWidth: 0,
+                    fontSize: '0.82rem', fontWeight: 700, letterSpacing: '-0.01em',
+                    color: isActive || isOpen ? phase.color : pct > 0 ? 'var(--text-primary)' : 'var(--text-secondary)',
+                    whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
+                  }}>{phase.label}</span>
+                  {/* Progress badge */}
+                  {pct === 100 ? (
+                    <span style={{ position: 'relative', zIndex: 1, flexShrink: 0, fontSize: '0.72rem', color: phase.color }}>✓</span>
+                  ) : pct > 0 ? (
+                    <span style={{
+                      position: 'relative', zIndex: 1, flexShrink: 0,
+                      fontSize: '0.64rem', fontWeight: 700, letterSpacing: '-0.01em',
+                      color: `${phase.color}95`,
+                    }}>{pct}%</span>
+                  ) : null}
+                </button>
+              )
+
+              return connector ? [connector, btn] : [btn]
+            })
+          })()}
+
+          {/* Divider */}
+          <div style={{ width: '1px', height: '28px', background: 'var(--border-subtle)', flexShrink: 0, margin: '0 4px' }} />
+
+          {/* Ferramentas */}
+          {navPhases.filter(p => p.id === 'ferramentas').map(phase => {
+            const isOpen   = openPhasePopover === phase.id
+            const isActive = activePhase?.id === phase.id
             return (
               <button
                 key={phase.id}
                 onClick={() => setOpenPhasePopover(isOpen ? null : phase.id)}
-                style={{ flex: 1, border: 'none', cursor: 'pointer', background: isOpen ? `${phase.color}10` : 'transparent', borderTop: `2px solid ${isOpen || isActivePhase ? phase.color : 'transparent'}`, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '2px', padding: '0.3rem 0.5rem', transition: 'all 0.15s', fontFamily: 'inherit' }}
-                onMouseEnter={e => { if (!isOpen && !isActivePhase) e.currentTarget.style.background = 'rgba(0,0,0,0.03)' }}
-                onMouseLeave={e => { if (!isOpen && !isActivePhase) e.currentTarget.style.background = 'transparent' }}
+                style={{
+                  height: '44px', flexShrink: 0,
+                  border: `1.5px solid ${isActive || isOpen ? phase.color : 'var(--border-subtle)'}`,
+                  borderRadius: '10px',
+                  background: isActive || isOpen ? `${phase.color}10` : 'transparent',
+                  cursor: 'pointer', fontFamily: 'inherit',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  padding: '0 16px',
+                  fontSize: '0.82rem', fontWeight: 700, letterSpacing: '-0.01em',
+                  color: isActive || isOpen ? phase.color : 'var(--text-secondary)',
+                  transition: 'all 0.15s',
+                  whiteSpace: 'nowrap',
+                }}
+                onMouseEnter={e => {
+                  if (!isActive && !isOpen) {
+                    e.currentTarget.style.borderColor = `${phase.color}55`
+                    e.currentTarget.style.color = 'var(--text-primary)'
+                  }
+                }}
+                onMouseLeave={e => {
+                  if (!isActive && !isOpen) {
+                    e.currentTarget.style.borderColor = 'var(--border-subtle)'
+                    e.currentTarget.style.color = 'var(--text-secondary)'
+                  }
+                }}
               >
-                <span style={{ fontSize: '0.57rem', fontWeight: 800, letterSpacing: '0.06em', color: isOpen || isActivePhase ? phase.color : 'var(--text-muted)', textTransform: 'uppercase', lineHeight: 1 }}>{phase.roman}</span>
-                <span style={{ fontSize: '0.67rem', fontWeight: 600, lineHeight: 1, color: isOpen || isActivePhase ? phase.color : 'var(--text-secondary)' }}>{phase.label}</span>
-                {progress && (
-                  <div style={{ width: '30px', height: '2px', background: 'var(--border-subtle)', borderRadius: '1px', overflow: 'hidden', marginTop: '1px' }}>
-                    <div style={{ width: `${progress.pct}%`, height: '100%', background: phase.color, borderRadius: '1px' }} />
-                  </div>
-                )}
+                {phase.label}
               </button>
             )
           })}
+
         </div>
       )}
     </div>

@@ -138,7 +138,7 @@ export default function NodeFloatingWindow({
   }
 
   const windowStyle: React.CSSProperties = maximized
-    ? { position: 'fixed', top: 0, left: 0, right: 0, bottom: '52px', zIndex, borderRadius: 0 }
+    ? { position: 'fixed', top: 0, left: 0, right: 0, bottom: '60px', zIndex, borderRadius: 0 }
     : minimized
     ? { position: 'fixed', left: `${x}px`, top: `${y}px`, width: `${width}px`, zIndex }
     : { position: 'fixed', left: `${x}px`, top: `${y}px`, width: `${width}px`, height: `${height}px`, zIndex }
