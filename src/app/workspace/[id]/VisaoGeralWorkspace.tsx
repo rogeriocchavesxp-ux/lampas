@@ -6,6 +6,7 @@ import type { SectionDef } from '@/lib/workspace-sections'
 import type { CollageItem } from '@/lib/collages-content'
 import { createClient } from '@/lib/supabase/client'
 import SectionWorkspace from './SectionWorkspace'
+import NodeFloatingWindow, { type FloatWin } from './NodeFloatingWindow'
 import { Sparkles, Map, List, MoreHorizontal, X, BookOpen, ChevronLeft, Loader2, Check, BookMarked, Maximize2 } from 'lucide-react'
 import { loadClassificationsFromDB, saveClassificationToDB, deleteClassificationFromDB, updateClassificationInDB } from '@/lib/classification-sync'
 import MarkdownRenderer from '@/components/MarkdownRenderer'
@@ -536,6 +537,10 @@ export default function VisaoGeralWorkspace({
   const [expandDraft,   setExpandDraft]   = useState('')
   const [expandMode,    setExpandMode]    = useState<'view' | 'edit'>('view')
 
+  // Floating node windows
+  const [floatingWindows, setFloatingWindows] = useState<FloatWin[]>([])
+  const topZRef = useRef(2000)
+
   // Evolução das fases
   const [inherited,       setInherited]       = useState(false)
   const [showEvolution,   setShowEvolution]   = useState(false)
@@ -923,8 +928,64 @@ export default function VisaoGeralWorkspace({
   const activeNode = nodes.find(n => n.key === activePanel) ?? null
   const activeLayerMeta = SERMAO_EPISTOLAR_LAYERS.find(layer => layer.id === activeLayer)
 
+  // ── Floating windows ──────────────────────────────────────────────────────
+
+  function openFloatingWindow(node: NodeDef) {
+    const existing = floatingWindows.find(w => w.nodeKey === node.key)
+    if (existing) {
+      topZRef.current++
+      setFloatingWindows(prev => prev.map(w =>
+        w.id === existing.id ? { ...w, zIndex: topZRef.current, minimized: false } : w
+      ))
+      return
+    }
+    topZRef.current++
+    const offset = (floatingWindows.length % 6) * 26
+    setFloatingWindows(prev => [...prev, {
+      id: `${node.key}_${Date.now()}`,
+      nodeKey: node.key,
+      nodeLabel: node.label,
+      nodeIcon: node.icon,
+      nodeColor: node.color,
+      nodeBg: node.bg,
+      x: 100 + offset,
+      y: 80 + offset,
+      width: 540,
+      height: 460,
+      minimized: false,
+      maximized: false,
+      zIndex: topZRef.current,
+    }])
+  }
+
+  function closeFloatingWindow(id: string) {
+    setFloatingWindows(prev => prev.filter(w => w.id !== id))
+  }
+
+  function focusFloatingWindow(id: string) {
+    topZRef.current++
+    setFloatingWindows(prev => prev.map(w => w.id === id ? { ...w, zIndex: topZRef.current } : w))
+  }
+
+  function updateFloatPos(id: string, x: number, y: number) {
+    setFloatingWindows(prev => prev.map(w => w.id === id ? { ...w, x, y } : w))
+  }
+
+  function updateFloatSize(id: string, width: number, height: number) {
+    setFloatingWindows(prev => prev.map(w => w.id === id ? { ...w, width, height } : w))
+  }
+
+  function toggleMinimizeWin(id: string) {
+    setFloatingWindows(prev => prev.map(w => w.id === id ? { ...w, minimized: !w.minimized } : w))
+  }
+
+  function toggleMaximizeWin(id: string) {
+    setFloatingWindows(prev => prev.map(w => w.id === id ? { ...w, maximized: !w.maximized } : w))
+  }
+
   // ── Render ─────────────────────────────────────────────────────────────────
   return (
+    <>
     <div style={{ padding: '1.25rem 1.5rem 2rem' }}>
 
       {/* ── Header ─────────────────────────────────────────────────────────── */}
@@ -1311,6 +1372,25 @@ export default function VisaoGeralWorkspace({
                           <span style={{ fontSize: '0.55rem', color: '#CBD5E1', marginTop: '3px', letterSpacing: '0.08em' }}>vazio</span>
                         )}
                       </button>
+
+                      {/* Expand button — shown on hover */}
+                      {hoveredNode === node.key && (
+                        <button
+                          onClick={e => { e.stopPropagation(); openFloatingWindow(node) }}
+                          title="Abrir como documento"
+                          style={{
+                            position: 'absolute', top: '-8px', right: '-8px',
+                            width: '22px', height: '22px',
+                            background: node.color, border: '2px solid var(--surface)',
+                            borderRadius: '50%', cursor: 'pointer',
+                            display: 'flex', alignItems: 'center', justifyContent: 'center',
+                            zIndex: 10, padding: 0, flexShrink: 0,
+                            boxShadow: `0 2px 6px ${node.color}55`,
+                          }}
+                        >
+                          <Maximize2 size={9} color="#fff" strokeWidth={2.5} />
+                        </button>
+                      )}
                     </div>
                   )
                 })}
@@ -2274,5 +2354,22 @@ export default function VisaoGeralWorkspace({
         )
       })()}
     </div>
+
+    {/* ── Floating Node Windows ───────────────────────────────────────── */}
+    {floatingWindows.map(win => (
+      <NodeFloatingWindow
+        key={win.id}
+        {...win}
+        projectId={project.id}
+        onClose={() => closeFloatingWindow(win.id)}
+        onMinimize={() => toggleMinimizeWin(win.id)}
+        onMaximize={() => toggleMaximizeWin(win.id)}
+        onFocus={() => focusFloatingWindow(win.id)}
+        onPositionChange={(x, y) => updateFloatPos(win.id, x, y)}
+        onSizeChange={(w, h) => updateFloatSize(win.id, w, h)}
+        onAskAI={onAskAI}
+      />
+    ))}
+    </>
   )
 }
