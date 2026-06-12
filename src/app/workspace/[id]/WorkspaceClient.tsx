@@ -201,6 +201,12 @@ function statusDot(status: 'empty' | 'draft' | 'reviewed' | undefined): string {
   return 'var(--success)'
 }
 
+function cardTextStatus(text: string): 'empty' | 'draft' | 'reviewed' {
+  if (!text.trim()) return 'empty'
+  if (text.trim().length < 80) return 'draft'
+  return 'reviewed'
+}
+
 function toolProgress(groupId: string): { done: number; total: number } {
   if (groupId === 'colagens') return { done: 0, total: 1 }
   if (groupId === 'comentario_expositivo') return { done: 0, total: 1 }
@@ -373,6 +379,9 @@ export default function WorkspaceClient({ user, project, initialSections }: Prop
   const [expandedPhases, setExpandedPhases] = useState<Set<string>>(() => new Set(modeConfig.defaultExpandedPhases))
   const [expandedCanons, setExpandedCanons] = useState<Set<string>>(() => new Set(modeConfig.defaultExpandedCanons))
   const [expandedGroups, setExpandedGroups] = useState<Set<string>>(() => new Set(modeConfig.defaultExpandedGroups))
+  const [expandedSectionCards, setExpandedSectionCards] = useState<Set<string>>(
+    () => new Set([searchParams.get('section') || modeConfig.defaultSection])
+  )
   const [aiOpen, setAiOpen] = useState(false)
   const [aiPrompt, setAiPrompt] = useState('')
 
@@ -631,12 +640,21 @@ export default function WorkspaceClient({ user, project, initialSections }: Prop
     })
   }
 
+  function toggleSectionCards(slug: string) {
+    setExpandedSectionCards(prev => {
+      const next = new Set(prev)
+      if (next.has(slug)) next.delete(slug); else next.add(slug)
+      return next
+    })
+  }
+
   function navigate(slug: string) {
     setExpandedPhases(prev => new Set([...prev, getPhaseFor(slug)]))
     const c = getCanonFor(slug, navPhases)
     if (c) setExpandedCanons(prev => new Set([...prev, c]))
     const g = getGroupFor(slug)
     if (g) setExpandedGroups(prev => new Set([...prev, g]))
+    setExpandedSectionCards(prev => new Set([...prev, slug]))
     setActiveSlug(slug)
     setOpenPhasePopover(null)
   }
@@ -1444,44 +1462,122 @@ export default function WorkspaceClient({ user, project, initialSections }: Prop
                                             marginBottom: '0.08rem',
                                           }}>
                                             {secs.map((sd, secIdx) => {
-                                              const sec      = sections.find(s => s.slug === sd.slug)
-                                              const isActive = sd.slug === activeSlug
-                                              const dot      = statusDot(sec?.status)
+                                              const sec              = sections.find(s => s.slug === sd.slug)
+                                              const isActive         = sd.slug === activeSlug
+                                              const hasCards         = !!sd.cards && sd.cards.length > 0
+                                              const sectionCardsOpen = expandedSectionCards.has(sd.slug)
+                                              const storedCards      = (sec?.content as { cards?: Record<string, string> } | null)?.cards ?? {}
+                                              const cTotal           = sd.cards?.length ?? 0
+                                              const cDone            = sd.cards ? sd.cards.filter(c => !!storedCards[c.id]?.trim()).length : 0
                                               return (
-                                                <button
-                                                  key={sd.slug}
-                                                  onClick={() => navigate(sd.slug)}
-                                                  style={{
-                                                    width: '100%', border: 'none', fontFamily: 'inherit',
-                                                    background: isActive ? `${mode.color}10` : 'transparent',
-                                                    padding: '0.18rem 0.55rem 0.18rem 0.42rem',
-                                                    display: 'flex', alignItems: 'center', gap: '0.35rem',
-                                                    cursor: 'pointer', textAlign: 'left',
-                                                    borderRadius: '5px',
-                                                    transition: 'background 0.1s',
-                                                  }}
-                                                  onMouseEnter={e => { if (!isActive) e.currentTarget.style.background = 'rgba(0,0,0,0.04)' }}
-                                                  onMouseLeave={e => { if (!isActive) e.currentTarget.style.background = 'transparent' }}
-                                                >
-                                                  <span style={{
-                                                    width: '3px', height: '3px', borderRadius: '50%',
-                                                    background: isActive ? mode.color : 'var(--border)',
-                                                    flexShrink: 0, transition: 'background 0.15s',
-                                                  }} />
-                                                  <span style={{
-                                                    flex: 1, fontSize: '0.69rem', lineHeight: 1.22,
-                                                    color: isActive ? mode.color : 'var(--text-secondary)',
-                                                    fontWeight: isActive ? 600 : 400,
-                                                    overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
-                                                  }}>
-                                                    {sd.shortTitle}
-                                                  </span>
-                                                  <span style={{
-                                                    width: '4px', height: '4px', borderRadius: '50%',
-                                                    background: dot, flexShrink: 0,
-                                                    opacity: isActive ? 1 : 0.5,
-                                                  }} />
-                                                </button>
+                                                <div key={sd.slug}>
+                                                  {/* Section row */}
+                                                  <div style={{ display: 'flex', alignItems: 'center' }}>
+                                                    <button
+                                                      onClick={() => navigate(sd.slug)}
+                                                      style={{
+                                                        flex: 1, border: 'none', fontFamily: 'inherit',
+                                                        background: isActive ? `${mode.color}10` : 'transparent',
+                                                        padding: '0.18rem 0.2rem 0.18rem 0.42rem',
+                                                        display: 'flex', alignItems: 'center', gap: '0.35rem',
+                                                        cursor: 'pointer', textAlign: 'left',
+                                                        borderRadius: '5px',
+                                                        transition: 'background 0.1s',
+                                                        minWidth: 0,
+                                                      }}
+                                                      onMouseEnter={e => { if (!isActive) e.currentTarget.style.background = 'rgba(0,0,0,0.04)' }}
+                                                      onMouseLeave={e => { if (!isActive) e.currentTarget.style.background = 'transparent' }}
+                                                    >
+                                                      <span style={{
+                                                        width: '3px', height: '3px', borderRadius: '50%',
+                                                        background: isActive ? mode.color : 'var(--border)',
+                                                        flexShrink: 0, transition: 'background 0.15s',
+                                                      }} />
+                                                      <span style={{
+                                                        flex: 1, fontSize: '0.69rem', lineHeight: 1.22,
+                                                        color: isActive ? mode.color : 'var(--text-secondary)',
+                                                        fontWeight: isActive ? 600 : 400,
+                                                        overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+                                                      }}>
+                                                        {sd.shortTitle}
+                                                      </span>
+                                                      {cTotal > 0 && (
+                                                        <span style={{
+                                                          fontSize: '0.56rem', flexShrink: 0, fontWeight: 700,
+                                                          color: cDone === cTotal ? 'var(--success)' : cDone > 0 ? mode.color : 'var(--border)',
+                                                        }}>
+                                                          {cDone === cTotal ? '✓' : `${cDone}/${cTotal}`}
+                                                        </span>
+                                                      )}
+                                                    </button>
+                                                    {hasCards && (
+                                                      <button
+                                                        onClick={() => toggleSectionCards(sd.slug)}
+                                                        title={sectionCardsOpen ? 'Recolher campos' : 'Ver campos'}
+                                                        style={{
+                                                          background: 'transparent', border: 'none',
+                                                          cursor: 'pointer', padding: '0.18rem 0.28rem',
+                                                          color: sectionCardsOpen ? mode.color : 'var(--text-muted)',
+                                                          opacity: sectionCardsOpen ? 0.9 : 0.45,
+                                                          display: 'flex', alignItems: 'center', flexShrink: 0,
+                                                          transition: 'opacity 0.12s, color 0.12s',
+                                                        }}
+                                                        onMouseEnter={e => { e.currentTarget.style.opacity = '1' }}
+                                                        onMouseLeave={e => { e.currentTarget.style.opacity = sectionCardsOpen ? '0.9' : '0.45' }}
+                                                      >
+                                                        {sectionCardsOpen
+                                                          ? <ChevronDown size={9} strokeWidth={2.2} />
+                                                          : <ChevronRight size={9} strokeWidth={2.2} />
+                                                        }
+                                                      </button>
+                                                    )}
+                                                  </div>
+
+                                                  {/* Cards list */}
+                                                  {hasCards && sectionCardsOpen && (
+                                                    <div style={{
+                                                      marginLeft: '1.55rem',
+                                                      borderLeft: '1px solid var(--border-subtle)',
+                                                      paddingLeft: '0.45rem',
+                                                      paddingBottom: '0.1rem',
+                                                    }}>
+                                                      {sd.cards!.map(card => {
+                                                        const text    = storedCards[card.id] ?? ''
+                                                        const cStatus = cardTextStatus(text)
+                                                        return (
+                                                          <button
+                                                            key={card.id}
+                                                            onClick={() => navigate(sd.slug)}
+                                                            style={{
+                                                              width: '100%', border: 'none', background: 'transparent',
+                                                              cursor: 'pointer', fontFamily: 'inherit', textAlign: 'left',
+                                                              display: 'flex', alignItems: 'center', gap: '0.32rem',
+                                                              padding: '0.1rem 0.2rem', borderRadius: '3px',
+                                                              transition: 'background 0.1s',
+                                                            }}
+                                                            onMouseEnter={e => { e.currentTarget.style.background = 'rgba(0,0,0,0.04)' }}
+                                                            onMouseLeave={e => { e.currentTarget.style.background = 'transparent' }}
+                                                          >
+                                                            <span style={{
+                                                              fontSize: '0.58rem', flexShrink: 0, fontWeight: 700,
+                                                              lineHeight: 1,
+                                                              color: cStatus === 'reviewed' ? 'var(--success)' : cStatus === 'draft' ? 'var(--accent)' : 'var(--border)',
+                                                            }}>
+                                                              {cStatus === 'reviewed' ? '✓' : cStatus === 'draft' ? '◐' : '○'}
+                                                            </span>
+                                                            <span style={{
+                                                              fontSize: '0.63rem', color: 'var(--text-muted)', flex: 1,
+                                                              overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+                                                              lineHeight: 1.22,
+                                                            }}>
+                                                              {card.title}
+                                                            </span>
+                                                          </button>
+                                                        )
+                                                      })}
+                                                    </div>
+                                                  )}
+                                                </div>
                                               )
                                             })}
 
@@ -1904,16 +2000,48 @@ export default function WorkspaceClient({ user, project, initialSections }: Prop
                                           {!isDirect && groupOpen && (
                                             <div style={{ marginLeft: '1.15rem', borderLeft: '1px solid var(--border-subtle)', marginBottom: '0.06rem' }}>
                                               {secs.map(sd => {
-                                                const sec = sections.find(s => s.slug === sd.slug)
-                                                const isSecActive = sd.slug === activeSlug
+                                                const sec              = sections.find(s => s.slug === sd.slug)
+                                                const isSecActive      = sd.slug === activeSlug
+                                                const hasCards         = !!sd.cards && sd.cards.length > 0
+                                                const sectionCardsOpen = expandedSectionCards.has(sd.slug)
+                                                const storedCards      = (sec?.content as { cards?: Record<string, string> } | null)?.cards ?? {}
+                                                const cTotal           = sd.cards?.length ?? 0
+                                                const cDone            = sd.cards ? sd.cards.filter(c => !!storedCards[c.id]?.trim()).length : 0
                                                 return (
-                                                  <button key={sd.slug} onClick={() => navigate(sd.slug)} style={{ width: '100%', border: 'none', fontFamily: 'inherit', background: isSecActive ? `${mode.color}10` : 'transparent', padding: '0.16rem 0.48rem 0.16rem 0.4rem', display: 'flex', alignItems: 'center', gap: '0.32rem', cursor: 'pointer', textAlign: 'left', borderRadius: '5px' }} onMouseEnter={e => { if (!isSecActive) e.currentTarget.style.background = 'rgba(0,0,0,0.04)' }} onMouseLeave={e => { if (!isSecActive) e.currentTarget.style.background = 'transparent' }}>
-                                                    <span style={{ width: '3px', height: '3px', borderRadius: '50%', background: isSecActive ? mode.color : 'var(--border)', flexShrink: 0 }} />
-                                                    <span style={{ flex: 1, fontSize: '0.68rem', lineHeight: 1.22, color: isSecActive ? mode.color : 'var(--text-secondary)', fontWeight: isSecActive ? 600 : 400, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{sd.shortTitle}</span>
-                                                    <span style={{ fontSize: '0.64rem', flexShrink: 0, color: sec?.status && ['draft', 'reviewed'].includes(sec.status) ? 'var(--success)' : 'var(--border)', opacity: 0.85 }}>
-                                                      {sec?.status === 'reviewed' ? '✓' : sec?.status === 'draft' ? '–' : '○'}
-                                                    </span>
-                                                  </button>
+                                                  <div key={sd.slug}>
+                                                    <div style={{ display: 'flex', alignItems: 'center' }}>
+                                                      <button onClick={() => navigate(sd.slug)} style={{ flex: 1, border: 'none', fontFamily: 'inherit', background: isSecActive ? `${mode.color}10` : 'transparent', padding: '0.16rem 0.2rem 0.16rem 0.4rem', display: 'flex', alignItems: 'center', gap: '0.32rem', cursor: 'pointer', textAlign: 'left', borderRadius: '5px', minWidth: 0 }} onMouseEnter={e => { if (!isSecActive) e.currentTarget.style.background = 'rgba(0,0,0,0.04)' }} onMouseLeave={e => { if (!isSecActive) e.currentTarget.style.background = 'transparent' }}>
+                                                        <span style={{ width: '3px', height: '3px', borderRadius: '50%', background: isSecActive ? mode.color : 'var(--border)', flexShrink: 0 }} />
+                                                        <span style={{ flex: 1, fontSize: '0.68rem', lineHeight: 1.22, color: isSecActive ? mode.color : 'var(--text-secondary)', fontWeight: isSecActive ? 600 : 400, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{sd.shortTitle}</span>
+                                                        {cTotal > 0 && (
+                                                          <span style={{ fontSize: '0.56rem', flexShrink: 0, fontWeight: 700, color: cDone === cTotal ? 'var(--success)' : cDone > 0 ? mode.color : 'var(--border)' }}>
+                                                            {cDone === cTotal ? '✓' : `${cDone}/${cTotal}`}
+                                                          </span>
+                                                        )}
+                                                      </button>
+                                                      {hasCards && (
+                                                        <button onClick={() => toggleSectionCards(sd.slug)} style={{ background: 'transparent', border: 'none', cursor: 'pointer', padding: '0.16rem 0.26rem', color: sectionCardsOpen ? mode.color : 'var(--text-muted)', opacity: sectionCardsOpen ? 0.9 : 0.45, display: 'flex', alignItems: 'center', flexShrink: 0 }} onMouseEnter={e => { e.currentTarget.style.opacity = '1' }} onMouseLeave={e => { e.currentTarget.style.opacity = sectionCardsOpen ? '0.9' : '0.45' }}>
+                                                          {sectionCardsOpen ? <ChevronDown size={9} strokeWidth={2.2} /> : <ChevronRight size={9} strokeWidth={2.2} />}
+                                                        </button>
+                                                      )}
+                                                    </div>
+                                                    {hasCards && sectionCardsOpen && (
+                                                      <div style={{ marginLeft: '1.5rem', borderLeft: '1px solid var(--border-subtle)', paddingLeft: '0.4rem', paddingBottom: '0.08rem' }}>
+                                                        {sd.cards!.map(card => {
+                                                          const text    = storedCards[card.id] ?? ''
+                                                          const cStatus = cardTextStatus(text)
+                                                          return (
+                                                            <button key={card.id} onClick={() => navigate(sd.slug)} style={{ width: '100%', border: 'none', background: 'transparent', cursor: 'pointer', fontFamily: 'inherit', textAlign: 'left', display: 'flex', alignItems: 'center', gap: '0.3rem', padding: '0.09rem 0.2rem', borderRadius: '3px', transition: 'background 0.1s' }} onMouseEnter={e => { e.currentTarget.style.background = 'rgba(0,0,0,0.04)' }} onMouseLeave={e => { e.currentTarget.style.background = 'transparent' }}>
+                                                              <span style={{ fontSize: '0.57rem', flexShrink: 0, fontWeight: 700, lineHeight: 1, color: cStatus === 'reviewed' ? 'var(--success)' : cStatus === 'draft' ? 'var(--accent)' : 'var(--border)' }}>
+                                                                {cStatus === 'reviewed' ? '✓' : cStatus === 'draft' ? '◐' : '○'}
+                                                              </span>
+                                                              <span style={{ fontSize: '0.62rem', color: 'var(--text-muted)', flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', lineHeight: 1.22 }}>{card.title}</span>
+                                                            </button>
+                                                          )
+                                                        })}
+                                                      </div>
+                                                    )}
+                                                  </div>
                                                 )
                                               })}
                                               {syn && (() => {

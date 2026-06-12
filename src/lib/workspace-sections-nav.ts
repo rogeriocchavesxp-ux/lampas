@@ -53,27 +53,19 @@ export const WORKSPACE_SECTIONS_NAV: SectionNav[] = [
     "cards": [
       {
         "id": "preparar_leitura_lenta",
-        "title": "Leitura lenta"
-      },
-      {
-        "id": "preparar_multiplas_leituras",
-        "title": "Múltiplas leituras"
+        "title": "Leitura"
       },
       {
         "id": "preparar_comparacao_traducoes",
-        "title": "Comparação de traduções"
-      },
-      {
-        "id": "preparar_leitura_voz_alta",
-        "title": "Leitura em voz alta"
+        "title": "Comparação"
       },
       {
         "id": "preparar_ideia_inicial",
-        "title": "Ideia central inicial"
+        "title": "Ideia Central"
       },
       {
         "id": "preparar_tensoes_repeticoes",
-        "title": "Tensões e repetições"
+        "title": "Tensões"
       }
     ]
   },
