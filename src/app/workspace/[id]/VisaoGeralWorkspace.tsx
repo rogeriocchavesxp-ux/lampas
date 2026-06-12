@@ -7,7 +7,7 @@ import type { CollageItem } from '@/lib/collages-content'
 import { createClient } from '@/lib/supabase/client'
 import SectionWorkspace from './SectionWorkspace'
 import NodeFloatingWindow, { type FloatWin } from './NodeFloatingWindow'
-import { Sparkles, Map, List, MoreHorizontal, X, BookOpen, ChevronLeft, Loader2, Check, BookMarked, Maximize2 } from 'lucide-react'
+import { Sparkles, Map, List, MoreHorizontal, X, BookOpen, ChevronLeft, Loader2, Check, BookMarked, Maximize2, Minus, Minimize2, Crosshair } from 'lucide-react'
 import { loadClassificationsFromDB, saveClassificationToDB, deleteClassificationFromDB, updateClassificationInDB } from '@/lib/classification-sync'
 import MarkdownRenderer from '@/components/MarkdownRenderer'
 
@@ -541,6 +541,22 @@ export default function VisaoGeralWorkspace({
   const [floatingWindows, setFloatingWindows] = useState<FloatWin[]>([])
   const topZRef = useRef(2000)
 
+  // Canvas free pan & zoom
+  const [viewX, setViewX]       = useState(0)
+  const [viewY, setViewY]       = useState(0)
+  const [zoom,  setZoom]        = useState(1)
+  const [isPanning, setIsPanning] = useState(false)
+  const [nodePositions, setNodePositions] = useState<Record<string, { x: number; y: number }>>(() => {
+    try { const s = localStorage.getItem(`vg_pos_${project.id}`); return s ? JSON.parse(s) : {} } catch { return {} }
+  })
+  const canvasContainerRef = useRef<HTMLDivElement>(null)
+  const panStartRef  = useRef<{ mouseX: number; mouseY: number; viewX: number; viewY: number } | null>(null)
+  const nodeDragRef  = useRef<{ key: string; startMouseX: number; startMouseY: number; startNodeX: number; startNodeY: number; moved: boolean } | null>(null)
+  const zoomRef      = useRef(1)
+  const viewXRef     = useRef(0)
+  const viewYRef     = useRef(0)
+  const centeredOnce = useRef(false)
+
   // Evolução das fases
   const [inherited,       setInherited]       = useState(false)
   const [showEvolution,   setShowEvolution]   = useState(false)
@@ -613,6 +629,46 @@ export default function VisaoGeralWorkspace({
     ro.observe(wrapRef.current)
     return () => ro.disconnect()
   }, [])
+
+  // Keep refs in sync for the wheel handler (which lives in a useEffect closure)
+  useEffect(() => { zoomRef.current  = zoom  }, [zoom])
+  useEffect(() => { viewXRef.current = viewX }, [viewX])
+  useEffect(() => { viewYRef.current = viewY }, [viewY])
+
+  // Non-passive wheel zoom
+  useEffect(() => {
+    if (mode !== 'visual') return
+    const c = canvasContainerRef.current
+    if (!c) return
+    const container = c
+    function onWheel(e: WheelEvent) {
+      e.preventDefault()
+      const delta = e.deltaY < 0 ? 0.1 : -0.1
+      const cur  = zoomRef.current
+      const next = Math.max(0.4, Math.min(1.5, cur + delta))
+      const rect = container.getBoundingClientRect()
+      const mx = e.clientX - rect.left
+      const my = e.clientY - rect.top
+      const ratio = next / cur
+      setZoom(next)
+      setViewX(mx - ratio * (mx - viewXRef.current))
+      setViewY(my - ratio * (my - viewYRef.current))
+    }
+    container.addEventListener('wheel', onWheel, { passive: false })
+    return () => container.removeEventListener('wheel', onWheel)
+  }, [mode])
+
+  // Center map when canvas first becomes visible
+  useEffect(() => {
+    if (mode !== 'visual' || centeredOnce.current || !canvasContainerRef.current) return
+    const cw = canvasContainerRef.current.clientWidth
+    const ch = canvasContainerRef.current.clientHeight
+    if (cw > 0 && ch > 0) {
+      centeredOnce.current = true
+      setViewX((cw - CW) / 2)
+      setViewY((ch - CH) / 2)
+    }
+  }, [mode])
 
   // fechar menu ao clicar fora — setTimeout garante que o listener só existe
   // no próximo tick, após o click atual terminar de propagar
@@ -921,9 +977,6 @@ export default function VisaoGeralWorkspace({
 
   // ── Layout ─────────────────────────────────────────────────────────────────
   const PANEL_GAP = 12
-  const canvasAreaW  = activePanel ? Math.max(wrapW - PANEL_W - PANEL_GAP, 300) : wrapW
-  const scale        = Math.min(1, (canvasAreaW - 8) / CW)
-  const scaledH      = CH * scale
 
   const activeNode = nodes.find(n => n.key === activePanel) ?? null
   const activeLayerMeta = SERMAO_EPISTOLAR_LAYERS.find(layer => layer.id === activeLayer)
@@ -981,6 +1034,64 @@ export default function VisaoGeralWorkspace({
 
   function toggleMaximizeWin(id: string) {
     setFloatingWindows(prev => prev.map(w => w.id === id ? { ...w, maximized: !w.maximized } : w))
+  }
+
+  // ── Canvas free pan & zoom ─────────────────────────────────────────────────
+  function getNodePos(node: NodeDef) {
+    return nodePositions[node.key] ?? nodeXY(node.angle, node.radius ?? RADIUS)
+  }
+
+  function centerMap() {
+    const c = canvasContainerRef.current; if (!c) return
+    setViewX((c.clientWidth  - CW * zoom) / 2)
+    setViewY((c.clientHeight - CH * zoom) / 2)
+  }
+
+  function fitToScreen() {
+    const c = canvasContainerRef.current; if (!c) return
+    const z = Math.max(0.4, Math.min(1.5, Math.min((c.clientWidth - 32) / CW, (c.clientHeight - 32) / CH)))
+    setZoom(z)
+    setViewX((c.clientWidth  - CW * z) / 2)
+    setViewY((c.clientHeight - CH * z) / 2)
+  }
+
+  function handleCanvasMD(e: React.MouseEvent<HTMLDivElement>) {
+    if ((e.target as HTMLElement).closest('button')) return
+    panStartRef.current = { mouseX: e.clientX, mouseY: e.clientY, viewX, viewY }
+    setIsPanning(true)
+  }
+
+  function handleCanvasMM(e: React.MouseEvent<HTMLDivElement>) {
+    if (nodeDragRef.current) {
+      const d = nodeDragRef.current
+      const dx = (e.clientX - d.startMouseX) / zoom
+      const dy = (e.clientY - d.startMouseY) / zoom
+      if (!d.moved && Math.hypot(dx, dy) > 4) d.moved = true
+      if (d.moved) setNodePositions(prev => {
+        const n = { ...prev, [d.key]: { x: d.startNodeX + dx, y: d.startNodeY + dy } }
+        try { localStorage.setItem(`vg_pos_${project.id}`, JSON.stringify(n)) } catch {}
+        return n
+      })
+    } else if (panStartRef.current) {
+      setViewX(panStartRef.current.viewX + (e.clientX - panStartRef.current.mouseX))
+      setViewY(panStartRef.current.viewY + (e.clientY - panStartRef.current.mouseY))
+    }
+  }
+
+  function handleCanvasMU() {
+    const drag = nodeDragRef.current
+    if (drag) {
+      if (!drag.moved) setActivePanel(p => p === drag.key ? null : drag.key)
+      nodeDragRef.current = null
+    }
+    panStartRef.current = null
+    setIsPanning(false)
+  }
+
+  function startNodeDrag(e: React.MouseEvent, node: NodeDef) {
+    e.stopPropagation()
+    const { x, y } = getNodePos(node)
+    nodeDragRef.current = { key: node.key, startMouseX: e.clientX, startMouseY: e.clientY, startNodeX: x, startNodeY: y, moved: false }
   }
 
   // ── Render ─────────────────────────────────────────────────────────────────
@@ -1189,12 +1300,30 @@ export default function VisaoGeralWorkspace({
             {/* Left column: canvas + obs button */}
             <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: '8px' }}>
 
-            {/* Canvas */}
-            <div style={{ position: 'relative', height: `${scaledH}px`, transition: 'all 0.25s ease' }}>
+            {/* Canvas — free infinite canvas */}
+            <div
+              ref={canvasContainerRef}
+              onMouseDown={handleCanvasMD}
+              onMouseMove={handleCanvasMM}
+              onMouseUp={handleCanvasMU}
+              onMouseLeave={handleCanvasMU}
+              style={{
+                position: 'relative',
+                height: 'clamp(480px, calc(100vh - 310px), 800px)',
+                overflow: 'hidden',
+                borderRadius: '10px',
+                border: '1px solid var(--border-subtle)',
+                background: 'var(--surface)',
+                cursor: isPanning ? 'grabbing' : 'grab',
+                userSelect: 'none',
+              }}
+            >
               <div style={{
                 position: 'absolute', top: 0, left: 0,
                 width: `${CW}px`, height: `${CH}px`,
-                transform: `scale(${scale})`, transformOrigin: 'top left',
+                transform: `translate(${viewX}px, ${viewY}px) scale(${zoom})`,
+                transformOrigin: '0 0',
+                willChange: 'transform',
               }}>
 
                 {/* ── SVG Lines ── */}
@@ -1204,7 +1333,7 @@ export default function VisaoGeralWorkspace({
                 >
                   <defs>
                     {canvasNodes.map(node => {
-                      const { x: nx, y: ny } = nodeXY(node.angle, node.radius ?? RADIUS)
+                      const { x: nx, y: ny } = getNodePos(node)
                       return (
                         <linearGradient key={`g-${node.key}`} id={`grad-${node.key}`}
                           x1={CX} y1={CY} x2={nx} y2={ny} gradientUnits="userSpaceOnUse"
@@ -1215,7 +1344,7 @@ export default function VisaoGeralWorkspace({
                       )
                     })}
                     {canvasNodes.map(node => {
-                      const { x: nx, y: ny } = nodeXY(node.angle, node.radius ?? RADIUS)
+                      const { x: nx, y: ny } = getNodePos(node)
                       return (
                         <linearGradient key={`ga-${node.key}`} id={`grad-active-${node.key}`}
                           x1={CX} y1={CY} x2={nx} y2={ny} gradientUnits="userSpaceOnUse"
@@ -1228,7 +1357,7 @@ export default function VisaoGeralWorkspace({
                   </defs>
 
                   {canvasNodes.map(node => {
-                    const { x: nx, y: ny } = nodeXY(node.angle, node.radius ?? RADIUS)
+                    const { x: nx, y: ny } = getNodePos(node)
                     const isHov = hoveredNode === node.key
                     const isAct = activePanel === node.key
                     const hasData = getCount(node) > 0
@@ -1318,7 +1447,7 @@ export default function VisaoGeralWorkspace({
 
                 {/* ── Outer nodes ── */}
                 {canvasNodes.map(node => {
-                  const { x: nx, y: ny } = nodeXY(node.angle, node.radius ?? RADIUS)
+                  const { x: nx, y: ny } = getNodePos(node)
                   const count   = getCount(node)
                   const hasData = count > 0
                   const isAct   = activePanel === node.key
@@ -1328,9 +1457,10 @@ export default function VisaoGeralWorkspace({
                       style={{ position: 'absolute', left: `${nx}px`, top: `${ny}px`, transform: 'translate(-50%, -50%)', zIndex: 5 }}
                       onMouseEnter={() => setHoveredNode(node.key)}
                       onMouseLeave={() => setHoveredNode(null)}
+                      onMouseDown={e => startNodeDrag(e, node)}
                     >
                       <button
-                        onClick={() => setActivePanel(isAct ? null : node.key)}
+                        onClick={() => {}}
                         style={{
                           display: 'flex', flexDirection: 'column', alignItems: 'center',
                           background: isAct ? node.bg : '#FFFFFF',
@@ -1376,6 +1506,7 @@ export default function VisaoGeralWorkspace({
                       {/* Expand button — shown on hover */}
                       {hoveredNode === node.key && (
                         <button
+                          onMouseDown={e => e.stopPropagation()}
                           onClick={e => { e.stopPropagation(); openFloatingWindow(node) }}
                           title="Abrir como documento"
                           style={{
@@ -1395,51 +1526,90 @@ export default function VisaoGeralWorkspace({
                   )
                 })}
               </div>
-            </div>
 
-            {/* OBS button */}
-            {(() => {
-              const isActive = activePanel === 'obs_pessoais'
-              const hasData  = obsContent.length > 0
-              return (
-                <button
-                  onClick={() => setActivePanel(isActive ? null : 'obs_pessoais')}
-                  style={{
-                    display: 'flex', alignItems: 'center', gap: '8px',
-                    background: isActive ? OBS_BG : '#FFFFFF',
-                    border: `1.5px solid ${isActive ? OBS_COLOR : (hasData ? OBS_COLOR + '45' : '#E2E8F0')}`,
-                    borderRadius: '13px', padding: '10px 16px',
-                    cursor: 'pointer', fontFamily: 'inherit', userSelect: 'none', width: '100%',
-                    boxShadow: isActive
-                      ? `0 0 0 4px ${OBS_COLOR}18, 0 4px 18px ${OBS_COLOR}20, 0 1px 4px rgba(0,0,0,0.06)`
-                      : hasData
-                        ? '0 2px 8px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04)'
-                        : '0 1px 2px rgba(0,0,0,0.03)',
-                    outline: 'none', textAlign: 'left',
-                    transition: 'all 0.18s cubic-bezier(0.16,1,0.3,1)',
-                  }}
-                >
-                  <span style={{ fontSize: '1rem', lineHeight: 1, flexShrink: 0 }}>📝</span>
-                  <span style={{
-                    fontSize: '0.64rem', fontWeight: 700, letterSpacing: '0.05em',
-                    textTransform: 'uppercase', color: hasData ? OBS_COLOR : '#94A3B8',
-                  }}>
-                    Observações Pessoais
-                  </span>
-                  {hasData ? (
-                    <span style={{
-                      fontSize: '0.65rem', fontWeight: 800, color: OBS_COLOR,
-                      background: OBS_COLOR + '18', borderRadius: '20px',
-                      padding: '2px 8px', marginLeft: 'auto', lineHeight: 1, flexShrink: 0,
-                    }}>
-                      {obsContent.length}
+              {/* ── OBS overlay (bottom-left) ── */}
+              {(() => {
+                const isActive = activePanel === 'obs_pessoais'
+                const hasData  = obsContent.length > 0
+                return (
+                  <button
+                    onMouseDown={e => e.stopPropagation()}
+                    onClick={() => setActivePanel(isActive ? null : 'obs_pessoais')}
+                    style={{
+                      position: 'absolute', bottom: '12px', left: '12px', zIndex: 20,
+                      display: 'flex', alignItems: 'center', gap: '7px',
+                      background: isActive ? OBS_BG : 'var(--surface)',
+                      border: `1.5px solid ${isActive ? OBS_COLOR : (hasData ? OBS_COLOR + '45' : 'var(--border-subtle)')}`,
+                      borderRadius: '10px', padding: '7px 12px',
+                      cursor: 'pointer', fontFamily: 'inherit', userSelect: 'none',
+                      boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
+                      transition: 'all 0.18s cubic-bezier(0.16,1,0.3,1)',
+                    }}
+                  >
+                    <span style={{ fontSize: '0.88rem', lineHeight: 1 }}>📝</span>
+                    <span style={{ fontSize: '0.62rem', fontWeight: 700, letterSpacing: '0.05em', textTransform: 'uppercase', color: hasData ? OBS_COLOR : '#94A3B8' }}>
+                      Obs.
                     </span>
-                  ) : (
-                    <span style={{ fontSize: '0.55rem', color: '#CBD5E1', marginLeft: 'auto', letterSpacing: '0.08em' }}>vazio</span>
-                  )}
+                    {hasData && (
+                      <span style={{ fontSize: '0.62rem', fontWeight: 800, color: OBS_COLOR, background: OBS_COLOR + '18', borderRadius: '20px', padding: '1px 6px', lineHeight: 1 }}>
+                        {obsContent.length}
+                      </span>
+                    )}
+                  </button>
+                )
+              })()}
+
+              {/* ── Zoom controls (bottom-right) ── */}
+              <div
+                onMouseDown={e => e.stopPropagation()}
+                style={{
+                  position: 'absolute', bottom: '12px', right: '12px', zIndex: 20,
+                  display: 'flex', alignItems: 'center', gap: '3px',
+                  background: 'var(--surface)', border: '1px solid var(--border-subtle)',
+                  borderRadius: '10px', padding: '4px 6px',
+                  boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
+                }}
+              >
+                <button
+                  onClick={fitToScreen} title="Ajustar à tela"
+                  style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '26px', height: '26px', border: 'none', background: 'transparent', cursor: 'pointer', borderRadius: '6px', color: 'var(--text-muted)' }}
+                  onMouseEnter={e => e.currentTarget.style.background = 'var(--surface-2)'}
+                  onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+                >
+                  <Minimize2 size={12} strokeWidth={2} />
                 </button>
-              )
-            })()}
+                <div style={{ width: '1px', height: '14px', background: 'var(--border-subtle)' }} />
+                <button
+                  onClick={() => setZoom(z => Math.max(0.4, parseFloat((z - 0.25).toFixed(2))))} title="Zoom out"
+                  style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '26px', height: '26px', border: 'none', background: 'transparent', cursor: 'pointer', borderRadius: '6px', color: 'var(--text-muted)' }}
+                  onMouseEnter={e => e.currentTarget.style.background = 'var(--surface-2)'}
+                  onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+                >
+                  <Minus size={12} strokeWidth={2.5} />
+                </button>
+                <span style={{ fontSize: '0.65rem', fontWeight: 600, color: 'var(--text-muted)', minWidth: '32px', textAlign: 'center', userSelect: 'none' }}>
+                  {Math.round(zoom * 100)}%
+                </span>
+                <button
+                  onClick={() => setZoom(z => Math.min(1.5, parseFloat((z + 0.25).toFixed(2))))} title="Zoom in"
+                  style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '26px', height: '26px', border: 'none', background: 'transparent', cursor: 'pointer', borderRadius: '6px', color: 'var(--text-muted)' }}
+                  onMouseEnter={e => e.currentTarget.style.background = 'var(--surface-2)'}
+                  onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+                >
+                  <span style={{ fontSize: '14px', lineHeight: 1, color: 'var(--text-muted)' }}>+</span>
+                </button>
+                <div style={{ width: '1px', height: '14px', background: 'var(--border-subtle)' }} />
+                <button
+                  onClick={centerMap} title="Centralizar mapa"
+                  style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '26px', height: '26px', border: 'none', background: 'transparent', cursor: 'pointer', borderRadius: '6px', color: 'var(--text-muted)' }}
+                  onMouseEnter={e => e.currentTarget.style.background = 'var(--surface-2)'}
+                  onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+                >
+                  <Crosshair size={12} strokeWidth={2} />
+                </button>
+              </div>
+
+            </div>{/* end canvas container */}
             </div>{/* end left column */}
 
             {/* ── Side panel ── */}
