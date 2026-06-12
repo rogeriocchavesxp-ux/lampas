@@ -143,7 +143,7 @@ export default function SectionWorkspace({
   }, [existingSection])
 
   const isPalestraConstruir = sectionDef.slug === 'palestra_construir'
-  const isTabLayout        = sectionDef.slug === 'preparar_leia_assimile'
+  const isTabLayout        = !isPalestraConstruir
 
   const loadDynamicPointCards = useCallback((): DynamicPointCard[] => {
     if (!isPalestraConstruir) return []
@@ -569,7 +569,7 @@ export default function SectionWorkspace({
             {/* Tab bar */}
             <div style={{
               display: 'flex', borderBottom: '1px solid var(--border-subtle)',
-              marginBottom: '1.5rem',
+              marginBottom: '1.5rem', overflowX: 'auto', scrollbarWidth: 'none',
             }}>
               {activeCards.map(card => {
                 const text   = toDisplayText(cardContent[card.id] ?? '')
@@ -714,6 +714,68 @@ export default function SectionWorkspace({
                       >
                         Gerar com IA
                       </button>
+                      <div style={{ position: 'relative' }} onClick={e => e.stopPropagation()}>
+                        <button
+                          onClick={() => setOpenMenu(openMenu === card.id ? null : card.id)}
+                          title="Mais opções"
+                          style={{
+                            background: openMenu === card.id ? 'var(--surface-2)' : 'transparent',
+                            border: 'none', cursor: 'pointer', color: 'var(--text-muted)',
+                            padding: '0.2rem 0.25rem', borderRadius: '5px',
+                            display: 'flex', alignItems: 'center', transition: 'background 0.12s',
+                          }}
+                          onMouseEnter={e => { e.currentTarget.style.background = 'var(--surface-2)' }}
+                          onMouseLeave={e => { if (openMenu !== card.id) e.currentTarget.style.background = 'transparent' }}
+                        >
+                          <MoreHorizontal size={14} strokeWidth={1.75} />
+                        </button>
+                        {openMenu === card.id && (
+                          <div
+                            style={{
+                              position: 'absolute', right: 0, bottom: 'calc(100% + 4px)',
+                              zIndex: 100, background: '#FFFFFF',
+                              border: '1px solid var(--border)', borderRadius: '12px',
+                              boxShadow: '0 4px 24px rgba(0,0,0,0.08), 0 1px 4px rgba(0,0,0,0.05)',
+                              padding: '0.3rem', minWidth: '186px',
+                            }}
+                            onClick={e => e.stopPropagation()}
+                          >
+                            {([
+                              { label: 'Melhorar resposta', action: () => { setOpenMenu(null); onAskAI(`Melhore e aprofunde esta análise de "${card.title}" para ${project.book} ${project.passage_ref}:\n\n${content.slice(0, 800)}`) }, disabled: !hasContent },
+                              { label: 'Expandir análise', action: () => { setOpenMenu(null); onAskAI(card.aiTrigger + ' — Expanda com mais profundidade, exemplos exegéticos e referências de peso.') }, disabled: false },
+                              { separator: true },
+                              { label: 'Adicionar observação', action: () => { setOpenMenu(null); setEditingCards(prev => new Set([...prev, card.id])) }, disabled: false },
+                              { label: 'Duplicar conteúdo', action: () => { setOpenMenu(null); navigator.clipboard.writeText(content).catch(() => {}) }, disabled: !hasContent },
+                              { separator: true },
+                              { label: 'Limpar conteúdo', action: () => { setOpenMenu(null); scheduleAutosave(card.id, '') }, disabled: !hasContent, danger: true },
+                            ] as Array<{ separator?: true; label?: string; action?: () => void; disabled?: boolean; danger?: boolean }>).map((item, i) => (
+                              'separator' in item ? (
+                                <div key={i} style={{ height: '1px', background: 'var(--border-subtle)', margin: '0.2rem 0' }} />
+                              ) : (
+                                <button
+                                  key={item.label}
+                                  onMouseDown={e => { e.preventDefault(); e.stopPropagation(); if (!item.disabled) item.action!() }}
+                                  disabled={item.disabled}
+                                  style={{
+                                    display: 'block', width: '100%', textAlign: 'left',
+                                    background: 'transparent', border: 'none',
+                                    cursor: item.disabled ? 'not-allowed' : 'pointer',
+                                    fontFamily: 'inherit', fontSize: '0.83rem',
+                                    color: item.danger ? 'var(--error)' : 'var(--text-secondary)',
+                                    padding: '0.42rem 0.65rem', borderRadius: '8px',
+                                    opacity: item.disabled ? 0.4 : 1, transition: 'background 0.1s',
+                                    letterSpacing: '-0.005em',
+                                  }}
+                                  onMouseEnter={e => { if (!item.disabled) e.currentTarget.style.background = 'var(--surface)' }}
+                                  onMouseLeave={e => { e.currentTarget.style.background = 'transparent' }}
+                                >
+                                  {item.label}
+                                </button>
+                              )
+                            ))}
+                          </div>
+                        )}
+                      </div>
                     </div>
                   </div>
                 </div>
