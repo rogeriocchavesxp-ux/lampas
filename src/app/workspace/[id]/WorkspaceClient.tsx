@@ -608,6 +608,25 @@ export default function WorkspaceClient({ user, project, initialSections }: Prop
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchParams])
 
+  // Auto-expand caminho da seção ativa quando o painel de navegação abre
+  useEffect(() => {
+    if (!openPhasePopover) return
+    for (const ph of navPhases) {
+      for (const mo of ph.modes) {
+        for (const gr of mo.groups) {
+          const secs = getSectionsByGroupNav(gr.id)
+          if (secs.some(s => s.slug === activeSlug)) {
+            setExpandedPhases(prev => new Set([...prev, ph.id]))
+            setExpandedGroups(prev => new Set([...prev, gr.id]))
+            if (ph.modes.length > 1) setExpandedCanons(prev => new Set([...prev, mo.id]))
+            return
+          }
+        }
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [openPhasePopover])
+
   function groupProgress(groupId: string) {
     if (groupId === 'colagens') return toolProgress(groupId)
     if (groupId === 'comentario_expositivo') return toolProgress(groupId)
@@ -1717,131 +1736,161 @@ export default function WorkspaceClient({ user, project, initialSections }: Prop
         />
       )}
 
-      {/* ── Bottom Nav Popover ─────────────────────────────────────── */}
+      {/* ── Navigation Tree Panel ──────────────────────────────────── */}
       {!focusMode && (() => {
         if (!openPhasePopover) return null
-        const phase = navPhases.find(p => p.id === openPhasePopover)
-        if (!phase) return null
-        const phaseIdx = navPhases.findIndex(p => p.id === openPhasePopover)
-        const progress = phaseProgress.find(p => p.id === phase.id)
         return (
           <>
             <div onClick={() => setOpenPhasePopover(null)} style={{ position: 'fixed', inset: '0 0 60px 0', zIndex: 98 }} />
             <div style={{
-              position: 'fixed',
-              bottom: '68px',
-              left: `clamp(8px, calc(${(phaseIdx + 0.5) / navPhases.length * 100}% - 145px), calc(100% - 298px))`,
-              width: '290px',
-              maxHeight: 'calc(100vh - 120px)',
-              background: 'var(--surface)',
-              border: '1px solid var(--border)',
-              borderRadius: '12px',
-              boxShadow: '0 8px 32px rgba(0,0,0,0.14)',
-              zIndex: 99,
-              overflow: 'hidden',
-              display: 'flex', flexDirection: 'column',
+              position: 'fixed', top: 0, left: 0, bottom: '60px', width: '296px',
+              background: 'var(--surface)', borderRight: '1px solid var(--border)',
+              boxShadow: '4px 0 32px rgba(0,0,0,0.12)', zIndex: 99,
+              display: 'flex', flexDirection: 'column', overflow: 'hidden',
             }}>
-              <div style={{ padding: '0.8rem 0.9rem 0.7rem', borderBottom: '1px solid var(--border-subtle)', display: 'flex', alignItems: 'center', gap: '0.6rem', flexShrink: 0 }}>
-                <div style={{ width: '20px', height: '20px', borderRadius: '50%', background: phase.color, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                  <span style={{ fontSize: '0.58rem', fontWeight: 800, color: '#fff', lineHeight: 1 }}>{phaseIdx + 1}</span>
-                </div>
+              {/* Panel header */}
+              <div style={{ padding: '0.9rem 1rem 0.8rem', borderBottom: '1px solid var(--border)', display: 'flex', alignItems: 'center', gap: '0.6rem', flexShrink: 0 }}>
                 <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ fontSize: '0.73rem', fontWeight: 750, color: phase.color, letterSpacing: '0.03em' }}>{phase.label.toUpperCase()}</div>
-                  <div style={{ fontSize: '0.57rem', color: 'var(--text-muted)', marginTop: '1px' }}>{phase.description}</div>
+                  <div style={{ fontSize: '0.62rem', fontWeight: 700, letterSpacing: '0.08em', color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: '0.1rem' }}>Navegação</div>
+                  <div style={{ fontSize: '0.8rem', fontWeight: 700, color: 'var(--text-primary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{project.passage_ref}</div>
                 </div>
-                {progress && (
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.3rem', flexShrink: 0 }}>
-                    <div style={{ width: '32px', height: '3px', background: 'var(--border-subtle)', borderRadius: '2px', overflow: 'hidden' }}>
-                      <div style={{ width: `${progress.pct}%`, height: '100%', background: phase.color, borderRadius: '2px' }} />
-                    </div>
-                    <span style={{ fontSize: '0.58rem', color: 'var(--text-muted)', fontWeight: 700 }}>{progress.pct}%</span>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.32rem', flexShrink: 0 }}>
+                  <div style={{ width: '36px', height: '3px', background: 'var(--border-subtle)', borderRadius: '2px', overflow: 'hidden' }}>
+                    <div style={{ width: `${pct}%`, height: '100%', background: 'var(--text-muted)', borderRadius: '2px', transition: 'width 0.4s' }} />
                   </div>
-                )}
+                  <span style={{ fontSize: '0.62rem', fontWeight: 700, color: 'var(--text-muted)' }}>{pct}%</span>
+                </div>
                 <button onClick={() => setOpenPhasePopover(null)} style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: 'var(--text-muted)', padding: '0.15rem', borderRadius: '4px', display: 'flex', alignItems: 'center', flexShrink: 0 }}>
                   <X size={13} />
                 </button>
               </div>
-              <div style={{ overflowY: 'auto', padding: '0.5rem 0.4rem', flex: 1 }}>
-                {phase.modes.map((mode, modeIdx) => {
-                  const singleMode = phase.modes.length === 1
-                  const modeOpen = singleMode || expandedCanons.has(mode.id)
+
+              {/* Full tree */}
+              <div style={{ overflowY: 'auto', padding: '0.5rem 0.35rem', flex: 1 }}>
+                {navPhases.map((ph, phIdx) => {
+                  const prog = phaseProgress.find(p => p.id === ph.id)
+                  const phOpen = expandedPhases.has(ph.id)
                   return (
-                    <div key={mode.id}>
-                      {!singleMode && (() => {
-                        const ModeIconEl = MODE_ICONS_LUCIDE[mode.id]
-                        return (
-                          <button
-                            onClick={() => toggleCanon(mode.id)}
-                            style={{ width: '100%', border: modeOpen ? `1px solid ${mode.color}25` : '1px solid transparent', cursor: 'pointer', background: modeOpen ? mode.bgActive : 'transparent', borderRadius: '7px', textAlign: 'left', fontFamily: 'inherit', padding: '0.34rem 0.52rem', marginTop: modeIdx > 0 ? '0.14rem' : '0', display: 'flex', alignItems: 'center', gap: '0.4rem' }}
-                          >
-                            {ModeIconEl && <ModeIconEl size={12} strokeWidth={1.8} style={{ flexShrink: 0, color: mode.color }} />}
-                            <div style={{ flex: 1, minWidth: 0 }}>
-                              <div style={{ fontSize: '0.72rem', fontWeight: 650, color: modeOpen ? mode.color : 'var(--text-secondary)', lineHeight: 1.15 }}>{mode.label}</div>
+                    <div key={ph.id} style={{ marginBottom: '0.1rem' }}>
+                      <button
+                        onClick={() => togglePhase(ph.id)}
+                        style={{ width: '100%', border: 'none', cursor: 'pointer', background: 'transparent', borderRadius: '8px', textAlign: 'left', fontFamily: 'inherit', padding: '0.36rem 0.52rem', display: 'flex', alignItems: 'center', gap: '0.42rem' }}
+                        onMouseEnter={e => { e.currentTarget.style.background = 'rgba(0,0,0,0.04)' }}
+                        onMouseLeave={e => { e.currentTarget.style.background = 'transparent' }}
+                      >
+                        <div style={{ width: '18px', height: '18px', borderRadius: '50%', background: ph.color, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                          <span style={{ fontSize: '0.52rem', fontWeight: 800, color: '#fff', lineHeight: 1 }}>{phIdx + 1}</span>
+                        </div>
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                          <div style={{ fontSize: '0.72rem', fontWeight: 750, color: ph.color, letterSpacing: '0.02em', lineHeight: 1.15 }}>{ph.label.toUpperCase()}</div>
+                        </div>
+                        {prog && prog.total > 0 && (
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '0.26rem', flexShrink: 0 }}>
+                            <div style={{ width: '26px', height: '2px', background: 'var(--border-subtle)', borderRadius: '2px', overflow: 'hidden' }}>
+                              <div style={{ width: `${prog.pct}%`, height: '100%', background: ph.color, borderRadius: '2px' }} />
                             </div>
-                            {modeOpen ? <ChevronDown size={10} style={{ flexShrink: 0, color: 'var(--text-muted)' }} /> : <ChevronRight size={10} style={{ flexShrink: 0, color: 'var(--text-muted)' }} />}
-                          </button>
-                        )
-                      })()}
-                      {modeOpen && (
-                        <div style={{ paddingBottom: '0.05rem' }}>
-                          {mode.groups.map(group => {
-                            const groupOpen = expandedGroups.has(group.id)
-                            const isUtilityGroup = isToolSlug(group.id) || group.id === 'colagens' || group.id === 'comentario_expositivo'
-                            const secs = isUtilityGroup ? [] : getSectionsByGroupNav(group.id)
-                            if (secs.length === 0 && !isUtilityGroup) return null
-                            const isSingleSection = !isUtilityGroup && secs.length === 1 && !SYNTHESIS_DEFS[group.id]
-                            const isDirect = isUtilityGroup || isSingleSection
-                            const tool = getToolAreaBySlug(group.id)
-                            const directSlug = isSingleSection ? secs[0].slug : (tool?.slug ?? group.id)
-                            const directLabel = isSingleSection ? secs[0].shortTitle : group.label
-                            const { done, total } = groupProgress(group.id)
-                            const syn = !isDirect ? SYNTHESIS_DEFS[group.id] : undefined
-                            const isActive = isDirect && activeSlug === directSlug
-                            const isExpanded = !isDirect && groupOpen
-                            const highlight = isActive || isExpanded
-                            const groupTitle = isDirect ? directLabel : group.label
-                            const groupSub = GROUP_SUBTITLES[group.id] ?? (isToolSlug(group.id) ? getToolAreaBySlug(group.id)?.subtitle : undefined) ?? ''
-                            const GroupIcon = GROUP_ICONS[group.id]
+                            <span style={{ fontSize: '0.55rem', fontWeight: 700, color: 'var(--text-muted)' }}>{prog.pct}%</span>
+                          </div>
+                        )}
+                        {phOpen ? <ChevronDown size={10} style={{ flexShrink: 0, color: 'var(--text-muted)' }} /> : <ChevronRight size={10} style={{ flexShrink: 0, color: 'var(--text-muted)' }} />}
+                      </button>
+                      {prog && prog.total > 0 && (
+                        <div style={{ height: '2px', marginLeft: '1.62rem', marginRight: '0.5rem', background: 'var(--border-subtle)', borderRadius: '1px', overflow: 'hidden', marginBottom: '0.08rem' }}>
+                          <div style={{ width: `${prog.pct}%`, height: '100%', background: ph.color, borderRadius: '1px', transition: 'width 0.4s' }} />
+                        </div>
+                      )}
+                      {phOpen && (
+                        <div style={{ paddingBottom: '0.1rem' }}>
+                          {ph.modes.map((mode, modeIdx) => {
+                            const singleMode = ph.modes.length === 1
+                            const modeOpen = singleMode || expandedCanons.has(mode.id)
                             return (
-                              <div key={group.id} style={{ marginBottom: groupOpen ? '0.22rem' : 0 }}>
-                                <button
-                                  onClick={() => isDirect ? navigate(directSlug) : toggleGroup(group.id)}
-                                  style={{ width: '100%', border: isActive ? `1px solid ${mode.color}28` : '1px solid transparent', cursor: 'pointer', background: isActive ? mode.bgActive : 'transparent', borderRadius: '7px', textAlign: 'left', fontFamily: 'inherit', padding: '0.34rem 0.52rem', display: 'flex', alignItems: 'center', gap: '0.42rem' }}
-                                  onMouseEnter={e => { if (!isActive) { e.currentTarget.style.background = 'rgba(0,0,0,0.04)'; e.currentTarget.style.borderColor = 'var(--border)' } }}
-                                  onMouseLeave={e => { if (!isActive) { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.borderColor = 'transparent' } }}
-                                >
-                                  {GroupIcon && <GroupIcon size={15} strokeWidth={1.75} style={{ flexShrink: 0, color: highlight ? mode.color : 'var(--text-muted)' }} />}
-                                  <div style={{ flex: 1, minWidth: 0 }}>
-                                    <div style={{ fontSize: '0.73rem', fontWeight: 650, lineHeight: 1.15, color: highlight ? mode.color : 'var(--text-primary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{groupTitle}</div>
-                                    {groupSub && <div style={{ fontSize: '0.58rem', color: 'var(--text-muted)', marginTop: '0.04rem', lineHeight: 1.15, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{groupSub}</div>}
-                                  </div>
-                                  {isActive && <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: mode.color, flexShrink: 0 }} />}
-                                  {!isDirect && done > 0 && !isActive && <span style={{ fontSize: '0.56rem', flexShrink: 0, fontWeight: 700, color: done === total ? 'var(--success)' : mode.color }}>{done === total ? '✓' : `${done}/${total}`}</span>}
-                                  {!isDirect && (groupOpen ? <ChevronDown size={10} style={{ flexShrink: 0, color: 'var(--text-muted)', opacity: 0.55 }} /> : <ChevronRight size={10} style={{ flexShrink: 0, color: 'var(--text-muted)', opacity: 0.4 }} />)}
-                                </button>
-                                {!isDirect && groupOpen && (
-                                  <div style={{ marginLeft: '1.2rem', borderLeft: '1px solid var(--border-subtle)', marginBottom: '0.08rem' }}>
-                                    {secs.map(sd => {
-                                      const sec = sections.find(s => s.slug === sd.slug)
-                                      const isActive = sd.slug === activeSlug
-                                      const dot = statusDot(sec?.status)
+                              <div key={mode.id}>
+                                {!singleMode && (() => {
+                                  const ModeIconEl = MODE_ICONS_LUCIDE[mode.id]
+                                  return (
+                                    <button
+                                      onClick={() => toggleCanon(mode.id)}
+                                      style={{ width: 'calc(100% - 0.6rem)', marginLeft: '0.6rem', border: modeOpen ? `1px solid ${mode.color}25` : '1px solid transparent', cursor: 'pointer', background: modeOpen ? mode.bgActive : 'transparent', borderRadius: '7px', textAlign: 'left', fontFamily: 'inherit', padding: '0.28rem 0.52rem', marginTop: modeIdx > 0 ? '0.1rem' : '0', display: 'flex', alignItems: 'center', gap: '0.38rem' }}
+                                    >
+                                      {ModeIconEl && <ModeIconEl size={12} strokeWidth={1.8} style={{ flexShrink: 0, color: mode.color }} />}
+                                      <div style={{ flex: 1, minWidth: 0 }}>
+                                        <div style={{ fontSize: '0.7rem', fontWeight: 650, color: modeOpen ? mode.color : 'var(--text-secondary)', lineHeight: 1.15 }}>{mode.label}</div>
+                                      </div>
+                                      {modeOpen ? <ChevronDown size={10} style={{ flexShrink: 0, color: 'var(--text-muted)' }} /> : <ChevronRight size={10} style={{ flexShrink: 0, color: 'var(--text-muted)' }} />}
+                                    </button>
+                                  )
+                                })()}
+                                {modeOpen && (
+                                  <div style={{ paddingBottom: '0.04rem', paddingLeft: singleMode ? '0.55rem' : '1.1rem' }}>
+                                    {mode.groups.map(group => {
+                                      const groupOpen = expandedGroups.has(group.id)
+                                      const isUtilityGroup = isToolSlug(group.id) || group.id === 'colagens' || group.id === 'comentario_expositivo'
+                                      const secs = isUtilityGroup ? [] : getSectionsByGroupNav(group.id)
+                                      if (secs.length === 0 && !isUtilityGroup) return null
+                                      const isSingleSection = !isUtilityGroup && secs.length === 1 && !SYNTHESIS_DEFS[group.id]
+                                      const isDirect = isUtilityGroup || isSingleSection
+                                      const tool = getToolAreaBySlug(group.id)
+                                      const directSlug = isSingleSection ? secs[0].slug : (tool?.slug ?? group.id)
+                                      const directLabel = isSingleSection ? secs[0].shortTitle : group.label
+                                      const { done, total } = groupProgress(group.id)
+                                      const syn = !isDirect ? SYNTHESIS_DEFS[group.id] : undefined
+                                      const isActive = isDirect && activeSlug === directSlug
+                                      const isExpanded = !isDirect && groupOpen
+                                      const highlight = isActive || isExpanded
+                                      const groupTitle = isDirect ? directLabel : group.label
+                                      const groupSub = GROUP_SUBTITLES[group.id] ?? (isToolSlug(group.id) ? getToolAreaBySlug(group.id)?.subtitle : undefined) ?? ''
+                                      const GroupIcon = GROUP_ICONS[group.id]
                                       return (
-                                        <button key={sd.slug} onClick={() => navigate(sd.slug)} style={{ width: '100%', border: 'none', fontFamily: 'inherit', background: isActive ? `${mode.color}10` : 'transparent', padding: '0.18rem 0.55rem 0.18rem 0.42rem', display: 'flex', alignItems: 'center', gap: '0.35rem', cursor: 'pointer', textAlign: 'left', borderRadius: '5px' }} onMouseEnter={e => { if (!isActive) e.currentTarget.style.background = 'rgba(0,0,0,0.04)' }} onMouseLeave={e => { if (!isActive) e.currentTarget.style.background = 'transparent' }}>
-                                          <span style={{ width: '3px', height: '3px', borderRadius: '50%', background: isActive ? mode.color : 'var(--border)', flexShrink: 0 }} />
-                                          <span style={{ flex: 1, fontSize: '0.69rem', lineHeight: 1.22, color: isActive ? mode.color : 'var(--text-secondary)', fontWeight: isActive ? 600 : 400, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{sd.shortTitle}</span>
-                                          <span style={{ width: '4px', height: '4px', borderRadius: '50%', background: dot, flexShrink: 0, opacity: isActive ? 1 : 0.5 }} />
-                                        </button>
+                                        <div key={group.id} style={{ marginBottom: groupOpen ? '0.18rem' : 0 }}>
+                                          <button
+                                            onClick={() => isDirect ? navigate(directSlug) : toggleGroup(group.id)}
+                                            style={{ width: '100%', border: isActive ? `1px solid ${mode.color}28` : '1px solid transparent', cursor: 'pointer', background: isActive ? mode.bgActive : 'transparent', borderRadius: '7px', textAlign: 'left', fontFamily: 'inherit', padding: '0.3rem 0.52rem', display: 'flex', alignItems: 'center', gap: '0.38rem' }}
+                                            onMouseEnter={e => { if (!isActive) { e.currentTarget.style.background = 'rgba(0,0,0,0.04)'; e.currentTarget.style.borderColor = 'var(--border)' } }}
+                                            onMouseLeave={e => { if (!isActive) { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.borderColor = 'transparent' } }}
+                                          >
+                                            {GroupIcon && <GroupIcon size={14} strokeWidth={1.75} style={{ flexShrink: 0, color: highlight ? mode.color : 'var(--text-muted)' }} />}
+                                            <div style={{ flex: 1, minWidth: 0 }}>
+                                              <div style={{ fontSize: '0.72rem', fontWeight: 650, lineHeight: 1.15, color: highlight ? mode.color : 'var(--text-primary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{groupTitle}</div>
+                                              {groupSub && <div style={{ fontSize: '0.57rem', color: 'var(--text-muted)', marginTop: '0.03rem', lineHeight: 1.15, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{groupSub}</div>}
+                                            </div>
+                                            {isActive && <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: mode.color, flexShrink: 0 }} />}
+                                            {!isDirect && (
+                                              <span style={{ fontSize: '0.55rem', flexShrink: 0, fontWeight: 700, color: done === total && total > 0 ? 'var(--success)' : 'var(--text-muted)' }}>
+                                                {done === total && total > 0 ? '✓' : `${done}/${total}`}
+                                              </span>
+                                            )}
+                                            {!isDirect && (groupOpen ? <ChevronDown size={10} style={{ flexShrink: 0, color: 'var(--text-muted)', opacity: 0.55 }} /> : <ChevronRight size={10} style={{ flexShrink: 0, color: 'var(--text-muted)', opacity: 0.4 }} />)}
+                                          </button>
+                                          {!isDirect && groupOpen && (
+                                            <div style={{ marginLeft: '1.15rem', borderLeft: '1px solid var(--border-subtle)', marginBottom: '0.06rem' }}>
+                                              {secs.map(sd => {
+                                                const sec = sections.find(s => s.slug === sd.slug)
+                                                const isSecActive = sd.slug === activeSlug
+                                                return (
+                                                  <button key={sd.slug} onClick={() => navigate(sd.slug)} style={{ width: '100%', border: 'none', fontFamily: 'inherit', background: isSecActive ? `${mode.color}10` : 'transparent', padding: '0.16rem 0.48rem 0.16rem 0.4rem', display: 'flex', alignItems: 'center', gap: '0.32rem', cursor: 'pointer', textAlign: 'left', borderRadius: '5px' }} onMouseEnter={e => { if (!isSecActive) e.currentTarget.style.background = 'rgba(0,0,0,0.04)' }} onMouseLeave={e => { if (!isSecActive) e.currentTarget.style.background = 'transparent' }}>
+                                                    <span style={{ width: '3px', height: '3px', borderRadius: '50%', background: isSecActive ? mode.color : 'var(--border)', flexShrink: 0 }} />
+                                                    <span style={{ flex: 1, fontSize: '0.68rem', lineHeight: 1.22, color: isSecActive ? mode.color : 'var(--text-secondary)', fontWeight: isSecActive ? 600 : 400, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{sd.shortTitle}</span>
+                                                    <span style={{ fontSize: '0.64rem', flexShrink: 0, color: sec?.status && ['draft', 'reviewed'].includes(sec.status) ? 'var(--success)' : 'var(--border)', opacity: 0.85 }}>
+                                                      {sec?.status === 'reviewed' ? '✓' : sec?.status === 'draft' ? '–' : '○'}
+                                                    </span>
+                                                  </button>
+                                                )
+                                              })}
+                                              {syn && (() => {
+                                                const isSynActive = activeSlug === syn.slug
+                                                return (
+                                                  <button onClick={() => navigate(syn.slug)} style={{ width: '100%', border: 'none', fontFamily: 'inherit', background: isSynActive ? mode.bgActive : 'transparent', borderLeft: `2px solid ${isSynActive ? mode.color : 'transparent'}`, padding: '0.16rem 0.35rem 0.16rem 0.4rem', display: 'flex', alignItems: 'center', gap: '0.28rem', cursor: 'pointer', textAlign: 'left', marginLeft: '-1px', marginTop: '0.06rem', borderTop: '1px solid var(--border-subtle)' }} onMouseEnter={e => { if (!isSynActive) e.currentTarget.style.background = 'rgba(0,0,0,0.04)' }} onMouseLeave={e => { if (!isSynActive) e.currentTarget.style.background = 'transparent' }}>
+                                                    <span style={{ fontSize: '0.56rem', color: isSynActive ? mode.color : 'var(--text-muted)', flexShrink: 0 }}>→</span>
+                                                    <span style={{ flex: 1, fontSize: '0.62rem', lineHeight: 1.2, color: isSynActive ? mode.color : 'var(--text-muted)', fontStyle: 'italic', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{syn.shortTitle}</span>
+                                                  </button>
+                                                )
+                                              })()}
+                                            </div>
+                                          )}
+                                        </div>
                                       )
                                     })}
-                                    {syn && (() => {
-                                      const isSynActive = activeSlug === syn.slug
-                                      return (
-                                        <button onClick={() => navigate(syn.slug)} style={{ width: '100%', border: 'none', fontFamily: 'inherit', background: isSynActive ? mode.bgActive : 'transparent', borderLeft: `2px solid ${isSynActive ? mode.color : 'transparent'}`, padding: '0.18rem 0.35rem 0.18rem 0.42rem', display: 'flex', alignItems: 'center', gap: '0.28rem', cursor: 'pointer', textAlign: 'left', marginLeft: '-1px', marginTop: '0.08rem', borderTop: '1px solid var(--border-subtle)' }} onMouseEnter={e => { if (!isSynActive) e.currentTarget.style.background = 'rgba(0,0,0,0.04)' }} onMouseLeave={e => { if (!isSynActive) e.currentTarget.style.background = 'transparent' }}>
-                                          <span style={{ fontSize: '0.56rem', color: isSynActive ? mode.color : 'var(--text-muted)', flexShrink: 0 }}>→</span>
-                                          <span style={{ flex: 1, fontSize: '0.62rem', lineHeight: 1.2, color: isSynActive ? mode.color : 'var(--text-muted)', fontStyle: 'italic', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{syn.shortTitle}</span>
-                                        </button>
-                                      )
-                                    })()}
                                   </div>
                                 )}
                               </div>
