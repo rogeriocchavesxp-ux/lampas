@@ -406,7 +406,7 @@ const PREPARAR_PHASE_NODES: NodeDef[] = [
 
 const INVESTIGAR_PHASE_NODES: NodeDef[] = [
   { key: 'phase_estudo_contextual', label: 'Estudo Contextual', icon: '📅', angle: -90, color: '#B45309', bg: '#FEF3C7', kind: 'phase', sectionSlug: 'contexto_historico' },
-  { key: 'phase_estudo_textual',    label: 'Estudo Textual',    icon: '🔑', angle: 30,  color: '#163A6B', bg: '#EEF3FA', kind: 'phase', sectionSlug: 'analise_textual' },
+  { key: 'phase_estudo_textual',    label: 'Estudo Textual',    icon: '🔑', angle: 30,  color: '#163A6B', bg: '#EEF3FA', kind: 'phase', sectionSlug: 'texto_original' },
   { key: 'phase_estudo_teologico',  label: 'Estudo Teológico',  icon: '✚',  angle: 150, color: '#7C3AED', bg: '#F5F3FF', kind: 'phase', sectionSlug: 'contexto_canonico' },
 ]
 
