@@ -39,7 +39,7 @@ import {
   Sparkles, BookMarked, Flame, MessageSquareText, Layers, Book, Library,
   BookCopy, Link2, Paperclip, ChevronDown, ChevronRight, ChevronUp,
   MapPin, Network, TrendingUp, LayoutTemplate, Mic, Brain, Megaphone,
-  AlignJustify, GitBranch, Palette, Tag,
+  AlignJustify, GitBranch, Palette, Tag, X,
   type LucideIcon,
 } from 'lucide-react'
 import { LampasLogo, LampasMarkIcon } from '@/components/LampasLogo'
@@ -382,6 +382,7 @@ export default function WorkspaceClient({ user, project, initialSections }: Prop
   const [enviarTargetMode, setEnviarTargetMode] = useState<'sermao' | 'devocional'>('sermao')
   const [enviarDropdownOpen, setEnviarDropdownOpen] = useState(false)
   const enviarDropdownRef = useRef<HTMLDivElement>(null)
+  const [openPhasePopover, setOpenPhasePopover] = useState<string | null>(null)
 
   const sidebarWidthRef = useRef(264)
   const referenceWidthRef = useRef(280)
@@ -598,6 +599,7 @@ export default function WorkspaceClient({ user, project, initialSections }: Prop
     const g = getGroupFor(slug)
     if (g) setExpandedGroups(prev => new Set([...prev, g]))
     setActiveSlug(slug)
+    setOpenPhasePopover(null)
   }
 
   useEffect(() => {
@@ -638,7 +640,7 @@ export default function WorkspaceClient({ user, project, initialSections }: Prop
   }
 
   return (
-    <div style={{ height: '100vh', display: 'flex', flexDirection: 'column', background: 'var(--background)' }}>
+    <div style={{ height: '100vh', display: 'flex', flexDirection: 'column', background: 'var(--background)', paddingBottom: focusMode ? 0 : '52px', boxSizing: 'border-box' }}>
 
       {/* ── Topbar ────────────────────────────────────────────────────────── */}
       {/* Grid 1fr auto 1fr garante centro real no viewport, independente dos pesos laterais */}
@@ -682,35 +684,33 @@ export default function WorkspaceClient({ user, project, initialSections }: Prop
           >
             Home
           </button>
-          {(sidebarCollapsed || focusMode) && (
-            <>
-              <button
-                onClick={() => router.push('/dashboard')}
-                style={{
-                  background: 'transparent', border: 'none', cursor: 'pointer',
-                  color: 'var(--text-muted)', fontSize: '0.78rem',
-                  padding: '0.2rem 0.4rem 0.2rem 0.3rem', borderRadius: '4px',
-                  fontFamily: 'inherit', flexShrink: 0,
-                }}
-                onMouseEnter={e => e.currentTarget.style.color = 'var(--text-secondary)'}
-                onMouseLeave={e => e.currentTarget.style.color = 'var(--text-muted)'}
-              >←</button>
-              <span style={{
-                fontSize: '0.83rem', fontWeight: 600, color: 'var(--text-primary)',
-                overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
-                flexShrink: 1,
-              }}>
-                {titleValue}
-              </span>
-              <span style={{
-                fontSize: '0.64rem', color: 'var(--text-muted)', flexShrink: 0,
-                background: 'var(--surface-2)', border: '1px solid var(--border-subtle)',
-                borderRadius: '3px', padding: '0.03rem 0.3rem',
-              }}>
-                {project.original_language}
-              </span>
-            </>
-          )}
+          <>
+            <button
+              onClick={() => router.push('/dashboard')}
+              style={{
+                background: 'transparent', border: 'none', cursor: 'pointer',
+                color: 'var(--text-muted)', fontSize: '0.78rem',
+                padding: '0.2rem 0.4rem 0.2rem 0.3rem', borderRadius: '4px',
+                fontFamily: 'inherit', flexShrink: 0,
+              }}
+              onMouseEnter={e => e.currentTarget.style.color = 'var(--text-secondary)'}
+              onMouseLeave={e => e.currentTarget.style.color = 'var(--text-muted)'}
+            >←</button>
+            <span style={{
+              fontSize: '0.83rem', fontWeight: 600, color: 'var(--text-primary)',
+              overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+              flexShrink: 1,
+            }}>
+              {titleValue}
+            </span>
+            <span style={{
+              fontSize: '0.64rem', color: 'var(--text-muted)', flexShrink: 0,
+              background: 'var(--surface-2)', border: '1px solid var(--border-subtle)',
+              borderRadius: '3px', padding: '0.03rem 0.3rem',
+            }}>
+              {project.original_language}
+            </span>
+          </>
         </div>
 
         {/* ── Coluna central: Texto Bíblico — centro real do viewport ── */}
@@ -925,16 +925,7 @@ export default function WorkspaceClient({ user, project, initialSections }: Prop
       <div style={{ flex: 1, display: 'flex', overflow: 'hidden' }}>
 
         {/* ── Sidebar ───────────────────────────────────────────────────── */}
-        <nav style={{
-          width: focusMode ? '0' : sidebarCollapsed ? '40px' : `${sidebarWidth}px`,
-          flexShrink: 0,
-          borderRight: '1px solid var(--border-subtle)',
-          background: 'var(--surface)',
-          overflowY: sidebarCollapsed ? 'hidden' : 'auto',
-          display: 'flex', flexDirection: 'column',
-          paddingBottom: '2.5rem',
-          transition: 'width 0.18s ease',
-        }}>
+        <nav style={{ width: 0, overflow: 'hidden', flexShrink: 0 }}>
           {sidebarCollapsed ? (
             /* ── Sidebar collapsed ────────────────────────────────── */
             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.15rem', paddingTop: '0.45rem' }}>
@@ -1490,8 +1481,6 @@ export default function WorkspaceClient({ user, project, initialSections }: Prop
             </>
           )}
         </nav>
-        {!focusMode && !sidebarCollapsed && <ResizeHandle onMouseDown={startSidebarResize} />}
-
         {/* ── Content + AI panel ───────────────────────────────────────── */}
         <div style={{ flex: 1, minWidth: 0, display: 'flex', overflow: 'hidden' }}>
           {sideBySide && !focusMode && (
@@ -1726,6 +1715,175 @@ export default function WorkspaceClient({ user, project, initialSections }: Prop
           targetMode={enviarTargetMode}
           onClose={() => setEnviarParaSermaOpen(false)}
         />
+      )}
+
+      {/* ── Bottom Nav Popover ─────────────────────────────────────── */}
+      {!focusMode && (() => {
+        if (!openPhasePopover) return null
+        const phase = navPhases.find(p => p.id === openPhasePopover)
+        if (!phase) return null
+        const phaseIdx = navPhases.findIndex(p => p.id === openPhasePopover)
+        const progress = phaseProgress.find(p => p.id === phase.id)
+        return (
+          <>
+            <div onClick={() => setOpenPhasePopover(null)} style={{ position: 'fixed', inset: '0 0 52px 0', zIndex: 98 }} />
+            <div style={{
+              position: 'fixed',
+              bottom: '60px',
+              left: `clamp(8px, calc(${(phaseIdx + 0.5) / navPhases.length * 100}% - 145px), calc(100% - 298px))`,
+              width: '290px',
+              maxHeight: 'calc(100vh - 120px)',
+              background: 'var(--surface)',
+              border: '1px solid var(--border)',
+              borderRadius: '12px',
+              boxShadow: '0 8px 32px rgba(0,0,0,0.14)',
+              zIndex: 99,
+              overflow: 'hidden',
+              display: 'flex', flexDirection: 'column',
+            }}>
+              <div style={{ padding: '0.8rem 0.9rem 0.7rem', borderBottom: '1px solid var(--border-subtle)', display: 'flex', alignItems: 'center', gap: '0.6rem', flexShrink: 0 }}>
+                <div style={{ width: '20px', height: '20px', borderRadius: '50%', background: phase.color, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                  <span style={{ fontSize: '0.58rem', fontWeight: 800, color: '#fff', lineHeight: 1 }}>{phaseIdx + 1}</span>
+                </div>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ fontSize: '0.73rem', fontWeight: 750, color: phase.color, letterSpacing: '0.03em' }}>{phase.label.toUpperCase()}</div>
+                  <div style={{ fontSize: '0.57rem', color: 'var(--text-muted)', marginTop: '1px' }}>{phase.description}</div>
+                </div>
+                {progress && (
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.3rem', flexShrink: 0 }}>
+                    <div style={{ width: '32px', height: '3px', background: 'var(--border-subtle)', borderRadius: '2px', overflow: 'hidden' }}>
+                      <div style={{ width: `${progress.pct}%`, height: '100%', background: phase.color, borderRadius: '2px' }} />
+                    </div>
+                    <span style={{ fontSize: '0.58rem', color: 'var(--text-muted)', fontWeight: 700 }}>{progress.pct}%</span>
+                  </div>
+                )}
+                <button onClick={() => setOpenPhasePopover(null)} style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: 'var(--text-muted)', padding: '0.15rem', borderRadius: '4px', display: 'flex', alignItems: 'center', flexShrink: 0 }}>
+                  <X size={13} />
+                </button>
+              </div>
+              <div style={{ overflowY: 'auto', padding: '0.5rem 0.4rem', flex: 1 }}>
+                {phase.modes.map((mode, modeIdx) => {
+                  const singleMode = phase.modes.length === 1
+                  const modeOpen = singleMode || expandedCanons.has(mode.id)
+                  return (
+                    <div key={mode.id}>
+                      {!singleMode && (() => {
+                        const ModeIconEl = MODE_ICONS_LUCIDE[mode.id]
+                        return (
+                          <button
+                            onClick={() => toggleCanon(mode.id)}
+                            style={{ width: '100%', border: modeOpen ? `1px solid ${mode.color}25` : '1px solid transparent', cursor: 'pointer', background: modeOpen ? mode.bgActive : 'transparent', borderRadius: '7px', textAlign: 'left', fontFamily: 'inherit', padding: '0.34rem 0.52rem', marginTop: modeIdx > 0 ? '0.14rem' : '0', display: 'flex', alignItems: 'center', gap: '0.4rem' }}
+                          >
+                            {ModeIconEl && <ModeIconEl size={12} strokeWidth={1.8} style={{ flexShrink: 0, color: mode.color }} />}
+                            <div style={{ flex: 1, minWidth: 0 }}>
+                              <div style={{ fontSize: '0.72rem', fontWeight: 650, color: modeOpen ? mode.color : 'var(--text-secondary)', lineHeight: 1.15 }}>{mode.label}</div>
+                            </div>
+                            {modeOpen ? <ChevronDown size={10} style={{ flexShrink: 0, color: 'var(--text-muted)' }} /> : <ChevronRight size={10} style={{ flexShrink: 0, color: 'var(--text-muted)' }} />}
+                          </button>
+                        )
+                      })()}
+                      {modeOpen && (
+                        <div style={{ paddingBottom: '0.05rem' }}>
+                          {mode.groups.map(group => {
+                            const groupOpen = expandedGroups.has(group.id)
+                            const isUtilityGroup = isToolSlug(group.id) || group.id === 'colagens' || group.id === 'comentario_expositivo'
+                            const secs = isUtilityGroup ? [] : getSectionsByGroupNav(group.id)
+                            if (secs.length === 0 && !isUtilityGroup) return null
+                            const isSingleSection = !isUtilityGroup && secs.length === 1 && !SYNTHESIS_DEFS[group.id]
+                            const isDirect = isUtilityGroup || isSingleSection
+                            const tool = getToolAreaBySlug(group.id)
+                            const directSlug = isSingleSection ? secs[0].slug : (tool?.slug ?? group.id)
+                            const directLabel = isSingleSection ? secs[0].shortTitle : group.label
+                            const { done, total } = groupProgress(group.id)
+                            const syn = !isDirect ? SYNTHESIS_DEFS[group.id] : undefined
+                            const isActive = isDirect && activeSlug === directSlug
+                            const isExpanded = !isDirect && groupOpen
+                            const highlight = isActive || isExpanded
+                            const groupTitle = isDirect ? directLabel : group.label
+                            const groupSub = GROUP_SUBTITLES[group.id] ?? (isToolSlug(group.id) ? getToolAreaBySlug(group.id)?.subtitle : undefined) ?? ''
+                            const GroupIcon = GROUP_ICONS[group.id]
+                            return (
+                              <div key={group.id} style={{ marginBottom: groupOpen ? '0.22rem' : 0 }}>
+                                <button
+                                  onClick={() => isDirect ? navigate(directSlug) : toggleGroup(group.id)}
+                                  style={{ width: '100%', border: isActive ? `1px solid ${mode.color}28` : '1px solid transparent', cursor: 'pointer', background: isActive ? mode.bgActive : 'transparent', borderRadius: '7px', textAlign: 'left', fontFamily: 'inherit', padding: '0.34rem 0.52rem', display: 'flex', alignItems: 'center', gap: '0.42rem' }}
+                                  onMouseEnter={e => { if (!isActive) { e.currentTarget.style.background = 'rgba(0,0,0,0.04)'; e.currentTarget.style.borderColor = 'var(--border)' } }}
+                                  onMouseLeave={e => { if (!isActive) { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.borderColor = 'transparent' } }}
+                                >
+                                  {GroupIcon && <GroupIcon size={15} strokeWidth={1.75} style={{ flexShrink: 0, color: highlight ? mode.color : 'var(--text-muted)' }} />}
+                                  <div style={{ flex: 1, minWidth: 0 }}>
+                                    <div style={{ fontSize: '0.73rem', fontWeight: 650, lineHeight: 1.15, color: highlight ? mode.color : 'var(--text-primary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{groupTitle}</div>
+                                    {groupSub && <div style={{ fontSize: '0.58rem', color: 'var(--text-muted)', marginTop: '0.04rem', lineHeight: 1.15, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{groupSub}</div>}
+                                  </div>
+                                  {isActive && <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: mode.color, flexShrink: 0 }} />}
+                                  {!isDirect && done > 0 && !isActive && <span style={{ fontSize: '0.56rem', flexShrink: 0, fontWeight: 700, color: done === total ? 'var(--success)' : mode.color }}>{done === total ? '✓' : `${done}/${total}`}</span>}
+                                  {!isDirect && (groupOpen ? <ChevronDown size={10} style={{ flexShrink: 0, color: 'var(--text-muted)', opacity: 0.55 }} /> : <ChevronRight size={10} style={{ flexShrink: 0, color: 'var(--text-muted)', opacity: 0.4 }} />)}
+                                </button>
+                                {!isDirect && groupOpen && (
+                                  <div style={{ marginLeft: '1.2rem', borderLeft: '1px solid var(--border-subtle)', marginBottom: '0.08rem' }}>
+                                    {secs.map(sd => {
+                                      const sec = sections.find(s => s.slug === sd.slug)
+                                      const isActive = sd.slug === activeSlug
+                                      const dot = statusDot(sec?.status)
+                                      return (
+                                        <button key={sd.slug} onClick={() => navigate(sd.slug)} style={{ width: '100%', border: 'none', fontFamily: 'inherit', background: isActive ? `${mode.color}10` : 'transparent', padding: '0.18rem 0.55rem 0.18rem 0.42rem', display: 'flex', alignItems: 'center', gap: '0.35rem', cursor: 'pointer', textAlign: 'left', borderRadius: '5px' }} onMouseEnter={e => { if (!isActive) e.currentTarget.style.background = 'rgba(0,0,0,0.04)' }} onMouseLeave={e => { if (!isActive) e.currentTarget.style.background = 'transparent' }}>
+                                          <span style={{ width: '3px', height: '3px', borderRadius: '50%', background: isActive ? mode.color : 'var(--border)', flexShrink: 0 }} />
+                                          <span style={{ flex: 1, fontSize: '0.69rem', lineHeight: 1.22, color: isActive ? mode.color : 'var(--text-secondary)', fontWeight: isActive ? 600 : 400, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{sd.shortTitle}</span>
+                                          <span style={{ width: '4px', height: '4px', borderRadius: '50%', background: dot, flexShrink: 0, opacity: isActive ? 1 : 0.5 }} />
+                                        </button>
+                                      )
+                                    })}
+                                    {syn && (() => {
+                                      const isSynActive = activeSlug === syn.slug
+                                      return (
+                                        <button onClick={() => navigate(syn.slug)} style={{ width: '100%', border: 'none', fontFamily: 'inherit', background: isSynActive ? mode.bgActive : 'transparent', borderLeft: `2px solid ${isSynActive ? mode.color : 'transparent'}`, padding: '0.18rem 0.35rem 0.18rem 0.42rem', display: 'flex', alignItems: 'center', gap: '0.28rem', cursor: 'pointer', textAlign: 'left', marginLeft: '-1px', marginTop: '0.08rem', borderTop: '1px solid var(--border-subtle)' }} onMouseEnter={e => { if (!isSynActive) e.currentTarget.style.background = 'rgba(0,0,0,0.04)' }} onMouseLeave={e => { if (!isSynActive) e.currentTarget.style.background = 'transparent' }}>
+                                          <span style={{ fontSize: '0.56rem', color: isSynActive ? mode.color : 'var(--text-muted)', flexShrink: 0 }}>→</span>
+                                          <span style={{ flex: 1, fontSize: '0.62rem', lineHeight: 1.2, color: isSynActive ? mode.color : 'var(--text-muted)', fontStyle: 'italic', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{syn.shortTitle}</span>
+                                        </button>
+                                      )
+                                    })()}
+                                  </div>
+                                )}
+                              </div>
+                            )
+                          })}
+                        </div>
+                      )}
+                    </div>
+                  )
+                })}
+              </div>
+            </div>
+          </>
+        )
+      })()}
+
+      {/* ── Bottom Nav Bar ─────────────────────────────────────────── */}
+      {!focusMode && (
+        <div style={{ position: 'fixed', bottom: 0, left: 0, right: 0, height: '52px', background: 'var(--surface)', borderTop: '1px solid var(--border-subtle)', display: 'flex', alignItems: 'stretch', zIndex: 100 }}>
+          {navPhases.map((phase, phaseIdx) => {
+            const progress = phaseProgress.find(p => p.id === phase.id)
+            const isOpen = openPhasePopover === phase.id
+            const isActivePhase = activePhase?.id === phase.id
+            return (
+              <button
+                key={phase.id}
+                onClick={() => setOpenPhasePopover(isOpen ? null : phase.id)}
+                style={{ flex: 1, border: 'none', cursor: 'pointer', background: isOpen ? `${phase.color}10` : 'transparent', borderTop: `2px solid ${isOpen || isActivePhase ? phase.color : 'transparent'}`, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '2px', padding: '0.3rem 0.5rem', transition: 'all 0.15s', fontFamily: 'inherit' }}
+                onMouseEnter={e => { if (!isOpen && !isActivePhase) e.currentTarget.style.background = 'rgba(0,0,0,0.03)' }}
+                onMouseLeave={e => { if (!isOpen && !isActivePhase) e.currentTarget.style.background = 'transparent' }}
+              >
+                <span style={{ fontSize: '0.57rem', fontWeight: 800, letterSpacing: '0.06em', color: isOpen || isActivePhase ? phase.color : 'var(--text-muted)', textTransform: 'uppercase', lineHeight: 1 }}>{phase.roman}</span>
+                <span style={{ fontSize: '0.67rem', fontWeight: 600, lineHeight: 1, color: isOpen || isActivePhase ? phase.color : 'var(--text-secondary)' }}>{phase.label}</span>
+                {progress && (
+                  <div style={{ width: '30px', height: '2px', background: 'var(--border-subtle)', borderRadius: '1px', overflow: 'hidden', marginTop: '1px' }}>
+                    <div style={{ width: `${progress.pct}%`, height: '100%', background: phase.color, borderRadius: '1px' }} />
+                  </div>
+                )}
+              </button>
+            )
+          })}
+        </div>
       )}
     </div>
   )
