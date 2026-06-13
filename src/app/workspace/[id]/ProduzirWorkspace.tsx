@@ -18,7 +18,8 @@ interface ProduzirBloco {
 interface ProduzirContent {
   produzir_mode: ProduzirMode
   livre: { title: string; html: string }
-  blocos: ProduzirBloco[]
+  blocos_montado: ProduzirBloco[]
+  blocos_livre:   ProduzirBloco[]
 }
 
 interface Props {
@@ -53,12 +54,13 @@ function loadContent(section: Section | undefined): ProduzirContent {
   const raw = section?.content as Record<string, unknown> | null
   if (raw?.produzir_mode !== undefined) {
     return {
-      produzir_mode: (raw.produzir_mode as ProduzirMode) ?? null,
-      livre:  (raw.livre  as { title: string; html: string }) ?? { title: '', html: '' },
-      blocos: (raw.blocos as ProduzirBloco[]) ?? [],
+      produzir_mode:  (raw.produzir_mode as ProduzirMode) ?? null,
+      livre:          (raw.livre as { title: string; html: string }) ?? { title: '', html: '' },
+      blocos_montado: (raw.blocos_montado as ProduzirBloco[]) ?? (raw.blocos as ProduzirBloco[]) ?? [],
+      blocos_livre:   (raw.blocos_livre   as ProduzirBloco[]) ?? [],
     }
   }
-  return { produzir_mode: null, livre: { title: '', html: '' }, blocos: [] }
+  return { produzir_mode: null, livre: { title: '', html: '' }, blocos_montado: [], blocos_livre: [] }
 }
 
 // ── Hub — 3 cards ─────────────────────────────────────────────────────────────
@@ -407,7 +409,7 @@ export default function ProduzirWorkspace({ project, userId, existingSection, on
 
   const performSave = useCallback(async (c: ProduzirContent) => {
     setSaving(true)
-    const hasContent = c.livre.html.trim().length > 0 || c.blocos.some(b => b.html.trim())
+    const hasContent = c.livre.html.trim().length > 0 || c.blocos_montado.some(b => b.html.trim()) || c.blocos_livre.some(b => b.html.trim())
     const payload = {
       project_id: project.id, user_id: userId,
       slug: 'pregar_visao_geral', module: 'dispositio',
@@ -441,11 +443,11 @@ export default function ProduzirWorkspace({ project, userId, existingSection, on
   // ── Mode selection ────────────────────────────────────────────────────────
 
   function selectMode(mode: ProduzirMode) {
-    let blocos = latestContent.current.blocos
-    if (mode === 'modular_montado' && blocos.length === 0) {
-      blocos = DEFAULT_MONTADO_BLOCOS.map(b => ({ ...b, id: genId() }))
+    const patch: Partial<ProduzirContent> = { produzir_mode: mode }
+    if (mode === 'modular_montado' && latestContent.current.blocos_montado.length === 0) {
+      patch.blocos_montado = DEFAULT_MONTADO_BLOCOS.map(b => ({ ...b, id: genId() }))
     }
-    updateContent({ produzir_mode: mode, blocos })
+    updateContent(patch)
   }
 
   function goBack() { updateContent({ produzir_mode: null }) }
@@ -469,10 +471,14 @@ export default function ProduzirWorkspace({ project, userId, existingSection, on
   if (produzir_mode === 'modular_montado' || produzir_mode === 'modular_livre') return (
     <ProduzirModular
       project={project} userId={userId}
-      blocos={content.blocos}
+      blocos={produzir_mode === 'modular_montado' ? content.blocos_montado : content.blocos_livre}
       mode={produzir_mode}
       saving={saving} savedAt={savedAt}
-      onChangeBlocos={blocos => updateContent({ blocos })}
+      onChangeBlocos={blocos =>
+        produzir_mode === 'modular_montado'
+          ? updateContent({ blocos_montado: blocos })
+          : updateContent({ blocos_livre: blocos })
+      }
       onBack={goBack}
     />
   )
