@@ -183,6 +183,27 @@ function ProduzirLivre({ project, userId, data, saving, savedAt, onChange, onBac
   )
 }
 
+// ── Insert-between button ─────────────────────────────────────────────────────
+
+function InsertBetween({ onInsert }: { onInsert: () => void }) {
+  const [hover, setHover] = useState(false)
+  return (
+    <div
+      onMouseEnter={() => setHover(true)}
+      onMouseLeave={() => setHover(false)}
+      style={{ position: 'relative', height: '18px', display: 'flex', alignItems: 'center', marginBottom: '0.4rem', cursor: 'default' }}>
+      <div style={{ flex: 1, height: '1px', background: hover ? `${PRODUZIR_COLOR}40` : 'transparent', transition: 'background 0.15s' }} />
+      {hover && (
+        <button
+          onClick={onInsert}
+          style={{ position: 'absolute', left: '50%', transform: 'translateX(-50%)', padding: '0.12rem 0.55rem', fontSize: '0.68rem', fontWeight: 600, background: PRODUZIR_COLOR, color: '#fff', border: 'none', borderRadius: '10px', cursor: 'pointer', whiteSpace: 'nowrap', boxShadow: '0 1px 6px rgba(0,0,0,0.15)' }}>
+          + inserir aqui
+        </button>
+      )}
+    </div>
+  )
+}
+
 // ── Modular (Montado / Livre) ─────────────────────────────────────────────────
 
 interface ProduzirModularProps {
@@ -202,8 +223,9 @@ function ProduzirModular({ project, userId, blocos, mode, saving, savedAt, onCha
   const [overIdx,    setOverIdx]    = useState<number | null>(null)
   const [viewAll,    setViewAll]    = useState(false)
   const [toast,      setToast]      = useState<string | null>(null)
-  const [addBusy,    setAddBusy]    = useState(false)
-  const newBlocoRef = useRef<HTMLDivElement | null>(null)
+  const [addBusy,     setAddBusy]     = useState(false)
+  const [insertedId,  setInsertedId]  = useState<string | null>(null)
+  const blocoRefs   = useRef<Record<string, HTMLDivElement | null>>({})
   const toastTimer  = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   const modeLabel = mode === 'modular_montado' ? 'Modular Montado' : 'Modular Livre'
@@ -214,17 +236,25 @@ function ProduzirModular({ project, userId, blocos, mode, saving, savedAt, onCha
     toastTimer.current = setTimeout(() => setToast(null), 3000)
   }
 
-  function addBloco() {
+  // Insere após o índice `afterIdx` (−1 = no início, blocos.length−1 = no final)
+  function addBlocoAt(afterIdx: number) {
     const title = 'Novo módulo'
     const newId = genId()
+    const next  = [...blocos]
+    next.splice(afterIdx + 1, 0, { id: newId, title, html: '' })
     setAddBusy(true)
-    onChangeBlocos([...blocos, { id: newId, title, html: '' }])
+    setInsertedId(newId)
+    onChangeBlocos(next)
     showToast(`Módulo "${title}" adicionado`)
     setTimeout(() => {
       setAddBusy(false)
-      newBlocoRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+      blocoRefs.current[newId]?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+      setTimeout(() => setInsertedId(null), 1500)
     }, 100)
   }
+
+  // Mantém compatibilidade — adicionar ao final
+  function addBloco() { addBlocoAt(blocos.length - 1) }
 
   function updateBloco(id: string, patch: Partial<ProduzirBloco>) {
     onChangeBlocos(blocos.map(b => b.id === id ? { ...b, ...patch } : b))
@@ -330,12 +360,12 @@ function ProduzirModular({ project, userId, blocos, mode, saving, savedAt, onCha
           userId,
         }
 
-        const isLast = idx === blocos.length - 1
+        const isNew = bloco.id === insertedId
 
         return (
+          <div key={bloco.id}>
           <div
-            key={bloco.id}
-            ref={isLast ? newBlocoRef : undefined}
+            ref={el => { blocoRefs.current[bloco.id] = el }}
             draggable
             onDragStart={e => { setDragIdx(idx); e.dataTransfer.effectAllowed = 'move' }}
             onDragOver={e => { e.preventDefault(); e.dataTransfer.dropEffect = 'move'; setOverIdx(idx) }}
@@ -349,7 +379,7 @@ function ProduzirModular({ project, userId, blocos, mode, saving, savedAt, onCha
               setDragIdx(null); setOverIdx(null)
             }}
             onDragEnd={() => { setDragIdx(null); setOverIdx(null) }}
-            style={{ border: isDragOver ? `2px dashed ${PRODUZIR_COLOR}` : '1px solid var(--border,#e5e7eb)', borderRadius: '8px', background: 'var(--bg-primary,#fff)', marginBottom: '0.75rem', overflow: 'hidden', transition: 'border-color 0.15s' }}>
+            style={{ border: isDragOver ? `2px dashed ${PRODUZIR_COLOR}` : isNew ? `2px solid ${PRODUZIR_COLOR}66` : '1px solid var(--border,#e5e7eb)', borderRadius: '8px', background: 'var(--bg-primary,#fff)', marginBottom: 0, overflow: 'hidden', transition: 'border-color 0.3s' }}>
 
             {/* Block header */}
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', padding: '0.5rem 0.75rem', background: `${PRODUZIR_COLOR}08`, borderBottom: '1px solid var(--border,#e5e7eb)' }}>
@@ -384,6 +414,10 @@ function ProduzirModular({ project, userId, blocos, mode, saving, savedAt, onCha
                 {bloco.html.trim() ? `${bloco.html.replace(/<[^>]+>/g, '').trim().length} caracteres` : 'Vazio'}
               </span>
             </div>
+          </div>
+
+          {/* Insert-between button */}
+          <InsertBetween onInsert={() => addBlocoAt(idx)} />
           </div>
         )
       })}
