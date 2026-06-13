@@ -588,7 +588,7 @@ export default function VisaoGeralWorkspace({
   const [mounted,      setMounted]     = useState(false)
   useEffect(() => { const t = requestAnimationFrame(() => setMounted(true)); return () => cancelAnimationFrame(t) }, [])
 
-  const [mode,         setMode]        = useState<'visual' | 'structured'>('visual')
+  const [mode,         setMode]        = useState<'visual' | 'structured'>('structured')
   const [expandedOutlineNodes,    setExpandedOutlineNodes]    = useState<Set<string>>(new Set())
   const [expandedOutlineSections, setExpandedOutlineSections] = useState<Set<string>>(new Set())
   const [editingOutlineCard,      setEditingOutlineCard]      = useState<string | null>(null)

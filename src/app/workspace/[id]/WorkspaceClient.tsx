@@ -401,20 +401,6 @@ export default function WorkspaceClient({ user, project, initialSections }: Prop
   const [enviarTargetMode, setEnviarTargetMode] = useState<'sermao' | 'devocional'>('sermao')
   const [enviarDropdownOpen, setEnviarDropdownOpen] = useState(false)
   const enviarDropdownRef = useRef<HTMLDivElement>(null)
-  const [openPhasePopover, setOpenPhasePopover] = useState<string | null>(null)
-  const [popoverAnchor,    setPopoverAnchor]    = useState<{ left: number; width: number } | null>(null)
-
-  // Drill-down dentro do popover da barra inferior
-  interface NavDrillLevel {
-    id: string
-    title: string
-    groupId?: string        // mostra seções deste grupo
-    sectionSlug?: string    // mostra cards desta seção
-    editingCardId?: string
-  }
-  const [navDrillStack, setNavDrillStack] = useState<NavDrillLevel[]>([])
-  const [navDrillDrafts, setNavDrillDrafts] = useState<Record<string, string>>({})
-  const [navDrillSaving, setNavDrillSaving] = useState<string | null>(null)
 
   const sidebarWidthRef  = useRef(264)
   const referenceWidthRef = useRef(280)
@@ -640,25 +626,6 @@ export default function WorkspaceClient({ user, project, initialSections }: Prop
     })
   }, [])
 
-  const saveNavDrillCard = useCallback(async (sectionSlug: string, cardId: string, value: string) => {
-    const draftKey = `${sectionSlug}:${cardId}`
-    setNavDrillSaving(draftKey)
-    try {
-      const existing = sections.find(s => s.slug === sectionSlug)
-      const prev     = (existing?.content as { cards?: Record<string, string> } | null)?.cards ?? {}
-      const payload  = {
-        project_id: project.id, user_id: user.id, slug: sectionSlug,
-        module: 'inventio' as const, title: sectionSlug,
-        status: 'draft' as const, content: { cards: { ...prev, [cardId]: value } },
-      }
-      const op = existing?.id
-        ? supabase.from('sections').update(payload).eq('id', existing.id).select().single()
-        : supabase.from('sections').insert(payload).select().single()
-      const { data: updated } = await op
-      if (updated) handleSectionUpdate(updated as Section)
-    } catch { }
-    finally { setNavDrillSaving(null) }
-  }, [supabase, project.id, user.id, sections, handleSectionUpdate])
 
   const handleAskAI = useCallback((prompt: string) => {
     setAiPrompt(prompt)
@@ -710,8 +677,6 @@ export default function WorkspaceClient({ user, project, initialSections }: Prop
     if (g) setExpandedGroups(prev => new Set([...prev, g]))
     setExpandedSectionCards(prev => new Set([...prev, slug]))
     setActiveSlug(slug)
-    setOpenPhasePopover(null)
-    setPopoverAnchor(null)
   }
 
   useEffect(() => {
@@ -720,24 +685,6 @@ export default function WorkspaceClient({ user, project, initialSections }: Prop
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchParams])
 
-  // Auto-expand caminho da seção ativa quando o painel de navegação abre
-  useEffect(() => {
-    if (!openPhasePopover) return
-    for (const ph of navPhases) {
-      for (const mo of ph.modes) {
-        for (const gr of mo.groups) {
-          const secs = getSectionsByGroupNav(gr.id)
-          if (secs.some(s => s.slug === activeSlug)) {
-            setExpandedPhases(prev => new Set([...prev, ph.id]))
-            setExpandedGroups(prev => new Set([...prev, gr.id]))
-            if (ph.modes.length > 1) setExpandedCanons(prev => new Set([...prev, mo.id]))
-            return
-          }
-        }
-      }
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [openPhasePopover])
 
   function groupProgress(groupId: string) {
     if (groupId === 'colagens') return toolProgress(groupId)
@@ -1936,256 +1883,6 @@ export default function WorkspaceClient({ user, project, initialSections }: Prop
         />
       )}
 
-      {/* ── Phase Contextual Popover (acima do botão clicado) ──── */}
-      {!focusMode && openPhasePopover && popoverAnchor && (() => {
-        const ph = navPhases.find(p => p.id === openPhasePopover)
-        if (!ph) return null
-        const POPUP_W    = Math.max(popoverAnchor.width, 340)
-        const viewportW  = document.documentElement.clientWidth
-        const btnCX      = popoverAnchor.left + popoverAnchor.width / 2
-        const rawLeft    = btnCX - POPUP_W / 2
-        const popLeft    = Math.max(8, Math.min(viewportW - POPUP_W - 8, rawLeft))
-        const arrowX     = Math.max(18, Math.min(POPUP_W - 18, Math.round(btnCX - popLeft)))
-        const phaseProg  = phaseProgress.find(p => p.id === openPhasePopover)
-        const closePopover = () => { setOpenPhasePopover(null); setPopoverAnchor(null); setNavDrillStack([]) }
-        const drillLevel   = navDrillStack.length > 0 ? navDrillStack[navDrillStack.length - 1] : null
-
-        // Helper de status de card
-        function navCardStatus(text: string): 'empty' | 'draft' | 'reviewed' {
-          if (!text?.trim()) return 'empty'
-          if (text.trim().length < 80) return 'draft'
-          return 'reviewed'
-        }
-
-        return (
-          <>
-            {/* Backdrop */}
-            <div onClick={closePopover} style={{ position: 'fixed', inset: 0, zIndex: 108 }} />
-
-            {/* Popover wrapper (overflow visible para a seta escapar) */}
-            <div style={{ position: 'fixed', bottom: '68px', left: `${popLeft}px`, width: `${POPUP_W}px`, zIndex: 110 }}>
-
-              {/* Conteúdo */}
-              <div style={{
-                background: 'var(--surface)',
-                border: `1.5px solid ${ph.color}30`,
-                borderRadius: '14px',
-                boxShadow: `0 -8px 36px rgba(0,0,0,0.14), 0 -2px 6px rgba(0,0,0,0.06)`,
-                overflow: 'hidden',
-                maxHeight: '560px',
-                display: 'flex', flexDirection: 'column',
-              }}>
-                {/* Header */}
-                <div style={{ padding: '0.8rem 1rem 0.65rem', borderBottom: `1px solid ${ph.color}18`, background: `${ph.color}09`, display: 'flex', alignItems: 'center', gap: '0.6rem', flexShrink: 0 }}>
-                  {drillLevel && (
-                    <button
-                      onClick={() => setNavDrillStack(prev => prev.slice(0, -1))}
-                      style={{ background: 'none', border: 'none', cursor: 'pointer', color: ph.color, fontSize: '1.1rem', lineHeight: 1, padding: '0', flexShrink: 0, opacity: 0.7 }}
-                    >‹</button>
-                  )}
-                  <span style={{ flex: 1, fontSize: drillLevel ? '0.82rem' : '0.7rem', fontWeight: 800, letterSpacing: drillLevel ? '-0.01em' : '0.07em', textTransform: drillLevel ? 'none' : 'uppercase', color: ph.color }}>
-                    {drillLevel ? drillLevel.title : ph.label}
-                  </span>
-                  {!drillLevel && phaseProg && phaseProg.total > 0 && (
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-                      <div style={{ width: '44px', height: '3px', background: 'var(--border-subtle)', borderRadius: '2px', overflow: 'hidden' }}>
-                        <div style={{ width: `${phaseProg.pct}%`, height: '100%', background: ph.color, borderRadius: '2px', transition: 'width 0.4s' }} />
-                      </div>
-                      <span style={{ fontSize: '0.62rem', fontWeight: 700, color: 'var(--text-muted)' }}>{phaseProg.pct}%</span>
-                    </div>
-                  )}
-                  <button onClick={closePopover} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)', fontSize: '1.1rem', lineHeight: 1, padding: '0 3px', flexShrink: 0 }}>×</button>
-                </div>
-
-                {/* Content — groups list OR drill-down level */}
-                <div style={{ overflowY: 'auto', padding: '0.5rem 0.55rem', flex: 1 }}>
-                  {!drillLevel ? (
-                    // ── Nível 0: lista de grupos ────────────────────────────────
-                    ph.modes.flatMap(mode => mode.groups).map(group => {
-                      const isUtility = isToolSlug(group.id) || group.id === 'colagens' || group.id === 'comentario_expositivo'
-                      const secs      = isUtility ? [] : getSectionsByGroupNav(group.id)
-                      const tool      = getToolAreaBySlug(group.id)
-                      const navSlug   = isUtility ? (tool?.slug ?? group.id) : (secs[0]?.slug ?? group.id)
-                      const isActive  = activeSlug === navSlug || (!isUtility && secs.some(s => s.slug === activeSlug))
-                      const { done, total } = groupProgress(group.id)
-                      const GroupIcon = GROUP_ICONS[group.id]
-                      return (
-                        <button
-                          key={group.id}
-                          onClick={() => {
-                            if (isUtility || secs.length === 0) { navigate(navSlug); closePopover(); return }
-                            if (secs.length === 1) {
-                              setNavDrillStack([{ id: group.id, title: group.label, sectionSlug: secs[0].slug }])
-                            } else {
-                              setNavDrillStack([{ id: group.id, title: group.label, groupId: group.id }])
-                            }
-                          }}
-                          style={{
-                            width: '100%', border: isActive ? `1px solid ${ph.color}28` : '1px solid transparent',
-                            background: isActive ? `${ph.color}0C` : 'transparent',
-                            borderRadius: '9px', cursor: 'pointer', fontFamily: 'inherit',
-                            textAlign: 'left', padding: '0.6rem 0.75rem',
-                            display: 'flex', alignItems: 'center', gap: '0.55rem',
-                          }}
-                          onMouseEnter={e => { if (!isActive) e.currentTarget.style.background = 'rgba(0,0,0,0.04)' }}
-                          onMouseLeave={e => { if (!isActive) e.currentTarget.style.background = 'transparent' }}
-                        >
-                          {GroupIcon && <GroupIcon size={15} strokeWidth={1.75} style={{ flexShrink: 0, color: isActive ? ph.color : 'var(--text-muted)', opacity: isActive ? 1 : 0.75 }} />}
-                          <span style={{ flex: 1, fontSize: '0.84rem', fontWeight: isActive ? 660 : 470, color: isActive ? ph.color : 'var(--text-primary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                            {group.label}
-                          </span>
-                          {total > 0 && (
-                            <span style={{ fontSize: '0.67rem', fontWeight: 700, flexShrink: 0, letterSpacing: '-0.01em', color: done === total ? 'var(--success)' : done > 0 ? ph.color : 'var(--border)' }}>
-                              {done === total ? '✓' : `${done}/${total}`}
-                            </span>
-                          )}
-                          {!isUtility && <span style={{ fontSize: '0.7rem', color: ph.color, opacity: 0.45, flexShrink: 0 }}>›</span>}
-                        </button>
-                      )
-                    })
-                  ) : drillLevel.groupId ? (
-                    // ── Nível 1: lista de seções do grupo ──────────────────────
-                    getSectionsByGroupNav(drillLevel.groupId).map(sec => {
-                      const secData   = sections.find(s => s.slug === sec.slug)
-                      const secCards  = (secData?.content as { cards?: Record<string, string> } | null)?.cards ?? {}
-                      const sNav      = getSectionNavBySlug(sec.slug)
-                      const total     = sNav?.cards?.length ?? 0
-                      const done      = sNav?.cards?.filter(c => secCards[c.id]?.trim()).length ?? 0
-                      const isActive  = activeSlug === sec.slug
-                      return (
-                        <button
-                          key={sec.slug}
-                          onClick={() => setNavDrillStack(prev => [...prev, { id: sec.slug, title: sec.shortTitle, sectionSlug: sec.slug }])}
-                          style={{
-                            width: '100%', border: isActive ? `1px solid ${ph.color}28` : '1px solid transparent',
-                            background: isActive ? `${ph.color}0C` : 'transparent',
-                            borderRadius: '9px', cursor: 'pointer', fontFamily: 'inherit',
-                            textAlign: 'left', padding: '0.6rem 0.75rem',
-                            display: 'flex', alignItems: 'center', gap: '0.55rem',
-                          }}
-                          onMouseEnter={e => { if (!isActive) e.currentTarget.style.background = 'rgba(0,0,0,0.04)' }}
-                          onMouseLeave={e => { if (!isActive) e.currentTarget.style.background = 'transparent' }}
-                        >
-                          <span style={{ flex: 1, fontSize: '0.84rem', fontWeight: isActive ? 660 : 470, color: isActive ? ph.color : 'var(--text-primary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                            {sec.shortTitle}
-                          </span>
-                          {total > 0 && (
-                            <span style={{ fontSize: '0.67rem', fontWeight: 700, flexShrink: 0, color: done === total ? 'var(--success)' : done > 0 ? ph.color : 'var(--border)' }}>
-                              {done === total ? '✓' : `${done}/${total}`}
-                            </span>
-                          )}
-                          <span style={{ fontSize: '0.7rem', color: ph.color, opacity: 0.45, flexShrink: 0 }}>›</span>
-                        </button>
-                      )
-                    })
-                  ) : drillLevel.sectionSlug ? (() => {
-                    // ── Nível 2+: cards da seção com editor inline ───────────
-                    const sNav      = getSectionNavBySlug(drillLevel.sectionSlug)
-                    const secData   = sections.find(s => s.slug === drillLevel.sectionSlug)
-                    const savedCards = (secData?.content as { cards?: Record<string, string> } | null)?.cards ?? {}
-                    if (!sNav?.cards?.length) return (
-                      <div style={{ padding: '1rem', fontSize: '0.8rem', color: 'var(--text-muted)' }}>Nenhum campo disponível.</div>
-                    )
-                    return sNav.cards.map(card => {
-                      const isEditing = drillLevel.editingCardId === card.id
-                      const draftKey  = `${drillLevel.sectionSlug}:${card.id}`
-                      const draft     = navDrillDrafts[draftKey] ?? ''
-                      const saving    = navDrillSaving === draftKey
-                      const status    = navCardStatus(savedCards[card.id] ?? '')
-                      return (
-                        <div key={card.id} style={{ marginBottom: isEditing ? '0.5rem' : '0' }}>
-                          <button
-                            onClick={() => {
-                              setNavDrillStack(prev => {
-                                const last = prev[prev.length - 1]
-                                return [...prev.slice(0, -1), { ...last, editingCardId: last.editingCardId === card.id ? undefined : card.id }]
-                              })
-                              setNavDrillDrafts(d => {
-                                const k = draftKey
-                                return { ...d, [k]: d[k] ?? (savedCards[card.id] ?? '') }
-                              })
-                            }}
-                            style={{
-                              width: '100%', background: isEditing ? `${ph.color}0C` : 'transparent',
-                              border: isEditing ? `1px solid ${ph.color}28` : '1px solid transparent',
-                              borderRadius: '9px', cursor: 'pointer', fontFamily: 'inherit',
-                              textAlign: 'left', padding: '0.6rem 0.75rem',
-                              display: 'flex', alignItems: 'center', gap: '0.55rem',
-                            }}
-                            onMouseEnter={e => { if (!isEditing) e.currentTarget.style.background = 'rgba(0,0,0,0.04)' }}
-                            onMouseLeave={e => { if (!isEditing) e.currentTarget.style.background = isEditing ? `${ph.color}0C` : 'transparent' }}
-                          >
-                            <span style={{
-                              fontSize: '0.62rem', flexShrink: 0, lineHeight: 1,
-                              color: status === 'reviewed' ? '#059669' : status === 'draft' ? '#D97706' : '#CBD5E1',
-                            }}>
-                              {status === 'reviewed' ? '●' : status === 'draft' ? '◑' : '○'}
-                            </span>
-                            <span style={{ flex: 1, fontSize: '0.84rem', fontWeight: 470, color: 'var(--text-primary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                              {card.title}
-                            </span>
-                          </button>
-                          {isEditing && (
-                            <div style={{ padding: '0.35rem 0.5rem 0.55rem' }}>
-                              <textarea
-                                value={draft}
-                                onChange={e => setNavDrillDrafts(d => ({ ...d, [draftKey]: e.target.value }))}
-                                rows={5}
-                                autoFocus
-                                placeholder="Escreva aqui..."
-                                style={{
-                                  width: '100%', fontSize: '0.82rem', lineHeight: 1.6,
-                                  border: `1.5px solid ${ph.color}35`, borderRadius: '8px',
-                                  padding: '10px 12px', fontFamily: 'inherit', resize: 'vertical',
-                                  outline: 'none', boxSizing: 'border-box',
-                                  color: 'var(--text-primary)', background: 'var(--surface)',
-                                }}
-                              />
-                              <div style={{ display: 'flex', gap: '0.4rem', marginTop: '6px' }}>
-                                <button
-                                  disabled={saving}
-                                  onClick={async () => {
-                                    await saveNavDrillCard(drillLevel.sectionSlug!, card.id, draft)
-                                    setNavDrillStack(prev => {
-                                      const last = prev[prev.length - 1]
-                                      return [...prev.slice(0, -1), { ...last, editingCardId: undefined }]
-                                    })
-                                  }}
-                                  style={{ flex: 1, background: ph.color, color: '#fff', border: 'none', borderRadius: '7px', padding: '7px 12px', fontSize: '0.76rem', fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit', opacity: saving ? 0.65 : 1 }}
-                                >
-                                  {saving ? 'Salvando...' : 'Salvar'}
-                                </button>
-                                <button
-                                  onClick={() => setNavDrillStack(prev => {
-                                    const last = prev[prev.length - 1]
-                                    return [...prev.slice(0, -1), { ...last, editingCardId: undefined }]
-                                  })}
-                                  style={{ background: 'transparent', color: 'var(--text-muted)', border: '1px solid var(--border)', borderRadius: '7px', padding: '7px 12px', fontSize: '0.76rem', cursor: 'pointer', fontFamily: 'inherit' }}
-                                >
-                                  Cancelar
-                                </button>
-                              </div>
-                            </div>
-                          )}
-                        </div>
-                      )
-                    })
-                  })() : null}
-                </div>
-              </div>
-
-              {/* Seta apontando para o botão */}
-              <div style={{
-                position: 'absolute', bottom: '-6px', left: `${arrowX}px`, transform: 'translateX(-50%) rotate(45deg)',
-                width: '11px', height: '11px',
-                background: 'var(--surface)',
-                borderRight: `1px solid ${ph.color}35`,
-                borderBottom: `1px solid ${ph.color}35`,
-              }} />
-            </div>
-          </>
-        )
-      })()}
 
       {/* ── Bottom Nav Bar — progresso + navegação ──────────────── */}
       {!focusMode && (
@@ -2227,7 +1924,6 @@ export default function WorkspaceClient({ user, project, initialSections }: Prop
             const mainPhases = navPhases.filter(p => p.id !== 'ferramentas')
             return mainPhases.flatMap((phase, idx) => {
               const progress = phaseProgress.find(p => p.id === phase.id)
-              const isOpen    = openPhasePopover === phase.id
               const isActive  = activePhase?.id === phase.id
               const pct       = progress?.pct ?? 0
               const prevPct   = idx > 0 ? (phaseProgress.find(p => p.id === mainPhases[idx - 1].id)?.pct ?? 0) : 0
@@ -2243,18 +1939,9 @@ export default function WorkspaceClient({ user, project, initialSections }: Prop
               const btn = (
                 <button
                   key={phase.id}
-                  onClick={e => {
-                    const rect = e.currentTarget.getBoundingClientRect()
+                  onClick={() => {
                     const vgSlug = phase.id === 'comunicar' ? 'pregar_visao_geral' : `${phase.id}_visao_geral`
                     navigate(vgSlug)
-                    if (openPhasePopover === phase.id) {
-                      setOpenPhasePopover(null)
-                      setPopoverAnchor(null)
-                    } else {
-                      setOpenPhasePopover(phase.id)
-                      setPopoverAnchor({ left: rect.left, width: rect.width })
-                      setNavDrillStack([])
-                    }
                   }}
                   style={{
                     position: 'relative', overflow: 'hidden',
@@ -2312,23 +1999,11 @@ export default function WorkspaceClient({ user, project, initialSections }: Prop
 
           {/* Ferramentas */}
           {navPhases.filter(p => p.id === 'ferramentas').map(phase => {
-            const isOpen   = openPhasePopover === phase.id
             const isActive = activePhase?.id === phase.id
             return (
               <button
                 key={phase.id}
-                onClick={e => {
-                  const rect = e.currentTarget.getBoundingClientRect()
-                  navigate('ferramentas_visao_geral')
-                  if (openPhasePopover === phase.id) {
-                    setOpenPhasePopover(null)
-                    setPopoverAnchor(null)
-                  } else {
-                    setOpenPhasePopover(phase.id)
-                    setPopoverAnchor({ left: rect.left, width: rect.width })
-                    setNavDrillStack([])
-                  }
-                }}
+                onClick={() => navigate('ferramentas_visao_geral')}
                 style={{
                   height: '44px', flexShrink: 0,
                   border: `1.5px solid ${isActive ? phase.color : 'var(--border-subtle)'}`,
