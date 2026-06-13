@@ -7,7 +7,7 @@ export interface SectionNav {
   slug: string
   title: string
   shortTitle: string
-  phase?: 'preparar' | 'interpretar' | 'comunicar'
+  phase?: 'preparar' | 'interpretar' | 'comunicar' | 'ferramentas'
   communicationMode?: 'sermao' | 'estudo_biblico' | 'devocional'
   module: 'inventio' | 'dispositio' | 'elocutio' | 'memoria' | 'pronuntiatio'
   group: string
@@ -188,6 +188,16 @@ export const WORKSPACE_SECTIONS_NAV: SectionNav[] = [
         "title": "Termos e repetições"
       }
     ]
+  },
+  {
+    "slug": "ferramentas_visao_geral",
+    "title": "Visão Geral das Ferramentas",
+    "shortTitle": "Visão Geral",
+    "phase": "ferramentas",
+    "module": "inventio",
+    "group": "ferramentas_visao_geral",
+    "groupLabel": "Mapa das ferramentas disponíveis",
+    "order": 100
   },
   {
     "slug": "pregar_visao_geral",

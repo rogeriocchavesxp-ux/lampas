@@ -410,6 +410,15 @@ const INVESTIGAR_PHASE_NODES: NodeDef[] = [
   { key: 'phase_estudo_teologico',  label: 'Estudo Teológico',  icon: '✚',  angle: 150, color: '#7C3AED', bg: '#F5F3FF', kind: 'phase', sectionSlug: 'contexto_canonico' },
 ]
 
+const FERRAMENTAS_PHASE_NODES: NodeDef[] = [
+  { key: 'phase_dicionario',   label: 'Dicionário',        icon: '📖', angle: -90,  color: '#0F766E', bg: '#F0FDFA', kind: 'phase', sectionSlug: 'ferramentas_dicionario' },
+  { key: 'phase_texto_orig',   label: 'Texto Original',    icon: '📜', angle: -30,  color: '#4F46E5', bg: '#EEF2FF', kind: 'phase', sectionSlug: 'texto_original' },
+  { key: 'phase_sistematica',  label: 'Teol. Sistemática', icon: '⊞',  angle: 30,   color: '#163A6B', bg: '#EEF3FA', kind: 'phase', sectionSlug: 'ferramentas_sistematica' },
+  { key: 'phase_biblica',      label: 'Teol. Bíblica',     icon: '🔗', angle: 90,   color: '#7C3AED', bg: '#F5F3FF', kind: 'phase', sectionSlug: 'ferramentas_biblica' },
+  { key: 'phase_colagens',     label: 'Colagens',          icon: '🎨', angle: 150,  color: '#D97706', bg: '#FFFBEB', kind: 'phase', sectionSlug: 'colagens' },
+  { key: 'phase_pesquisa',     label: 'Pesquisa',          icon: '🔍', angle: 210,  color: '#BE3455', bg: '#FFF1F2', kind: 'phase', sectionSlug: 'ferramentas_livros' },
+]
+
 // ── Prompt de IA por modo (para o botão "Organizar com IA" em cada nó) ────────
 
 function buildVGNodePrompt(project: Project, node: NodeDef): string {
@@ -443,8 +452,9 @@ Diretriz: use a base interpretativa da carta antes de formular implicações hom
 }
 
 function getOverviewNodes(project: Project, sectionSlug: string): NodeDef[] {
-  if (sectionSlug === 'preparar_visao_geral') return PREPARAR_PHASE_NODES
-  if (sectionSlug === 'investigar_visao_geral') return INVESTIGAR_PHASE_NODES
+  if (sectionSlug === 'preparar_visao_geral')     return PREPARAR_PHASE_NODES
+  if (sectionSlug === 'investigar_visao_geral')   return INVESTIGAR_PHASE_NODES
+  if (sectionSlug === 'ferramentas_visao_geral')  return FERRAMENTAS_PHASE_NODES
   if (isEpistolarySermon(project)) return SERMAO_EPISTOLAR_NODES
   return MODE_NODES_MAP[project.study_mode ?? ''] ?? MODE_NODES_MAP.exegese_biblica
 }
@@ -519,17 +529,18 @@ export default function VisaoGeralWorkspace({
   const centerSub     = isPassageMode ? project.passage_ref : project.passage_ref
 
   // Fase da visão geral (derivada do slug)
-  const phase = sectionDef.slug === 'preparar_visao_geral' ? 'preparar'
-    : sectionDef.slug === 'investigar_visao_geral' ? 'investigar'
+  const phase = sectionDef.slug === 'preparar_visao_geral'    ? 'preparar'
+    : sectionDef.slug === 'investigar_visao_geral'  ? 'investigar'
+    : sectionDef.slug === 'ferramentas_visao_geral' ? 'ferramentas'
     : 'pregar'
   const prevSlug = phase === 'investigar' ? 'preparar_visao_geral'
     : phase === 'pregar' ? 'investigar_visao_geral'
     : null
   const PHASE_LABEL: Record<string, string> = {
-    preparar: 'Inicial', investigar: 'Investigativa', pregar: 'Homilética',
+    preparar: 'Inicial', investigar: 'Investigativa', pregar: 'Homilética', ferramentas: 'Ferramentas',
   }
   const PHASE_COLOR: Record<string, string> = {
-    preparar: '#D97706', investigar: '#163A6B', pregar: '#7C3AED',
+    preparar: '#D97706', investigar: '#163A6B', pregar: '#7C3AED', ferramentas: '#64748B',
   }
 
   const [mounted,      setMounted]     = useState(false)
@@ -1276,7 +1287,7 @@ export default function VisaoGeralWorkspace({
       )}
 
       {/* ── Banner de fase (INVESTIGAR / COMUNICAR) ────────────────────────── */}
-      {phase !== 'preparar' && (
+      {phase !== 'preparar' && phase !== 'ferramentas' && (
         <div style={{
           display: 'flex', alignItems: 'center', justifyContent: 'space-between',
           gap: '0.75rem', flexWrap: 'wrap',

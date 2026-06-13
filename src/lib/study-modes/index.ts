@@ -91,6 +91,7 @@ function toolPhase(): NavPhase {
       color: '#64748B',
       bgActive: 'rgba(100,116,139,0.08)',
       groups: [
+        { id: 'ferramentas_visao_geral', label: 'Visão Geral' },
         ...TOOL_AREAS.map(area => ({ id: area.slug, label: area.shortTitle })),
         { id: 'colagens', label: 'Colagens' },
       ],

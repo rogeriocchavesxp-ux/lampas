@@ -22,7 +22,7 @@ export interface SectionDef {
   slug: string
   title: string
   shortTitle: string
-  phase?: 'preparar' | 'interpretar' | 'comunicar'
+  phase?: 'preparar' | 'interpretar' | 'comunicar' | 'ferramentas'
   communicationMode?: 'sermao' | 'estudo_biblico' | 'devocional'
   module: 'inventio' | 'dispositio' | 'elocutio' | 'memoria' | 'pronuntiatio'
   group: string

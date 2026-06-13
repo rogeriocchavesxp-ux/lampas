@@ -139,6 +139,24 @@ export const PREPARE_SECTIONS: SectionDef[] = [
     ],
   },
   {
+    slug: 'ferramentas_visao_geral',
+    title: 'Visão Geral das Ferramentas',
+    shortTitle: 'Visão Geral',
+    phase: 'ferramentas',
+    module: 'inventio',
+    group: 'ferramentas_visao_geral',
+    groupLabel: 'Mapa das ferramentas disponíveis',
+    order: 100,
+    objective:
+      'Ter uma visão panorâmica das ferramentas disponíveis e acessar rapidamente cada recurso: dicionário, texto original, teologia, colagens e pesquisa.',
+    keyQuestions: [
+      'Qual ferramenta é mais necessária neste momento do estudo?',
+      'Que recurso complementa o que já foi investigado?',
+    ],
+    relevantAuthors: [],
+    cards: [],
+  },
+  {
     slug: 'pregar_visao_geral',
     title: 'Visão Geral Homilética',
     shortTitle: 'Visão Geral',
