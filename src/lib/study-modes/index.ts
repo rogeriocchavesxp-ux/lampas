@@ -309,7 +309,7 @@ const SERMAO: StudyModeConfig = {
       }],
     },
     {
-      id: 'comunicar', roman: 'III', label: 'Pregar',
+      id: 'comunicar', roman: 'III', label: 'Produzir',
       description: 'Estrutura, linguagem e entrega do sermão',
       color: '#7C3AED', bgActive: 'rgba(124,58,237,0.08)',
       modes: [{

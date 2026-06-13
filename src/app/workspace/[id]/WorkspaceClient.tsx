@@ -28,6 +28,7 @@ import CollagesWorkspace from './CollagesWorkspace'
 import SermonBuilderWorkspace from './SermonBuilderWorkspace'
 import CommentaryWorkspace from './CommentaryWorkspace'
 import ComentarioExegeticoWorkspace from './ComentarioExegeticoWorkspace'
+import ProduzirWorkspace from './ProduzirWorkspace'
 import LiveReferencePanel from './LiveReferencePanel'
 import AIPanel from './AIPanel'
 import BibleFloatingWindow from './BibleFloatingWindow'
@@ -1774,14 +1775,23 @@ export default function WorkspaceClient({ user, project, initialSections }: Prop
                 onUpdate={handleSectionUpdate}
                 onAskAI={handleAskAI}
               />
-            ) : (activeSlug === 'preparar_visao_geral' || activeSlug === 'investigar_visao_geral' || activeSlug === 'pregar_visao_geral' || activeSlug === 'ferramentas_visao_geral') && activeDef ? (
+            ) : activeSlug === 'pregar_visao_geral' ? (
+              <ProduzirWorkspace
+                key={activeSlug}
+                project={project}
+                userId={user.id}
+                existingSection={activeSection}
+                onUpdate={handleSectionUpdate}
+                onAskAI={handleAskAI}
+              />
+            ) : (activeSlug === 'preparar_visao_geral' || activeSlug === 'investigar_visao_geral' || activeSlug === 'ferramentas_visao_geral') && activeDef ? (
               <VisaoGeralWorkspace
                 key={activeSlug}
                 sectionDef={activeDef}
                 project={project}
                 userId={user.id}
                 existingSection={activeSection}
-                allVGSections={sections.filter(s => ['preparar_visao_geral', 'investigar_visao_geral', 'pregar_visao_geral', 'ferramentas_visao_geral'].includes(s.slug))}
+                allVGSections={sections.filter(s => ['preparar_visao_geral', 'investigar_visao_geral', 'ferramentas_visao_geral'].includes(s.slug))}
                 allSections={sections}
                 onUpdate={handleSectionUpdate}
                 onAskAI={handleAskAI}
