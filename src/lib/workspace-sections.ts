@@ -739,8 +739,8 @@ export const WORKSPACE_SECTIONS: SectionDef[] = [
     title: '§4 Síntese Exegética',
     shortTitle: 'Síntese',
     module: 'inventio',
-    group: 'teologico',
-    groupLabel: 'Estudo Teológico',
+    group: 'sintese_exegetica',
+    groupLabel: 'Síntese Exegética',
     order: 13,
     objective:
       'Consolidar toda a análise exegética em uma síntese coerente que articule a Grande Ideia do texto, sua mensagem, o que ensina e o que confronta.',

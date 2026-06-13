@@ -659,8 +659,8 @@ export const WORKSPACE_SECTIONS_NAV: SectionNav[] = [
     "title": "§4 Síntese Exegética",
     "shortTitle": "Síntese",
     "module": "inventio",
-    "group": "teologico",
-    "groupLabel": "Estudo Teológico",
+    "group": "sintese_exegetica",
+    "groupLabel": "Síntese Exegética",
     "order": 13,
     "cards": [
       {

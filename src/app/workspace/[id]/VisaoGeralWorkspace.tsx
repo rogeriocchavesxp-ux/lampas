@@ -859,6 +859,33 @@ export default function VisaoGeralWorkspace({
         return { id: s.slug, label: (s as { shortTitle?: string; title: string }).shortTitle ?? s.title, sectionSlug: s.slug, type: 'section' as const, status }
       })
     }
+    // VG de Investigar: prefixa os 4 cards da seção 'sintese' (dados preservados no slug original)
+    if (node.sectionSlug === 'investigar_visao_geral') {
+      const sinteseNav  = getSectionNavBySlug('sintese')
+      const sinteseData = allSections.find(s => s.slug === 'sintese')
+      const sinteseCards = (sinteseData?.content as { cards?: Record<string, string> } | null)?.cards ?? {}
+      const sinteseItems: DrillItem[] = (sinteseNav?.cards ?? []).map(c => ({
+        id: c.id,
+        label: c.title ?? c.id.replace(/_/g, ' '),
+        sectionSlug: 'sintese',
+        type: 'card' as const,
+        status: cardTextStatus(sinteseCards[c.id] ?? '') as DrillItem['status'],
+      }))
+
+      const vgNav  = getSectionNavBySlug('investigar_visao_geral')
+      const vgData = allSections.find(s => s.slug === 'investigar_visao_geral')
+      const vgSavedCards = (vgData?.content as { cards?: Record<string, string> } | null)?.cards ?? {}
+      const vgItems: DrillItem[] = (vgNav?.cards ?? []).map(c => ({
+        id: c.id,
+        label: c.title ?? c.id.replace(/_/g, ' '),
+        sectionSlug: 'investigar_visao_geral',
+        type: 'card' as const,
+        status: cardTextStatus(vgSavedCards[c.id] ?? '') as DrillItem['status'],
+      }))
+
+      return [...sinteseItems, ...vgItems]
+    }
+
     const sSlug = node.sectionSlug
     if (sSlug) {
       const sNav       = getSectionNavBySlug(sSlug)
