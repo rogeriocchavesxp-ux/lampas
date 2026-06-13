@@ -199,11 +199,29 @@ function ProduzirModular({ project, userId, blocos, mode, saving, savedAt, onCha
   const [dragIdx,    setDragIdx]    = useState<number | null>(null)
   const [overIdx,    setOverIdx]    = useState<number | null>(null)
   const [viewAll,    setViewAll]    = useState(false)
+  const [toast,      setToast]      = useState<string | null>(null)
+  const [addBusy,    setAddBusy]    = useState(false)
+  const newBlocoRef = useRef<HTMLDivElement | null>(null)
+  const toastTimer  = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   const modeLabel = mode === 'modular_montado' ? 'Modular Montado' : 'Modular Livre'
 
+  function showToast(msg: string) {
+    setToast(msg)
+    if (toastTimer.current) clearTimeout(toastTimer.current)
+    toastTimer.current = setTimeout(() => setToast(null), 3000)
+  }
+
   function addBloco() {
-    onChangeBlocos([...blocos, { id: genId(), title: 'Novo módulo', html: '' }])
+    const title = 'Novo módulo'
+    const newId = genId()
+    setAddBusy(true)
+    onChangeBlocos([...blocos, { id: newId, title, html: '' }])
+    showToast(`Módulo "${title}" adicionado`)
+    setTimeout(() => {
+      setAddBusy(false)
+      newBlocoRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    }, 100)
   }
 
   function updateBloco(id: string, patch: Partial<ProduzirBloco>) {
@@ -259,10 +277,18 @@ function ProduzirModular({ project, userId, blocos, mode, saving, savedAt, onCha
         </button>
         <button
           onClick={addBloco}
-          style={{ padding: '0.28rem 0.75rem', fontSize: '0.75rem', fontWeight: 600, background: PRODUZIR_COLOR, color: '#fff', border: 'none', borderRadius: '6px', cursor: 'pointer', fontFamily: 'inherit' }}>
-          + Adicionar módulo
+          disabled={addBusy}
+          style={{ padding: '0.28rem 0.75rem', fontSize: '0.75rem', fontWeight: 600, background: addBusy ? `${PRODUZIR_COLOR}99` : PRODUZIR_COLOR, color: '#fff', border: 'none', borderRadius: '6px', cursor: addBusy ? 'default' : 'pointer', fontFamily: 'inherit', transition: 'background 0.15s', transform: addBusy ? 'scale(0.97)' : 'scale(1)' }}>
+          {addBusy ? '+ Adicionando…' : '+ Adicionar módulo'}
         </button>
       </div>
+
+      {/* Toast */}
+      {toast && (
+        <div style={{ position: 'fixed', bottom: '72px', left: '50%', transform: 'translateX(-50%)', background: '#1e293b', color: '#fff', padding: '0.5rem 1.1rem', borderRadius: '8px', fontSize: '0.78rem', fontWeight: 500, zIndex: 9999, boxShadow: '0 4px 16px rgba(0,0,0,0.18)', pointerEvents: 'none', whiteSpace: 'nowrap' }}>
+          {toast}
+        </div>
+      )}
 
       {/* Full view */}
       {viewAll && (
@@ -302,9 +328,12 @@ function ProduzirModular({ project, userId, blocos, mode, saving, savedAt, onCha
           userId,
         }
 
+        const isLast = idx === blocos.length - 1
+
         return (
           <div
             key={bloco.id}
+            ref={isLast ? newBlocoRef : undefined}
             draggable
             onDragStart={e => { setDragIdx(idx); e.dataTransfer.effectAllowed = 'move' }}
             onDragOver={e => { e.preventDefault(); e.dataTransfer.dropEffect = 'move'; setOverIdx(idx) }}
