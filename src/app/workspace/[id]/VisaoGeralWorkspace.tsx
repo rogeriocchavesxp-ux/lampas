@@ -445,20 +445,20 @@ interface DrillItem {
 
 interface DrillLevel {
   id: string
-  node: NodeDef       // phase node that started the stack (for color/icon ref)
+  node: NodeDef
   title: string
   icon: string
   color: string
   bg: string
-  sectionSlug?: string  // level 1+: section whose cards to show
-  phaseGroup?: string   // level 0: group whose sections to show
-  // Level 0: dynamic position following the node on zoom/pan
+  sectionSlug?: string
+  phaseGroup?: string
+  cardIdsFilter?: string[]    // show only these card IDs (for card-kind nodes)
   canvasX?: number
   canvasY?: number
-  // Level 1+: fixed position anchored to the clicked item
   fixedLeft?: number
   fixedTop?: number
   editingCardId?: string
+  viewTab?: 'view' | 'edit'  // undefined = section list; 'view'/'edit' = card level
 }
 
 // ── Prompt de IA por modo (para o botão "Organizar com IA" em cada nó) ────────
@@ -1184,30 +1184,36 @@ export default function VisaoGeralWorkspace({
         const clickedNode = allNodes.find(n => n.key === drag.key)
         if (clickedNode?.kind === 'phase') {
           const now = Date.now()
-          const last = lastClickRef.current
-          const isDouble = last?.key === drag.key && (now - last.time) < 380
-          if (isDouble) {
-            // Duplo clique → navegar direto
-            if (clickedNode.sectionSlug && onNavigate) onNavigate(clickedNode.sectionSlug)
-            setDrillStack([])
-            lastClickRef.current = null
-          } else {
-            // Clique simples → abrir drill stack (nível 0)
-            const pos = getNodePos(clickedNode)
-            setDrillStack([{
-              id: `${clickedNode.key}_${now}`,
-              node: clickedNode,
-              title: clickedNode.label,
-              icon: clickedNode.icon,
-              color: clickedNode.color,
-              bg: clickedNode.bg,
-              phaseGroup: clickedNode.phaseGroup,
-              sectionSlug: clickedNode.phaseGroup ? undefined : clickedNode.sectionSlug,
-              canvasX: pos.x,
-              canvasY: pos.y,
-            }])
-            lastClickRef.current = { key: drag.key, time: now }
-          }
+          const pos = getNodePos(clickedNode)
+          setDrillStack([{
+            id: `${clickedNode.key}_${now}`,
+            node: clickedNode,
+            title: clickedNode.label,
+            icon: clickedNode.icon,
+            color: clickedNode.color,
+            bg: clickedNode.bg,
+            phaseGroup: clickedNode.phaseGroup,
+            sectionSlug: clickedNode.phaseGroup ? undefined : clickedNode.sectionSlug,
+            canvasX: pos.x,
+            canvasY: pos.y,
+            viewTab: clickedNode.phaseGroup ? undefined : 'view',
+          }])
+        } else if (clickedNode?.kind === 'card') {
+          const now = Date.now()
+          const pos = getNodePos(clickedNode)
+          setDrillStack([{
+            id: `${clickedNode.key}_${now}`,
+            node: clickedNode,
+            title: clickedNode.label,
+            icon: clickedNode.icon,
+            color: clickedNode.color,
+            bg: clickedNode.bg,
+            sectionSlug: clickedNode.sectionSlug ?? sectionDef.slug,
+            cardIdsFilter: clickedNode.cardIds,
+            canvasX: pos.x,
+            canvasY: pos.y,
+            viewTab: 'view',
+          }])
         } else {
           setActivePanel(p => p === drag.key ? null : drag.key)
           setDrillStack([])
@@ -1621,19 +1627,16 @@ export default function VisaoGeralWorkspace({
                         }}>
                           {node.label}
                         </span>
-                        {node.kind === 'phase' ? (
-                          <span style={{ fontSize: '0.55rem', color: node.color, marginTop: '3px', letterSpacing: '0.06em', opacity: 0.7 }}>→ ir</span>
-                        ) : hasData ? (
-                          <span style={{
-                            fontSize: '0.65rem', fontWeight: 800, color: node.color,
-                            background: node.color + '18', borderRadius: '20px',
-                            padding: '2px 8px', marginTop: '5px', lineHeight: 1,
-                          }}>
-                            {count}
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '3px', marginTop: '4px' }}>
+                          {hasData && (
+                            <span style={{ fontSize: '0.6rem', fontWeight: 800, color: node.color, background: node.color + '15', borderRadius: '20px', padding: '1px 6px', lineHeight: 1 }}>
+                              {count}
+                            </span>
+                          )}
+                          <span style={{ fontSize: '0.58rem', fontWeight: 600, color: hasData ? node.color : '#94A3B8', letterSpacing: '0.03em' }}>
+                            👁 ver
                           </span>
-                        ) : (
-                          <span style={{ fontSize: '0.55rem', color: '#CBD5E1', marginTop: '3px', letterSpacing: '0.08em' }}>vazio</span>
-                        )}
+                        </div>
                       </button>
 
                       {/* Expand button — shown on hover (not for phase navigation nodes) */}
@@ -1747,7 +1750,7 @@ export default function VisaoGeralWorkspace({
               {drillStack.map((level, idx) => {
                 const containerW = canvasContainerRef.current?.clientWidth ?? 700
                 const containerH = canvasContainerRef.current?.clientHeight ?? 500
-                const POPUP_W = 290
+                const POPUP_W = 320
 
                 // Level 0 follows the node on zoom/pan; level 1+ uses fixed position
                 let popLeft: number, popTop: number
@@ -1777,14 +1780,20 @@ export default function VisaoGeralWorkspace({
                       const sSlug = level.sectionSlug
                       if (!sSlug) return []
                       const sNav = getSectionNavBySlug(sSlug)
-                      if (!sNav?.cards?.length) return []
                       const secData    = allSections.find(s => s.slug === sSlug)
                       const savedCards = (secData?.content as { cards?: Record<string, string> } | null)?.cards ?? {}
-                      return sNav.cards.map(c => ({
-                        id: c.id, label: c.title, sectionSlug: sSlug,
-                        type: 'card' as const,
-                        status: cardTextStatus(savedCards[c.id] ?? '') as DrillItem['status'],
-                      }))
+                      const cardIds = level.cardIdsFilter ?? sNav?.cards?.map(c => c.id) ?? []
+                      if (cardIds.length === 0) return []
+                      return cardIds.map(cid => {
+                        const navCard = sNav?.cards?.find(c => c.id === cid)
+                        const vgDef   = VG_CARD_DEFS[cid]
+                        const title   = navCard?.title ?? vgDef?.title ?? cid.replace(/_/g, ' ')
+                        return {
+                          id: cid, label: title, sectionSlug: sSlug,
+                          type: 'card' as const,
+                          status: cardTextStatus(savedCards[cid] ?? '') as DrillItem['status'],
+                        }
+                      })
                     })()
 
                 // Progress summary for header
@@ -1819,6 +1828,7 @@ export default function VisaoGeralWorkspace({
                       sectionSlug: item.sectionSlug,
                       fixedLeft,
                       fixedTop,
+                      viewTab: 'view',
                     },
                   ])
                 }
@@ -1854,32 +1864,86 @@ export default function VisaoGeralWorkspace({
                     }}
                   >
                     {/* Header */}
-                    <div style={{ padding: '0.62rem 0.8rem 0.45rem', background: level.bg, borderBottom: `1px solid ${level.color}18`, flexShrink: 0 }}>
+                    <div style={{ padding: '0.62rem 0.8rem 0.5rem', background: level.bg, borderBottom: `1px solid ${level.color}18`, flexShrink: 0 }}>
                       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '0.4rem' }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '0.38rem', minWidth: 0 }}>
                           {idx > 0 && (
-                            <button
-                              onClick={closeLevel}
-                              style={{ background: 'none', border: 'none', cursor: 'pointer', color: level.color, fontSize: '0.9rem', lineHeight: 1, padding: '0', flexShrink: 0, opacity: 0.7 }}
-                            >‹</button>
+                            <button onClick={closeLevel} style={{ background: 'none', border: 'none', cursor: 'pointer', color: level.color, fontSize: '0.9rem', lineHeight: 1, padding: '0', flexShrink: 0, opacity: 0.7 }}>‹</button>
                           )}
                           <span style={{ fontSize: '0.85rem', flexShrink: 0 }}>{level.icon}</span>
                           <span style={{ fontSize: '0.75rem', fontWeight: 700, color: level.color, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                             {level.title}
                           </span>
                         </div>
-                        <button
-                          onClick={() => setDrillStack([])}
-                          style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#94A3B8', fontSize: '1rem', lineHeight: 1, padding: '0 2px', flexShrink: 0 }}
-                        >×</button>
+                        <button onClick={() => setDrillStack([])} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#94A3B8', fontSize: '1rem', lineHeight: 1, padding: '0 2px', flexShrink: 0 }}>×</button>
                       </div>
                       {progressLabel && (
                         <div style={{ fontSize: '0.62rem', color: '#64748B', marginTop: '3px' }}>{progressLabel}</div>
                       )}
+                      {/* Tabs — only for card-level views (not section lists) */}
+                      {level.viewTab !== undefined && (
+                        <div style={{ display: 'flex', gap: '3px', marginTop: '0.45rem' }}>
+                          {(['view', 'edit'] as const).map(tab => (
+                            <button key={tab}
+                              onClick={() => setDrillStack(prev => prev.map((l, i) => i === idx ? { ...l, viewTab: tab, editingCardId: undefined } : l))}
+                              style={{
+                                flex: 1, padding: '3px 0', fontSize: '0.61rem', fontWeight: 700,
+                                border: `1px solid ${level.viewTab === tab ? level.color + '60' : level.color + '20'}`,
+                                borderRadius: '6px',
+                                background: level.viewTab === tab ? level.color + '18' : 'transparent',
+                                color: level.viewTab === tab ? level.color : level.color + '80',
+                                cursor: 'pointer', fontFamily: 'inherit', transition: 'all 0.12s',
+                              }}
+                            >
+                              {tab === 'view' ? '👁 Visualizar' : '✏ Editar'}
+                            </button>
+                          ))}
+                        </div>
+                      )}
                     </div>
 
-                    {/* Items */}
-                    {items.length > 0 && (
+                    {/* ── Visualizar (read-only) ── */}
+                    {level.viewTab === 'view' && items.length > 0 && (
+                      <div style={{ padding: '0.5rem 0.7rem', overflowY: 'auto', flex: 1 }}>
+                        {items.map(item => {
+                          const secData    = allSections.find(s => s.slug === item.sectionSlug)
+                          const savedCards = (secData?.content as { cards?: Record<string, string> } | null)?.cards ?? {}
+                          const rawText    = savedCards[item.id] ?? ''
+                          const text       = toPlainText(rawText).trim()
+                          return (
+                            <div key={item.id} style={{ marginBottom: '0.9rem' }}>
+                              <div style={{ fontSize: '0.59rem', fontWeight: 700, color: level.color, letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: '3px' }}>
+                                {item.label}
+                              </div>
+                              {text ? (
+                                <div style={{ fontSize: '0.71rem', lineHeight: 1.65, color: 'var(--text-primary, #334155)', whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>
+                                  {text}
+                                </div>
+                              ) : (
+                                <div style={{ fontSize: '0.68rem', color: '#94A3B8', fontStyle: 'italic' }}>
+                                  (não preenchido)
+                                </div>
+                              )}
+                            </div>
+                          )
+                        })}
+                        {items.every(item => {
+                          const secData    = allSections.find(s => s.slug === item.sectionSlug)
+                          const savedCards = (secData?.content as { cards?: Record<string, string> } | null)?.cards ?? {}
+                          return !savedCards[item.id]?.trim()
+                        }) && (
+                          <button
+                            onClick={() => setDrillStack(prev => prev.map((l, i) => i === idx ? { ...l, viewTab: 'edit' } : l))}
+                            style={{ width: '100%', padding: '8px', background: level.color + '0D', border: `1.5px dashed ${level.color}40`, borderRadius: '8px', color: level.color, fontSize: '0.7rem', fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit' }}
+                          >
+                            ✏ Começar a escrever
+                          </button>
+                        )}
+                      </div>
+                    )}
+
+                    {/* ── Editar ── */}
+                    {(level.viewTab === 'edit' || level.viewTab === undefined) && items.length > 0 && (
                       <div style={{ padding: '0.35rem 0.5rem', overflowY: 'auto', flex: 1 }}>
                         {items.map(item => {
                           const isEditing = level.editingCardId === item.id
@@ -1900,10 +1964,7 @@ export default function VisaoGeralWorkspace({
                                 onMouseLeave={e => { if (!isEditing) e.currentTarget.style.background = 'transparent' }}
                               >
                                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem', minWidth: 0 }}>
-                                  <span style={{
-                                    fontSize: '0.58rem', flexShrink: 0, lineHeight: 1,
-                                    color: item.status === 'reviewed' ? '#059669' : item.status === 'draft' ? '#D97706' : '#CBD5E1',
-                                  }}>
+                                  <span style={{ fontSize: '0.58rem', flexShrink: 0, lineHeight: 1, color: item.status === 'reviewed' ? '#059669' : item.status === 'draft' ? '#D97706' : '#CBD5E1' }}>
                                     {item.status === 'reviewed' ? '●' : item.status === 'draft' ? '◑' : '○'}
                                   </span>
                                   <span style={{ fontSize: '0.72rem', color: 'var(--text-primary, #334155)', lineHeight: 1.3, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
@@ -1915,45 +1976,36 @@ export default function VisaoGeralWorkspace({
                                 )}
                               </button>
 
-                              {/* Inline card editor */}
                               {isEditing && item.type === 'card' && (
                                 <div style={{ padding: '0.35rem 0.4rem 0.4rem', borderBottom: `1px solid ${level.color}15` }}>
                                   <textarea
                                     value={draft}
                                     onChange={e => setDrillDrafts(d => ({ ...d, [draftKey]: e.target.value }))}
-                                    rows={4}
+                                    rows={5}
                                     autoFocus
                                     placeholder="Escreva aqui..."
                                     style={{
-                                      width: '100%', fontSize: '0.72rem', lineHeight: 1.5,
+                                      width: '100%', fontSize: '0.72rem', lineHeight: 1.6,
                                       border: `1px solid ${level.color}35`, borderRadius: '6px',
-                                      padding: '6px 8px', fontFamily: 'inherit', resize: 'vertical',
+                                      padding: '7px 9px', fontFamily: 'inherit', resize: 'vertical',
                                       outline: 'none', boxSizing: 'border-box', color: 'var(--text-primary)',
                                       background: 'var(--surface)',
                                     }}
                                   />
-                                  <div style={{ display: 'flex', gap: '0.3rem', marginTop: '4px' }}>
+                                  <div style={{ display: 'flex', gap: '0.3rem', marginTop: '5px' }}>
                                     <button
                                       disabled={saving}
                                       onClick={async () => {
                                         await saveDrillCard(item.sectionSlug, item.id, draft)
                                         setDrillStack(prev => prev.map((l, i) => i === idx ? { ...l, editingCardId: undefined } : l))
                                       }}
-                                      style={{
-                                        flex: 1, background: level.color, color: '#fff', border: 'none',
-                                        borderRadius: '6px', padding: '4px 8px', fontSize: '0.65rem',
-                                        fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit', opacity: saving ? 0.6 : 1,
-                                      }}
+                                      style={{ flex: 1, background: level.color, color: '#fff', border: 'none', borderRadius: '6px', padding: '5px 8px', fontSize: '0.65rem', fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit', opacity: saving ? 0.6 : 1 }}
                                     >
                                       {saving ? 'Salvando...' : 'Salvar'}
                                     </button>
                                     <button
                                       onClick={() => setDrillStack(prev => prev.map((l, i) => i === idx ? { ...l, editingCardId: undefined } : l))}
-                                      style={{
-                                        background: 'transparent', color: '#64748B', border: '1px solid var(--border)',
-                                        borderRadius: '6px', padding: '4px 8px', fontSize: '0.65rem',
-                                        cursor: 'pointer', fontFamily: 'inherit',
-                                      }}
+                                      style={{ background: 'transparent', color: '#64748B', border: '1px solid var(--border)', borderRadius: '6px', padding: '5px 8px', fontSize: '0.65rem', cursor: 'pointer', fontFamily: 'inherit' }}
                                     >
                                       Cancelar
                                     </button>
@@ -1966,37 +2018,15 @@ export default function VisaoGeralWorkspace({
                       </div>
                     )}
 
-                    {/* Actions footer — level 0 only */}
-                    {idx === 0 && (
-                      <div style={{ padding: '0.45rem 0.6rem', borderTop: `1px solid ${level.color}15`, display: 'flex', gap: '0.35rem', flexShrink: 0 }}>
-                        {level.node.sectionSlug && (
-                          <button
-                            onClick={() => { onNavigate?.(level.node.sectionSlug!); setDrillStack([]) }}
-                            style={{ flex: 1, background: level.color, color: '#fff', border: 'none', borderRadius: '7px', padding: '5px 10px', fontSize: '0.67rem', fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}
-                          >
-                            Abrir seção
-                          </button>
-                        )}
-                        <button
-                          onClick={() => { onAskAI(buildVGNodePrompt(project, level.node)); setDrillStack([]) }}
-                          style={{ flex: 1, background: 'transparent', color: level.color, border: `1px solid ${level.color}40`, borderRadius: '7px', padding: '5px 8px', fontSize: '0.67rem', fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit' }}
-                        >
-                          Organizar com IA
-                        </button>
-                      </div>
-                    )}
-
-                    {/* Section footer — level 1+: link to open section */}
-                    {idx > 0 && level.sectionSlug && !editingItem && (
-                      <div style={{ padding: '0.35rem 0.6rem', borderTop: `1px solid ${level.color}15`, flexShrink: 0 }}>
-                        <button
-                          onClick={() => { onNavigate?.(level.sectionSlug!); setDrillStack([]) }}
-                          style={{ width: '100%', background: 'transparent', color: level.color, border: `1px solid ${level.color}35`, borderRadius: '7px', padding: '4px 8px', fontSize: '0.65rem', fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit' }}
-                        >
-                          Abrir seção completa
-                        </button>
-                      </div>
-                    )}
+                    {/* Footer — Organizar com IA (no page navigation) */}
+                    <div style={{ padding: '0.4rem 0.6rem', borderTop: `1px solid ${level.color}15`, flexShrink: 0 }}>
+                      <button
+                        onClick={() => { onAskAI(buildVGNodePrompt(project, level.node)); setDrillStack([]) }}
+                        style={{ width: '100%', background: 'transparent', color: level.color, border: `1px solid ${level.color}35`, borderRadius: '7px', padding: '5px 8px', fontSize: '0.67rem', fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit' }}
+                      >
+                        Organizar com IA
+                      </button>
+                    </div>
                   </div>
                 )
               })}
