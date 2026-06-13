@@ -1780,7 +1780,29 @@ export default function VisaoGeralWorkspace({
                           {isSectionExpanded && (
                             <div style={{ paddingLeft: '1.4rem', borderLeft: `1px solid ${node.color}20`, marginLeft: '0.15rem' }}>
                               {level3Cards.length === 0 ? (
-                                <div style={{ padding: '0.25rem 0 0.4rem', fontSize: '0.68rem', color: '#94A3B8', fontStyle: 'italic' }}>Nenhum campo ainda</div>
+                                item.sectionSlug === 'texto_original' ? (() => {
+                                  const txData = allSections.find(s => s.slug === 'texto_original')
+                                  const txContent = txData?.content as { type?: string; passagem?: string; versos?: { ref: string; texto: string }[] } | null
+                                  const passagem = txContent?.passagem?.trim()
+                                    ?? txContent?.versos?.map(v => `${v.ref} ${v.texto}`.trim()).join('\n').trim()
+                                  if (passagem) {
+                                    const isRTL = project.testament === 'AT'
+                                    return (
+                                      <div style={{ padding: '0.35rem 0 0.5rem', fontSize: '0.72rem', color: 'var(--text-primary)', lineHeight: 1.75, whiteSpace: 'pre-wrap', opacity: 0.88, direction: isRTL ? 'rtl' : 'ltr', fontFamily: isRTL ? 'serif' : 'var(--font-mono, monospace)' }}>
+                                        {passagem}
+                                      </div>
+                                    )
+                                  }
+                                  return (
+                                    <button
+                                      onClick={() => onNavigate?.('texto_original')}
+                                      style={{ display: 'block', marginTop: '0.3rem', marginBottom: '0.4rem', fontSize: '0.68rem', color: node.color, background: `${node.color}12`, border: `1px solid ${node.color}30`, borderRadius: '4px', padding: '0.3rem 0.7rem', cursor: 'pointer', fontFamily: 'inherit' }}
+                                    >
+                                      Carregar texto original
+                                    </button>
+                                  )
+                                })()
+                                : <div style={{ padding: '0.25rem 0 0.4rem', fontSize: '0.68rem', color: '#94A3B8', fontStyle: 'italic' }}>Nenhum campo ainda</div>
                               ) : level3Cards.map(card => {
                                 const cardIsEditing = editingOutlineCard === card.editKey
                                 const cardDraft     = drillDrafts[card.draftKey] ?? ''
