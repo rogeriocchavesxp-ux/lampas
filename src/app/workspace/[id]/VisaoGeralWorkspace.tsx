@@ -469,6 +469,14 @@ interface DrillLevel {
   viewTab?: 'view' | 'edit'  // undefined = section list; 'view'/'edit' = card level
 }
 
+interface ConsolidatedCardItem  { label: string; html: string; isPlain?: boolean }
+interface ConsolidatedSection   { title: string; slug: string; cards: ConsolidatedCardItem[] }
+interface ConsolidatedPopupState {
+  title: string; icon: string; color: string; bg: string
+  primarySlug: string
+  sections: ConsolidatedSection[]
+}
+
 // ── Prompt de IA por modo (para o botão "Organizar com IA" em cada nó) ────────
 
 function buildVGNodePrompt(project: Project, node: NodeDef): string {
@@ -610,6 +618,7 @@ export default function VisaoGeralWorkspace({
   const [editingOutlineCard,      setEditingOutlineCard]      = useState<string | null>(null)
   const [openCardHint,            setOpenCardHint]            = useState<string | null>(null)
   const [readingPopup, setReadingPopup] = useState<{ title: string; html: string; color: string } | null>(null)
+  const [consolidatedPopup, setConsolidatedPopup] = useState<ConsolidatedPopupState | null>(null)
   const [activePanel,  setActivePanel] = useState<string | null>(null)
   const [hoveredNode,  setHoveredNode] = useState<string | null>(null)
 
@@ -969,6 +978,75 @@ export default function VisaoGeralWorkspace({
     return []
   }
 
+  // ── Popup de leitura consolidada de ramo ─────────────────────────────────
+  function buildConsolidatedSections(node: NodeDef): ConsolidatedSection[] {
+    if (node.phaseGroup) {
+      return getSectionsByGroupNav(node.phaseGroup)
+        .map(s => {
+          const secData    = allSections.find(sec => sec.slug === s.slug)
+          const savedCards = (secData?.content as { cards?: Record<string, string> } | null)?.cards ?? {}
+          return {
+            title: s.title,
+            slug:  s.slug,
+            cards: (s.cards ?? [])
+              .map(c => ({ label: c.title ?? c.id, html: savedCards[c.id] ?? '' }))
+              .filter(c => c.html.trim()),
+          }
+        })
+        .filter(s => s.cards.length > 0)
+    }
+
+    if (node.sectionSlug === 'investigar_visao_geral') {
+      const sinteseNav   = getSectionNavBySlug('sintese')
+      const sinteseData  = allSections.find(s => s.slug === 'sintese')
+      const sinteseCards = (sinteseData?.content as { cards?: Record<string, string> } | null)?.cards ?? {}
+      const cards = (sinteseNav?.cards ?? [])
+        .map(c => ({ label: c.title ?? c.id, html: sinteseCards[c.id] ?? '' }))
+        .filter(c => c.html.trim())
+      return cards.length ? [{ title: 'Síntese Exegética', slug: 'sintese', cards }] : []
+    }
+
+    const sSlug = node.sectionSlug
+    if (!sSlug) return []
+
+    if (sSlug === 'texto_original') {
+      const txData    = allSections.find(s => s.slug === 'texto_original')
+      const txContent = txData?.content as { passagem?: string; versos?: { ref: string; texto: string }[] } | null
+      const passagem  = txContent?.passagem?.trim()
+        ?? txContent?.versos?.map(v => `${v.ref} ${v.texto}`.trim()).join('\n').trim()
+      return passagem
+        ? [{ title: '2.1 Texto Original', slug: 'texto_original', cards: [{ label: 'Passagem', html: passagem, isPlain: true }] }]
+        : []
+    }
+
+    const sNav    = getSectionNavBySlug(sSlug)
+    const secData = allSections.find(s => s.slug === sSlug)
+    const savedCards = (secData?.content as { cards?: Record<string, string> } | null)?.cards ?? {}
+    if (node.sectionCardId) {
+      const navCard = sNav?.cards?.find(c => c.id === node.sectionCardId)
+      const html = savedCards[node.sectionCardId] ?? ''
+      return html.trim()
+        ? [{ title: sNav?.title ?? sSlug, slug: sSlug, cards: [{ label: navCard?.title ?? node.sectionCardId, html }] }]
+        : []
+    }
+    const cards = (sNav?.cards ?? [])
+      .map(c => ({ label: c.title ?? c.id, html: savedCards[c.id] ?? '' }))
+      .filter(c => c.html.trim())
+    return cards.length ? [{ title: sNav?.title ?? sSlug, slug: sSlug, cards }] : []
+  }
+
+  function openConsolidatedPopup(node: NodeDef) {
+    const sections = buildConsolidatedSections(node)
+    setConsolidatedPopup({
+      title:       node.label,
+      icon:        node.icon,
+      color:       node.color,
+      bg:          node.bg,
+      primarySlug: node.sectionSlug ?? node.phaseGroup ?? sectionDef.slug,
+      sections,
+    })
+  }
+
   // ── Abrir modal de evolução das fases ─────────────────────────────────────
   const openEvolution = useCallback(async () => {
     setEvolutionLoading(true)
@@ -1326,21 +1404,7 @@ export default function VisaoGeralWorkspace({
       if (!drag.moved) {
         const clickedNode = allNodes.find(n => n.key === drag.key)
         if (clickedNode?.kind === 'phase') {
-          const now = Date.now()
-          const pos = getNodePos(clickedNode)
-          setDrillStack([{
-            id: `${clickedNode.key}_${now}`,
-            node: clickedNode,
-            title: clickedNode.label,
-            icon: clickedNode.icon,
-            color: clickedNode.color,
-            bg: clickedNode.bg,
-            phaseGroup: clickedNode.phaseGroup,
-            sectionSlug: clickedNode.phaseGroup ? undefined : clickedNode.sectionSlug,
-            canvasX: pos.x,
-            canvasY: pos.y,
-            viewTab: clickedNode.phaseGroup ? undefined : 'view',
-          }])
+          openConsolidatedPopup(clickedNode)
         } else if (clickedNode?.kind === 'card') {
           const now = Date.now()
           const pos = getNodePos(clickedNode)
@@ -3490,6 +3554,99 @@ export default function VisaoGeralWorkspace({
         onClose={() => setReadingPopup(null)}
       />
     )}
+
+    {/* ── Consolidated branch popup ───────────────────────────────────── */}
+    {consolidatedPopup && (() => {
+      const cp = consolidatedPopup
+      function handlePrintConsolidated() {
+        const win = window.open('', '_blank')
+        if (!win) return
+        const allHtml = cp.sections.map(s =>
+          `<h2>${s.title}</h2>${s.cards.map(c =>
+            s.cards.length > 1
+              ? `<h3>${c.label}</h3>${c.isPlain ? `<pre style="white-space:pre-wrap;font-family:serif">${c.html}</pre>` : `<div>${c.html}</div>`}`
+              : (c.isPlain ? `<pre style="white-space:pre-wrap;font-family:serif">${c.html}</pre>` : `<div>${c.html}</div>`)
+          ).join('')}`
+        ).join('<hr style="margin:2em 0;border:none;border-top:1px solid #ccc"/>')
+        win.document.write(`<!DOCTYPE html><html><head><meta charset="utf-8"/><title>${cp.title}</title><style>
+          body{font-family:Georgia,'Times New Roman',serif;font-size:13pt;line-height:1.8;margin:2cm;color:#1a1a1a;}
+          h1{font-size:1.5em;margin:0 0 1em;}h2{font-size:1.1em;color:#334155;border-bottom:1px solid #e5e7eb;padding-bottom:0.3em;margin:1.5em 0 0.6em;}
+          h3{font-size:0.9em;color:#64748b;margin:1em 0 0.3em;font-weight:600;}
+          p{margin:0 0 0.8em;}ul,ol{margin:0 0 0.8em 1.2em;}li{margin-bottom:0.3em;}
+          blockquote{border-left:3px solid #ccc;margin:0 0 0.9em;padding:0.5em 1em;color:#555;}
+          pre{white-space:pre-wrap;font-family:inherit;}
+        </style></head><body><h1>${cp.icon} ${cp.title}</h1>${allHtml}</body></html>`)
+        win.document.close()
+        win.print()
+      }
+      return (
+        <div
+          onClick={() => setConsolidatedPopup(null)}
+          style={{ position: 'fixed', inset: 0, zIndex: 9900, background: 'rgba(0,0,0,0.45)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <div
+            onClick={e => e.stopPropagation()}
+            style={{ width: '78%', maxWidth: '960px', maxHeight: '88vh', background: 'var(--bg-primary,#fff)', borderRadius: '12px', display: 'flex', flexDirection: 'column', overflow: 'hidden', boxShadow: '0 8px 48px rgba(0,0,0,0.22)' }}>
+
+            {/* Header */}
+            <div style={{ padding: '0.85rem 1.1rem', borderBottom: '1px solid var(--border,#e5e7eb)', display: 'flex', alignItems: 'center', gap: '0.6rem', background: cp.bg, flexShrink: 0 }}>
+              <span style={{ fontSize: '1rem' }}>{cp.icon}</span>
+              <span style={{ flex: 1, fontSize: '0.9rem', fontWeight: 700, color: cp.color }}>{cp.title}</span>
+              <div style={{ display: 'flex', gap: '0.4rem', alignItems: 'center' }}>
+                <button
+                  onClick={() => { setConsolidatedPopup(null); onNavigate?.(cp.primarySlug) }}
+                  style={{ padding: '0.28rem 0.6rem', fontSize: '0.72rem', background: cp.color, color: '#fff', border: 'none', borderRadius: '6px', cursor: 'pointer' }}>
+                  ✏ Editar
+                </button>
+                <button
+                  onClick={handlePrintConsolidated}
+                  style={{ padding: '0.28rem 0.6rem', fontSize: '0.72rem', background: 'transparent', color: 'var(--text-secondary,#64748b)', border: '1px solid var(--border,#e5e7eb)', borderRadius: '6px', cursor: 'pointer' }}>
+                  🖨 Imprimir
+                </button>
+                <button
+                  onClick={() => setConsolidatedPopup(null)}
+                  style={{ width: '24px', height: '24px', borderRadius: '50%', background: 'rgba(0,0,0,0.09)', border: 'none', cursor: 'pointer', fontSize: '0.75rem', color: 'var(--text-secondary,#64748b)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  ✕
+                </button>
+              </div>
+            </div>
+
+            {/* Body */}
+            <div style={{ flex: 1, overflowY: 'auto', padding: '1.25rem 1.4rem' }}>
+              {cp.sections.length === 0 ? (
+                <div style={{ textAlign: 'center', padding: '3.5rem 1rem', color: 'var(--text-secondary,#64748b)', fontSize: '0.83rem' }}>
+                  Nenhum conteúdo registrado neste bloco ainda.
+                </div>
+              ) : cp.sections.map((sec, si) => (
+                <div key={sec.slug} style={{ marginBottom: si < cp.sections.length - 1 ? '2.2rem' : 0 }}>
+                  <div style={{ fontSize: '0.7rem', fontWeight: 700, color: cp.color, textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: '0.8rem', paddingBottom: '0.35rem', borderBottom: `2px solid ${cp.color}28` }}>
+                    {sec.title}
+                  </div>
+                  {sec.cards.map((card, ci) => (
+                    <div key={ci} style={{ marginBottom: ci < sec.cards.length - 1 ? '1.4rem' : 0 }}>
+                      {sec.cards.length > 1 && (
+                        <div style={{ fontSize: '0.7rem', fontWeight: 600, color: 'var(--text-secondary,#64748b)', marginBottom: '0.3rem' }}>
+                          {card.label}
+                        </div>
+                      )}
+                      {card.isPlain ? (
+                        <div style={{ fontSize: '0.87rem', lineHeight: 1.8, color: 'var(--text-primary,#1e293b)', whiteSpace: 'pre-wrap', fontFamily: project.testament === 'AT' ? 'serif' : 'var(--font-mono,monospace)', direction: project.testament === 'AT' ? 'rtl' : 'ltr' }}>
+                          {card.html}
+                        </div>
+                      ) : (
+                        <div
+                          className="prose-reading"
+                          style={{ fontSize: '0.87rem', lineHeight: 1.8, color: 'var(--text-primary,#1e293b)' }}
+                          dangerouslySetInnerHTML={{ __html: card.html }} />
+                      )}
+                    </div>
+                  ))}
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )
+    })()}
     </>
   )
 }
