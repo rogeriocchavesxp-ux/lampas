@@ -429,6 +429,36 @@ function cardTextStatus(text: string): 'empty' | 'draft' | 'reviewed' {
   return 'reviewed'
 }
 
+// ── Drill-down popup stack ────────────────────────────────────────────────────
+
+type DrillItemType = 'section' | 'card'
+
+interface DrillItem {
+  id: string
+  label: string
+  sectionSlug: string
+  type: DrillItemType
+  status: 'empty' | 'draft' | 'reviewed'
+}
+
+interface DrillLevel {
+  id: string
+  node: NodeDef       // phase node that started the stack (for color/icon ref)
+  title: string
+  icon: string
+  color: string
+  bg: string
+  sectionSlug?: string  // level 1+: section whose cards to show
+  phaseGroup?: string   // level 0: group whose sections to show
+  // Level 0: dynamic position following the node on zoom/pan
+  canvasX?: number
+  canvasY?: number
+  // Level 1+: fixed position anchored to the clicked item
+  fixedLeft?: number
+  fixedTop?: number
+  editingCardId?: string
+}
+
 // ── Prompt de IA por modo (para o botão "Organizar com IA" em cada nó) ────────
 
 function buildVGNodePrompt(project: Project, node: NodeDef): string {
@@ -559,8 +589,10 @@ export default function VisaoGeralWorkspace({
   const [mode,         setMode]        = useState<'visual' | 'structured'>('visual')
   const [activePanel,  setActivePanel] = useState<string | null>(null)
   const [hoveredNode,  setHoveredNode] = useState<string | null>(null)
-  // Popup de nós de fase (single click → popup, double click → navegar)
-  const [phasePopup,   setPhasePopup]  = useState<{ node: NodeDef; canvasX: number; canvasY: number } | null>(null)
+  // Drill-down popup stack (single click → popup, double click → navegar)
+  const [drillStack, setDrillStack] = useState<DrillLevel[]>([])
+  const [drillDrafts, setDrillDrafts] = useState<Record<string, string>>({})
+  const [drillSaving, setDrillSaving] = useState<string | null>(null)
   const lastClickRef = useRef<{ key: string; time: number } | null>(null)
   const [cls,          setCls]         = useState<Classification[]>([])
   const [wrapW,        setWrapW]       = useState(CW)
@@ -845,6 +877,28 @@ export default function VisaoGeralWorkspace({
     finally { setSavingCard(null) }
   }, [supabase, project.id, userId, sectionDef, onUpdate])
 
+  // Save a card in any section (used by drill-down inline editor)
+  const saveDrillCard = useCallback(async (sectionSlug: string, cardId: string, value: string) => {
+    const draftKey = `${sectionSlug}:${cardId}`
+    setDrillSaving(draftKey)
+    try {
+      const { data } = await supabase.from('sections').select()
+        .eq('project_id', project.id).eq('slug', sectionSlug).maybeSingle()
+      const prev    = (data?.content as { cards?: Record<string, string> } | null)?.cards ?? {}
+      const payload = {
+        project_id: project.id, user_id: userId, slug: sectionSlug,
+        module: 'inventio' as const, title: sectionSlug,
+        status: 'draft' as const, content: { cards: { ...prev, [cardId]: value } },
+      }
+      const op = data?.id
+        ? supabase.from('sections').update(payload).eq('id', data.id).select().single()
+        : supabase.from('sections').insert(payload).select().single()
+      const { data: updated } = await op
+      if (updated) onUpdate(updated as Section)
+    } catch { /* noop */ }
+    finally { setDrillSaving(null) }
+  }, [supabase, project.id, userId, onUpdate])
+
   // Reset detail panel when node changes
   useEffect(() => { setActiveItem(null); setDictSaved(false) }, [activePanel])
 
@@ -1101,7 +1155,7 @@ export default function VisaoGeralWorkspace({
     if ((e.target as HTMLElement).closest('button')) return
     panStartRef.current = { mouseX: e.clientX, mouseY: e.clientY, viewX, viewY }
     setIsPanning(true)
-    setPhasePopup(null)
+    setDrillStack([])
   }
 
   function handleCanvasMM(e: React.MouseEvent<HTMLDivElement>) {
@@ -1133,17 +1187,28 @@ export default function VisaoGeralWorkspace({
           if (isDouble) {
             // Duplo clique → navegar direto
             if (clickedNode.sectionSlug && onNavigate) onNavigate(clickedNode.sectionSlug)
-            setPhasePopup(null)
+            setDrillStack([])
             lastClickRef.current = null
           } else {
-            // Clique simples → abrir popup
+            // Clique simples → abrir drill stack (nível 0)
             const pos = getNodePos(clickedNode)
-            setPhasePopup({ node: clickedNode, canvasX: pos.x, canvasY: pos.y })
+            setDrillStack([{
+              id: `${clickedNode.key}_${now}`,
+              node: clickedNode,
+              title: clickedNode.label,
+              icon: clickedNode.icon,
+              color: clickedNode.color,
+              bg: clickedNode.bg,
+              phaseGroup: clickedNode.phaseGroup,
+              sectionSlug: clickedNode.phaseGroup ? undefined : clickedNode.sectionSlug,
+              canvasX: pos.x,
+              canvasY: pos.y,
+            }])
             lastClickRef.current = { key: drag.key, time: now }
           }
         } else {
           setActivePanel(p => p === drag.key ? null : drag.key)
-          setPhasePopup(null)
+          setDrillStack([])
         }
       }
       nodeDragRef.current = null
@@ -1675,159 +1740,264 @@ export default function VisaoGeralWorkspace({
                 </button>
               </div>
 
-              {/* ── Popup de nó de fase ── */}
-              {phasePopup && (() => {
-                const { node, canvasX, canvasY } = phasePopup
-                const screenX = canvasX * zoom + viewX
-                const screenY = canvasY * zoom + viewY
+              {/* ── Drill-down popup stack ── */}
+              <style>{`@keyframes fadeInPopup { from { opacity:0; transform:scale(0.96) } to { opacity:1; transform:scale(1) } }`}</style>
+              {drillStack.map((level, idx) => {
                 const containerW = canvasContainerRef.current?.clientWidth ?? 700
                 const containerH = canvasContainerRef.current?.clientHeight ?? 500
                 const POPUP_W = 290
-                const POPUP_H = 300
-                // Posicionar à direita do nó; se não couber, à esquerda
-                const idealLeft = screenX + 78
-                const popLeft = idealLeft + POPUP_W > containerW - 8 ? screenX - POPUP_W - 78 : idealLeft
-                const popTop  = Math.max(8, Math.min(containerH - POPUP_H - 8, screenY - 70))
 
-                // Sub-itens: grupo → seções do grupo; ou seção → cards da seção
-                type PopupItem = { id: string; label: string; slug: string; status: 'empty' | 'draft' | 'reviewed' }
-                const subItems: PopupItem[] = node.phaseGroup
-                  ? getSectionsByGroupNav(node.phaseGroup).map(s => {
+                // Level 0 follows the node on zoom/pan; level 1+ uses fixed position
+                let popLeft: number, popTop: number
+                if (level.canvasX !== undefined && level.canvasY !== undefined) {
+                  const screenX = level.canvasX * zoom + viewX
+                  const screenY = level.canvasY * zoom + viewY
+                  const POPUP_H = 300
+                  const idealLeft = screenX + 78
+                  popLeft = idealLeft + POPUP_W > containerW - 8 ? screenX - POPUP_W - 78 : idealLeft
+                  popTop  = Math.max(8, Math.min(containerH - POPUP_H - 8, screenY - 70))
+                } else {
+                  popLeft = level.fixedLeft!
+                  popTop  = level.fixedTop!
+                }
+
+                // Build items for this level
+                const items: DrillItem[] = level.phaseGroup
+                  ? getSectionsByGroupNav(level.phaseGroup).map(s => {
                       const secData = allSections.find(sec => sec.slug === s.slug)
-                      const cards = (secData?.content as { cards?: Record<string, string> } | null)?.cards ?? {}
-                      const filled = Object.values(cards).filter(v => v?.trim()).length
-                      const total  = s.cards?.length ?? 0
-                      const status: PopupItem['status'] = filled === 0 ? 'empty' : filled >= total && total > 0 ? 'reviewed' : 'draft'
-                      return { id: s.slug, label: s.shortTitle, slug: s.slug, status }
+                      const sCards  = (secData?.content as { cards?: Record<string, string> } | null)?.cards ?? {}
+                      const filled  = Object.values(sCards).filter(v => v?.trim()).length
+                      const total   = s.cards?.length ?? 0
+                      const status: DrillItem['status'] = filled === 0 ? 'empty' : filled >= total && total > 0 ? 'reviewed' : 'draft'
+                      return { id: s.slug, label: s.shortTitle, sectionSlug: s.slug, type: 'section' as const, status }
                     })
-                  : node.sectionSlug
-                    ? (() => {
-                        const sNav = getSectionNavBySlug(node.sectionSlug)
-                        if (!sNav?.cards?.length) return []
-                        const secData = allSections.find(s => s.slug === node.sectionSlug)
-                        const savedCards = (secData?.content as { cards?: Record<string, string> } | null)?.cards ?? {}
-                        return sNav.cards.map(c => ({
-                          id: c.id, label: c.title, slug: node.sectionSlug!,
-                          status: cardTextStatus(savedCards[c.id] ?? ''),
-                        }))
-                      })()
-                    : []
+                  : (() => {
+                      const sSlug = level.sectionSlug
+                      if (!sSlug) return []
+                      const sNav = getSectionNavBySlug(sSlug)
+                      if (!sNav?.cards?.length) return []
+                      const secData    = allSections.find(s => s.slug === sSlug)
+                      const savedCards = (secData?.content as { cards?: Record<string, string> } | null)?.cards ?? {}
+                      return sNav.cards.map(c => ({
+                        id: c.id, label: c.title, sectionSlug: sSlug,
+                        type: 'card' as const,
+                        status: cardTextStatus(savedCards[c.id] ?? '') as DrillItem['status'],
+                      }))
+                    })()
 
-                const sectionData = node.sectionSlug ? allSections.find(s => s.slug === node.sectionSlug) : null
-                const sectionCards = (sectionData?.content as { cards?: Record<string, string> } | null)?.cards ?? {}
-                const sectionNav = node.sectionSlug ? getSectionNavBySlug(node.sectionSlug) : null
-                const totalCards  = sectionNav?.cards?.length ?? 0
-                const filledCards = sectionNav?.cards?.filter(c => sectionCards[c.id]?.trim()).length ?? 0
+                // Progress summary for header
+                const started = items.filter(i => i.status !== 'empty').length
+                const done    = items.filter(i => i.status === 'reviewed').length
+                const progressLabel = level.phaseGroup
+                  ? `${started}/${items.length} seções iniciadas`
+                  : items.length > 0 ? `${done}/${items.length} preenchidos` : ''
+
+                const closeLevel = () => setDrillStack(prev => prev.slice(0, idx))
+
+                const handleSectionClick = (e: React.MouseEvent<HTMLButtonElement>, item: DrillItem) => {
+                  const btnRect = e.currentTarget.getBoundingClientRect()
+                  const containerRect = canvasContainerRef.current!.getBoundingClientRect()
+                  const POPUP_H = 300
+                  const anchorRight = btnRect.right  - containerRect.left
+                  const anchorTop   = btnRect.top    - containerRect.top
+                  const idealLeft   = anchorRight + 6
+                  const fixedLeft   = idealLeft + POPUP_W > containerW - 8
+                    ? (btnRect.left - containerRect.left) - POPUP_W - 6
+                    : idealLeft
+                  const fixedTop    = Math.max(8, Math.min(containerH - POPUP_H - 8, anchorTop - 30))
+                  setDrillStack(prev => [
+                    ...prev.slice(0, idx + 1),
+                    {
+                      id: `${item.sectionSlug}_${Date.now()}`,
+                      node: level.node,
+                      title: item.label,
+                      icon: '📄',
+                      color: level.color,
+                      bg: level.bg,
+                      sectionSlug: item.sectionSlug,
+                      fixedLeft,
+                      fixedTop,
+                    },
+                  ])
+                }
+
+                const handleCardClick = (item: DrillItem) => {
+                  const draftKey = `${item.sectionSlug}:${item.id}`
+                  setDrillStack(prev => prev.map((l, i) => {
+                    if (i !== idx) return l
+                    return { ...l, editingCardId: l.editingCardId === item.id ? undefined : item.id }
+                  }))
+                  const secData    = allSections.find(s => s.slug === item.sectionSlug)
+                  const savedCards = (secData?.content as { cards?: Record<string, string> } | null)?.cards ?? {}
+                  setDrillDrafts(d => ({ ...d, [draftKey]: d[draftKey] ?? (savedCards[item.id] ?? '') }))
+                }
+
+                const editingItem = level.editingCardId ? items.find(i => i.id === level.editingCardId) : null
 
                 return (
                   <div
+                    key={level.id}
                     onMouseDown={e => e.stopPropagation()}
                     style={{
                       position: 'absolute', left: `${popLeft}px`, top: `${popTop}px`,
-                      width: `${POPUP_W}px`, maxHeight: `${POPUP_H}px`,
+                      width: `${POPUP_W}px`, maxHeight: '360px',
                       background: 'var(--surface, #FFFFFF)',
-                      border: `1.5px solid ${node.color}45`,
-                      borderLeft: `3px solid ${node.color}`,
+                      border: `1.5px solid ${level.color}45`,
+                      borderLeft: `3px solid ${level.color}`,
                       borderRadius: '10px',
-                      boxShadow: `0 8px 32px rgba(0,0,0,0.12), 0 2px 6px ${node.color}18`,
-                      zIndex: 40, overflow: 'hidden',
+                      boxShadow: `0 8px 32px rgba(0,0,0,0.12), 0 2px 6px ${level.color}18`,
+                      zIndex: 40 + idx, overflow: 'hidden',
                       display: 'flex', flexDirection: 'column',
                       animation: 'fadeInPopup 0.15s ease',
                     }}
                   >
-                    <style>{`@keyframes fadeInPopup { from { opacity:0; transform:scale(0.96) } to { opacity:1; transform:scale(1) } }`}</style>
-
                     {/* Header */}
-                    <div style={{ padding: '0.62rem 0.8rem 0.45rem', background: node.bg, borderBottom: `1px solid ${node.color}18` }}>
+                    <div style={{ padding: '0.62rem 0.8rem 0.45rem', background: level.bg, borderBottom: `1px solid ${level.color}18`, flexShrink: 0 }}>
                       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '0.4rem' }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '0.38rem', minWidth: 0 }}>
-                          <span style={{ fontSize: '0.85rem', flexShrink: 0 }}>{node.icon}</span>
-                          <span style={{ fontSize: '0.75rem', fontWeight: 700, color: node.color, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                            {node.label}
+                          {idx > 0 && (
+                            <button
+                              onClick={closeLevel}
+                              style={{ background: 'none', border: 'none', cursor: 'pointer', color: level.color, fontSize: '0.9rem', lineHeight: 1, padding: '0', flexShrink: 0, opacity: 0.7 }}
+                            >‹</button>
+                          )}
+                          <span style={{ fontSize: '0.85rem', flexShrink: 0 }}>{level.icon}</span>
+                          <span style={{ fontSize: '0.75rem', fontWeight: 700, color: level.color, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                            {level.title}
                           </span>
                         </div>
                         <button
-                          onClick={() => setPhasePopup(null)}
+                          onClick={() => setDrillStack([])}
                           style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#94A3B8', fontSize: '1rem', lineHeight: 1, padding: '0 2px', flexShrink: 0 }}
                         >×</button>
                       </div>
-                      {totalCards > 0 && (
-                        <div style={{ fontSize: '0.62rem', color: '#64748B', marginTop: '3px' }}>
-                          {filledCards}/{totalCards} {filledCards === totalCards ? '✓ completo' : 'preenchidos'}
-                        </div>
-                      )}
-                      {totalCards === 0 && node.phaseGroup && (
-                        <div style={{ fontSize: '0.62rem', color: '#64748B', marginTop: '3px' }}>
-                          {subItems.filter(i => i.status !== 'empty').length}/{subItems.length} seções iniciadas
-                        </div>
+                      {progressLabel && (
+                        <div style={{ fontSize: '0.62rem', color: '#64748B', marginTop: '3px' }}>{progressLabel}</div>
                       )}
                     </div>
 
-                    {/* Sub-itens */}
-                    {subItems.length > 0 && (
+                    {/* Items */}
+                    {items.length > 0 && (
                       <div style={{ padding: '0.35rem 0.5rem', overflowY: 'auto', flex: 1 }}>
-                        {subItems.map(item => (
-                          <button
-                            key={item.id}
-                            onClick={() => { onNavigate?.(item.slug); setPhasePopup(null) }}
-                            style={{
-                              display: 'flex', alignItems: 'center', gap: '0.45rem',
-                              width: '100%', background: 'transparent', border: 'none',
-                              borderRadius: '6px', padding: '0.28rem 0.4rem',
-                              cursor: 'pointer', fontFamily: 'inherit', textAlign: 'left',
-                            }}
-                            onMouseEnter={e => { e.currentTarget.style.background = node.color + '10' }}
-                            onMouseLeave={e => { e.currentTarget.style.background = 'transparent' }}
-                          >
-                            <span style={{
-                              fontSize: '0.58rem', flexShrink: 0, lineHeight: 1,
-                              color: item.status === 'reviewed' ? '#059669' : item.status === 'draft' ? '#D97706' : '#CBD5E1',
-                            }}>
-                              {item.status === 'reviewed' ? '●' : item.status === 'draft' ? '◑' : '○'}
-                            </span>
-                            <span style={{ fontSize: '0.72rem', color: 'var(--text-primary, #334155)', lineHeight: 1.3 }}>{item.label}</span>
-                          </button>
-                        ))}
+                        {items.map(item => {
+                          const isEditing = level.editingCardId === item.id
+                          const draftKey  = `${item.sectionSlug}:${item.id}`
+                          const draft     = drillDrafts[draftKey] ?? ''
+                          const saving    = drillSaving === draftKey
+                          return (
+                            <div key={item.id}>
+                              <button
+                                onClick={e => item.type === 'section' ? handleSectionClick(e, item) : handleCardClick(item)}
+                                style={{
+                                  display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                                  width: '100%', background: isEditing ? level.color + '10' : 'transparent', border: 'none',
+                                  borderRadius: '6px', padding: '0.28rem 0.4rem',
+                                  cursor: 'pointer', fontFamily: 'inherit', textAlign: 'left',
+                                }}
+                                onMouseEnter={e => { if (!isEditing) e.currentTarget.style.background = level.color + '10' }}
+                                onMouseLeave={e => { if (!isEditing) e.currentTarget.style.background = 'transparent' }}
+                              >
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem', minWidth: 0 }}>
+                                  <span style={{
+                                    fontSize: '0.58rem', flexShrink: 0, lineHeight: 1,
+                                    color: item.status === 'reviewed' ? '#059669' : item.status === 'draft' ? '#D97706' : '#CBD5E1',
+                                  }}>
+                                    {item.status === 'reviewed' ? '●' : item.status === 'draft' ? '◑' : '○'}
+                                  </span>
+                                  <span style={{ fontSize: '0.72rem', color: 'var(--text-primary, #334155)', lineHeight: 1.3, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                                    {item.label}
+                                  </span>
+                                </div>
+                                {item.type === 'section' && (
+                                  <span style={{ fontSize: '0.7rem', color: level.color, opacity: 0.6, flexShrink: 0 }}>›</span>
+                                )}
+                              </button>
+
+                              {/* Inline card editor */}
+                              {isEditing && item.type === 'card' && (
+                                <div style={{ padding: '0.35rem 0.4rem 0.4rem', borderBottom: `1px solid ${level.color}15` }}>
+                                  <textarea
+                                    value={draft}
+                                    onChange={e => setDrillDrafts(d => ({ ...d, [draftKey]: e.target.value }))}
+                                    rows={4}
+                                    autoFocus
+                                    placeholder="Escreva aqui..."
+                                    style={{
+                                      width: '100%', fontSize: '0.72rem', lineHeight: 1.5,
+                                      border: `1px solid ${level.color}35`, borderRadius: '6px',
+                                      padding: '6px 8px', fontFamily: 'inherit', resize: 'vertical',
+                                      outline: 'none', boxSizing: 'border-box', color: 'var(--text-primary)',
+                                      background: 'var(--surface)',
+                                    }}
+                                  />
+                                  <div style={{ display: 'flex', gap: '0.3rem', marginTop: '4px' }}>
+                                    <button
+                                      disabled={saving}
+                                      onClick={async () => {
+                                        await saveDrillCard(item.sectionSlug, item.id, draft)
+                                        setDrillStack(prev => prev.map((l, i) => i === idx ? { ...l, editingCardId: undefined } : l))
+                                      }}
+                                      style={{
+                                        flex: 1, background: level.color, color: '#fff', border: 'none',
+                                        borderRadius: '6px', padding: '4px 8px', fontSize: '0.65rem',
+                                        fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit', opacity: saving ? 0.6 : 1,
+                                      }}
+                                    >
+                                      {saving ? 'Salvando...' : 'Salvar'}
+                                    </button>
+                                    <button
+                                      onClick={() => setDrillStack(prev => prev.map((l, i) => i === idx ? { ...l, editingCardId: undefined } : l))}
+                                      style={{
+                                        background: 'transparent', color: '#64748B', border: '1px solid var(--border)',
+                                        borderRadius: '6px', padding: '4px 8px', fontSize: '0.65rem',
+                                        cursor: 'pointer', fontFamily: 'inherit',
+                                      }}
+                                    >
+                                      Cancelar
+                                    </button>
+                                  </div>
+                                </div>
+                              )}
+                            </div>
+                          )
+                        })}
                       </div>
                     )}
 
-                    {/* Ações */}
-                    <div style={{
-                      padding: '0.45rem 0.6rem',
-                      borderTop: `1px solid ${node.color}15`,
-                      display: 'flex', gap: '0.35rem',
-                    }}>
-                      {node.sectionSlug && (
+                    {/* Actions footer — level 0 only */}
+                    {idx === 0 && (
+                      <div style={{ padding: '0.45rem 0.6rem', borderTop: `1px solid ${level.color}15`, display: 'flex', gap: '0.35rem', flexShrink: 0 }}>
+                        {level.node.sectionSlug && (
+                          <button
+                            onClick={() => { onNavigate?.(level.node.sectionSlug!); setDrillStack([]) }}
+                            style={{ flex: 1, background: level.color, color: '#fff', border: 'none', borderRadius: '7px', padding: '5px 10px', fontSize: '0.67rem', fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}
+                          >
+                            Abrir seção
+                          </button>
+                        )}
                         <button
-                          onClick={() => { onNavigate?.(node.sectionSlug!); setPhasePopup(null) }}
-                          style={{
-                            flex: 1,
-                            background: node.color, color: '#fff',
-                            border: 'none', borderRadius: '7px',
-                            padding: '5px 10px', fontSize: '0.67rem', fontWeight: 700,
-                            cursor: 'pointer', fontFamily: 'inherit',
-                          }}
+                          onClick={() => { onAskAI(buildVGNodePrompt(project, level.node)); setDrillStack([]) }}
+                          style={{ flex: 1, background: 'transparent', color: level.color, border: `1px solid ${level.color}40`, borderRadius: '7px', padding: '5px 8px', fontSize: '0.67rem', fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit' }}
                         >
-                          Abrir seção
+                          Organizar com IA
                         </button>
-                      )}
-                      <button
-                        onClick={() => { onAskAI(buildVGNodePrompt(project, node)); setPhasePopup(null) }}
-                        style={{
-                          flex: 1,
-                          background: 'transparent', color: node.color,
-                          border: `1px solid ${node.color}40`,
-                          borderRadius: '7px', padding: '5px 8px',
-                          fontSize: '0.67rem', fontWeight: 600,
-                          cursor: 'pointer', fontFamily: 'inherit',
-                        }}
-                      >
-                        Organizar com IA
-                      </button>
-                    </div>
+                      </div>
+                    )}
+
+                    {/* Section footer — level 1+: link to open section */}
+                    {idx > 0 && level.sectionSlug && !editingItem && (
+                      <div style={{ padding: '0.35rem 0.6rem', borderTop: `1px solid ${level.color}15`, flexShrink: 0 }}>
+                        <button
+                          onClick={() => { onNavigate?.(level.sectionSlug!); setDrillStack([]) }}
+                          style={{ width: '100%', background: 'transparent', color: level.color, border: `1px solid ${level.color}35`, borderRadius: '7px', padding: '4px 8px', fontSize: '0.65rem', fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit' }}
+                        >
+                          Abrir seção completa
+                        </button>
+                      </div>
+                    )}
                   </div>
                 )
-              })()}
+              })}
 
             </div>{/* end canvas container */}
             </div>{/* end left column */}
