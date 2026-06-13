@@ -376,7 +376,7 @@ export const WORKSPACE_SECTIONS_NAV: SectionNav[] = [
   },
   {
     "slug": "texto_original",
-    "title": "§ Texto Original",
+    "title": "2.1 Texto Original",
     "shortTitle": "Texto Original",
     "module": "inventio",
     "group": "textual",
@@ -384,11 +384,116 @@ export const WORKSPACE_SECTIONS_NAV: SectionNav[] = [
     "order": 5.5
   },
   {
+    "slug": "defesa_pericope",
+    "title": "2.2 Defesa da Perícope e Divisões",
+    "shortTitle": "Defesa da Perícope",
+    "module": "inventio",
+    "group": "textual",
+    "groupLabel": "Estudo Textual",
+    "order": 6,
+    "cards": [
+      {
+        "id": "defesa_pericope",
+        "title": "Defesa da Perícope e Divisões"
+      }
+    ]
+  },
+  {
+    "slug": "traducao_propria",
+    "title": "2.3 Tradução Própria",
+    "shortTitle": "Tradução Própria",
+    "module": "inventio",
+    "group": "textual",
+    "groupLabel": "Estudo Textual",
+    "order": 7,
+    "cards": [
+      {
+        "id": "traducao_propria",
+        "title": "Tradução Própria"
+      }
+    ]
+  },
+  {
+    "slug": "observacoes_gramaticais",
+    "title": "2.4 Observações Gramaticais e Sintáticas",
+    "shortTitle": "Gram. e Sintaxe",
+    "module": "inventio",
+    "group": "textual",
+    "groupLabel": "Estudo Textual",
+    "order": 8,
+    "cards": [
+      {
+        "id": "obs_gramaticais",
+        "title": "Observações Gramaticais e Sintáticas"
+      }
+    ]
+  },
+  {
+    "slug": "esboco_mecanico",
+    "title": "2.5 Esboço Mecânico",
+    "shortTitle": "Esboço Mecânico",
+    "module": "inventio",
+    "group": "textual",
+    "groupLabel": "Estudo Textual",
+    "order": 8.5,
+    "cards": [
+      {
+        "id": "esboco_mecanico",
+        "title": "Esboço Mecânico"
+      }
+    ]
+  },
+  {
+    "slug": "genero_subgenero_textual",
+    "title": "2.6 Definição de Gênero e Subgênero Literário",
+    "shortTitle": "Gênero e Subgênero",
+    "module": "inventio",
+    "group": "textual",
+    "groupLabel": "Estudo Textual",
+    "order": 9,
+    "cards": [
+      {
+        "id": "genero_subgenero",
+        "title": "Definição de Gênero e Subgênero Literário"
+      }
+    ]
+  },
+  {
+    "slug": "comentario_exegetico",
+    "title": "2.7 Comentário Exegético",
+    "shortTitle": "Comentário Exegético",
+    "module": "inventio",
+    "group": "textual",
+    "groupLabel": "Estudo Textual",
+    "order": 9.5,
+    "cards": [
+      {
+        "id": "comentario_exegetico",
+        "title": "Comentário Exegético"
+      }
+    ]
+  },
+  {
+    "slug": "mensagem_epoca_escrita",
+    "title": "2.8 Mensagem para a Época da Escrita",
+    "shortTitle": "Mensagem Original",
+    "module": "inventio",
+    "group": "textual",
+    "groupLabel": "Estudo Textual",
+    "order": 10,
+    "cards": [
+      {
+        "id": "mensagem_epoca",
+        "title": "Mensagem para a Época da Escrita"
+      }
+    ]
+  },
+  {
     "slug": "delimitacao_pericope",
     "title": "2.1 Delimitação da Perícope",
     "shortTitle": "Delimitação",
     "module": "inventio",
-    "group": "textual",
+    "group": "textual_legado",
     "groupLabel": "Estudo Textual",
     "order": 6,
     "cards": [
@@ -411,7 +516,7 @@ export const WORKSPACE_SECTIONS_NAV: SectionNav[] = [
     "title": "2.2 Tradução e Crítica Textual",
     "shortTitle": "Tradução",
     "module": "inventio",
-    "group": "textual",
+    "group": "textual_legado",
     "groupLabel": "Estudo Textual",
     "order": 7,
     "cards": [
@@ -434,7 +539,7 @@ export const WORKSPACE_SECTIONS_NAV: SectionNav[] = [
     "title": "2.3 Análise Morfossintática",
     "shortTitle": "Morfossintaxe",
     "module": "inventio",
-    "group": "textual",
+    "group": "textual_legado",
     "groupLabel": "Estudo Textual",
     "order": 8,
     "cards": [
@@ -461,7 +566,7 @@ export const WORKSPACE_SECTIONS_NAV: SectionNav[] = [
     "title": "2.4 Termos-Chave",
     "shortTitle": "Termos-Chave",
     "module": "inventio",
-    "group": "textual",
+    "group": "textual_legado",
     "groupLabel": "Estudo Textual",
     "order": 9
   },
@@ -470,7 +575,7 @@ export const WORKSPACE_SECTIONS_NAV: SectionNav[] = [
     "title": "2.5 Estrutura Literária",
     "shortTitle": "Estrutura Literária",
     "module": "inventio",
-    "group": "textual",
+    "group": "textual_legado",
     "groupLabel": "Estudo Textual",
     "order": 10,
     "cards": [

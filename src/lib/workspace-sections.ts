@@ -266,24 +266,214 @@ export const WORKSPACE_SECTIONS: SectionDef[] = [
 
   {
     slug: 'texto_original',
-    title: '§ Texto Original',
+    title: '2.1 Texto Original',
     shortTitle: 'Texto Original',
     module: 'inventio',
     group: 'textual',
     groupLabel: 'Estudo Textual',
     order: 5.5,
-    objective: 'Trabalhar diretamente com o texto bíblico no idioma original — o ponto de partida de toda exegese responsável. O texto domina; a análise serve.',
+    objective: 'Apresentar o texto na língua original (Hebraico, Aramaico ou Grego). O texto domina; a análise serve.',
     keyQuestions: [],
     relevantAuthors: [],
     cards: [],
   },
 
   {
+    slug: 'defesa_pericope',
+    title: '2.2 Defesa da Perícope e Divisões',
+    shortTitle: 'Defesa da Perícope',
+    module: 'inventio',
+    group: 'textual',
+    groupLabel: 'Estudo Textual',
+    order: 6,
+    objective: 'Justificar os limites da perícope.',
+    keyQuestions: [
+      'Onde a unidade começa?',
+      'Onde termina?',
+      'Por que esse trecho forma uma unidade literária?',
+      'Como ele se conecta ao contexto anterior e posterior?',
+      'Existem marcadores estruturais relevantes?',
+    ],
+    relevantAuthors: ['Gordon Fee', 'Andreas Köstenberger', 'Thomas Schreiner', 'Richard Bauckham', 'Joel Green'],
+    cards: [
+      {
+        id: 'defesa_pericope',
+        title: 'Defesa da Perícope e Divisões',
+        placeholder: 'Justifique os limites da perícope. Onde começa? Onde termina? Por que esse trecho forma uma unidade literária? Como se conecta ao contexto anterior e posterior? Quais marcadores estruturais confirmam os limites?',
+        aiTrigger: 'Apresente a defesa exegética dos limites desta perícope: onde ela começa, onde termina, por que forma uma unidade literária, como se conecta ao contexto anterior e posterior, e quais marcadores estruturais (conectivos, mudança de sujeito, cenário, partículas de transição) confirmam os limites.',
+      },
+    ],
+  },
+
+  {
+    slug: 'traducao_propria',
+    title: '2.3 Tradução Própria',
+    shortTitle: 'Tradução Própria',
+    module: 'inventio',
+    group: 'textual',
+    groupLabel: 'Estudo Textual',
+    order: 7,
+    objective: 'Registrar uma tradução produzida pelo próprio intérprete.',
+    keyQuestions: [
+      'Diferenças em relação às traduções existentes.',
+      'Decisões de tradução.',
+      'Ambiguidades do texto.',
+      'Alternativas possíveis.',
+    ],
+    relevantAuthors: ['Bruce Metzger', 'Philip Comfort', 'Emanuel Tov', 'D. A. Carson', 'Murray Harris'],
+    cards: [
+      {
+        id: 'traducao_propria',
+        title: 'Tradução Própria',
+        placeholder: 'Registre sua tradução produzida diretamente do texto original. Indique diferenças em relação às traduções existentes, decisões de tradução, ambiguidades e alternativas possíveis.',
+        aiTrigger: 'Produza uma tradução literal desta perícope a partir do texto original, priorizando precisão exegética sobre fluência. Indique diferenças em relação às principais versões, as principais decisões de tradução e as ambiguidades do texto com alternativas possíveis.',
+      },
+    ],
+  },
+
+  {
+    slug: 'observacoes_gramaticais',
+    title: '2.4 Observações Gramaticais e Sintáticas',
+    shortTitle: 'Gram. e Sintaxe',
+    module: 'inventio',
+    group: 'textual',
+    groupLabel: 'Estudo Textual',
+    order: 8,
+    objective: 'Registrar elementos relevantes da gramática.',
+    keyQuestions: [
+      'Verbos principais.',
+      'Tempos verbais.',
+      'Conectivos.',
+      'Particípios.',
+      'Estruturas condicionais.',
+      'Paralelismos.',
+      'Relações sintáticas importantes.',
+    ],
+    relevantAuthors: ['Daniel Wallace', 'Moisés Silva', 'Bruce Waltke', 'Bill Mounce', 'John Wenham'],
+    cards: [
+      {
+        id: 'obs_gramaticais',
+        title: 'Observações Gramaticais e Sintáticas',
+        placeholder: 'Registre os elementos gramaticais e sintáticos relevantes: verbos principais (tempo, modo, voz), conectivos, particípios, estruturas condicionais, paralelismos e relações sintáticas importantes.',
+        aiTrigger: 'Analise os elementos gramaticais e sintáticos desta perícope: verbos principais (tempo, modo, voz), conectivos e partículas, particípios e infinitivos, estruturas condicionais, paralelismos e relações sintáticas importantes. Fundamente em Wallace (grego) ou Waltke/O\'Connor (hebraico).',
+      },
+    ],
+  },
+
+  {
+    slug: 'esboco_mecanico',
+    title: '2.5 Esboço Mecânico',
+    shortTitle: 'Esboço Mecânico',
+    module: 'inventio',
+    group: 'textual',
+    groupLabel: 'Estudo Textual',
+    order: 8.5,
+    objective: 'Diagramar o texto.',
+    keyQuestions: [
+      'Frases principais.',
+      'Orações subordinadas.',
+      'Relações lógicas.',
+      'Progressão argumentativa.',
+      'Fluxo narrativo.',
+    ],
+    relevantAuthors: ['Daniel Wallace', 'Thomas Schreiner', 'Grant Osborne', 'Andreas Köstenberger'],
+    cards: [
+      {
+        id: 'esboco_mecanico',
+        title: 'Esboço Mecânico',
+        placeholder: 'Diagrame o texto identificando frases principais, orações subordinadas, relações lógicas (causa, concessão, propósito, resultado), progressão argumentativa e fluxo narrativo.',
+        aiTrigger: 'Produza o esboço mecânico desta perícope em formato de diagrama textual, identificando frases principais, orações subordinadas, relações lógicas (causa, concessão, propósito, resultado, condição), progressão argumentativa e fluxo narrativo.',
+      },
+    ],
+  },
+
+  {
+    slug: 'genero_subgenero_textual',
+    title: '2.6 Definição de Gênero e Subgênero Literário',
+    shortTitle: 'Gênero e Subgênero',
+    module: 'inventio',
+    group: 'textual',
+    groupLabel: 'Estudo Textual',
+    order: 9,
+    objective: 'Identificar a natureza literária do texto.',
+    keyQuestions: [
+      'Gêneros: Narrativa, Poesia, Sabedoria, Profecia, Evangelho, Epístola, Apocalíptica.',
+      'Subgêneros: Parábola, Hino, Lamento, Saudação, Exortação, Discurso, Genealogia, Relato de milagre, entre outros.',
+    ],
+    relevantAuthors: ['Gordon Fee', 'Douglas Stuart', 'Grant Osborne', 'Tremper Longman III', 'Sidney Greidanus'],
+    cards: [
+      {
+        id: 'genero_subgenero',
+        title: 'Definição de Gênero e Subgênero Literário',
+        placeholder: 'Identifique o gênero literário (Narrativa, Poesia, Sabedoria, Profecia, Evangelho, Epístola, Apocalíptica) e o subgênero (Parábola, Hino, Lamento, Saudação, Exortação, Discurso, Genealogia, Relato de milagre, etc.). Explique as implicações hermenêuticas.',
+        aiTrigger: 'Identifique o gênero literário desta perícope (Narrativa, Poesia, Sabedoria, Profecia, Evangelho, Epístola, Apocalíptica) e o subgênero (Parábola, Hino, Lamento, Saudação, Exortação, Discurso, Genealogia, Relato de milagre, entre outros). Explique as implicações hermenêuticas do gênero identificado.',
+      },
+    ],
+  },
+
+  {
+    slug: 'comentario_exegetico',
+    title: '2.7 Comentário Exegético',
+    shortTitle: 'Comentário Exegético',
+    module: 'inventio',
+    group: 'textual',
+    groupLabel: 'Estudo Textual',
+    order: 9.5,
+    objective: 'Explicar o texto.',
+    keyQuestions: [
+      'Versículo por versículo ou por blocos argumentativos.',
+      'Gramática.',
+      'Vocabulário.',
+      'Estrutura.',
+      'Ênfases.',
+      'Recursos literários.',
+      'Relações internas.',
+    ],
+    relevantAuthors: ['D. A. Carson', 'Douglas Moo', 'Thomas Schreiner', 'Grant Osborne', 'Craig Keener'],
+    cards: [
+      {
+        id: 'comentario_exegetico',
+        title: 'Comentário Exegético',
+        placeholder: 'Explique o texto versículo por versículo ou por blocos argumentativos. Destaque gramática, vocabulário, estrutura, ênfases, recursos literários e relações internas.',
+        aiTrigger: 'Desenvolva um comentário exegético desta perícope, analisando versículo por versículo ou por blocos argumentativos. Destaque gramática, vocabulário, estrutura, ênfases, recursos literários e relações internas. Cite comentaristas reformados como Carson, Moo, Schreiner ou Keener.',
+      },
+    ],
+  },
+
+  {
+    slug: 'mensagem_epoca_escrita',
+    title: '2.8 Mensagem para a Época da Escrita',
+    shortTitle: 'Mensagem Original',
+    module: 'inventio',
+    group: 'textual',
+    groupLabel: 'Estudo Textual',
+    order: 10,
+    objective: '"O que Deus estava comunicando aos primeiros destinatários?"',
+    keyQuestions: [
+      'Qual era a mensagem original?',
+      'Qual problema estava sendo tratado?',
+      'Qual verdade estava sendo ensinada?',
+      'Como os primeiros ouvintes entenderiam o texto?',
+    ],
+    relevantAuthors: ['D. A. Carson', 'Craig Keener', 'Grant Osborne', 'Thomas Schreiner', 'N. T. Wright'],
+    cards: [
+      {
+        id: 'mensagem_epoca',
+        title: 'Mensagem para a Época da Escrita',
+        placeholder: 'O que Deus estava comunicando aos primeiros destinatários? Qual era a mensagem original, o problema sendo tratado, a verdade sendo ensinada, e como os primeiros ouvintes entenderiam este texto?',
+        aiTrigger: 'Responda: O que Deus estava comunicando aos primeiros destinatários por meio desta passagem? Qual era a mensagem original, o problema sendo tratado, a verdade sendo ensinada, e como os primeiros ouvintes entenderiam este texto no seu contexto histórico e literário?',
+      },
+    ],
+  },
+
+  // ── TEXTUAL LEGADO (dados preservados, fora do fluxo principal) ────────────
+
+  {
     slug: 'delimitacao_pericope',
     title: '2.1 Delimitação da Perícope',
     shortTitle: 'Delimitação',
     module: 'inventio',
-    group: 'textual',
+    group: 'textual_legado',
     groupLabel: 'Estudo Textual',
     order: 6,
     objective:
@@ -323,7 +513,7 @@ export const WORKSPACE_SECTIONS: SectionDef[] = [
     title: '2.2 Tradução e Crítica Textual',
     shortTitle: 'Tradução',
     module: 'inventio',
-    group: 'textual',
+    group: 'textual_legado',
     groupLabel: 'Estudo Textual',
     order: 7,
     objective:
@@ -363,7 +553,7 @@ export const WORKSPACE_SECTIONS: SectionDef[] = [
     title: '2.3 Análise Morfossintática',
     shortTitle: 'Morfossintaxe',
     module: 'inventio',
-    group: 'textual',
+    group: 'textual_legado',
     groupLabel: 'Estudo Textual',
     order: 8,
     objective:
@@ -409,7 +599,7 @@ export const WORKSPACE_SECTIONS: SectionDef[] = [
     title: '2.4 Termos-Chave',
     shortTitle: 'Termos-Chave',
     module: 'inventio',
-    group: 'textual',
+    group: 'textual_legado',
     groupLabel: 'Estudo Textual',
     order: 9,
     objective:
@@ -430,7 +620,7 @@ export const WORKSPACE_SECTIONS: SectionDef[] = [
     title: '2.5 Estrutura Literária',
     shortTitle: 'Estrutura Literária',
     module: 'inventio',
-    group: 'textual',
+    group: 'textual_legado',
     groupLabel: 'Estudo Textual',
     order: 10,
     objective:
