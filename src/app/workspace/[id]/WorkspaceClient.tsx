@@ -722,12 +722,8 @@ export default function WorkspaceClient({ user, project, initialSections }: Prop
   return (
     <div style={{ height: '100vh', display: 'flex', flexDirection: 'column', background: 'var(--background)', paddingBottom: focusMode ? 0 : '60px', boxSizing: 'border-box' }}>
 
-      {/* ── Topbar ────────────────────────────────────────────────────────── */}
+      {/* ── Menu bar ──────────────────────────────────────────────────────── */}
       <WorkspaceMenuBar
-        project={project}
-        titleValue={titleValue}
-        pct={pct}
-        modeConfig={modeConfig}
         bibleOpen={bibleOpen}
         focusMode={focusMode}
         sideBySide={sideBySide}
@@ -739,9 +735,68 @@ export default function WorkspaceClient({ user, project, initialSections }: Prop
         onEnviarSermao={() => { setEnviarTargetMode('sermao'); setEnviarParaSermaOpen(true) }}
         onEnviarDevocional={() => { setEnviarTargetMode('devocional'); setEnviarParaSermaOpen(true) }}
         onEnviarKB={() => window.dispatchEvent(new CustomEvent('lampas:kb-open-create'))}
-        onNavigateHome={() => router.push('/')}
-        onNavigateDashboard={() => router.push('/dashboard')}
       />
+
+      {/* ── Barra contextual do projeto ───────────────────────────────────── */}
+      <div style={{
+        height: '36px', flexShrink: 0,
+        borderBottom: '1px solid var(--border-subtle)',
+        background: 'var(--surface-2)',
+        display: 'flex', alignItems: 'center',
+        padding: '0 1rem', gap: '0.65rem',
+        fontSize: '0.75rem',
+      }}>
+        {/* Nome + referência */}
+        <span style={{ fontWeight: 700, color: 'var(--text-primary)', whiteSpace: 'nowrap' }}>
+          {titleValue}
+        </span>
+        <span style={{
+          fontSize: '0.62rem', color: 'var(--text-muted)',
+          background: 'var(--surface)', border: '1px solid var(--border-subtle)',
+          borderRadius: '3px', padding: '0.02rem 0.28rem',
+        }}>
+          {project.original_language}
+        </span>
+
+        <span style={{ color: 'var(--border)', fontSize: '0.8rem', userSelect: 'none' }}>·</span>
+
+        {/* Tipo do projeto / modo */}
+        <span style={{
+          fontSize: '0.62rem', fontWeight: 700, letterSpacing: '0.04em',
+          color: modeConfig.color,
+          background: `${modeConfig.color}14`,
+          border: `1px solid ${modeConfig.color}30`,
+          borderRadius: '4px', padding: '0.02rem 0.32rem',
+          whiteSpace: 'nowrap',
+        }}>
+          {modeConfig.name}
+        </span>
+
+        <span style={{ color: 'var(--border)', fontSize: '0.8rem', userSelect: 'none' }}>·</span>
+
+        {/* Tradução */}
+        <span style={{ color: 'var(--text-muted)', whiteSpace: 'nowrap' }}>
+          {project.bible_version}
+        </span>
+
+        <span style={{ color: 'var(--border)', fontSize: '0.8rem', userSelect: 'none' }}>·</span>
+
+        {/* Progresso */}
+        <span style={{ color: 'var(--text-muted)', whiteSpace: 'nowrap' }}>{pct}% concluído</span>
+        <div style={{ width: '52px', height: '2px', background: 'var(--border)', borderRadius: '1px', overflow: 'hidden' }}>
+          <div style={{ width: `${pct}%`, height: '100%', background: modeConfig.color, transition: 'width 0.5s ease' }} />
+        </div>
+
+        {/* Fase ativa */}
+        {activePhase && (
+          <>
+            <span style={{ color: 'var(--border)', fontSize: '0.8rem', userSelect: 'none' }}>·</span>
+            <span style={{ color: activePhase.color, fontWeight: 600, fontSize: '0.72rem', whiteSpace: 'nowrap' }}>
+              {activePhase.label}
+            </span>
+          </>
+        )}
+      </div>
 
       {/* ── Guided strip (demo projects only) ─────────────────────────── */}
       {project.is_demo && <GuidedStrip activeSlug={activeSlug} onNavigate={navigate} modeColor={modeConfig.color} />}
