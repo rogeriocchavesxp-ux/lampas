@@ -1911,7 +1911,7 @@ export default function WorkspaceClient({ user, project, initialSections }: Prop
       {!focusMode && openPhasePopover && popoverAnchor && (() => {
         const ph = navPhases.find(p => p.id === openPhasePopover)
         if (!ph) return null
-        const POPUP_W    = 272
+        const POPUP_W    = Math.max(popoverAnchor.width, 340)
         const viewportW  = document.documentElement.clientWidth
         const btnCX      = popoverAnchor.left + popoverAnchor.width / 2
         const rawLeft    = btnCX - POPUP_W / 2
@@ -1939,37 +1939,37 @@ export default function WorkspaceClient({ user, project, initialSections }: Prop
               {/* Conteúdo */}
               <div style={{
                 background: 'var(--surface)',
-                border: `1px solid ${ph.color}35`,
-                borderRadius: '12px',
-                boxShadow: `0 -6px 28px rgba(0,0,0,0.13), 0 -1px 4px rgba(0,0,0,0.05)`,
+                border: `1.5px solid ${ph.color}30`,
+                borderRadius: '14px',
+                boxShadow: `0 -8px 36px rgba(0,0,0,0.14), 0 -2px 6px rgba(0,0,0,0.06)`,
                 overflow: 'hidden',
-                maxHeight: '480px',
+                maxHeight: '560px',
                 display: 'flex', flexDirection: 'column',
               }}>
                 {/* Header */}
-                <div style={{ padding: '0.6rem 0.85rem 0.5rem', borderBottom: `1px solid ${ph.color}18`, background: `${ph.color}09`, display: 'flex', alignItems: 'center', gap: '0.5rem', flexShrink: 0 }}>
+                <div style={{ padding: '0.8rem 1rem 0.65rem', borderBottom: `1px solid ${ph.color}18`, background: `${ph.color}09`, display: 'flex', alignItems: 'center', gap: '0.6rem', flexShrink: 0 }}>
                   {drillLevel && (
                     <button
                       onClick={() => setNavDrillStack(prev => prev.slice(0, -1))}
-                      style={{ background: 'none', border: 'none', cursor: 'pointer', color: ph.color, fontSize: '1rem', lineHeight: 1, padding: '0', flexShrink: 0, opacity: 0.7 }}
+                      style={{ background: 'none', border: 'none', cursor: 'pointer', color: ph.color, fontSize: '1.1rem', lineHeight: 1, padding: '0', flexShrink: 0, opacity: 0.7 }}
                     >‹</button>
                   )}
-                  <span style={{ flex: 1, fontSize: '0.67rem', fontWeight: 800, letterSpacing: drillLevel ? '0' : '0.07em', textTransform: drillLevel ? 'none' : 'uppercase', color: ph.color }}>
+                  <span style={{ flex: 1, fontSize: drillLevel ? '0.82rem' : '0.7rem', fontWeight: 800, letterSpacing: drillLevel ? '-0.01em' : '0.07em', textTransform: drillLevel ? 'none' : 'uppercase', color: ph.color }}>
                     {drillLevel ? drillLevel.title : ph.label}
                   </span>
                   {!drillLevel && phaseProg && phaseProg.total > 0 && (
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
-                      <div style={{ width: '30px', height: '2px', background: 'var(--border-subtle)', borderRadius: '2px', overflow: 'hidden' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                      <div style={{ width: '44px', height: '3px', background: 'var(--border-subtle)', borderRadius: '2px', overflow: 'hidden' }}>
                         <div style={{ width: `${phaseProg.pct}%`, height: '100%', background: ph.color, borderRadius: '2px', transition: 'width 0.4s' }} />
                       </div>
-                      <span style={{ fontSize: '0.58rem', fontWeight: 700, color: 'var(--text-muted)' }}>{phaseProg.pct}%</span>
+                      <span style={{ fontSize: '0.62rem', fontWeight: 700, color: 'var(--text-muted)' }}>{phaseProg.pct}%</span>
                     </div>
                   )}
-                  <button onClick={closePopover} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)', fontSize: '1.05rem', lineHeight: 1, padding: '0 2px', flexShrink: 0 }}>×</button>
+                  <button onClick={closePopover} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)', fontSize: '1.1rem', lineHeight: 1, padding: '0 3px', flexShrink: 0 }}>×</button>
                 </div>
 
                 {/* Content — groups list OR drill-down level */}
-                <div style={{ overflowY: 'auto', padding: '0.4rem 0.45rem', flex: 1 }}>
+                <div style={{ overflowY: 'auto', padding: '0.5rem 0.55rem', flex: 1 }}>
                   {!drillLevel ? (
                     // ── Nível 0: lista de grupos ────────────────────────────────
                     ph.modes.flatMap(mode => mode.groups).map(group => {
@@ -1992,25 +1992,25 @@ export default function WorkspaceClient({ user, project, initialSections }: Prop
                             }
                           }}
                           style={{
-                            width: '100%', border: isActive ? `1px solid ${ph.color}22` : '1px solid transparent',
-                            background: isActive ? `${ph.color}09` : 'transparent',
-                            borderRadius: '8px', cursor: 'pointer', fontFamily: 'inherit',
-                            textAlign: 'left', padding: '0.45rem 0.55rem',
-                            display: 'flex', alignItems: 'center', gap: '0.45rem',
+                            width: '100%', border: isActive ? `1px solid ${ph.color}28` : '1px solid transparent',
+                            background: isActive ? `${ph.color}0C` : 'transparent',
+                            borderRadius: '9px', cursor: 'pointer', fontFamily: 'inherit',
+                            textAlign: 'left', padding: '0.6rem 0.75rem',
+                            display: 'flex', alignItems: 'center', gap: '0.55rem',
                           }}
-                          onMouseEnter={e => { if (!isActive) e.currentTarget.style.background = 'rgba(0,0,0,0.035)' }}
+                          onMouseEnter={e => { if (!isActive) e.currentTarget.style.background = 'rgba(0,0,0,0.04)' }}
                           onMouseLeave={e => { if (!isActive) e.currentTarget.style.background = 'transparent' }}
                         >
-                          {GroupIcon && <GroupIcon size={14} strokeWidth={1.75} style={{ flexShrink: 0, color: isActive ? ph.color : 'var(--text-muted)', opacity: isActive ? 1 : 0.7 }} />}
-                          <span style={{ flex: 1, fontSize: '0.76rem', fontWeight: isActive ? 660 : 470, color: isActive ? ph.color : 'var(--text-primary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                          {GroupIcon && <GroupIcon size={15} strokeWidth={1.75} style={{ flexShrink: 0, color: isActive ? ph.color : 'var(--text-muted)', opacity: isActive ? 1 : 0.75 }} />}
+                          <span style={{ flex: 1, fontSize: '0.84rem', fontWeight: isActive ? 660 : 470, color: isActive ? ph.color : 'var(--text-primary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                             {group.label}
                           </span>
                           {total > 0 && (
-                            <span style={{ fontSize: '0.62rem', fontWeight: 700, flexShrink: 0, letterSpacing: '-0.01em', color: done === total ? 'var(--success)' : done > 0 ? ph.color : 'var(--border)' }}>
+                            <span style={{ fontSize: '0.67rem', fontWeight: 700, flexShrink: 0, letterSpacing: '-0.01em', color: done === total ? 'var(--success)' : done > 0 ? ph.color : 'var(--border)' }}>
                               {done === total ? '✓' : `${done}/${total}`}
                             </span>
                           )}
-                          {!isUtility && <span style={{ fontSize: '0.65rem', color: ph.color, opacity: 0.5, flexShrink: 0 }}>›</span>}
+                          {!isUtility && <span style={{ fontSize: '0.7rem', color: ph.color, opacity: 0.45, flexShrink: 0 }}>›</span>}
                         </button>
                       )
                     })
@@ -2028,24 +2028,24 @@ export default function WorkspaceClient({ user, project, initialSections }: Prop
                           key={sec.slug}
                           onClick={() => setNavDrillStack(prev => [...prev, { id: sec.slug, title: sec.shortTitle, sectionSlug: sec.slug }])}
                           style={{
-                            width: '100%', border: isActive ? `1px solid ${ph.color}22` : '1px solid transparent',
-                            background: isActive ? `${ph.color}09` : 'transparent',
-                            borderRadius: '8px', cursor: 'pointer', fontFamily: 'inherit',
-                            textAlign: 'left', padding: '0.45rem 0.55rem',
-                            display: 'flex', alignItems: 'center', gap: '0.45rem',
+                            width: '100%', border: isActive ? `1px solid ${ph.color}28` : '1px solid transparent',
+                            background: isActive ? `${ph.color}0C` : 'transparent',
+                            borderRadius: '9px', cursor: 'pointer', fontFamily: 'inherit',
+                            textAlign: 'left', padding: '0.6rem 0.75rem',
+                            display: 'flex', alignItems: 'center', gap: '0.55rem',
                           }}
-                          onMouseEnter={e => { if (!isActive) e.currentTarget.style.background = 'rgba(0,0,0,0.035)' }}
+                          onMouseEnter={e => { if (!isActive) e.currentTarget.style.background = 'rgba(0,0,0,0.04)' }}
                           onMouseLeave={e => { if (!isActive) e.currentTarget.style.background = 'transparent' }}
                         >
-                          <span style={{ flex: 1, fontSize: '0.76rem', fontWeight: isActive ? 660 : 470, color: isActive ? ph.color : 'var(--text-primary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                          <span style={{ flex: 1, fontSize: '0.84rem', fontWeight: isActive ? 660 : 470, color: isActive ? ph.color : 'var(--text-primary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                             {sec.shortTitle}
                           </span>
                           {total > 0 && (
-                            <span style={{ fontSize: '0.62rem', fontWeight: 700, flexShrink: 0, color: done === total ? 'var(--success)' : done > 0 ? ph.color : 'var(--border)' }}>
+                            <span style={{ fontSize: '0.67rem', fontWeight: 700, flexShrink: 0, color: done === total ? 'var(--success)' : done > 0 ? ph.color : 'var(--border)' }}>
                               {done === total ? '✓' : `${done}/${total}`}
                             </span>
                           )}
-                          <span style={{ fontSize: '0.65rem', color: ph.color, opacity: 0.5, flexShrink: 0 }}>›</span>
+                          <span style={{ fontSize: '0.7rem', color: ph.color, opacity: 0.45, flexShrink: 0 }}>›</span>
                         </button>
                       )
                     })
@@ -2055,7 +2055,7 @@ export default function WorkspaceClient({ user, project, initialSections }: Prop
                     const secData   = sections.find(s => s.slug === drillLevel.sectionSlug)
                     const savedCards = (secData?.content as { cards?: Record<string, string> } | null)?.cards ?? {}
                     if (!sNav?.cards?.length) return (
-                      <div style={{ padding: '0.6rem', fontSize: '0.72rem', color: 'var(--text-muted)' }}>Nenhum campo disponível.</div>
+                      <div style={{ padding: '1rem', fontSize: '0.8rem', color: 'var(--text-muted)' }}>Nenhum campo disponível.</div>
                     )
                     return sNav.cards.map(card => {
                       const isEditing = drillLevel.editingCardId === card.id
@@ -2064,7 +2064,7 @@ export default function WorkspaceClient({ user, project, initialSections }: Prop
                       const saving    = navDrillSaving === draftKey
                       const status    = navCardStatus(savedCards[card.id] ?? '')
                       return (
-                        <div key={card.id}>
+                        <div key={card.id} style={{ marginBottom: isEditing ? '0.5rem' : '0' }}>
                           <button
                             onClick={() => {
                               setNavDrillStack(prev => {
@@ -2077,42 +2077,42 @@ export default function WorkspaceClient({ user, project, initialSections }: Prop
                               })
                             }}
                             style={{
-                              width: '100%', background: isEditing ? `${ph.color}0D` : 'transparent',
-                              border: isEditing ? `1px solid ${ph.color}22` : '1px solid transparent',
-                              borderRadius: '8px', cursor: 'pointer', fontFamily: 'inherit',
-                              textAlign: 'left', padding: '0.4rem 0.55rem',
-                              display: 'flex', alignItems: 'center', gap: '0.45rem',
+                              width: '100%', background: isEditing ? `${ph.color}0C` : 'transparent',
+                              border: isEditing ? `1px solid ${ph.color}28` : '1px solid transparent',
+                              borderRadius: '9px', cursor: 'pointer', fontFamily: 'inherit',
+                              textAlign: 'left', padding: '0.6rem 0.75rem',
+                              display: 'flex', alignItems: 'center', gap: '0.55rem',
                             }}
-                            onMouseEnter={e => { if (!isEditing) e.currentTarget.style.background = 'rgba(0,0,0,0.035)' }}
-                            onMouseLeave={e => { if (!isEditing) e.currentTarget.style.background = isEditing ? `${ph.color}0D` : 'transparent' }}
+                            onMouseEnter={e => { if (!isEditing) e.currentTarget.style.background = 'rgba(0,0,0,0.04)' }}
+                            onMouseLeave={e => { if (!isEditing) e.currentTarget.style.background = isEditing ? `${ph.color}0C` : 'transparent' }}
                           >
                             <span style={{
-                              fontSize: '0.58rem', flexShrink: 0, lineHeight: 1,
+                              fontSize: '0.62rem', flexShrink: 0, lineHeight: 1,
                               color: status === 'reviewed' ? '#059669' : status === 'draft' ? '#D97706' : '#CBD5E1',
                             }}>
                               {status === 'reviewed' ? '●' : status === 'draft' ? '◑' : '○'}
                             </span>
-                            <span style={{ flex: 1, fontSize: '0.76rem', fontWeight: 470, color: 'var(--text-primary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                            <span style={{ flex: 1, fontSize: '0.84rem', fontWeight: 470, color: 'var(--text-primary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                               {card.title}
                             </span>
                           </button>
                           {isEditing && (
-                            <div style={{ padding: '0.3rem 0.4rem 0.4rem' }}>
+                            <div style={{ padding: '0.35rem 0.5rem 0.55rem' }}>
                               <textarea
                                 value={draft}
                                 onChange={e => setNavDrillDrafts(d => ({ ...d, [draftKey]: e.target.value }))}
-                                rows={4}
+                                rows={5}
                                 autoFocus
                                 placeholder="Escreva aqui..."
                                 style={{
-                                  width: '100%', fontSize: '0.72rem', lineHeight: 1.5,
-                                  border: `1px solid ${ph.color}35`, borderRadius: '6px',
-                                  padding: '6px 8px', fontFamily: 'inherit', resize: 'vertical',
-                                  outline: 'none', boxSizing: 'border-box', color: 'var(--text-primary)',
-                                  background: 'var(--surface)',
+                                  width: '100%', fontSize: '0.82rem', lineHeight: 1.6,
+                                  border: `1.5px solid ${ph.color}35`, borderRadius: '8px',
+                                  padding: '10px 12px', fontFamily: 'inherit', resize: 'vertical',
+                                  outline: 'none', boxSizing: 'border-box',
+                                  color: 'var(--text-primary)', background: 'var(--surface)',
                                 }}
                               />
-                              <div style={{ display: 'flex', gap: '0.3rem', marginTop: '4px' }}>
+                              <div style={{ display: 'flex', gap: '0.4rem', marginTop: '6px' }}>
                                 <button
                                   disabled={saving}
                                   onClick={async () => {
@@ -2122,7 +2122,7 @@ export default function WorkspaceClient({ user, project, initialSections }: Prop
                                       return [...prev.slice(0, -1), { ...last, editingCardId: undefined }]
                                     })
                                   }}
-                                  style={{ flex: 1, background: ph.color, color: '#fff', border: 'none', borderRadius: '6px', padding: '5px 8px', fontSize: '0.67rem', fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit', opacity: saving ? 0.65 : 1 }}
+                                  style={{ flex: 1, background: ph.color, color: '#fff', border: 'none', borderRadius: '7px', padding: '7px 12px', fontSize: '0.76rem', fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit', opacity: saving ? 0.65 : 1 }}
                                 >
                                   {saving ? 'Salvando...' : 'Salvar'}
                                 </button>
@@ -2131,7 +2131,7 @@ export default function WorkspaceClient({ user, project, initialSections }: Prop
                                     const last = prev[prev.length - 1]
                                     return [...prev.slice(0, -1), { ...last, editingCardId: undefined }]
                                   })}
-                                  style={{ background: 'transparent', color: 'var(--text-muted)', border: '1px solid var(--border)', borderRadius: '6px', padding: '5px 8px', fontSize: '0.67rem', cursor: 'pointer', fontFamily: 'inherit' }}
+                                  style={{ background: 'transparent', color: 'var(--text-muted)', border: '1px solid var(--border)', borderRadius: '7px', padding: '7px 12px', fontSize: '0.76rem', cursor: 'pointer', fontFamily: 'inherit' }}
                                 >
                                   Cancelar
                                 </button>
