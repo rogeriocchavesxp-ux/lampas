@@ -2214,11 +2214,18 @@ export default function WorkspaceClient({ user, project, initialSections }: Prop
               const btn = (
                 <button
                   key={phase.id}
-                  onClick={() => {
+                  onClick={e => {
+                    const rect = e.currentTarget.getBoundingClientRect()
                     const vgSlug = phase.id === 'comunicar' ? 'pregar_visao_geral' : `${phase.id}_visao_geral`
                     navigate(vgSlug)
-                    setOpenPhasePopover(null)
-                    setPopoverAnchor(null)
+                    if (openPhasePopover === phase.id) {
+                      setOpenPhasePopover(null)
+                      setPopoverAnchor(null)
+                    } else {
+                      setOpenPhasePopover(phase.id)
+                      setPopoverAnchor({ left: rect.left, width: rect.width })
+                      setNavDrillStack([])
+                    }
                   }}
                   style={{
                     position: 'relative', overflow: 'hidden',
@@ -2281,10 +2288,17 @@ export default function WorkspaceClient({ user, project, initialSections }: Prop
             return (
               <button
                 key={phase.id}
-                onClick={() => {
+                onClick={e => {
+                  const rect = e.currentTarget.getBoundingClientRect()
                   navigate('ferramentas_visao_geral')
-                  setOpenPhasePopover(null)
-                  setPopoverAnchor(null)
+                  if (openPhasePopover === phase.id) {
+                    setOpenPhasePopover(null)
+                    setPopoverAnchor(null)
+                  } else {
+                    setOpenPhasePopover(phase.id)
+                    setPopoverAnchor({ left: rect.left, width: rect.width })
+                    setNavDrillStack([])
+                  }
                 }}
                 style={{
                   height: '44px', flexShrink: 0,
