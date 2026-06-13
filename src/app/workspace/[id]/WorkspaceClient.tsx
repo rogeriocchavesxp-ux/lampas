@@ -401,6 +401,7 @@ export default function WorkspaceClient({ user, project, initialSections }: Prop
   const [enviarDropdownOpen, setEnviarDropdownOpen] = useState(false)
   const enviarDropdownRef = useRef<HTMLDivElement>(null)
   const [openPhasePopover, setOpenPhasePopover] = useState<string | null>(null)
+  const [popoverAnchor,    setPopoverAnchor]    = useState<{ left: number; width: number } | null>(null)
 
   const sidebarWidthRef = useRef(264)
   const referenceWidthRef = useRef(280)
@@ -659,6 +660,7 @@ export default function WorkspaceClient({ user, project, initialSections }: Prop
     setExpandedSectionCards(prev => new Set([...prev, slug]))
     setActiveSlug(slug)
     setOpenPhasePopover(null)
+    setPopoverAnchor(null)
   }
 
   useEffect(() => {
@@ -1873,183 +1875,97 @@ export default function WorkspaceClient({ user, project, initialSections }: Prop
         />
       )}
 
-      {/* ── Navigation Tree Panel ──────────────────────────────────── */}
-      {!focusMode && (() => {
-        if (!openPhasePopover) return null
-        const openPhaseObj = navPhases.find(p => p.id === openPhasePopover)
-        const openPhaseProg = phaseProgress.find(p => p.id === openPhasePopover)
+      {/* ── Phase Contextual Popover (acima do botão clicado) ──── */}
+      {!focusMode && openPhasePopover && popoverAnchor && (() => {
+        const ph = navPhases.find(p => p.id === openPhasePopover)
+        if (!ph) return null
+        const POPUP_W    = 272
+        const viewportW  = document.documentElement.clientWidth
+        const btnCX      = popoverAnchor.left + popoverAnchor.width / 2
+        const rawLeft    = btnCX - POPUP_W / 2
+        const popLeft    = Math.max(8, Math.min(viewportW - POPUP_W - 8, rawLeft))
+        const arrowX     = Math.max(18, Math.min(POPUP_W - 18, Math.round(btnCX - popLeft)))
+        const phaseProg  = phaseProgress.find(p => p.id === openPhasePopover)
+        const closePopover = () => { setOpenPhasePopover(null); setPopoverAnchor(null) }
         return (
           <>
-            <div onClick={() => setOpenPhasePopover(null)} style={{ position: 'fixed', inset: '0 0 60px 0', zIndex: 98 }} />
-            <div style={{
-              position: 'fixed', top: 0, left: 0, bottom: '60px', width: '296px',
-              background: 'var(--surface)', borderRight: '1px solid var(--border)',
-              boxShadow: '4px 0 32px rgba(0,0,0,0.12)', zIndex: 99,
-              display: 'flex', flexDirection: 'column', overflow: 'hidden',
-            }}>
-              {/* Panel header */}
-              <div style={{ padding: '0.9rem 1rem 0.8rem', borderBottom: `1px solid ${openPhaseObj?.color ?? 'var(--border)'}25`, display: 'flex', alignItems: 'center', gap: '0.6rem', flexShrink: 0 }}>
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ fontSize: '0.62rem', fontWeight: 700, letterSpacing: '0.08em', color: openPhaseObj?.color ?? 'var(--text-muted)', textTransform: 'uppercase', marginBottom: '0.1rem' }}>
-                    {openPhaseObj?.label ?? 'Navegação'}
-                  </div>
-                  <div style={{ fontSize: '0.8rem', fontWeight: 700, color: 'var(--text-primary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{project.passage_ref}</div>
-                </div>
-                {openPhaseProg && openPhaseProg.total > 0 && (
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.32rem', flexShrink: 0 }}>
-                    <div style={{ width: '36px', height: '3px', background: 'var(--border-subtle)', borderRadius: '2px', overflow: 'hidden' }}>
-                      <div style={{ width: `${openPhaseProg.pct}%`, height: '100%', background: openPhaseObj?.color ?? 'var(--text-muted)', borderRadius: '2px', transition: 'width 0.4s' }} />
+            {/* Backdrop */}
+            <div onClick={closePopover} style={{ position: 'fixed', inset: 0, zIndex: 108 }} />
+
+            {/* Popover wrapper (overflow visible para a seta escapar) */}
+            <div style={{ position: 'fixed', bottom: '68px', left: `${popLeft}px`, width: `${POPUP_W}px`, zIndex: 110 }}>
+
+              {/* Conteúdo */}
+              <div style={{
+                background: 'var(--surface)',
+                border: `1px solid ${ph.color}35`,
+                borderRadius: '12px',
+                boxShadow: `0 -6px 28px rgba(0,0,0,0.13), 0 -1px 4px rgba(0,0,0,0.05)`,
+                overflow: 'hidden',
+                maxHeight: '420px',
+                display: 'flex', flexDirection: 'column',
+              }}>
+                {/* Header */}
+                <div style={{ padding: '0.6rem 0.85rem 0.5rem', borderBottom: `1px solid ${ph.color}18`, background: `${ph.color}09`, display: 'flex', alignItems: 'center', gap: '0.5rem', flexShrink: 0 }}>
+                  <span style={{ flex: 1, fontSize: '0.67rem', fontWeight: 800, letterSpacing: '0.07em', textTransform: 'uppercase', color: ph.color }}>{ph.label}</span>
+                  {phaseProg && phaseProg.total > 0 && (
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
+                      <div style={{ width: '30px', height: '2px', background: 'var(--border-subtle)', borderRadius: '2px', overflow: 'hidden' }}>
+                        <div style={{ width: `${phaseProg.pct}%`, height: '100%', background: ph.color, borderRadius: '2px', transition: 'width 0.4s' }} />
+                      </div>
+                      <span style={{ fontSize: '0.58rem', fontWeight: 700, color: 'var(--text-muted)' }}>{phaseProg.pct}%</span>
                     </div>
-                    <span style={{ fontSize: '0.62rem', fontWeight: 700, color: 'var(--text-muted)' }}>{openPhaseProg.pct}%</span>
-                  </div>
-                )}
-                <button onClick={() => setOpenPhasePopover(null)} style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: 'var(--text-muted)', padding: '0.15rem', borderRadius: '4px', display: 'flex', alignItems: 'center', flexShrink: 0 }}>
-                  <X size={13} />
-                </button>
+                  )}
+                  <button onClick={closePopover} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)', fontSize: '1.05rem', lineHeight: 1, padding: '0 2px', flexShrink: 0 }}>×</button>
+                </div>
+
+                {/* Groups */}
+                <div style={{ overflowY: 'auto', padding: '0.4rem 0.45rem' }}>
+                  {ph.modes.flatMap(mode => mode.groups).map(group => {
+                    const isUtility = isToolSlug(group.id) || group.id === 'colagens' || group.id === 'comentario_expositivo'
+                    const secs      = isUtility ? [] : getSectionsByGroupNav(group.id)
+                    const tool      = getToolAreaBySlug(group.id)
+                    const navSlug   = isUtility ? (tool?.slug ?? group.id) : (secs[0]?.slug ?? group.id)
+                    const isActive  = activeSlug === navSlug || (!isUtility && secs.some(s => s.slug === activeSlug))
+                    const { done, total } = groupProgress(group.id)
+                    const GroupIcon = GROUP_ICONS[group.id]
+                    return (
+                      <button
+                        key={group.id}
+                        onClick={() => { navigate(navSlug); closePopover() }}
+                        style={{
+                          width: '100%', border: isActive ? `1px solid ${ph.color}22` : '1px solid transparent',
+                          background: isActive ? `${ph.color}09` : 'transparent',
+                          borderRadius: '8px', cursor: 'pointer', fontFamily: 'inherit',
+                          textAlign: 'left', padding: '0.45rem 0.55rem',
+                          display: 'flex', alignItems: 'center', gap: '0.45rem',
+                        }}
+                        onMouseEnter={e => { if (!isActive) e.currentTarget.style.background = 'rgba(0,0,0,0.035)' }}
+                        onMouseLeave={e => { if (!isActive) e.currentTarget.style.background = 'transparent' }}
+                      >
+                        {GroupIcon && <GroupIcon size={14} strokeWidth={1.75} style={{ flexShrink: 0, color: isActive ? ph.color : 'var(--text-muted)', opacity: isActive ? 1 : 0.7 }} />}
+                        <span style={{ flex: 1, fontSize: '0.76rem', fontWeight: isActive ? 660 : 470, color: isActive ? ph.color : 'var(--text-primary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                          {group.label}
+                        </span>
+                        {total > 0 && (
+                          <span style={{ fontSize: '0.62rem', fontWeight: 700, flexShrink: 0, letterSpacing: '-0.01em', color: done === total ? 'var(--success)' : done > 0 ? ph.color : 'var(--border)' }}>
+                            {done === total ? '✓' : `${done}/${total}`}
+                          </span>
+                        )}
+                      </button>
+                    )
+                  })}
+                </div>
               </div>
 
-              {/* Contextual tree — somente a fase selecionada, sempre expandida */}
-              <div style={{ overflowY: 'auto', padding: '0.35rem 0.35rem', flex: 1 }}>
-                {navPhases.filter(ph => ph.id === openPhasePopover).map(ph => {
-                  const prog = phaseProgress.find(p => p.id === ph.id)
-                  const phOpen = true  // sempre expandido: é a única fase visível
-                  return (
-                    <div key={ph.id}>
-                      {phOpen && (
-                        <div style={{ paddingBottom: '0.1rem' }}>
-                          {ph.modes.map((mode, modeIdx) => {
-                            const singleMode = ph.modes.length === 1
-                            const modeOpen = true  // sempre expandido no painel contextual
-                            return (
-                              <div key={mode.id}>
-                                {!singleMode && (() => {
-                                  const ModeIconEl = MODE_ICONS_LUCIDE[mode.id]
-                                  return (
-                                    <button
-                                      onClick={() => toggleCanon(mode.id)}
-                                      style={{ width: 'calc(100% - 0.6rem)', marginLeft: '0.6rem', border: modeOpen ? `1px solid ${mode.color}25` : '1px solid transparent', cursor: 'pointer', background: modeOpen ? mode.bgActive : 'transparent', borderRadius: '7px', textAlign: 'left', fontFamily: 'inherit', padding: '0.28rem 0.52rem', marginTop: modeIdx > 0 ? '0.1rem' : '0', display: 'flex', alignItems: 'center', gap: '0.38rem' }}
-                                    >
-                                      {ModeIconEl && <ModeIconEl size={12} strokeWidth={1.8} style={{ flexShrink: 0, color: mode.color }} />}
-                                      <div style={{ flex: 1, minWidth: 0 }}>
-                                        <div style={{ fontSize: '0.7rem', fontWeight: 650, color: modeOpen ? mode.color : 'var(--text-secondary)', lineHeight: 1.15 }}>{mode.label}</div>
-                                      </div>
-                                      {modeOpen ? <ChevronDown size={10} style={{ flexShrink: 0, color: 'var(--text-muted)' }} /> : <ChevronRight size={10} style={{ flexShrink: 0, color: 'var(--text-muted)' }} />}
-                                    </button>
-                                  )
-                                })()}
-                                {modeOpen && (
-                                  <div style={{ paddingBottom: '0.04rem', paddingLeft: singleMode ? '0.55rem' : '1.1rem' }}>
-                                    {mode.groups.map(group => {
-                                      const groupOpen = expandedGroups.has(group.id)
-                                      const isUtilityGroup = isToolSlug(group.id) || group.id === 'colagens' || group.id === 'comentario_expositivo'
-                                      const secs = isUtilityGroup ? [] : getSectionsByGroupNav(group.id)
-                                      if (secs.length === 0 && !isUtilityGroup) return null
-                                      const isSingleSection = !isUtilityGroup && secs.length === 1 && !SYNTHESIS_DEFS[group.id]
-                                      const isDirect = isUtilityGroup || isSingleSection
-                                      const tool = getToolAreaBySlug(group.id)
-                                      const directSlug = isSingleSection ? secs[0].slug : (tool?.slug ?? group.id)
-                                      const directLabel = isSingleSection ? secs[0].shortTitle : group.label
-                                      const { done, total } = groupProgress(group.id)
-                                      const syn = !isDirect ? SYNTHESIS_DEFS[group.id] : undefined
-                                      const isActive = isDirect && activeSlug === directSlug
-                                      const isExpanded = !isDirect && groupOpen
-                                      const highlight = isActive || isExpanded
-                                      const groupTitle = isDirect ? directLabel : group.label
-                                      const groupSub = GROUP_SUBTITLES[group.id] ?? (isToolSlug(group.id) ? getToolAreaBySlug(group.id)?.subtitle : undefined) ?? ''
-                                      const GroupIcon = GROUP_ICONS[group.id]
-                                      return (
-                                        <div key={group.id} style={{ marginBottom: groupOpen ? '0.18rem' : 0 }}>
-                                          <button
-                                            onClick={() => isDirect ? navigate(directSlug) : toggleGroup(group.id)}
-                                            style={{ width: '100%', border: isActive ? `1px solid ${mode.color}28` : '1px solid transparent', cursor: 'pointer', background: isActive ? mode.bgActive : 'transparent', borderRadius: '7px', textAlign: 'left', fontFamily: 'inherit', padding: '0.3rem 0.52rem', display: 'flex', alignItems: 'center', gap: '0.38rem' }}
-                                            onMouseEnter={e => { if (!isActive) { e.currentTarget.style.background = 'rgba(0,0,0,0.04)'; e.currentTarget.style.borderColor = 'var(--border)' } }}
-                                            onMouseLeave={e => { if (!isActive) { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.borderColor = 'transparent' } }}
-                                          >
-                                            {GroupIcon && <GroupIcon size={14} strokeWidth={1.75} style={{ flexShrink: 0, color: highlight ? mode.color : 'var(--text-muted)' }} />}
-                                            <div style={{ flex: 1, minWidth: 0 }}>
-                                              <div style={{ fontSize: '0.72rem', fontWeight: 650, lineHeight: 1.15, color: highlight ? mode.color : 'var(--text-primary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{groupTitle}</div>
-                                              {groupSub && <div style={{ fontSize: '0.57rem', color: 'var(--text-muted)', marginTop: '0.03rem', lineHeight: 1.15, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{groupSub}</div>}
-                                            </div>
-                                            {isActive && <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: mode.color, flexShrink: 0 }} />}
-                                            {!isDirect && (
-                                              <span style={{ fontSize: '0.55rem', flexShrink: 0, fontWeight: 700, color: done === total && total > 0 ? 'var(--success)' : 'var(--text-muted)' }}>
-                                                {done === total && total > 0 ? '✓' : `${done}/${total}`}
-                                              </span>
-                                            )}
-                                            {!isDirect && (groupOpen ? <ChevronDown size={10} style={{ flexShrink: 0, color: 'var(--text-muted)', opacity: 0.55 }} /> : <ChevronRight size={10} style={{ flexShrink: 0, color: 'var(--text-muted)', opacity: 0.4 }} />)}
-                                          </button>
-                                          {!isDirect && groupOpen && (
-                                            <div style={{ marginLeft: '1.15rem', borderLeft: '1px solid var(--border-subtle)', marginBottom: '0.06rem' }}>
-                                              {secs.map(sd => {
-                                                const sec              = sections.find(s => s.slug === sd.slug)
-                                                const isSecActive      = sd.slug === activeSlug
-                                                const hasCards         = !!sd.cards && sd.cards.length > 0
-                                                const sectionCardsOpen = expandedSectionCards.has(sd.slug)
-                                                const storedCards      = (sec?.content as { cards?: Record<string, string> } | null)?.cards ?? {}
-                                                const cTotal           = sd.cards?.length ?? 0
-                                                const cDone            = sd.cards ? sd.cards.filter(c => !!storedCards[c.id]?.trim()).length : 0
-                                                return (
-                                                  <div key={sd.slug}>
-                                                    <div style={{ display: 'flex', alignItems: 'center' }}>
-                                                      <button onClick={() => navigate(sd.slug)} style={{ flex: 1, border: 'none', fontFamily: 'inherit', background: isSecActive ? `${mode.color}10` : 'transparent', padding: '0.16rem 0.2rem 0.16rem 0.4rem', display: 'flex', alignItems: 'center', gap: '0.32rem', cursor: 'pointer', textAlign: 'left', borderRadius: '5px', minWidth: 0 }} onMouseEnter={e => { if (!isSecActive) e.currentTarget.style.background = 'rgba(0,0,0,0.04)' }} onMouseLeave={e => { if (!isSecActive) e.currentTarget.style.background = 'transparent' }}>
-                                                        <span style={{ width: '3px', height: '3px', borderRadius: '50%', background: isSecActive ? mode.color : 'var(--border)', flexShrink: 0 }} />
-                                                        <span style={{ flex: 1, fontSize: '0.68rem', lineHeight: 1.22, color: isSecActive ? mode.color : 'var(--text-secondary)', fontWeight: isSecActive ? 600 : 400, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{sd.shortTitle}</span>
-                                                        {cTotal > 0 && (
-                                                          <span style={{ fontSize: '0.56rem', flexShrink: 0, fontWeight: 700, color: cDone === cTotal ? 'var(--success)' : cDone > 0 ? mode.color : 'var(--border)' }}>
-                                                            {cDone === cTotal ? '✓' : `${cDone}/${cTotal}`}
-                                                          </span>
-                                                        )}
-                                                      </button>
-                                                      {hasCards && (
-                                                        <button onClick={() => toggleSectionCards(sd.slug)} style={{ background: 'transparent', border: 'none', cursor: 'pointer', padding: '0.16rem 0.26rem', color: sectionCardsOpen ? mode.color : 'var(--text-muted)', opacity: sectionCardsOpen ? 0.9 : 0.45, display: 'flex', alignItems: 'center', flexShrink: 0 }} onMouseEnter={e => { e.currentTarget.style.opacity = '1' }} onMouseLeave={e => { e.currentTarget.style.opacity = sectionCardsOpen ? '0.9' : '0.45' }}>
-                                                          {sectionCardsOpen ? <ChevronDown size={9} strokeWidth={2.2} /> : <ChevronRight size={9} strokeWidth={2.2} />}
-                                                        </button>
-                                                      )}
-                                                    </div>
-                                                    {hasCards && sectionCardsOpen && (
-                                                      <div style={{ marginLeft: '1.5rem', borderLeft: '1px solid var(--border-subtle)', paddingLeft: '0.4rem', paddingBottom: '0.08rem' }}>
-                                                        {sd.cards!.map(card => {
-                                                          const text    = storedCards[card.id] ?? ''
-                                                          const cStatus = cardTextStatus(text)
-                                                          return (
-                                                            <button key={card.id} onClick={() => navigate(sd.slug)} style={{ width: '100%', border: 'none', background: 'transparent', cursor: 'pointer', fontFamily: 'inherit', textAlign: 'left', display: 'flex', alignItems: 'center', gap: '0.3rem', padding: '0.09rem 0.2rem', borderRadius: '3px', transition: 'background 0.1s' }} onMouseEnter={e => { e.currentTarget.style.background = 'rgba(0,0,0,0.04)' }} onMouseLeave={e => { e.currentTarget.style.background = 'transparent' }}>
-                                                              <span style={{ fontSize: '0.57rem', flexShrink: 0, fontWeight: 700, lineHeight: 1, color: cStatus === 'reviewed' ? 'var(--success)' : cStatus === 'draft' ? 'var(--accent)' : 'var(--border)' }}>
-                                                                {cStatus === 'reviewed' ? '✓' : cStatus === 'draft' ? '◐' : '○'}
-                                                              </span>
-                                                              <span style={{ fontSize: '0.62rem', color: 'var(--text-muted)', flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', lineHeight: 1.22 }}>{card.title}</span>
-                                                            </button>
-                                                          )
-                                                        })}
-                                                      </div>
-                                                    )}
-                                                  </div>
-                                                )
-                                              })}
-                                              {syn && (() => {
-                                                const isSynActive = activeSlug === syn.slug
-                                                return (
-                                                  <button onClick={() => navigate(syn.slug)} style={{ width: '100%', border: 'none', fontFamily: 'inherit', background: isSynActive ? mode.bgActive : 'transparent', borderLeft: `2px solid ${isSynActive ? mode.color : 'transparent'}`, padding: '0.16rem 0.35rem 0.16rem 0.4rem', display: 'flex', alignItems: 'center', gap: '0.28rem', cursor: 'pointer', textAlign: 'left', marginLeft: '-1px', marginTop: '0.06rem', borderTop: '1px solid var(--border-subtle)' }} onMouseEnter={e => { if (!isSynActive) e.currentTarget.style.background = 'rgba(0,0,0,0.04)' }} onMouseLeave={e => { if (!isSynActive) e.currentTarget.style.background = 'transparent' }}>
-                                                    <span style={{ fontSize: '0.56rem', color: isSynActive ? mode.color : 'var(--text-muted)', flexShrink: 0 }}>→</span>
-                                                    <span style={{ flex: 1, fontSize: '0.62rem', lineHeight: 1.2, color: isSynActive ? mode.color : 'var(--text-muted)', fontStyle: 'italic', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{syn.shortTitle}</span>
-                                                  </button>
-                                                )
-                                              })()}
-                                            </div>
-                                          )}
-                                        </div>
-                                      )
-                                    })}
-                                  </div>
-                                )}
-                              </div>
-                            )
-                          })}
-                        </div>
-                      )}
-                    </div>
-                  )
-                })}
-              </div>
+              {/* Seta apontando para o botão */}
+              <div style={{
+                position: 'absolute', bottom: '-6px', left: `${arrowX}px`, transform: 'translateX(-50%) rotate(45deg)',
+                width: '11px', height: '11px',
+                background: 'var(--surface)',
+                borderRight: `1px solid ${ph.color}35`,
+                borderBottom: `1px solid ${ph.color}35`,
+              }} />
             </div>
           </>
         )
@@ -2111,7 +2027,11 @@ export default function WorkspaceClient({ user, project, initialSections }: Prop
               const btn = (
                 <button
                   key={phase.id}
-                  onClick={() => setOpenPhasePopover(isOpen ? null : phase.id)}
+                  onClick={(e) => {
+                    const r = e.currentTarget.getBoundingClientRect()
+                    if (isOpen) { setOpenPhasePopover(null); setPopoverAnchor(null) }
+                    else { setOpenPhasePopover(phase.id); setPopoverAnchor({ left: r.left, width: r.width }) }
+                  }}
                   style={{
                     position: 'relative', overflow: 'hidden',
                     flex: 1, minWidth: 0, height: '44px',
@@ -2173,7 +2093,11 @@ export default function WorkspaceClient({ user, project, initialSections }: Prop
             return (
               <button
                 key={phase.id}
-                onClick={() => setOpenPhasePopover(isOpen ? null : phase.id)}
+                onClick={(e) => {
+                  const r = e.currentTarget.getBoundingClientRect()
+                  if (isOpen) { setOpenPhasePopover(null); setPopoverAnchor(null) }
+                  else { setOpenPhasePopover(phase.id); setPopoverAnchor({ left: r.left, width: r.width }) }
+                }}
                 style={{
                   height: '44px', flexShrink: 0,
                   border: `1.5px solid ${isActive || isOpen ? phase.color : 'var(--border-subtle)'}`,
