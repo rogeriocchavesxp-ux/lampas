@@ -27,6 +27,7 @@ import ToolsWorkspace from './ToolsWorkspace'
 import CollagesWorkspace from './CollagesWorkspace'
 import SermonBuilderWorkspace from './SermonBuilderWorkspace'
 import CommentaryWorkspace from './CommentaryWorkspace'
+import ComentarioExegeticoWorkspace from './ComentarioExegeticoWorkspace'
 import LiveReferencePanel from './LiveReferencePanel'
 import AIPanel from './AIPanel'
 import BibleFloatingWindow from './BibleFloatingWindow'
@@ -1754,6 +1755,15 @@ export default function WorkspaceClient({ user, project, initialSections }: Prop
                 onAskAI={handleAskAI}
                 initialViewMode={searchParams.get('view') === 'preview' ? 'preview' : 'edit'}
                 publishedReader={searchParams.get('reader') === 'published'}
+              />
+            ) : activeSlug === 'comentario_exegetico' ? (
+              <ComentarioExegeticoWorkspace
+                key={activeSlug}
+                project={project}
+                userId={user.id}
+                existingSection={activeSection}
+                onUpdate={handleSectionUpdate}
+                onAskAI={handleAskAI}
               />
             ) : activeSlug === 'comentario_expositivo' ? (
               <CommentaryWorkspace
