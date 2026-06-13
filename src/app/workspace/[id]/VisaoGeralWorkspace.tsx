@@ -10,6 +10,7 @@ import NodeFloatingWindow, { type FloatWin } from './NodeFloatingWindow'
 import { Sparkles, Map, List, MoreHorizontal, X, BookOpen, ChevronLeft, Loader2, Check, BookMarked, Maximize2, Minus, Minimize2, Crosshair } from 'lucide-react'
 import { loadClassificationsFromDB, saveClassificationToDB, deleteClassificationFromDB, updateClassificationInDB } from '@/lib/classification-sync'
 import MarkdownRenderer from '@/components/MarkdownRenderer'
+import { getSectionNavBySlug, getSectionsByGroupNav } from '@/lib/workspace-sections-nav'
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -110,6 +111,7 @@ interface NodeDef {
   kind: NodeKind
   clsTypes?: ClassType[]
   cardIds?: string[]
+  phaseGroup?: string    // para sub-itens baseados em grupo no popup
 }
 
 const SERMAO_EPISTOLAR_LAYERS: Array<{ id: OverviewLayerId; label: string; subtitle: string; color: string }> = [
@@ -405,9 +407,9 @@ const PREPARAR_PHASE_NODES: NodeDef[] = [
 ]
 
 const INVESTIGAR_PHASE_NODES: NodeDef[] = [
-  { key: 'phase_estudo_contextual', label: 'Estudo Contextual', icon: '📅', angle: -90, color: '#B45309', bg: '#FEF3C7', kind: 'phase', sectionSlug: 'contexto_historico' },
-  { key: 'phase_estudo_textual',    label: 'Estudo Textual',    icon: '🔑', angle: 30,  color: '#163A6B', bg: '#EEF3FA', kind: 'phase', sectionSlug: 'texto_original' },
-  { key: 'phase_estudo_teologico',  label: 'Estudo Teológico',  icon: '✚',  angle: 150, color: '#7C3AED', bg: '#F5F3FF', kind: 'phase', sectionSlug: 'contexto_canonico' },
+  { key: 'phase_estudo_contextual', label: 'Estudo Contextual', icon: '📅', angle: -90, color: '#B45309', bg: '#FEF3C7', kind: 'phase', sectionSlug: 'contexto_historico', phaseGroup: 'contextual' },
+  { key: 'phase_estudo_textual',    label: 'Estudo Textual',    icon: '🔑', angle: 30,  color: '#163A6B', bg: '#EEF3FA', kind: 'phase', sectionSlug: 'texto_original',    phaseGroup: 'textual' },
+  { key: 'phase_estudo_teologico',  label: 'Estudo Teológico',  icon: '✚',  angle: 150, color: '#7C3AED', bg: '#F5F3FF', kind: 'phase', sectionSlug: 'contexto_canonico', phaseGroup: 'teologico' },
 ]
 
 const FERRAMENTAS_PHASE_NODES: NodeDef[] = [
@@ -418,6 +420,14 @@ const FERRAMENTAS_PHASE_NODES: NodeDef[] = [
   { key: 'phase_colagens',     label: 'Colagens',          icon: '🎨', angle: 150,  color: '#D97706', bg: '#FFFBEB', kind: 'phase', sectionSlug: 'colagens' },
   { key: 'phase_pesquisa',     label: 'Pesquisa',          icon: '🔍', angle: 210,  color: '#BE3455', bg: '#FFF1F2', kind: 'phase', sectionSlug: 'ferramentas_livros' },
 ]
+
+// ── Helpers de status de conteúdo ────────────────────────────────────────────
+
+function cardTextStatus(text: string): 'empty' | 'draft' | 'reviewed' {
+  if (!text.trim()) return 'empty'
+  if (text.trim().length < 80) return 'draft'
+  return 'reviewed'
+}
 
 // ── Prompt de IA por modo (para o botão "Organizar com IA" em cada nó) ────────
 
@@ -549,6 +559,9 @@ export default function VisaoGeralWorkspace({
   const [mode,         setMode]        = useState<'visual' | 'structured'>('visual')
   const [activePanel,  setActivePanel] = useState<string | null>(null)
   const [hoveredNode,  setHoveredNode] = useState<string | null>(null)
+  // Popup de nós de fase (single click → popup, double click → navegar)
+  const [phasePopup,   setPhasePopup]  = useState<{ node: NodeDef; canvasX: number; canvasY: number } | null>(null)
+  const lastClickRef = useRef<{ key: string; time: number } | null>(null)
   const [cls,          setCls]         = useState<Classification[]>([])
   const [wrapW,        setWrapW]       = useState(CW)
   const [cardDraft,    setCardDraft]   = useState<Record<string, string>>({})
@@ -1088,6 +1101,7 @@ export default function VisaoGeralWorkspace({
     if ((e.target as HTMLElement).closest('button')) return
     panStartRef.current = { mouseX: e.clientX, mouseY: e.clientY, viewX, viewY }
     setIsPanning(true)
+    setPhasePopup(null)
   }
 
   function handleCanvasMM(e: React.MouseEvent<HTMLDivElement>) {
@@ -1112,10 +1126,24 @@ export default function VisaoGeralWorkspace({
     if (drag) {
       if (!drag.moved) {
         const clickedNode = allNodes.find(n => n.key === drag.key)
-        if (clickedNode?.kind === 'phase' && clickedNode.sectionSlug && onNavigate) {
-          onNavigate(clickedNode.sectionSlug)
+        if (clickedNode?.kind === 'phase') {
+          const now = Date.now()
+          const last = lastClickRef.current
+          const isDouble = last?.key === drag.key && (now - last.time) < 380
+          if (isDouble) {
+            // Duplo clique → navegar direto
+            if (clickedNode.sectionSlug && onNavigate) onNavigate(clickedNode.sectionSlug)
+            setPhasePopup(null)
+            lastClickRef.current = null
+          } else {
+            // Clique simples → abrir popup
+            const pos = getNodePos(clickedNode)
+            setPhasePopup({ node: clickedNode, canvasX: pos.x, canvasY: pos.y })
+            lastClickRef.current = { key: drag.key, time: now }
+          }
         } else {
           setActivePanel(p => p === drag.key ? null : drag.key)
+          setPhasePopup(null)
         }
       }
       nodeDragRef.current = null
@@ -1646,6 +1674,160 @@ export default function VisaoGeralWorkspace({
                   <Crosshair size={12} strokeWidth={2} />
                 </button>
               </div>
+
+              {/* ── Popup de nó de fase ── */}
+              {phasePopup && (() => {
+                const { node, canvasX, canvasY } = phasePopup
+                const screenX = canvasX * zoom + viewX
+                const screenY = canvasY * zoom + viewY
+                const containerW = canvasContainerRef.current?.clientWidth ?? 700
+                const containerH = canvasContainerRef.current?.clientHeight ?? 500
+                const POPUP_W = 290
+                const POPUP_H = 300
+                // Posicionar à direita do nó; se não couber, à esquerda
+                const idealLeft = screenX + 78
+                const popLeft = idealLeft + POPUP_W > containerW - 8 ? screenX - POPUP_W - 78 : idealLeft
+                const popTop  = Math.max(8, Math.min(containerH - POPUP_H - 8, screenY - 70))
+
+                // Sub-itens: grupo → seções do grupo; ou seção → cards da seção
+                type PopupItem = { id: string; label: string; slug: string; status: 'empty' | 'draft' | 'reviewed' }
+                const subItems: PopupItem[] = node.phaseGroup
+                  ? getSectionsByGroupNav(node.phaseGroup).map(s => {
+                      const secData = allSections.find(sec => sec.slug === s.slug)
+                      const cards = (secData?.content as { cards?: Record<string, string> } | null)?.cards ?? {}
+                      const filled = Object.values(cards).filter(v => v?.trim()).length
+                      const total  = s.cards?.length ?? 0
+                      const status: PopupItem['status'] = filled === 0 ? 'empty' : filled >= total && total > 0 ? 'reviewed' : 'draft'
+                      return { id: s.slug, label: s.shortTitle, slug: s.slug, status }
+                    })
+                  : node.sectionSlug
+                    ? (() => {
+                        const sNav = getSectionNavBySlug(node.sectionSlug)
+                        if (!sNav?.cards?.length) return []
+                        const secData = allSections.find(s => s.slug === node.sectionSlug)
+                        const savedCards = (secData?.content as { cards?: Record<string, string> } | null)?.cards ?? {}
+                        return sNav.cards.map(c => ({
+                          id: c.id, label: c.title, slug: node.sectionSlug!,
+                          status: cardTextStatus(savedCards[c.id] ?? ''),
+                        }))
+                      })()
+                    : []
+
+                const sectionData = node.sectionSlug ? allSections.find(s => s.slug === node.sectionSlug) : null
+                const sectionCards = (sectionData?.content as { cards?: Record<string, string> } | null)?.cards ?? {}
+                const sectionNav = node.sectionSlug ? getSectionNavBySlug(node.sectionSlug) : null
+                const totalCards  = sectionNav?.cards?.length ?? 0
+                const filledCards = sectionNav?.cards?.filter(c => sectionCards[c.id]?.trim()).length ?? 0
+
+                return (
+                  <div
+                    onMouseDown={e => e.stopPropagation()}
+                    style={{
+                      position: 'absolute', left: `${popLeft}px`, top: `${popTop}px`,
+                      width: `${POPUP_W}px`, maxHeight: `${POPUP_H}px`,
+                      background: 'var(--surface, #FFFFFF)',
+                      border: `1.5px solid ${node.color}45`,
+                      borderLeft: `3px solid ${node.color}`,
+                      borderRadius: '10px',
+                      boxShadow: `0 8px 32px rgba(0,0,0,0.12), 0 2px 6px ${node.color}18`,
+                      zIndex: 40, overflow: 'hidden',
+                      display: 'flex', flexDirection: 'column',
+                      animation: 'fadeInPopup 0.15s ease',
+                    }}
+                  >
+                    <style>{`@keyframes fadeInPopup { from { opacity:0; transform:scale(0.96) } to { opacity:1; transform:scale(1) } }`}</style>
+
+                    {/* Header */}
+                    <div style={{ padding: '0.62rem 0.8rem 0.45rem', background: node.bg, borderBottom: `1px solid ${node.color}18` }}>
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '0.4rem' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.38rem', minWidth: 0 }}>
+                          <span style={{ fontSize: '0.85rem', flexShrink: 0 }}>{node.icon}</span>
+                          <span style={{ fontSize: '0.75rem', fontWeight: 700, color: node.color, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                            {node.label}
+                          </span>
+                        </div>
+                        <button
+                          onClick={() => setPhasePopup(null)}
+                          style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#94A3B8', fontSize: '1rem', lineHeight: 1, padding: '0 2px', flexShrink: 0 }}
+                        >×</button>
+                      </div>
+                      {totalCards > 0 && (
+                        <div style={{ fontSize: '0.62rem', color: '#64748B', marginTop: '3px' }}>
+                          {filledCards}/{totalCards} {filledCards === totalCards ? '✓ completo' : 'preenchidos'}
+                        </div>
+                      )}
+                      {totalCards === 0 && node.phaseGroup && (
+                        <div style={{ fontSize: '0.62rem', color: '#64748B', marginTop: '3px' }}>
+                          {subItems.filter(i => i.status !== 'empty').length}/{subItems.length} seções iniciadas
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Sub-itens */}
+                    {subItems.length > 0 && (
+                      <div style={{ padding: '0.35rem 0.5rem', overflowY: 'auto', flex: 1 }}>
+                        {subItems.map(item => (
+                          <button
+                            key={item.id}
+                            onClick={() => { onNavigate?.(item.slug); setPhasePopup(null) }}
+                            style={{
+                              display: 'flex', alignItems: 'center', gap: '0.45rem',
+                              width: '100%', background: 'transparent', border: 'none',
+                              borderRadius: '6px', padding: '0.28rem 0.4rem',
+                              cursor: 'pointer', fontFamily: 'inherit', textAlign: 'left',
+                            }}
+                            onMouseEnter={e => { e.currentTarget.style.background = node.color + '10' }}
+                            onMouseLeave={e => { e.currentTarget.style.background = 'transparent' }}
+                          >
+                            <span style={{
+                              fontSize: '0.58rem', flexShrink: 0, lineHeight: 1,
+                              color: item.status === 'reviewed' ? '#059669' : item.status === 'draft' ? '#D97706' : '#CBD5E1',
+                            }}>
+                              {item.status === 'reviewed' ? '●' : item.status === 'draft' ? '◑' : '○'}
+                            </span>
+                            <span style={{ fontSize: '0.72rem', color: 'var(--text-primary, #334155)', lineHeight: 1.3 }}>{item.label}</span>
+                          </button>
+                        ))}
+                      </div>
+                    )}
+
+                    {/* Ações */}
+                    <div style={{
+                      padding: '0.45rem 0.6rem',
+                      borderTop: `1px solid ${node.color}15`,
+                      display: 'flex', gap: '0.35rem',
+                    }}>
+                      {node.sectionSlug && (
+                        <button
+                          onClick={() => { onNavigate?.(node.sectionSlug!); setPhasePopup(null) }}
+                          style={{
+                            flex: 1,
+                            background: node.color, color: '#fff',
+                            border: 'none', borderRadius: '7px',
+                            padding: '5px 10px', fontSize: '0.67rem', fontWeight: 700,
+                            cursor: 'pointer', fontFamily: 'inherit',
+                          }}
+                        >
+                          Abrir seção
+                        </button>
+                      )}
+                      <button
+                        onClick={() => { onAskAI(buildVGNodePrompt(project, node)); setPhasePopup(null) }}
+                        style={{
+                          flex: 1,
+                          background: 'transparent', color: node.color,
+                          border: `1px solid ${node.color}40`,
+                          borderRadius: '7px', padding: '5px 8px',
+                          fontSize: '0.67rem', fontWeight: 600,
+                          cursor: 'pointer', fontFamily: 'inherit',
+                        }}
+                      >
+                        Organizar com IA
+                      </button>
+                    </div>
+                  </div>
+                )
+              })()}
 
             </div>{/* end canvas container */}
             </div>{/* end left column */}
