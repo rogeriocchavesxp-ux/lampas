@@ -153,41 +153,7 @@ export const WORKSPACE_SECTIONS_NAV: SectionNav[] = [
     "module": "inventio",
     "group": "investigar_visao_geral",
     "groupLabel": "Compreensão refinada após investigação",
-    "order": -20,
-    "cards": [
-      {
-        "id": "preparar_tema_provavel",
-        "title": "Tema refinado"
-      },
-      {
-        "id": "preparar_grande_ideia_inicial",
-        "title": "Grande ideia refinada"
-      },
-      {
-        "id": "preparar_estrutura_percebida",
-        "title": "Estrutura refinada"
-      },
-      {
-        "id": "preparar_personagens",
-        "title": "Personagens"
-      },
-      {
-        "id": "preparar_movimento_narrativo",
-        "title": "Movimento narrativo refinado"
-      },
-      {
-        "id": "preparar_fluxo_argumentativo",
-        "title": "Fluxo argumentativo refinado"
-      },
-      {
-        "id": "preparar_climax",
-        "title": "Clímax confirmado"
-      },
-      {
-        "id": "preparar_palavras_repetidas",
-        "title": "Termos e repetições"
-      }
-    ]
+    "order": -20
   },
   {
     "slug": "ferramentas_visao_geral",

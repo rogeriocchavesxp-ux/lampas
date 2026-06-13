@@ -408,6 +408,13 @@ const PREPARAR_PHASE_NODES: NodeDef[] = [
   { key: 'phase_obs_pessoais',          label: 'Observações Pessoais',  icon: '📝', angle: 198,  color: '#0F766E', bg: '#F0FDFA', kind: 'phase', phaseGroup: 'preparar_impressoes' },
 ]
 
+const SINTESE_CARD_HINTS: Record<string, string> = {
+  grande_ideia: 'Formule a Grande Ideia do texto em uma sentença completa (sujeito + complemento). O sujeito responde "de que trata o texto?"; o complemento responde "o que o texto afirma sobre isso?".',
+  mensagem_texto: 'O que Deus comunica através desta passagem? Sintetize a mensagem principal do texto para os destinatários originais e para a igreja de todos os tempos.',
+  conceito_ensina: 'Identifique as principais verdades, princípios ou doutrinas ensinadas pelo texto. Exemplos: Deus é soberano; a fé produz obediência; Cristo é o mediador; a salvação é pela graça.',
+  conceitos_confronta: 'Identifique erros, pecados, crenças equivocadas ou cosmovisões que o texto corrige. Exemplos: autossuficiência humana; legalismo; idolatria; materialismo; relativismo moral.',
+}
+
 const INVESTIGAR_PHASE_NODES: NodeDef[] = [
   { key: 'phase_estudo_textual',    label: 'Estudo Textual',      icon: '🔑', angle: -90, color: '#163A6B', bg: '#EEF3FA', kind: 'phase', sectionSlug: 'texto_original',    phaseGroup: 'textual' },
   { key: 'phase_estudo_contextual', label: 'Estudo Contextual',   icon: '📅', angle: 0,   color: '#B45309', bg: '#FEF3C7', kind: 'phase', sectionSlug: 'contexto_historico', phaseGroup: 'contextual' },
@@ -601,6 +608,7 @@ export default function VisaoGeralWorkspace({
   const [expandedOutlineNodes,    setExpandedOutlineNodes]    = useState<Set<string>>(new Set())
   const [expandedOutlineSections, setExpandedOutlineSections] = useState<Set<string>>(new Set())
   const [editingOutlineCard,      setEditingOutlineCard]      = useState<string | null>(null)
+  const [openCardHint,            setOpenCardHint]            = useState<string | null>(null)
   const [readingPopup, setReadingPopup] = useState<{ title: string; html: string; color: string } | null>(null)
   const [activePanel,  setActivePanel] = useState<string | null>(null)
   const [hoveredNode,  setHoveredNode] = useState<string | null>(null)
@@ -1807,8 +1815,12 @@ export default function VisaoGeralWorkspace({
                                 const cardIsEditing = editingOutlineCard === card.editKey
                                 const cardDraft     = drillDrafts[card.draftKey] ?? ''
                                 const cardSaving    = drillSaving === card.draftKey
+                                const hintKey = card.editKey
+                                const isHintOpen = openCardHint === hintKey
+                                const hintText = SINTESE_CARD_HINTS[card.id]
                                 return (
                                   <div key={card.id}>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
                                     <button
                                       onClick={() => {
                                         if (cardIsEditing) {
@@ -1820,8 +1832,8 @@ export default function VisaoGeralWorkspace({
                                       }}
                                       style={{
                                         display: 'flex', alignItems: 'center', gap: '0.45rem',
-                                        width: '100%', background: cardIsEditing ? `${node.color}10` : 'transparent',
-                                        border: 'none', padding: '0.24rem 0.8rem 0.24rem 0',
+                                        flex: 1, background: cardIsEditing ? `${node.color}10` : 'transparent',
+                                        border: 'none', padding: '0.24rem 0.4rem 0.24rem 0',
                                         cursor: 'pointer', fontFamily: 'inherit', textAlign: 'left', borderRadius: '4px',
                                       }}
                                       onMouseEnter={e => { if (!cardIsEditing) e.currentTarget.style.background = `${node.color}08` }}
@@ -1832,6 +1844,21 @@ export default function VisaoGeralWorkspace({
                                       </span>
                                       <span style={{ fontSize: '0.72rem', color: 'var(--text-primary)', flex: 1, lineHeight: 1.4 }}>{card.label}</span>
                                     </button>
+                                    {hintText && (
+                                      <button
+                                        onClick={e => { e.stopPropagation(); setOpenCardHint(k => k === hintKey ? null : hintKey) }}
+                                        style={{ flexShrink: 0, width: '16px', height: '16px', borderRadius: '50%', border: `1px solid ${isHintOpen ? node.color : 'var(--border)'}`, background: isHintOpen ? `${node.color}15` : 'transparent', color: isHintOpen ? node.color : '#94A3B8', fontSize: '0.55rem', fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 0 }}
+                                        title="Orientação"
+                                      >
+                                        ?
+                                      </button>
+                                    )}
+                                    </div>
+                                    {isHintOpen && hintText && (
+                                      <div style={{ margin: '0.15rem 0 0.35rem 1rem', padding: '0.4rem 0.6rem', background: `${node.color}0d`, borderRadius: '4px', borderLeft: `2px solid ${node.color}40`, fontSize: '0.67rem', color: 'var(--text-secondary)', lineHeight: 1.55 }}>
+                                        {hintText}
+                                      </div>
+                                    )}
 
                                     {cardIsEditing && (
                                       <div style={{ paddingBottom: '0.45rem', paddingRight: '0.8rem' }}>
