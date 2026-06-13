@@ -23,6 +23,7 @@ interface Props {
   existingSection: Section | undefined
   onUpdate: (s: Section) => void
   onAskAI: (prompt: string) => void
+  inline?: boolean
 }
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -210,7 +211,7 @@ function BlockCard({
 
 // ── Main component ────────────────────────────────────────────────────────────
 
-export default function ComentarioExegeticoWorkspace({ project, userId, existingSection, onUpdate, onAskAI }: Props) {
+export default function ComentarioExegeticoWorkspace({ project, userId, existingSection, onUpdate, onAskAI, inline = false }: Props) {
   const supabase = createClient()
   const [blocks, setBlocks]   = useState<CommentBlock[]>(() => loadBlocks(existingSection))
   const [saving, setSaving]   = useState(false)
@@ -338,17 +339,25 @@ export default function ComentarioExegeticoWorkspace({ project, userId, existing
   const color = '#163A6B'
 
   return (
-    <div style={{ padding: '1.25rem 1.5rem 2.5rem', maxWidth: '900px' }}>
+    <div style={{ padding: inline ? '0' : '1.25rem 1.5rem 2.5rem', maxWidth: inline ? undefined : '900px' }}>
 
       {/* Header */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1.25rem', gap: '0.75rem', flexWrap: 'wrap' }}>
-        <div>
-          <div style={{ fontSize: '0.87rem', fontWeight: 700, color: 'var(--text-primary,#1e293b)' }}>2.7 Comentário Exegético</div>
-          <div style={{ fontSize: '0.72rem', color: 'var(--text-secondary,#64748b)', marginTop: '0.15rem' }}>
-            {blocks.length} {blocks.length === 1 ? 'bloco' : 'blocos'}
-            {saving ? ' · Salvando…' : savedAt ? ` · Salvo às ${savedAt.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}` : ''}
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.75rem', gap: '0.75rem', flexWrap: 'wrap' }}>
+        {!inline && (
+          <div>
+            <div style={{ fontSize: '0.87rem', fontWeight: 700, color: 'var(--text-primary,#1e293b)' }}>2.7 Comentário Exegético</div>
+            <div style={{ fontSize: '0.72rem', color: 'var(--text-secondary,#64748b)', marginTop: '0.15rem' }}>
+              {blocks.length} {blocks.length === 1 ? 'bloco' : 'blocos'}
+              {saving ? ' · Salvando…' : savedAt ? ` · Salvo às ${savedAt.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}` : ''}
+            </div>
           </div>
-        </div>
+        )}
+        {inline && (
+          <div style={{ fontSize: '0.65rem', color: 'var(--text-secondary,#64748b)' }}>
+            {blocks.length} {blocks.length === 1 ? 'bloco' : 'blocos'}
+            {saving ? ' · Salvando…' : savedAt ? ` · Salvo` : ''}
+          </div>
+        )}
 
         {/* Add button */}
         <div style={{ position: 'relative' }}>
@@ -381,10 +390,10 @@ export default function ComentarioExegeticoWorkspace({ project, userId, existing
 
       {/* Block list */}
       {blocks.length === 0 ? (
-        <div style={{ textAlign: 'center', padding: '3.5rem 1rem', border: '2px dashed var(--border,#e5e7eb)', borderRadius: '10px', color: 'var(--text-secondary,#9ca3af)' }}>
-          <div style={{ fontSize: '1.5rem', marginBottom: '0.5rem' }}>📝</div>
-          <div style={{ fontSize: '0.83rem', fontWeight: 600, marginBottom: '0.3rem' }}>Nenhum bloco criado</div>
-          <div style={{ fontSize: '0.75rem' }}>Clique em &ldquo;+ Adicionar bloco&rdquo; para começar o comentário exegético.</div>
+        <div style={{ textAlign: 'center', padding: inline ? '1rem' : '3.5rem 1rem', border: '2px dashed var(--border,#e5e7eb)', borderRadius: '10px', color: 'var(--text-secondary,#9ca3af)' }}>
+          {!inline && <div style={{ fontSize: '1.5rem', marginBottom: '0.5rem' }}>📝</div>}
+          <div style={{ fontSize: inline ? '0.72rem' : '0.83rem', fontWeight: 600, marginBottom: '0.3rem' }}>Nenhum bloco criado</div>
+          {!inline && <div style={{ fontSize: '0.75rem' }}>Clique em &ldquo;+ Adicionar bloco&rdquo; para começar o comentário exegético.</div>}
         </div>
       ) : (
         blocks.map((block, idx) => (

@@ -12,6 +12,7 @@ import MarkdownRenderer from '@/components/MarkdownRenderer'
 import RichEditor from '@/components/RichEditor'
 import ReadingPopup from '@/components/ReadingPopup'
 import { getSectionNavBySlug, getSectionsByGroupNav } from '@/lib/workspace-sections-nav'
+import ComentarioExegeticoWorkspace from './ComentarioExegeticoWorkspace'
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -1887,10 +1888,6 @@ export default function VisaoGeralWorkspace({
                                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
                                     <button
                                       onClick={() => {
-                                        if (card.sectionSlug === 'comentario_exegetico') {
-                                          onNavigate?.('comentario_exegetico')
-                                          return
-                                        }
                                         if (cardIsEditing) {
                                           setEditingOutlineCard(null)
                                         } else {
@@ -1929,6 +1926,18 @@ export default function VisaoGeralWorkspace({
                                     )}
 
                                     {cardIsEditing && (
+                                      card.sectionSlug === 'comentario_exegetico' ? (
+                                        <div style={{ marginTop: '0.35rem', marginBottom: '0.4rem' }}>
+                                          <ComentarioExegeticoWorkspace
+                                            inline
+                                            project={project}
+                                            userId={userId}
+                                            existingSection={allSections.find(s => s.slug === 'comentario_exegetico')}
+                                            onUpdate={onUpdate}
+                                            onAskAI={onAskAI}
+                                          />
+                                        </div>
+                                      ) : (
                                       <div style={{ paddingBottom: '0.45rem', paddingRight: '0.8rem' }}>
                                         <RichEditor
                                           compact={true}
@@ -1961,6 +1970,7 @@ export default function VisaoGeralWorkspace({
                                           </button>
                                         </div>
                                       </div>
+                                      )
                                     )}
                                   </div>
                                 )
@@ -2426,11 +2436,6 @@ export default function VisaoGeralWorkspace({
                 }
 
                 const handleCardClick = (item: DrillItem) => {
-                  if (item.sectionSlug === 'comentario_exegetico') {
-                    setDrillStack([])
-                    onNavigate?.('comentario_exegetico')
-                    return
-                  }
                   const draftKey = `${item.sectionSlug}:${item.id}`
                   setDrillStack(prev => prev.map((l, i) => {
                     if (i !== idx) return l
