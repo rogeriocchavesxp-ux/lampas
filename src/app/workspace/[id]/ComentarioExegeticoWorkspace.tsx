@@ -3,7 +3,7 @@
 import { useState, useRef, useCallback, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import type { Project, Section } from '@/types/database'
-import RichEditor from '@/components/RichEditor'
+import RichEditor, { type AIContext } from '@/components/RichEditor'
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -80,6 +80,7 @@ interface BlockCardProps {
   onDrop:          (e: React.DragEvent) => void
   onDragEnd:       () => void
   color: string
+  aiContext: AIContext
 }
 
 function BlockCard({
@@ -87,7 +88,7 @@ function BlockCard({
   onChangeTitle, onChangeRef, onChangeType, onChangeHtml,
   onToggleEdit, onToggleView, onMoveUp, onMoveDown, onDuplicate, onRemove,
   onDragStart, onDragOver, onDrop, onDragEnd,
-  color,
+  color, aiContext,
 }: BlockCardProps) {
   const [typesOpen, setTypesOpen] = useState(false)
 
@@ -194,6 +195,7 @@ function BlockCard({
             placeholder="Escreva o comentário exegético deste bloco…"
             moduleColor={TYPE_COLOR[block.type]}
             minHeight={140}
+            aiContext={{ ...aiContext, fieldLabel: block.title }}
           />
         </div>
       )}
@@ -338,6 +340,22 @@ export default function ComentarioExegeticoWorkspace({ project, userId, existing
 
   const color = '#163A6B'
 
+  const baseAiContext: Omit<AIContext, 'fieldLabel'> = {
+    project: {
+      id: project.id,
+      book: project.book,
+      passage_ref: project.passage_ref,
+      testament: project.testament,
+      original_language: project.original_language,
+      study_mode: project.study_mode ?? undefined,
+    },
+    phase: 'investigar',
+    phaseLabel: 'Investigar',
+    section: 'comentario_exegetico',
+    sectionLabel: '2.7 Comentário Exegético',
+    userId,
+  }
+
   return (
     <div style={{ padding: inline ? '0' : '1.25rem 1.5rem 2.5rem', maxWidth: inline ? undefined : '900px' }}>
 
@@ -406,6 +424,7 @@ export default function ComentarioExegeticoWorkspace({ project, userId, existing
             isViewing={viewingIds.has(block.id)}
             isDragOver={overIdx === idx && dragIdx !== idx}
             color={color}
+            aiContext={{ ...baseAiContext, fieldLabel: block.title }}
             onChangeTitle={val  => updateBlock(block.id, { title: val })}
             onChangeRef={val    => updateBlock(block.id, { ref: val })}
             onChangeType={type  => updateBlock(block.id, { type })}
