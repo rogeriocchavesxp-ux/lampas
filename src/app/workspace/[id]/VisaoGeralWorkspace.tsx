@@ -9,6 +9,7 @@ import NodeFloatingWindow, { type FloatWin } from './NodeFloatingWindow'
 import { Sparkles, Map, List, MoreHorizontal, X, BookOpen, ChevronLeft, Loader2, Check, BookMarked, Maximize2, Minus, Minimize2, Crosshair } from 'lucide-react'
 import { loadClassificationsFromDB, saveClassificationToDB, deleteClassificationFromDB, updateClassificationInDB } from '@/lib/classification-sync'
 import MarkdownRenderer from '@/components/MarkdownRenderer'
+import RichEditor from '@/components/RichEditor'
 import { getSectionNavBySlug, getSectionsByGroupNav } from '@/lib/workspace-sections-nav'
 
 // ── Types ─────────────────────────────────────────────────────────────────────
@@ -1640,19 +1641,13 @@ export default function VisaoGeralWorkspace({
 
                                     {cardIsEditing && (
                                       <div style={{ paddingBottom: '0.45rem', paddingRight: '0.8rem' }}>
-                                        <textarea
+                                        <RichEditor
+                                          compact={true}
                                           value={cardDraft}
-                                          onChange={e => setDrillDrafts(d => ({ ...d, [card.draftKey]: e.target.value }))}
-                                          rows={5}
+                                          onChange={html => setDrillDrafts(d => ({ ...d, [card.draftKey]: html }))}
+                                          minHeight={120}
+                                          moduleColor={node.color}
                                           autoFocus
-                                          placeholder="Escreva aqui..."
-                                          style={{
-                                            width: '100%', fontSize: '0.73rem', lineHeight: 1.6,
-                                            border: `1px solid ${node.color}35`, borderRadius: '7px',
-                                            padding: '7px 9px', fontFamily: 'inherit', resize: 'vertical',
-                                            outline: 'none', boxSizing: 'border-box',
-                                            color: 'var(--text-primary)', background: 'var(--surface)',
-                                          }}
                                         />
                                         <div style={{ display: 'flex', gap: '0.35rem', marginTop: '5px' }}>
                                           <button
@@ -1680,19 +1675,13 @@ export default function VisaoGeralWorkspace({
                           {/* Level-2: card inline editor */}
                           {isEditing && item.type === 'card' && (
                             <div style={{ paddingBottom: '0.45rem', paddingRight: '1rem' }}>
-                              <textarea
+                              <RichEditor
+                                compact={true}
                                 value={draft}
-                                onChange={e => setDrillDrafts(d => ({ ...d, [draftKey]: e.target.value }))}
-                                rows={5}
+                                onChange={html => setDrillDrafts(d => ({ ...d, [draftKey]: html }))}
+                                minHeight={120}
+                                moduleColor={node.color}
                                 autoFocus
-                                placeholder="Escreva aqui..."
-                                style={{
-                                  width: '100%', fontSize: '0.74rem', lineHeight: 1.6,
-                                  border: `1px solid ${node.color}35`, borderRadius: '7px',
-                                  padding: '7px 9px', fontFamily: 'inherit', resize: 'vertical',
-                                  outline: 'none', boxSizing: 'border-box',
-                                  color: 'var(--text-primary)', background: 'var(--surface)',
-                                }}
                               />
                               <div style={{ display: 'flex', gap: '0.35rem', marginTop: '5px' }}>
                                 <button
@@ -2277,19 +2266,13 @@ export default function VisaoGeralWorkspace({
 
                               {isEditing && item.type === 'card' && (
                                 <div style={{ padding: '0.35rem 0.4rem 0.4rem', borderBottom: `1px solid ${level.color}15` }}>
-                                  <textarea
+                                  <RichEditor
+                                    compact={true}
                                     value={draft}
-                                    onChange={e => setDrillDrafts(d => ({ ...d, [draftKey]: e.target.value }))}
-                                    rows={5}
+                                    onChange={html => setDrillDrafts(d => ({ ...d, [draftKey]: html }))}
+                                    minHeight={120}
+                                    moduleColor={level.color}
                                     autoFocus
-                                    placeholder="Escreva aqui..."
-                                    style={{
-                                      width: '100%', fontSize: '0.72rem', lineHeight: 1.6,
-                                      border: `1px solid ${level.color}35`, borderRadius: '6px',
-                                      padding: '7px 9px', fontFamily: 'inherit', resize: 'vertical',
-                                      outline: 'none', boxSizing: 'border-box', color: 'var(--text-primary)',
-                                      background: 'var(--surface)',
-                                    }}
                                   />
                                   <div style={{ display: 'flex', gap: '0.3rem', marginTop: '5px' }}>
                                     <button
@@ -2786,20 +2769,12 @@ export default function VisaoGeralWorkspace({
                     const saved  = draft === (cards[cardId] ?? '')
                     return (
                       <div style={{ padding: '6px 4px' }}>
-                        <textarea
+                        <RichEditor
+                          compact={false}
                           value={draft}
-                          onChange={e => setCardDraft(p => ({ ...p, [cardId]: e.target.value }))}
-                          placeholder={cardMeta?.placeholder ?? `Descreva ${activeNode.label.toLowerCase()} da passagem…`}
-                          rows={7}
-                          style={{
-                            width: '100%', resize: 'vertical', fontFamily: 'inherit',
-                            fontSize: '0.83rem', lineHeight: 1.6, color: '#1E293B',
-                            background: '#FAFAFA', border: '1px solid #E2E8F0',
-                            borderRadius: '8px', padding: '10px 11px', outline: 'none',
-                            boxSizing: 'border-box', transition: 'border-color 0.15s',
-                          }}
-                          onFocus={e => e.currentTarget.style.borderColor = activeNode.color + '80'}
-                          onBlur={e => e.currentTarget.style.borderColor = '#E2E8F0'}
+                          onChange={html => setCardDraft(p => ({ ...p, [cardId]: html }))}
+                          minHeight={180}
+                          moduleColor={activeNode.color}
                         />
                         <button
                           onClick={() => saveCard(cardId, draft)}
