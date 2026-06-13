@@ -5,7 +5,6 @@ import type { Project, Section } from '@/types/database'
 import type { SectionDef } from '@/lib/workspace-sections'
 import type { CollageItem } from '@/lib/collages-content'
 import { createClient } from '@/lib/supabase/client'
-import SectionWorkspace from './SectionWorkspace'
 import NodeFloatingWindow, { type FloatWin } from './NodeFloatingWindow'
 import { Sparkles, Map, List, MoreHorizontal, X, BookOpen, ChevronLeft, Loader2, Check, BookMarked, Maximize2, Minus, Minimize2, Crosshair } from 'lucide-react'
 import { loadClassificationsFromDB, saveClassificationToDB, deleteClassificationFromDB, updateClassificationInDB } from '@/lib/classification-sync'
@@ -589,6 +588,8 @@ export default function VisaoGeralWorkspace({
   useEffect(() => { const t = requestAnimationFrame(() => setMounted(true)); return () => cancelAnimationFrame(t) }, [])
 
   const [mode,         setMode]        = useState<'visual' | 'structured'>('visual')
+  const [expandedOutlineNodes,  setExpandedOutlineNodes]  = useState<Set<string>>(new Set())
+  const [editingOutlineCard,    setEditingOutlineCard]    = useState<string | null>(null)
   const [activePanel,  setActivePanel] = useState<string | null>(null)
   const [hoveredNode,  setHoveredNode] = useState<string | null>(null)
   // Drill-down popup stack (single click → popup, double click → navegar)
@@ -825,6 +826,64 @@ export default function VisaoGeralWorkspace({
 
   const totalItems = nodes.reduce((s, n) => s + getCount(n), 0)
   const canvasNodes = nodes.filter(n => n.kind !== 'obs')
+
+  const buildOutlineItems = (node: NodeDef): DrillItem[] => {
+    if (node.kind === 'cls') {
+      return getClsItems(node).map(c => ({
+        id: c.id,
+        label: c.selectedText || c.id,
+        sectionSlug: '',
+        type: 'card' as const,
+        status: 'reviewed' as const,
+      }))
+    }
+    if (node.phaseGroup) {
+      return getSectionsByGroupNav(node.phaseGroup).map(s => {
+        const secData    = allSections.find(sec => sec.slug === s.slug)
+        const sCards     = (secData?.content as { cards?: Record<string, string> } | null)?.cards ?? {}
+        const filled     = Object.values(sCards).filter(v => v?.trim()).length
+        const total      = s.cards?.length ?? 0
+        const status: DrillItem['status'] = filled === 0 ? 'empty' : (filled >= total && total > 0 ? 'reviewed' : 'draft')
+        return { id: s.slug, label: (s as { shortTitle?: string; title: string }).shortTitle ?? s.title, sectionSlug: s.slug, type: 'section' as const, status }
+      })
+    }
+    const sSlug = node.sectionSlug
+    if (sSlug) {
+      const sNav       = getSectionNavBySlug(sSlug)
+      const secData    = allSections.find(s => s.slug === sSlug)
+      const savedCards = (secData?.content as { cards?: Record<string, string> } | null)?.cards ?? {}
+      if (node.sectionCardId) {
+        const navCard = sNav?.cards?.find(c => c.id === node.sectionCardId)
+        return [{
+          id: node.sectionCardId,
+          label: navCard?.title ?? node.sectionCardId.replace(/_/g, ' '),
+          sectionSlug: sSlug,
+          type: 'card' as const,
+          status: cardTextStatus(savedCards[node.sectionCardId] ?? '') as DrillItem['status'],
+        }]
+      }
+      return (sNav?.cards ?? []).map(c => ({
+        id: c.id,
+        label: c.title ?? c.id.replace(/_/g, ' '),
+        sectionSlug: sSlug,
+        type: 'card' as const,
+        status: cardTextStatus(savedCards[c.id] ?? '') as DrillItem['status'],
+      }))
+    }
+    if (node.cardIds) {
+      return node.cardIds.map(cid => {
+        const vgDef = VG_CARD_DEFS[cid]
+        return {
+          id: cid,
+          label: vgDef?.title ?? cid.replace(/_/g, ' '),
+          sectionSlug: sectionDef.slug,
+          type: 'card' as const,
+          status: cardTextStatus(cards[cid] ?? '') as DrillItem['status'],
+        }
+      })
+    }
+    return []
+  }
 
   // ── Abrir modal de evolução das fases ─────────────────────────────────────
   const openEvolution = useCallback(async () => {
@@ -1425,8 +1484,150 @@ export default function VisaoGeralWorkspace({
 
       {/* ── Structured ─────────────────────────────────────────────────────── */}
       {mode === 'structured' && (
-        <SectionWorkspace sectionDef={effectiveSectionDef} project={project} userId={userId}
-          existingSection={existingSection} onUpdate={onUpdate} onAskAI={onAskAI} />
+        <div style={{ background: 'var(--surface)', border: '1px solid var(--border-subtle)', borderRadius: '12px', overflow: 'hidden' }}>
+          {/* Root node */}
+          <div style={{ padding: '0.8rem 1.1rem', borderBottom: '1px solid var(--border-subtle)', display: 'flex', alignItems: 'baseline', gap: '0.55rem', background: 'var(--surface-2, #F8FAFC)' }}>
+            <span style={{ fontSize: '0.92rem', fontWeight: 700, color: 'var(--text-primary)' }}>{centerTitle}</span>
+            {centerSub && <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{centerSub}</span>}
+            <span style={{ marginLeft: 'auto', fontSize: '0.63rem', color: 'var(--text-muted)', fontVariantNumeric: 'tabular-nums' }}>{totalItems} itens</span>
+          </div>
+
+          {/* Outline rows */}
+          {canvasNodes.map((node, nodeIdx) => {
+            const isExpanded = expandedOutlineNodes.has(node.key)
+            const count      = getCount(node)
+            const items      = buildOutlineItems(node)
+            const toggleNode = () => setExpandedOutlineNodes(prev => {
+              const next = new Set(prev)
+              if (next.has(node.key)) { next.delete(node.key) } else { next.add(node.key) }
+              return next
+            })
+
+            return (
+              <div key={node.key} style={{ borderTop: nodeIdx === 0 ? 'none' : '1px solid var(--border-subtle)' }}>
+                {/* Node header row */}
+                <button
+                  onClick={toggleNode}
+                  style={{
+                    display: 'flex', alignItems: 'center', gap: '0.55rem',
+                    width: '100%', background: isExpanded ? `${node.color}09` : 'transparent',
+                    border: 'none', padding: '0.6rem 1.1rem',
+                    cursor: items.length > 0 ? 'pointer' : 'default',
+                    fontFamily: 'inherit', textAlign: 'left',
+                    borderLeft: isExpanded ? `3px solid ${node.color}` : '3px solid transparent',
+                    transition: 'background 0.12s, border-left-color 0.12s',
+                  }}
+                  onMouseEnter={e => { if (!isExpanded && items.length > 0) e.currentTarget.style.background = `${node.color}06` }}
+                  onMouseLeave={e => { if (!isExpanded) e.currentTarget.style.background = 'transparent' }}
+                >
+                  <span style={{ fontSize: '0.55rem', color: isExpanded ? node.color : '#94A3B8', width: '0.7rem', flexShrink: 0, lineHeight: 1 }}>
+                    {items.length === 0 ? '·' : isExpanded ? '▼' : '▶'}
+                  </span>
+                  <span style={{ fontSize: '0.88rem', flexShrink: 0, lineHeight: 1 }}>{node.icon}</span>
+                  <span style={{ fontSize: '0.8rem', fontWeight: 600, color: isExpanded ? node.color : 'var(--text-primary)', flex: 1, minWidth: 0, lineHeight: 1.3 }}>
+                    {node.label}
+                  </span>
+                  {count > 0
+                    ? <span style={{ fontSize: '0.58rem', fontWeight: 700, color: '#fff', background: node.color, borderRadius: '999px', padding: '1px 6px', flexShrink: 0 }}>{count}</span>
+                    : <span style={{ fontSize: '0.6rem', color: '#CBD5E1' }}>vazio</span>
+                  }
+                </button>
+
+                {/* Sub-items */}
+                {isExpanded && items.length > 0 && (
+                  <div style={{ paddingLeft: '3rem', paddingBottom: '0.25rem', borderTop: `1px solid ${node.color}12` }}>
+                    {items.map(item => {
+                      const editKey   = `${node.key}:::${item.id}`
+                      const isEditing = editingOutlineCard === editKey
+                      const draftKey  = `${item.sectionSlug}:${item.id}`
+                      const draft     = drillDrafts[draftKey] ?? ''
+                      const saving    = drillSaving === draftKey
+
+                      return (
+                        <div key={item.id}>
+                          <button
+                            onClick={() => {
+                              if (item.type === 'section') {
+                                onNavigate?.(item.sectionSlug)
+                              } else {
+                                if (isEditing) {
+                                  setEditingOutlineCard(null)
+                                } else {
+                                  const secData    = allSections.find(s => s.slug === item.sectionSlug)
+                                  const savedCards = (secData?.content as { cards?: Record<string, string> } | null)?.cards ?? {}
+                                  const existing   = savedCards[item.id] ?? (item.sectionSlug === sectionDef.slug ? (cards[item.id] ?? '') : '')
+                                  setDrillDrafts(d => ({ ...d, [draftKey]: d[draftKey] ?? existing }))
+                                  setEditingOutlineCard(editKey)
+                                }
+                              }
+                            }}
+                            style={{
+                              display: 'flex', alignItems: 'center', gap: '0.5rem',
+                              width: '100%', background: isEditing ? `${node.color}10` : 'transparent',
+                              border: 'none', padding: '0.28rem 1rem 0.28rem 0',
+                              cursor: 'pointer', fontFamily: 'inherit', textAlign: 'left',
+                              borderRadius: '4px',
+                            }}
+                            onMouseEnter={e => { if (!isEditing) e.currentTarget.style.background = `${node.color}08` }}
+                            onMouseLeave={e => { if (!isEditing) e.currentTarget.style.background = 'transparent' }}
+                          >
+                            <span style={{ fontSize: '0.52rem', flexShrink: 0, color: item.status === 'reviewed' ? '#059669' : item.status === 'draft' ? '#D97706' : '#CBD5E1' }}>
+                              {item.status === 'reviewed' ? '●' : item.status === 'draft' ? '◑' : '○'}
+                            </span>
+                            <span style={{ fontSize: '0.75rem', color: 'var(--text-primary)', flex: 1, lineHeight: 1.4 }}>{item.label}</span>
+                            {item.type === 'section' && (
+                              <span style={{ fontSize: '0.65rem', color: node.color, opacity: 0.45, flexShrink: 0 }}>→</span>
+                            )}
+                          </button>
+
+                          {isEditing && item.type === 'card' && (
+                            <div style={{ paddingBottom: '0.45rem', paddingRight: '1rem' }}>
+                              <textarea
+                                value={draft}
+                                onChange={e => setDrillDrafts(d => ({ ...d, [draftKey]: e.target.value }))}
+                                rows={5}
+                                autoFocus
+                                placeholder="Escreva aqui..."
+                                style={{
+                                  width: '100%', fontSize: '0.74rem', lineHeight: 1.6,
+                                  border: `1px solid ${node.color}35`, borderRadius: '7px',
+                                  padding: '7px 9px', fontFamily: 'inherit', resize: 'vertical',
+                                  outline: 'none', boxSizing: 'border-box',
+                                  color: 'var(--text-primary)', background: 'var(--surface)',
+                                }}
+                              />
+                              <div style={{ display: 'flex', gap: '0.35rem', marginTop: '5px' }}>
+                                <button
+                                  disabled={saving}
+                                  onClick={async () => { await saveDrillCard(item.sectionSlug, item.id, draft); setEditingOutlineCard(null) }}
+                                  style={{ flex: 1, background: node.color, color: '#fff', border: 'none', borderRadius: '6px', padding: '5px 8px', fontSize: '0.66rem', fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit', opacity: saving ? 0.6 : 1 }}
+                                >
+                                  {saving ? 'Salvando...' : 'Salvar'}
+                                </button>
+                                <button
+                                  onClick={() => setEditingOutlineCard(null)}
+                                  style={{ background: 'transparent', color: '#64748B', border: '1px solid var(--border)', borderRadius: '6px', padding: '5px 8px', fontSize: '0.66rem', cursor: 'pointer', fontFamily: 'inherit' }}
+                                >
+                                  Cancelar
+                                </button>
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      )
+                    })}
+                  </div>
+                )}
+
+                {isExpanded && items.length === 0 && (
+                  <div style={{ padding: '0.35rem 3rem 0.5rem', fontSize: '0.7rem', color: '#94A3B8', fontStyle: 'italic' }}>
+                    Nenhum item ainda
+                  </div>
+                )}
+              </div>
+            )
+          })}
+        </div>
       )}
 
       {/* ── Visual ─────────────────────────────────────────────────────────── */}
