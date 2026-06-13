@@ -409,10 +409,10 @@ const PREPARAR_PHASE_NODES: NodeDef[] = [
 ]
 
 const INVESTIGAR_PHASE_NODES: NodeDef[] = [
-  { key: 'phase_visao_geral_inv',   label: 'Visão Geral',         icon: '⊞',  angle: -90, color: '#0F766E', bg: '#F0FDFA', kind: 'phase', sectionSlug: 'investigar_visao_geral' },
+  { key: 'phase_estudo_textual',    label: 'Estudo Textual',      icon: '🔑', angle: -90, color: '#163A6B', bg: '#EEF3FA', kind: 'phase', sectionSlug: 'texto_original',    phaseGroup: 'textual' },
   { key: 'phase_estudo_contextual', label: 'Estudo Contextual',   icon: '📅', angle: 0,   color: '#B45309', bg: '#FEF3C7', kind: 'phase', sectionSlug: 'contexto_historico', phaseGroup: 'contextual' },
-  { key: 'phase_estudo_textual',    label: 'Estudo Textual',      icon: '🔑', angle: 90,  color: '#163A6B', bg: '#EEF3FA', kind: 'phase', sectionSlug: 'texto_original',    phaseGroup: 'textual' },
-  { key: 'phase_estudo_teologico',  label: 'Estudo Teológico',    icon: '✚',  angle: 180, color: '#7C3AED', bg: '#F5F3FF', kind: 'phase', sectionSlug: 'contexto_canonico', phaseGroup: 'teologico' },
+  { key: 'phase_estudo_teologico',  label: 'Estudo Teológico',    icon: '✚',  angle: 90,  color: '#7C3AED', bg: '#F5F3FF', kind: 'phase', sectionSlug: 'contexto_canonico', phaseGroup: 'teologico' },
+  { key: 'phase_visao_geral_inv',   label: 'Visão Geral',         icon: '⊞',  angle: 180, color: '#0F766E', bg: '#F0FDFA', kind: 'phase', sectionSlug: 'investigar_visao_geral' },
 ]
 
 const FERRAMENTAS_PHASE_NODES: NodeDef[] = [
@@ -1497,7 +1497,9 @@ export default function VisaoGeralWorkspace({
           </div>
 
           {/* Outline rows */}
-          {canvasNodes.map((node, nodeIdx) => {
+          {(() => {
+            const isInvestigar = sectionDef.slug === 'investigar_visao_geral'
+            return canvasNodes.map((node, nodeIdx) => {
             const isExpanded = expandedOutlineNodes.has(node.key)
             const count      = getCount(node)
             const items      = buildOutlineItems(node)
@@ -1506,6 +1508,7 @@ export default function VisaoGeralWorkspace({
               if (next.has(node.key)) { next.delete(node.key) } else { next.add(node.key) }
               return next
             })
+            const nodeNum = isInvestigar ? nodeIdx + 1 : null
 
             return (
               <div key={node.key} style={{ borderTop: nodeIdx === 0 ? 'none' : '1px solid var(--border-subtle)' }}>
@@ -1527,7 +1530,12 @@ export default function VisaoGeralWorkspace({
                   <span style={{ fontSize: '0.55rem', color: isExpanded ? node.color : '#94A3B8', width: '0.7rem', flexShrink: 0, lineHeight: 1 }}>
                     {items.length === 0 ? '·' : isExpanded ? '▼' : '▶'}
                   </span>
-                  <span style={{ fontSize: '0.88rem', flexShrink: 0, lineHeight: 1 }}>{node.icon}</span>
+                  {nodeNum === null && <span style={{ fontSize: '0.88rem', flexShrink: 0, lineHeight: 1 }}>{node.icon}</span>}
+                  {nodeNum !== null && (
+                    <span style={{ fontSize: '0.65rem', fontWeight: 800, color: isExpanded ? node.color : '#94A3B8', flexShrink: 0, minWidth: '1.1rem', lineHeight: 1, letterSpacing: '-0.01em' }}>
+                      {nodeNum}.
+                    </span>
+                  )}
                   <span style={{ fontSize: '0.8rem', fontWeight: 600, color: isExpanded ? node.color : 'var(--text-primary)', flex: 1, minWidth: 0, lineHeight: 1.3 }}>
                     {node.label}
                   </span>
@@ -1540,7 +1548,7 @@ export default function VisaoGeralWorkspace({
                 {/* Sub-items (level 2) */}
                 {isExpanded && items.length > 0 && (
                   <div style={{ paddingLeft: '3rem', paddingBottom: '0.25rem', borderTop: `1px solid ${node.color}12` }}>
-                    {items.map(item => {
+                    {items.map((item, itemIdx) => {
                       const secExpandKey     = `${node.key}:${item.sectionSlug}`
                       const isSectionExpanded = item.type === 'section' && expandedOutlineSections.has(secExpandKey)
                       const editKey          = `${node.key}:::${item.id}`
@@ -1603,6 +1611,11 @@ export default function VisaoGeralWorkspace({
                             <span style={{ fontSize: '0.5rem', flexShrink: 0, color: item.type === 'section' ? (isSectionExpanded ? node.color : '#94A3B8') : (item.status === 'reviewed' ? '#059669' : item.status === 'draft' ? '#D97706' : '#CBD5E1') }}>
                               {item.type === 'section' ? (isSectionExpanded ? '▼' : '▶') : (item.status === 'reviewed' ? '●' : item.status === 'draft' ? '◑' : '○')}
                             </span>
+                            {nodeNum !== null && node.phaseGroup && item.type === 'section' && (
+                              <span style={{ fontSize: '0.6rem', fontWeight: 700, color: isSectionExpanded ? node.color : '#94A3B8', flexShrink: 0, letterSpacing: '-0.01em' }}>
+                                {nodeNum}.{itemIdx + 1}
+                              </span>
+                            )}
                             <span style={{ fontSize: '0.75rem', color: isSectionExpanded ? node.color : 'var(--text-primary)', fontWeight: item.type === 'section' ? 600 : 400, flex: 1, lineHeight: 1.4 }}>{item.label}</span>
                           </button>
 
@@ -1727,7 +1740,8 @@ export default function VisaoGeralWorkspace({
                 )}
               </div>
             )
-          })}
+          })
+          })()}
         </div>
       )}
 
