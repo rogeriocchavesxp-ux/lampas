@@ -404,12 +404,14 @@ const PREPARAR_PHASE_NODES: NodeDef[] = [
   { key: 'phase_leia_assimile',         label: 'Leia e Assimile',       icon: '📖', angle: -18,  color: '#059669', bg: '#F0FDF4', kind: 'phase', sectionSlug: 'preparar_leia_assimile' },
   { key: 'phase_primeiras_impressoes',  label: 'Primeiras Impressões',  icon: '💬', angle: 54,   color: '#4F46E5', bg: '#EEF2FF', kind: 'phase', sectionSlug: 'preparar_primeiras_impressoes' },
   { key: 'phase_visao_geral_prep',      label: 'Visão Geral',           icon: '⊞',  angle: 126,  color: '#163A6B', bg: '#EEF3FA', kind: 'phase', sectionSlug: 'preparar_visao_geral' },
+  { key: 'phase_obs_pessoais',          label: 'Observações Pessoais',  icon: '📝', angle: 198,  color: '#0F766E', bg: '#F0FDFA', kind: 'phase', phaseGroup: 'preparar_impressoes' },
 ]
 
 const INVESTIGAR_PHASE_NODES: NodeDef[] = [
-  { key: 'phase_estudo_contextual', label: 'Estudo Contextual', icon: '📅', angle: -90, color: '#B45309', bg: '#FEF3C7', kind: 'phase', sectionSlug: 'contexto_historico', phaseGroup: 'contextual' },
-  { key: 'phase_estudo_textual',    label: 'Estudo Textual',    icon: '🔑', angle: 30,  color: '#163A6B', bg: '#EEF3FA', kind: 'phase', sectionSlug: 'texto_original',    phaseGroup: 'textual' },
-  { key: 'phase_estudo_teologico',  label: 'Estudo Teológico',  icon: '✚',  angle: 150, color: '#7C3AED', bg: '#F5F3FF', kind: 'phase', sectionSlug: 'contexto_canonico', phaseGroup: 'teologico' },
+  { key: 'phase_visao_geral_inv',   label: 'Visão Geral',         icon: '⊞',  angle: -90, color: '#0F766E', bg: '#F0FDFA', kind: 'phase', sectionSlug: 'investigar_visao_geral' },
+  { key: 'phase_estudo_contextual', label: 'Estudo Contextual',   icon: '📅', angle: 0,   color: '#B45309', bg: '#FEF3C7', kind: 'phase', sectionSlug: 'contexto_historico', phaseGroup: 'contextual' },
+  { key: 'phase_estudo_textual',    label: 'Estudo Textual',      icon: '🔑', angle: 90,  color: '#163A6B', bg: '#EEF3FA', kind: 'phase', sectionSlug: 'texto_original',    phaseGroup: 'textual' },
+  { key: 'phase_estudo_teologico',  label: 'Estudo Teológico',    icon: '✚',  angle: 180, color: '#7C3AED', bg: '#F5F3FF', kind: 'phase', sectionSlug: 'contexto_canonico', phaseGroup: 'teologico' },
 ]
 
 const FERRAMENTAS_PHASE_NODES: NodeDef[] = [

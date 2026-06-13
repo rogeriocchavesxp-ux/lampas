@@ -2214,22 +2214,23 @@ export default function WorkspaceClient({ user, project, initialSections }: Prop
               const btn = (
                 <button
                   key={phase.id}
-                  onClick={(e) => {
-                    const r = e.currentTarget.getBoundingClientRect()
-                    if (isOpen) { setOpenPhasePopover(null); setPopoverAnchor(null) }
-                    else { setOpenPhasePopover(phase.id); setPopoverAnchor({ left: r.left, width: r.width }) }
+                  onClick={() => {
+                    const vgSlug = phase.id === 'comunicar' ? 'pregar_visao_geral' : `${phase.id}_visao_geral`
+                    navigate(vgSlug)
+                    setOpenPhasePopover(null)
+                    setPopoverAnchor(null)
                   }}
                   style={{
                     position: 'relative', overflow: 'hidden',
                     flex: 1, minWidth: 0, height: '44px',
-                    border: `1.5px solid ${isActive || isOpen ? phase.color : pct > 0 ? `${phase.color}35` : 'var(--border-subtle)'}`,
+                    border: `1.5px solid ${isActive ? phase.color : pct > 0 ? `${phase.color}35` : 'var(--border-subtle)'}`,
                     borderRadius: '10px', background: 'var(--surface)',
                     cursor: 'pointer', fontFamily: 'inherit',
                     display: 'flex', alignItems: 'center', padding: '0 12px', gap: '6px',
                     transition: 'border-color 0.15s',
                   }}
-                  onMouseEnter={e => { if (!isActive && !isOpen) e.currentTarget.style.borderColor = `${phase.color}55` }}
-                  onMouseLeave={e => { if (!isActive && !isOpen) e.currentTarget.style.borderColor = pct > 0 ? `${phase.color}35` : 'var(--border-subtle)' }}
+                  onMouseEnter={e => { if (!isActive) e.currentTarget.style.borderColor = `${phase.color}55` }}
+                  onMouseLeave={e => { if (!isActive) e.currentTarget.style.borderColor = pct > 0 ? `${phase.color}35` : 'var(--border-subtle)' }}
                 >
                   {/* Progress fill (behind content) */}
                   {pct > 0 && (
@@ -2244,13 +2245,13 @@ export default function WorkspaceClient({ user, project, initialSections }: Prop
                   <span style={{
                     position: 'relative', zIndex: 1, flexShrink: 0,
                     fontSize: '0.58rem', fontWeight: 800, letterSpacing: '0.05em',
-                    color: isActive || isOpen ? phase.color : 'var(--text-muted)', lineHeight: 1,
+                    color: isActive ? phase.color : 'var(--text-muted)', lineHeight: 1,
                   }}>{phase.roman}</span>
                   {/* Phase name */}
                   <span style={{
                     position: 'relative', zIndex: 1, flex: 1, minWidth: 0,
                     fontSize: '0.82rem', fontWeight: 700, letterSpacing: '-0.01em',
-                    color: isActive || isOpen ? phase.color : pct > 0 ? 'var(--text-primary)' : 'var(--text-secondary)',
+                    color: isActive ? phase.color : pct > 0 ? 'var(--text-primary)' : 'var(--text-secondary)',
                     whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
                   }}>{phase.label}</span>
                   {/* Progress badge */}
@@ -2280,32 +2281,32 @@ export default function WorkspaceClient({ user, project, initialSections }: Prop
             return (
               <button
                 key={phase.id}
-                onClick={(e) => {
-                  const r = e.currentTarget.getBoundingClientRect()
-                  if (isOpen) { setOpenPhasePopover(null); setPopoverAnchor(null) }
-                  else { setOpenPhasePopover(phase.id); setPopoverAnchor({ left: r.left, width: r.width }) }
+                onClick={() => {
+                  navigate('ferramentas_visao_geral')
+                  setOpenPhasePopover(null)
+                  setPopoverAnchor(null)
                 }}
                 style={{
                   height: '44px', flexShrink: 0,
-                  border: `1.5px solid ${isActive || isOpen ? phase.color : 'var(--border-subtle)'}`,
+                  border: `1.5px solid ${isActive ? phase.color : 'var(--border-subtle)'}`,
                   borderRadius: '10px',
-                  background: isActive || isOpen ? `${phase.color}10` : 'transparent',
+                  background: isActive ? `${phase.color}10` : 'transparent',
                   cursor: 'pointer', fontFamily: 'inherit',
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
                   padding: '0 16px',
                   fontSize: '0.82rem', fontWeight: 700, letterSpacing: '-0.01em',
-                  color: isActive || isOpen ? phase.color : 'var(--text-secondary)',
+                  color: isActive ? phase.color : 'var(--text-secondary)',
                   transition: 'all 0.15s',
                   whiteSpace: 'nowrap',
                 }}
                 onMouseEnter={e => {
-                  if (!isActive && !isOpen) {
+                  if (!isActive) {
                     e.currentTarget.style.borderColor = `${phase.color}55`
                     e.currentTarget.style.color = 'var(--text-primary)'
                   }
                 }}
                 onMouseLeave={e => {
-                  if (!isActive && !isOpen) {
+                  if (!isActive) {
                     e.currentTarget.style.borderColor = 'var(--border-subtle)'
                     e.currentTarget.style.color = 'var(--text-secondary)'
                   }
