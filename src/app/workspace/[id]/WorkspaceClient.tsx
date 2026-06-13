@@ -29,6 +29,7 @@ import SermonBuilderWorkspace from './SermonBuilderWorkspace'
 import CommentaryWorkspace from './CommentaryWorkspace'
 import ComentarioExegeticoWorkspace from './ComentarioExegeticoWorkspace'
 import ProduzirWorkspace from './ProduzirWorkspace'
+import WorkspaceMenuBar from './WorkspaceMenuBar'
 import LiveReferencePanel from './LiveReferencePanel'
 import AIPanel from './AIPanel'
 import BibleFloatingWindow from './BibleFloatingWindow'
@@ -44,7 +45,6 @@ import {
   AlignJustify, GitBranch, Palette, Tag, X,
   type LucideIcon,
 } from 'lucide-react'
-import { LampasLogo, LampasMarkIcon } from '@/components/LampasLogo'
 import {
   getModeConfig,
   STUDY_MODE_REGISTRY,
@@ -723,280 +723,25 @@ export default function WorkspaceClient({ user, project, initialSections }: Prop
     <div style={{ height: '100vh', display: 'flex', flexDirection: 'column', background: 'var(--background)', paddingBottom: focusMode ? 0 : '60px', boxSizing: 'border-box' }}>
 
       {/* ── Topbar ────────────────────────────────────────────────────────── */}
-      {/* Grid 1fr auto 1fr garante centro real no viewport, independente dos pesos laterais */}
-      <header style={{
-        height: '54px', flexShrink: 0,
-        borderBottom: '1px solid var(--border-subtle)',
-        background: 'var(--surface)',
-        display: 'grid',
-        gridTemplateColumns: '1fr auto 1fr',
-        alignItems: 'center',
-        padding: '0 1rem 0 0.9rem',
-      }}>
-
-        {/* ── Coluna esquerda: marca + título opcional ── */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', minWidth: 0 }}>
-          <LampasLogo height={46} />
-          <div style={{ width: '1px', height: '20px', background: 'var(--border-subtle)', flexShrink: 0 }} />
-          <button
-            onClick={() => router.push('/')}
-            title="Voltar para a página inicial"
-            style={{
-              background: 'transparent',
-              border: '1px solid var(--border-subtle)',
-              color: 'var(--text-secondary)',
-              borderRadius: '6px',
-              cursor: 'pointer',
-              fontFamily: 'inherit',
-              fontSize: '0.74rem',
-              fontWeight: 700,
-              padding: '0.24rem 0.62rem',
-              flexShrink: 0,
-            }}
-            onMouseEnter={e => {
-              e.currentTarget.style.borderColor = 'var(--accent)'
-              e.currentTarget.style.color = 'var(--accent)'
-            }}
-            onMouseLeave={e => {
-              e.currentTarget.style.borderColor = 'var(--border-subtle)'
-              e.currentTarget.style.color = 'var(--text-secondary)'
-            }}
-          >
-            Home
-          </button>
-          <>
-            <button
-              onClick={() => router.push('/dashboard')}
-              style={{
-                background: 'transparent', border: 'none', cursor: 'pointer',
-                color: 'var(--text-muted)', fontSize: '0.78rem',
-                padding: '0.2rem 0.4rem 0.2rem 0.3rem', borderRadius: '4px',
-                fontFamily: 'inherit', flexShrink: 0,
-              }}
-              onMouseEnter={e => e.currentTarget.style.color = 'var(--text-secondary)'}
-              onMouseLeave={e => e.currentTarget.style.color = 'var(--text-muted)'}
-            >←</button>
-            <span style={{
-              fontSize: '0.83rem', fontWeight: 600, color: 'var(--text-primary)',
-              overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
-              flexShrink: 1,
-            }}>
-              {titleValue}
-            </span>
-            <span style={{
-              fontSize: '0.64rem', color: 'var(--text-muted)', flexShrink: 0,
-              background: 'var(--surface-2)', border: '1px solid var(--border-subtle)',
-              borderRadius: '3px', padding: '0.03rem 0.3rem',
-            }}>
-              {project.original_language}
-            </span>
-          </>
-        </div>
-
-        {/* ── Coluna central: Texto Bíblico — centro real do viewport ── */}
-        <button
-          onClick={() => setBibleOpen(o => !o)}
-          title="Abrir Texto Bíblico"
-          style={{
-            background: bibleOpen
-              ? 'linear-gradient(135deg, #C9921A 0%, #D97706 100%)'
-              : 'transparent',
-            border: `1.5px solid ${bibleOpen ? '#C9921A' : '#C9921A55'}`,
-            color: bibleOpen ? '#FFFFFF' : '#C9921A',
-            borderRadius: '7px',
-            padding: '0.28rem 0.85rem',
-            fontSize: '0.75rem',
-            fontWeight: 700,
-            letterSpacing: '0.02em',
-            cursor: 'pointer',
-            fontFamily: 'inherit',
-            transition: 'all 0.15s',
-            display: 'flex', alignItems: 'center', gap: '0.38rem',
-            boxShadow: bibleOpen
-              ? '0 1px 6px rgba(201,146,26,0.35)'
-              : '0 0 0 3px rgba(201,146,26,0)',
-            whiteSpace: 'nowrap',
-          }}
-          onMouseEnter={e => {
-            if (!bibleOpen) {
-              e.currentTarget.style.background = 'rgba(201,146,26,0.09)'
-              e.currentTarget.style.borderColor = '#C9921A'
-              e.currentTarget.style.boxShadow = '0 0 0 3px rgba(201,146,26,0.12)'
-            }
-          }}
-          onMouseLeave={e => {
-            if (!bibleOpen) {
-              e.currentTarget.style.background = 'transparent'
-              e.currentTarget.style.borderColor = '#C9921A55'
-              e.currentTarget.style.boxShadow = '0 0 0 3px rgba(201,146,26,0)'
-            }
-          }}
-        >
-          <BookOpen size={13} strokeWidth={2} />
-          <span>Texto Bíblico</span>
-          <span style={{
-            opacity: bibleOpen ? 0.75 : 0.65,
-            fontWeight: 500, fontSize: '0.7rem', letterSpacing: '0.01em',
-            maxWidth: '160px', overflow: 'hidden', textOverflow: 'ellipsis',
-          }}>
-            · {modeConfig.passageBased ? `${project.book} ${project.passage_ref}` : project.passage_ref}
-          </span>
-        </button>
-
-        {/* ── Coluna direita: controles — alinhados à direita ── */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', justifyContent: 'flex-end' }}>
-
-          {/* Mode badge */}
-          <span style={{
-            fontSize: '0.64rem', fontWeight: 700, letterSpacing: '0.04em',
-            color: modeConfig.color,
-            background: `${modeConfig.color}12`,
-            border: `1px solid ${modeConfig.color}30`,
-            borderRadius: '4px', padding: '0.1rem 0.45rem',
-            whiteSpace: 'nowrap',
-          }}>
-            {modeConfig.name}
-          </span>
-
-          <div title="Progresso geral ponderado pelas etapas principais do fluxo" style={{ display: 'flex', alignItems: 'center', gap: '0.45rem' }}>
-            <span style={{ fontSize: '0.62rem', color: 'var(--text-muted)', fontWeight: 700, whiteSpace: 'nowrap' }}>
-              Progresso do {modeConfig.name}
-            </span>
-            <span style={{ fontSize: '0.68rem', color: 'var(--text-muted)', whiteSpace: 'nowrap' }}>{pct}% concluído</span>
-            <div style={{ width: '64px', height: '2px', background: 'var(--border)', borderRadius: '1px', overflow: 'hidden' }}>
-              <div style={{
-                width: `${pct}%`, height: '100%',
-                background: activePhase?.color ?? 'var(--accent)',
-                transition: 'width 0.5s ease',
-              }} />
-            </div>
-          </div>
-
-          <button
-            onClick={() => setSideBySide(o => !o)}
-            title="Mostrar exegese e trabalho lado a lado"
-            style={{
-              background: sideBySide ? 'rgba(0,0,0,0.05)' : 'transparent',
-              border: `1px solid ${sideBySide ? 'var(--border)' : 'var(--border-subtle)'}`,
-              color: sideBySide ? 'var(--text-secondary)' : 'var(--text-muted)',
-              borderRadius: '5px', padding: '0.2rem 0.55rem',
-              fontSize: '0.7rem', fontWeight: 600, letterSpacing: '0.03em',
-              cursor: 'pointer', fontFamily: 'inherit', transition: 'all 0.15s',
-            }}
-            onMouseEnter={e => { if (!sideBySide) { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.color = 'var(--text-secondary)' } }}
-            onMouseLeave={e => { if (!sideBySide) { e.currentTarget.style.borderColor = 'var(--border-subtle)'; e.currentTarget.style.color = 'var(--text-muted)' } }}
-          >
-            ⊞ Lado a Lado
-          </button>
-
-          <button
-            onClick={() => setFocusMode(o => !o)}
-            style={{
-              background: focusMode ? 'rgba(0,0,0,0.05)' : 'transparent',
-              border: `1px solid ${focusMode ? 'var(--border)' : 'var(--border-subtle)'}`,
-              color: focusMode ? 'var(--text-secondary)' : 'var(--text-muted)',
-              borderRadius: '5px', padding: '0.2rem 0.55rem',
-              fontSize: '0.7rem', fontWeight: 600, letterSpacing: '0.03em',
-              cursor: 'pointer', fontFamily: 'inherit', transition: 'all 0.15s',
-            }}
-          >
-            {focusMode ? 'Sair' : 'Foco'}
-          </button>
-
-          <button
-            onClick={() => setAiOpen(o => !o)}
-            style={{
-              background: aiOpen ? 'var(--ai-subtle)' : 'transparent',
-              border: `1px solid ${aiOpen ? 'var(--ai)' : 'var(--border-subtle)'}`,
-              color: aiOpen ? 'var(--ai)' : 'var(--text-muted)',
-              borderRadius: '5px', padding: '0.2rem 0.55rem',
-              fontSize: '0.7rem', fontWeight: 600, letterSpacing: '0.03em',
-              cursor: 'pointer', fontFamily: 'inherit', transition: 'all 0.15s',
-            }}
-            onMouseEnter={e => { if (!aiOpen) { e.currentTarget.style.borderColor = 'var(--ai)'; e.currentTarget.style.color = 'var(--ai)' } }}
-            onMouseLeave={e => { if (!aiOpen) { e.currentTarget.style.borderColor = 'var(--border-subtle)'; e.currentTarget.style.color = 'var(--text-muted)' } }}
-          >
-            IA
-          </button>
-
-          {/* Dropdown "Enviar ▼" — disponível em todos os modos */}
-          <>
-            <div style={{ width: '1px', height: '14px', background: 'var(--border-subtle)', flexShrink: 0 }} />
-            <div ref={enviarDropdownRef} style={{ position: 'relative' }}>
-              <button
-                onClick={() => setEnviarDropdownOpen(o => !o)}
-                style={{
-                  background: enviarDropdownOpen ? 'rgba(124,58,237,0.06)' : 'transparent',
-                  border: `1px solid ${enviarDropdownOpen ? 'rgba(124,58,237,0.5)' : 'rgba(124,58,237,0.35)'}`,
-                  color: '#7C3AED',
-                  borderRadius: '5px', padding: '0.2rem 0.6rem',
-                  fontSize: '0.73rem', fontWeight: 700, letterSpacing: '0.03em',
-                  cursor: 'pointer', fontFamily: 'inherit', transition: 'all 0.15s',
-                  display: 'flex', alignItems: 'center', gap: '0.3rem',
-                }}
-                onMouseEnter={e => { if (!enviarDropdownOpen) e.currentTarget.style.background = 'rgba(124,58,237,0.06)' }}
-                onMouseLeave={e => { if (!enviarDropdownOpen) e.currentTarget.style.background = 'transparent' }}
-                title="Enviar conteúdo para outro fluxo"
-              >
-                Enviar
-                <span style={{ fontSize: '0.6rem', opacity: 0.7 }}>▼</span>
-              </button>
-
-              {enviarDropdownOpen && (
-                <div style={{
-                  position: 'absolute', top: 'calc(100% + 6px)', right: 0,
-                  background: 'var(--surface)', border: '1px solid var(--border)',
-                  borderRadius: '9px', boxShadow: '0 8px 24px rgba(0,0,0,0.1)',
-                  minWidth: '190px', overflow: 'hidden', zIndex: 200,
-                }}>
-                  {([
-                    { icon: '📖', label: 'Sermão',               mode: 'sermao'    as const },
-                    { icon: '❤️', label: 'Devocional',            mode: 'devocional' as const },
-                  ] as const).map(opt => (
-                    <button
-                      key={opt.mode}
-                      onClick={() => {
-                        setEnviarTargetMode(opt.mode)
-                        setEnviarParaSermaOpen(true)
-                        setEnviarDropdownOpen(false)
-                      }}
-                      style={{
-                        width: '100%', display: 'flex', alignItems: 'center', gap: '0.55rem',
-                        border: 'none', background: 'transparent', padding: '0.6rem 0.85rem',
-                        cursor: 'pointer', fontFamily: 'inherit', fontSize: '0.8rem',
-                        color: 'var(--text-primary)', textAlign: 'left',
-                        borderBottom: '1px solid var(--border-subtle)',
-                      }}
-                      onMouseEnter={e => { e.currentTarget.style.background = 'var(--surface-2)' }}
-                      onMouseLeave={e => { e.currentTarget.style.background = 'transparent' }}
-                    >
-                      <span>{opt.icon}</span>
-                      <span style={{ fontWeight: 600 }}>{opt.label}</span>
-                    </button>
-                  ))}
-                  <button
-                    onClick={() => {
-                      setEnviarDropdownOpen(false)
-                      window.dispatchEvent(new CustomEvent('lampas:kb-open-create'))
-                    }}
-                    style={{
-                      width: '100%', display: 'flex', alignItems: 'center', gap: '0.55rem',
-                      border: 'none', background: 'transparent', padding: '0.6rem 0.85rem',
-                      cursor: 'pointer', fontFamily: 'inherit', fontSize: '0.8rem',
-                      color: 'var(--text-primary)', textAlign: 'left',
-                    }}
-                    onMouseEnter={e => { e.currentTarget.style.background = 'var(--surface-2)' }}
-                    onMouseLeave={e => { e.currentTarget.style.background = 'transparent' }}
-                  >
-                    <span>🧠</span>
-                    <span style={{ fontWeight: 600 }}>Base de Conhecimento</span>
-                  </button>
-                </div>
-              )}
-            </div>
-          </>
-        </div>
-      </header>
+      <WorkspaceMenuBar
+        project={project}
+        titleValue={titleValue}
+        pct={pct}
+        modeConfig={modeConfig}
+        bibleOpen={bibleOpen}
+        focusMode={focusMode}
+        sideBySide={sideBySide}
+        aiOpen={aiOpen}
+        onToggleBible={() => setBibleOpen(o => !o)}
+        onToggleFocus={() => setFocusMode(o => !o)}
+        onToggleSideBySide={() => setSideBySide(o => !o)}
+        onToggleAI={() => setAiOpen(o => !o)}
+        onEnviarSermao={() => { setEnviarTargetMode('sermao'); setEnviarParaSermaOpen(true) }}
+        onEnviarDevocional={() => { setEnviarTargetMode('devocional'); setEnviarParaSermaOpen(true) }}
+        onEnviarKB={() => window.dispatchEvent(new CustomEvent('lampas:kb-open-create'))}
+        onNavigateHome={() => router.push('/')}
+        onNavigateDashboard={() => router.push('/dashboard')}
+      />
 
       {/* ── Guided strip (demo projects only) ─────────────────────────── */}
       {project.is_demo && <GuidedStrip activeSlug={activeSlug} onNavigate={navigate} modeColor={modeConfig.color} />}
