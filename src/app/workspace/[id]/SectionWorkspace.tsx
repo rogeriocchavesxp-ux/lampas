@@ -204,6 +204,14 @@ export default function SectionWorkspace({
     return () => document.removeEventListener('mousedown', handler)
   }, [openMenu])
 
+  // Close orientation popup on outside click
+  useEffect(() => {
+    if (!questionsOpen) return
+    function handler() { setQuestionsOpen(false) }
+    document.addEventListener('mousedown', handler)
+    return () => document.removeEventListener('mousedown', handler)
+  }, [questionsOpen])
+
   function scheduleAutosave(cardId: string, value: string) {
     const next = { ...latestContent.current, [cardId]: value }
     setCardContent(next)
@@ -461,17 +469,90 @@ export default function SectionWorkspace({
         </span>
       </div>
 
-      {/* Section title */}
-      <h1 style={{
-        fontSize: '1.75rem', fontWeight: '700',
-        letterSpacing: '-0.03em', lineHeight: 1.15,
-        color: 'var(--text-primary)', marginBottom: '0.5rem',
-      }}>
-        {sectionDef.title}
-      </h1>
+      {/* Section title + orientation button */}
+      <div style={{ display: 'flex', alignItems: 'flex-start', gap: '0.65rem', marginBottom: '0.5rem' }}>
+        <h1 style={{
+          flex: 1,
+          fontSize: '1.75rem', fontWeight: '700',
+          letterSpacing: '-0.03em', lineHeight: 1.15,
+          color: 'var(--text-primary)', margin: 0,
+        }}>
+          {sectionDef.title}
+        </h1>
+
+        {sectionDef.keyQuestions.length > 0 && (
+          <div style={{ position: 'relative', flexShrink: 0, marginTop: '0.35rem' }}>
+            <button
+              onClick={() => setQuestionsOpen(o => !o)}
+              title="Perguntas orientadoras"
+              style={{
+                display: 'flex', alignItems: 'center', gap: '0.3rem',
+                background: questionsOpen ? `${moduleColor}12` : 'var(--surface)',
+                border: `1px solid ${questionsOpen ? moduleColor + '40' : 'var(--border)'}`,
+                borderRadius: '8px', padding: '0.3rem 0.65rem',
+                cursor: 'pointer', fontFamily: 'inherit',
+                fontSize: '0.72rem', fontWeight: 600,
+                color: questionsOpen ? moduleColor : 'var(--text-muted)',
+                transition: 'all 0.12s',
+              }}
+              onMouseEnter={e => { if (!questionsOpen) { e.currentTarget.style.borderColor = moduleColor + '30'; e.currentTarget.style.color = 'var(--text-secondary)' } }}
+              onMouseLeave={e => { if (!questionsOpen) { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.color = 'var(--text-muted)' } }}
+            >
+              <span style={{ fontSize: '0.85rem' }}>💡</span>
+              Orientação
+            </button>
+
+            {questionsOpen && (
+              <div style={{
+                position: 'absolute', top: 'calc(100% + 6px)', right: 0,
+                zIndex: 200,
+                background: 'var(--surface)',
+                border: '1px solid var(--border)',
+                borderRadius: '12px',
+                boxShadow: '0 8px 24px rgba(0,0,0,0.10), 0 2px 6px rgba(0,0,0,0.06)',
+                padding: '0.85rem 1rem',
+                width: '320px',
+                maxHeight: '400px', overflowY: 'auto',
+              }}>
+                <p style={{ fontSize: '0.62rem', fontWeight: 700, letterSpacing: '0.07em', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: '0.6rem' }}>
+                  Perguntas orientadoras
+                </p>
+                {sectionDef.keyQuestions.map((q, i) => (
+                  <button
+                    key={i}
+                    onClick={() => { onAskAI(q); setQuestionsOpen(false) }}
+                    style={{
+                      display: 'block', width: '100%',
+                      background: 'none', border: 'none',
+                      cursor: 'pointer', fontFamily: 'inherit',
+                      textAlign: 'left', padding: '0.22rem 0',
+                      color: 'var(--text-secondary)',
+                      fontSize: '0.8rem', lineHeight: '1.55',
+                      transition: 'color 0.1s',
+                    }}
+                    onMouseEnter={e => { e.currentTarget.style.color = moduleColor }}
+                    onMouseLeave={e => { e.currentTarget.style.color = 'var(--text-secondary)' }}
+                  >
+                    · {q}
+                  </button>
+                ))}
+                {sectionDef.relevantAuthors.length > 0 && (
+                  <div style={{
+                    marginTop: '0.65rem', paddingTop: '0.5rem',
+                    borderTop: '1px solid var(--border-subtle)',
+                    fontSize: '0.68rem', color: 'var(--text-muted)', fontStyle: 'italic',
+                  }}>
+                    {sectionDef.relevantAuthors.join(' · ')}
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        )}
+      </div>
 
       {/* Reference */}
-      <p style={{ fontSize: '0.82rem', color: 'var(--text-muted)', marginBottom: '1.5rem', letterSpacing: '0.01em' }}>
+      <p style={{ fontSize: '0.82rem', color: 'var(--text-muted)', marginBottom: '1.5rem', letterSpacing: '0.01em', marginTop: '0.5rem' }}>
         {project.book} {project.passage_ref} · {project.original_language}
       </p>
 
@@ -484,77 +565,6 @@ export default function SectionWorkspace({
       }}>
         {sectionDef.objective}
       </p>
-
-      {/* Key questions — collapsible */}
-      <div style={{ marginBottom: '2.5rem' }}>
-        <button
-          onClick={() => setQuestionsOpen(o => !o)}
-          style={{
-            background: 'none', border: 'none', cursor: 'pointer',
-            fontFamily: 'inherit', padding: 0,
-            display: 'flex', alignItems: 'center', gap: '0.4rem',
-          }}
-        >
-          {questionsOpen
-            ? <ChevronDown size={12} style={{ color: 'var(--text-muted)', opacity: 0.55 }} />
-            : <ChevronDown size={12} style={{ color: 'var(--text-muted)', opacity: 0.4, transform: 'rotate(-90deg)' }} />
-          }
-          <span style={{
-            fontSize: '0.67rem', fontWeight: '600',
-            letterSpacing: '0.07em', textTransform: 'uppercase',
-            color: 'var(--text-muted)',
-          }}>
-            Perguntas Centrais
-          </span>
-          {!questionsOpen && (
-            <span style={{
-              fontSize: '0.67rem', color: 'var(--text-muted)',
-              fontStyle: 'italic', opacity: 0.5,
-            }}>
-              — {sectionDef.keyQuestions.length} orientações
-            </span>
-          )}
-        </button>
-
-        {questionsOpen && (
-          <div style={{
-            marginTop: '0.75rem',
-            paddingLeft: '0.9rem',
-            borderLeft: `1px solid ${moduleColor}30`,
-          }}>
-            {sectionDef.keyQuestions.map((q, i) => (
-              <button
-                key={i}
-                onClick={() => onAskAI(q)}
-                style={{
-                  display: 'block', width: '100%',
-                  background: 'none', border: 'none',
-                  cursor: 'pointer', fontFamily: 'inherit',
-                  textAlign: 'left', padding: '0.2rem 0',
-                  color: 'var(--text-muted)',
-                  fontSize: '0.82rem', fontStyle: 'italic',
-                  lineHeight: '1.6', transition: 'color 0.12s',
-                }}
-                onMouseEnter={e => { e.currentTarget.style.color = 'var(--text-secondary)' }}
-                onMouseLeave={e => { e.currentTarget.style.color = 'var(--text-muted)' }}
-              >
-                · {q}
-              </button>
-            ))}
-
-            {sectionDef.relevantAuthors.length > 0 && (
-              <div style={{
-                marginTop: '0.6rem', paddingTop: '0.45rem',
-                borderTop: '1px solid var(--border-subtle)',
-                fontSize: '0.69rem', color: 'var(--text-muted)',
-                fontStyle: 'italic', opacity: 0.65,
-              }}>
-                {sectionDef.relevantAuthors.join(' · ')}
-              </div>
-            )}
-          </div>
-        )}
-      </div>
 
       {/* ── Research guide ────────────────────────────────────────────────── */}
       {(() => {

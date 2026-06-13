@@ -609,11 +609,56 @@ export const WORKSPACE_SECTIONS_NAV: SectionNav[] = [
     ]
   },
   {
+    "slug": "teologia_biblica",
+    "title": "3.1 Implicações para a Teologia Bíblica",
+    "shortTitle": "Teologia Bíblica",
+    "module": "inventio",
+    "group": "teologico",
+    "groupLabel": "Estudo Teológico",
+    "order": 11,
+    "cards": [
+      {
+        "id": "implicacoes_tb",
+        "title": "Implicações para a Teologia Bíblica"
+      }
+    ]
+  },
+  {
+    "slug": "teologia_sistematica",
+    "title": "3.2 Implicações para a Teologia Sistemática",
+    "shortTitle": "Teologia Sistemática",
+    "module": "inventio",
+    "group": "teologico",
+    "groupLabel": "Estudo Teológico",
+    "order": 12,
+    "cards": [
+      {
+        "id": "implicacoes_ts",
+        "title": "Implicações para a Teologia Sistemática"
+      }
+    ]
+  },
+  {
+    "slug": "teologia_pratica",
+    "title": "3.3 Implicações para a Teologia Prática",
+    "shortTitle": "Teologia Prática",
+    "module": "inventio",
+    "group": "teologico",
+    "groupLabel": "Estudo Teológico",
+    "order": 13,
+    "cards": [
+      {
+        "id": "implicacoes_tp",
+        "title": "Implicações para a Teologia Prática"
+      }
+    ]
+  },
+  {
     "slug": "contexto_canonico",
     "title": "3.1 Contexto Canônico",
     "shortTitle": "Contexto Canônico",
     "module": "inventio",
-    "group": "teologico",
+    "group": "teologico_legado",
     "groupLabel": "Estudo Teológico",
     "order": 11,
     "cards": [
@@ -636,7 +681,7 @@ export const WORKSPACE_SECTIONS_NAV: SectionNav[] = [
     "title": "3.2 Progressão Revelacional",
     "shortTitle": "Progressão Revelacional",
     "module": "inventio",
-    "group": "teologico",
+    "group": "teologico_legado",
     "groupLabel": "Estudo Teológico",
     "order": 12,
     "cards": [

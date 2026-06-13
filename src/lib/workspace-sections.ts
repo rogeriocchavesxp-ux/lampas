@@ -655,11 +655,105 @@ export const WORKSPACE_SECTIONS: SectionDef[] = [
   // ── ESTUDO TEOLÓGICO ───────────────────────────────────────────────────────
 
   {
+    slug: 'teologia_biblica',
+    title: '3.1 Implicações para a Teologia Bíblica',
+    shortTitle: 'Teologia Bíblica',
+    module: 'inventio',
+    group: 'teologico',
+    groupLabel: 'Estudo Teológico',
+    order: 11,
+    objective: 'Explore como esta passagem contribui para o desenvolvimento da revelação bíblica ao longo da história da redenção.',
+    keyQuestions: [
+      'Como este texto contribui para a história da revelação?',
+      'Como se relaciona com o contexto canônico?',
+      'Existe alguma promessa ou cumprimento?',
+      'Existe tipologia?',
+      'Como este texto se relaciona com Cristo?',
+      'Como se relaciona com as alianças?',
+      'Como se relaciona com o Reino de Deus?',
+      'Como se relaciona com o povo de Deus?',
+    ],
+    relevantAuthors: ['Geerhardus Vos', 'Edmund Clowney', 'Graeme Goldsworthy', 'G. K. Beale', 'O. Palmer Robertson'],
+    cards: [
+      {
+        id: 'implicacoes_tb',
+        title: 'Implicações para a Teologia Bíblica',
+        placeholder: 'Como este texto contribui para a história da revelação? Explore sua relação com as alianças, com a tipologia, com o Reino de Deus e com a progressão canônica até Cristo.',
+        aiTrigger: 'Analise as implicações desta passagem para a teologia bíblica: posição na história da redenção, relação com as alianças, tipologia, conexão com o Reino de Deus e com o povo de Deus, e como aponta para Cristo.',
+      },
+    ],
+  },
+
+  {
+    slug: 'teologia_sistematica',
+    title: '3.2 Implicações para a Teologia Sistemática',
+    shortTitle: 'Teologia Sistemática',
+    module: 'inventio',
+    group: 'teologico',
+    groupLabel: 'Estudo Teológico',
+    order: 12,
+    objective: 'Identifique quais doutrinas este texto ilumina, aprofunda ou corrige à luz da revelação bíblica completa.',
+    keyQuestions: [
+      'O que este texto ensina sobre Deus?',
+      'O que ensina sobre Cristo?',
+      'O que ensina sobre o Espírito Santo?',
+      'O que ensina sobre a salvação?',
+      'O que ensina sobre a igreja?',
+      'O que ensina sobre o homem?',
+      'O que ensina sobre o pecado?',
+      'Há alguma doutrina central envolvida?',
+      'Há tensões doutrinárias relevantes?',
+    ],
+    relevantAuthors: ['Herman Bavinck', 'John Murray', 'Wayne Grudem', 'Louis Berkhof', 'Michael Horton'],
+    cards: [
+      {
+        id: 'implicacoes_ts',
+        title: 'Implicações para a Teologia Sistemática',
+        placeholder: 'Quais doutrinas este texto ilumina? O que ensina sobre Deus, Cristo, o Espírito, a salvação, a Igreja, o homem ou o pecado? Há tensões doutrinárias a considerar?',
+        aiTrigger: 'Analise as implicações desta passagem para a teologia sistemática: doutrina de Deus, cristologia, pneumatologia, soteriologia, eclesiologia, antropologia e hamartologia. Identifique a doutrina central e eventuais tensões doutrinárias.',
+      },
+    ],
+  },
+
+  {
+    slug: 'teologia_pratica',
+    title: '3.3 Implicações para a Teologia Prática',
+    shortTitle: 'Teologia Prática',
+    module: 'inventio',
+    group: 'teologico',
+    groupLabel: 'Estudo Teológico',
+    order: 13,
+    objective: 'Desenvolva as implicações pastorais e éticas desta passagem para a vida cristã individual e coletiva.',
+    keyQuestions: [
+      'Como este texto confronta o cristão?',
+      'Como este texto transforma a vida?',
+      'Que pecados são confrontados?',
+      'Que virtudes são incentivadas?',
+      'Que aplicações pastorais surgem?',
+      'Que implicações éticas existem?',
+      'Que aplicações familiares existem?',
+      'Que aplicações missionais existem?',
+      'Como este texto deve ser vivido hoje?',
+    ],
+    relevantAuthors: ['Timothy Keller', 'Bryan Chapell', 'David Powlison', 'Paul Tripp', 'Edmund Clowney'],
+    cards: [
+      {
+        id: 'implicacoes_tp',
+        title: 'Implicações para a Teologia Prática',
+        placeholder: 'Como este texto transforma a vida cristã? Que pecados confronta, que virtudes incentiva, que aplicações pastorais, éticas, familiares e missionais surgem da passagem?',
+        aiTrigger: 'Analise as implicações práticas e pastorais desta passagem: pecados confrontados, virtudes incentivadas, aplicações para a vida cristã individual e coletiva, implicações éticas, familiares e missionais.',
+      },
+    ],
+  },
+
+  // ── TEOLÓGICO LEGADO (dados preservados, fora do fluxo principal) ──────────
+
+  {
     slug: 'contexto_canonico',
     title: '3.1 Contexto Canônico',
     shortTitle: 'Contexto Canônico',
     module: 'inventio',
-    group: 'teologico',
+    group: 'teologico_legado',
     groupLabel: 'Estudo Teológico',
     order: 11,
     objective:
@@ -699,7 +793,7 @@ export const WORKSPACE_SECTIONS: SectionDef[] = [
     title: '3.2 Progressão Revelacional',
     shortTitle: 'Progressão Revelacional',
     module: 'inventio',
-    group: 'teologico',
+    group: 'teologico_legado',
     groupLabel: 'Estudo Teológico',
     order: 12,
     objective:
