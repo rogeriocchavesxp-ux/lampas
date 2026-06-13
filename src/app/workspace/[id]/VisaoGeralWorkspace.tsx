@@ -1887,6 +1887,10 @@ export default function VisaoGeralWorkspace({
                                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
                                     <button
                                       onClick={() => {
+                                        if (card.sectionSlug === 'comentario_exegetico') {
+                                          onNavigate?.('comentario_exegetico')
+                                          return
+                                        }
                                         if (cardIsEditing) {
                                           setEditingOutlineCard(null)
                                         } else {
@@ -2422,6 +2426,11 @@ export default function VisaoGeralWorkspace({
                 }
 
                 const handleCardClick = (item: DrillItem) => {
+                  if (item.sectionSlug === 'comentario_exegetico') {
+                    setDrillStack([])
+                    onNavigate?.('comentario_exegetico')
+                    return
+                  }
                   const draftKey = `${item.sectionSlug}:${item.id}`
                   setDrillStack(prev => prev.map((l, i) => {
                     if (i !== idx) return l
