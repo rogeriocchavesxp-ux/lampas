@@ -10,6 +10,7 @@ import { Sparkles, Map, List, MoreHorizontal, X, BookOpen, ChevronLeft, Loader2,
 import { loadClassificationsFromDB, saveClassificationToDB, deleteClassificationFromDB, updateClassificationInDB } from '@/lib/classification-sync'
 import MarkdownRenderer from '@/components/MarkdownRenderer'
 import RichEditor from '@/components/RichEditor'
+import ReadingPopup from '@/components/ReadingPopup'
 import { getSectionNavBySlug, getSectionsByGroupNav } from '@/lib/workspace-sections-nav'
 
 // ── Types ─────────────────────────────────────────────────────────────────────
@@ -592,6 +593,7 @@ export default function VisaoGeralWorkspace({
   const [expandedOutlineNodes,    setExpandedOutlineNodes]    = useState<Set<string>>(new Set())
   const [expandedOutlineSections, setExpandedOutlineSections] = useState<Set<string>>(new Set())
   const [editingOutlineCard,      setEditingOutlineCard]      = useState<string | null>(null)
+  const [readingPopup, setReadingPopup] = useState<{ title: string; html: string; color: string } | null>(null)
   const [activePanel,  setActivePanel] = useState<string | null>(null)
   const [hoveredNode,  setHoveredNode] = useState<string | null>(null)
   // Drill-down popup stack (single click → popup, double click → navegar)
@@ -1658,6 +1660,12 @@ export default function VisaoGeralWorkspace({
                                             {cardSaving ? 'Salvando...' : 'Salvar'}
                                           </button>
                                           <button
+                                            onClick={() => setReadingPopup({ title: card.label, html: cardDraft, color: node.color })}
+                                            style={{ background: 'transparent', color: '#64748B', border: '1px solid var(--border)', borderRadius: '6px', padding: '5px 8px', fontSize: '0.65rem', cursor: 'pointer', fontFamily: 'inherit' }}
+                                          >
+                                            👁
+                                          </button>
+                                          <button
                                             onClick={() => setEditingOutlineCard(null)}
                                             style={{ background: 'transparent', color: '#64748B', border: '1px solid var(--border)', borderRadius: '6px', padding: '5px 8px', fontSize: '0.65rem', cursor: 'pointer', fontFamily: 'inherit' }}
                                           >
@@ -1690,6 +1698,12 @@ export default function VisaoGeralWorkspace({
                                   style={{ flex: 1, background: node.color, color: '#fff', border: 'none', borderRadius: '6px', padding: '5px 8px', fontSize: '0.66rem', fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit', opacity: saving ? 0.6 : 1 }}
                                 >
                                   {saving ? 'Salvando...' : 'Salvar'}
+                                </button>
+                                <button
+                                  onClick={() => setReadingPopup({ title: item.label, html: draft, color: node.color })}
+                                  style={{ background: 'transparent', color: '#64748B', border: '1px solid var(--border)', borderRadius: '6px', padding: '5px 8px', fontSize: '0.66rem', cursor: 'pointer', fontFamily: 'inherit' }}
+                                >
+                                  👁
                                 </button>
                                 <button
                                   onClick={() => setEditingOutlineCard(null)}
@@ -2284,6 +2298,12 @@ export default function VisaoGeralWorkspace({
                                       style={{ flex: 1, background: level.color, color: '#fff', border: 'none', borderRadius: '6px', padding: '5px 8px', fontSize: '0.65rem', fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit', opacity: saving ? 0.6 : 1 }}
                                     >
                                       {saving ? 'Salvando...' : 'Salvar'}
+                                    </button>
+                                    <button
+                                      onClick={() => setReadingPopup({ title: item.label, html: draft, color: level.color })}
+                                      style={{ background: 'transparent', color: '#64748B', border: '1px solid var(--border)', borderRadius: '6px', padding: '5px 8px', fontSize: '0.65rem', cursor: 'pointer', fontFamily: 'inherit' }}
+                                    >
+                                      👁
                                     </button>
                                     <button
                                       onClick={() => setDrillStack(prev => prev.map((l, i) => i === idx ? { ...l, editingCardId: undefined } : l))}
@@ -3236,6 +3256,16 @@ export default function VisaoGeralWorkspace({
         onAskAI={onAskAI}
       />
     ))}
+
+    {/* ── Reading popup ───────────────────────────────────────────────── */}
+    {readingPopup && (
+      <ReadingPopup
+        title={readingPopup.title}
+        html={readingPopup.html}
+        moduleColor={readingPopup.color}
+        onClose={() => setReadingPopup(null)}
+      />
+    )}
     </>
   )
 }

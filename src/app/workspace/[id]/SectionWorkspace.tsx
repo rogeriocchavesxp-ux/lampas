@@ -6,6 +6,7 @@ import type { Project, Section } from '@/types/database'
 import type { SectionDef } from '@/lib/workspace-sections'
 import MarkdownRenderer from '@/components/MarkdownRenderer'
 import RichEditor from '@/components/RichEditor'
+import ReadingPopup from '@/components/ReadingPopup'
 import { ChevronDown, ChevronUp, MoreHorizontal } from 'lucide-react'
 import ResearchGuidePanel from './ResearchGuidePanel'
 import CardHelpTooltip from './CardHelpTooltip'
@@ -178,6 +179,7 @@ export default function SectionWorkspace({
   const [generationError, setGenerationError] = useState<string | null>(null)
   const [hoveredCard, setHoveredCard]     = useState<string | null>(null)
   const [openMenu, setOpenMenu]           = useState<string | null>(null)
+  const [readingCard, setReadingCard]     = useState<string | null>(null)
 
   const saveTimer    = useRef<ReturnType<typeof setTimeout> | null>(null)
   const latestContent = useRef(cardContent)
@@ -676,20 +678,36 @@ export default function SectionWorkspace({
                   )}
 
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '0.5rem' }}>
-                    {hasContent && (
-                      <button
-                        onClick={() => toggleEdit(card.id)}
-                        style={{
-                          background: 'transparent', border: 'none', cursor: 'pointer',
-                          fontFamily: 'inherit', fontSize: '0.71rem',
-                          color: 'var(--text-muted)', padding: 0, transition: 'color 0.12s',
-                        }}
-                        onMouseEnter={e => { e.currentTarget.style.color = 'var(--text-secondary)' }}
-                        onMouseLeave={e => { e.currentTarget.style.color = 'var(--text-muted)' }}
-                      >
-                        {isEditing ? '← Visualizar' : 'Editar'}
-                      </button>
-                    )}
+                    <div style={{ display: 'flex', gap: '0.6rem', alignItems: 'center' }}>
+                      {hasContent && (
+                        <button
+                          onClick={() => toggleEdit(card.id)}
+                          style={{
+                            background: 'transparent', border: 'none', cursor: 'pointer',
+                            fontFamily: 'inherit', fontSize: '0.71rem',
+                            color: 'var(--text-muted)', padding: 0, transition: 'color 0.12s',
+                          }}
+                          onMouseEnter={e => { e.currentTarget.style.color = 'var(--text-secondary)' }}
+                          onMouseLeave={e => { e.currentTarget.style.color = 'var(--text-muted)' }}
+                        >
+                          {isEditing ? '← Voltar' : 'Editar'}
+                        </button>
+                      )}
+                      {hasContent && (
+                        <button
+                          onClick={() => setReadingCard(card.id)}
+                          style={{
+                            background: 'transparent', border: 'none', cursor: 'pointer',
+                            fontFamily: 'inherit', fontSize: '0.71rem',
+                            color: 'var(--text-muted)', padding: 0, transition: 'color 0.12s',
+                          }}
+                          onMouseEnter={e => { e.currentTarget.style.color = 'var(--text-secondary)' }}
+                          onMouseLeave={e => { e.currentTarget.style.color = 'var(--text-muted)' }}
+                        >
+                          👁 Visualizar
+                        </button>
+                      )}
+                    </div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginLeft: 'auto' }}>
                       {state !== 'idle' && (
                         <span style={{
@@ -1077,21 +1095,38 @@ export default function SectionWorkspace({
                     display: 'flex', justifyContent: 'space-between',
                     alignItems: 'center', marginTop: '0.5rem',
                   }}>
-                    {hasContent && (
-                      <button
-                        onClick={() => toggleEdit(card.id)}
-                        style={{
-                          background: 'transparent', border: 'none',
-                          cursor: 'pointer', fontFamily: 'inherit',
-                          fontSize: '0.71rem', color: 'var(--text-muted)',
-                          padding: 0, transition: 'color 0.12s',
-                        }}
-                        onMouseEnter={e => { e.currentTarget.style.color = 'var(--text-secondary)' }}
-                        onMouseLeave={e => { e.currentTarget.style.color = 'var(--text-muted)' }}
-                      >
-                        {isEditing ? '← Visualizar' : 'Editar'}
-                      </button>
-                    )}
+                    <div style={{ display: 'flex', gap: '0.6rem', alignItems: 'center' }}>
+                      {hasContent && (
+                        <button
+                          onClick={() => toggleEdit(card.id)}
+                          style={{
+                            background: 'transparent', border: 'none',
+                            cursor: 'pointer', fontFamily: 'inherit',
+                            fontSize: '0.71rem', color: 'var(--text-muted)',
+                            padding: 0, transition: 'color 0.12s',
+                          }}
+                          onMouseEnter={e => { e.currentTarget.style.color = 'var(--text-secondary)' }}
+                          onMouseLeave={e => { e.currentTarget.style.color = 'var(--text-muted)' }}
+                        >
+                          {isEditing ? '← Voltar' : 'Editar'}
+                        </button>
+                      )}
+                      {hasContent && (
+                        <button
+                          onClick={() => setReadingCard(card.id)}
+                          style={{
+                            background: 'transparent', border: 'none',
+                            cursor: 'pointer', fontFamily: 'inherit',
+                            fontSize: '0.71rem', color: 'var(--text-muted)',
+                            padding: 0, transition: 'color 0.12s',
+                          }}
+                          onMouseEnter={e => { e.currentTarget.style.color = 'var(--text-secondary)' }}
+                          onMouseLeave={e => { e.currentTarget.style.color = 'var(--text-muted)' }}
+                        >
+                          👁 Visualizar
+                        </button>
+                      )}
+                    </div>
                     <span style={{
                       fontSize: '0.67rem', marginLeft: 'auto',
                       color: fieldStatus(displayText) === 'empty' ? 'transparent'
@@ -1206,6 +1241,26 @@ export default function SectionWorkspace({
           </button>
         )}
       </div>
+
+      {/* ── Reading popup ─────────────────────────────────────────────────── */}
+      {readingCard && (() => {
+        const card = activeCards.find(c => c.id === readingCard)
+        if (!card) return null
+        const content = cardContent[readingCard] ?? ''
+        return (
+          <ReadingPopup
+            title={card.title}
+            html={content}
+            moduleColor={moduleColor}
+            onClose={() => setReadingCard(null)}
+            onEdit={() => {
+              setReadingCard(null)
+              setExpandedCards(prev => new Set([...prev, readingCard]))
+              setEditingCards(prev => new Set([...prev, readingCard]))
+            }}
+          />
+        )
+      })()}
     </div>
   )
 }
