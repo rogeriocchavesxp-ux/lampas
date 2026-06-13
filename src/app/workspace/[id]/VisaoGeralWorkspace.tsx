@@ -588,8 +588,9 @@ export default function VisaoGeralWorkspace({
   useEffect(() => { const t = requestAnimationFrame(() => setMounted(true)); return () => cancelAnimationFrame(t) }, [])
 
   const [mode,         setMode]        = useState<'visual' | 'structured'>('visual')
-  const [expandedOutlineNodes,  setExpandedOutlineNodes]  = useState<Set<string>>(new Set())
-  const [editingOutlineCard,    setEditingOutlineCard]    = useState<string | null>(null)
+  const [expandedOutlineNodes,    setExpandedOutlineNodes]    = useState<Set<string>>(new Set())
+  const [expandedOutlineSections, setExpandedOutlineSections] = useState<Set<string>>(new Set())
+  const [editingOutlineCard,      setEditingOutlineCard]      = useState<string | null>(null)
   const [activePanel,  setActivePanel] = useState<string | null>(null)
   const [hoveredNode,  setHoveredNode] = useState<string | null>(null)
   // Drill-down popup stack (single click → popup, double click → navegar)
@@ -1533,22 +1534,45 @@ export default function VisaoGeralWorkspace({
                   }
                 </button>
 
-                {/* Sub-items */}
+                {/* Sub-items (level 2) */}
                 {isExpanded && items.length > 0 && (
                   <div style={{ paddingLeft: '3rem', paddingBottom: '0.25rem', borderTop: `1px solid ${node.color}12` }}>
                     {items.map(item => {
-                      const editKey   = `${node.key}:::${item.id}`
-                      const isEditing = editingOutlineCard === editKey
-                      const draftKey  = `${item.sectionSlug}:${item.id}`
-                      const draft     = drillDrafts[draftKey] ?? ''
-                      const saving    = drillSaving === draftKey
+                      const secExpandKey     = `${node.key}:${item.sectionSlug}`
+                      const isSectionExpanded = item.type === 'section' && expandedOutlineSections.has(secExpandKey)
+                      const editKey          = `${node.key}:::${item.id}`
+                      const isEditing        = editingOutlineCard === editKey
+                      const draftKey         = `${item.sectionSlug}:${item.id}`
+                      const draft            = drillDrafts[draftKey] ?? ''
+                      const saving           = drillSaving === draftKey
+
+                      // Level-3: cards inside an expanded section-group item
+                      const level3Cards = isSectionExpanded ? (() => {
+                        const sNav       = getSectionNavBySlug(item.sectionSlug)
+                        const secData    = allSections.find(s => s.slug === item.sectionSlug)
+                        const savedCards = (secData?.content as { cards?: Record<string, string> } | null)?.cards ?? {}
+                        return (sNav?.cards ?? []).map(c => ({
+                          id: c.id,
+                          label: c.title ?? c.id.replace(/_/g, ' '),
+                          sectionSlug: item.sectionSlug,
+                          draftKey: `${item.sectionSlug}:${c.id}`,
+                          editKey: `${node.key}:::${item.sectionSlug}:::${c.id}`,
+                          existing: savedCards[c.id] ?? '',
+                          status: cardTextStatus(savedCards[c.id] ?? '') as DrillItem['status'],
+                        }))
+                      })() : []
 
                       return (
                         <div key={item.id}>
+                          {/* Level-2 row */}
                           <button
                             onClick={() => {
                               if (item.type === 'section') {
-                                onNavigate?.(item.sectionSlug)
+                                setExpandedOutlineSections(prev => {
+                                  const next = new Set(prev)
+                                  if (next.has(secExpandKey)) { next.delete(secExpandKey) } else { next.add(secExpandKey) }
+                                  return next
+                                })
                               } else {
                                 if (isEditing) {
                                   setEditingOutlineCard(null)
@@ -1563,23 +1587,97 @@ export default function VisaoGeralWorkspace({
                             }}
                             style={{
                               display: 'flex', alignItems: 'center', gap: '0.5rem',
-                              width: '100%', background: isEditing ? `${node.color}10` : 'transparent',
+                              width: '100%',
+                              background: (isEditing || isSectionExpanded) ? `${node.color}10` : 'transparent',
                               border: 'none', padding: '0.28rem 1rem 0.28rem 0',
                               cursor: 'pointer', fontFamily: 'inherit', textAlign: 'left',
                               borderRadius: '4px',
+                              borderLeft: isSectionExpanded ? `2px solid ${node.color}55` : '2px solid transparent',
                             }}
-                            onMouseEnter={e => { if (!isEditing) e.currentTarget.style.background = `${node.color}08` }}
-                            onMouseLeave={e => { if (!isEditing) e.currentTarget.style.background = 'transparent' }}
+                            onMouseEnter={e => { if (!isEditing && !isSectionExpanded) e.currentTarget.style.background = `${node.color}08` }}
+                            onMouseLeave={e => { if (!isEditing && !isSectionExpanded) e.currentTarget.style.background = 'transparent' }}
                           >
-                            <span style={{ fontSize: '0.52rem', flexShrink: 0, color: item.status === 'reviewed' ? '#059669' : item.status === 'draft' ? '#D97706' : '#CBD5E1' }}>
-                              {item.status === 'reviewed' ? '●' : item.status === 'draft' ? '◑' : '○'}
+                            <span style={{ fontSize: '0.5rem', flexShrink: 0, color: item.type === 'section' ? (isSectionExpanded ? node.color : '#94A3B8') : (item.status === 'reviewed' ? '#059669' : item.status === 'draft' ? '#D97706' : '#CBD5E1') }}>
+                              {item.type === 'section' ? (isSectionExpanded ? '▼' : '▶') : (item.status === 'reviewed' ? '●' : item.status === 'draft' ? '◑' : '○')}
                             </span>
-                            <span style={{ fontSize: '0.75rem', color: 'var(--text-primary)', flex: 1, lineHeight: 1.4 }}>{item.label}</span>
-                            {item.type === 'section' && (
-                              <span style={{ fontSize: '0.65rem', color: node.color, opacity: 0.45, flexShrink: 0 }}>→</span>
-                            )}
+                            <span style={{ fontSize: '0.75rem', color: isSectionExpanded ? node.color : 'var(--text-primary)', fontWeight: item.type === 'section' ? 600 : 400, flex: 1, lineHeight: 1.4 }}>{item.label}</span>
                           </button>
 
+                          {/* Level-3: cards inside expanded section */}
+                          {isSectionExpanded && (
+                            <div style={{ paddingLeft: '1.4rem', borderLeft: `1px solid ${node.color}20`, marginLeft: '0.15rem' }}>
+                              {level3Cards.length === 0 ? (
+                                <div style={{ padding: '0.25rem 0 0.4rem', fontSize: '0.68rem', color: '#94A3B8', fontStyle: 'italic' }}>Nenhum campo ainda</div>
+                              ) : level3Cards.map(card => {
+                                const cardIsEditing = editingOutlineCard === card.editKey
+                                const cardDraft     = drillDrafts[card.draftKey] ?? ''
+                                const cardSaving    = drillSaving === card.draftKey
+                                return (
+                                  <div key={card.id}>
+                                    <button
+                                      onClick={() => {
+                                        if (cardIsEditing) {
+                                          setEditingOutlineCard(null)
+                                        } else {
+                                          setDrillDrafts(d => ({ ...d, [card.draftKey]: d[card.draftKey] ?? card.existing }))
+                                          setEditingOutlineCard(card.editKey)
+                                        }
+                                      }}
+                                      style={{
+                                        display: 'flex', alignItems: 'center', gap: '0.45rem',
+                                        width: '100%', background: cardIsEditing ? `${node.color}10` : 'transparent',
+                                        border: 'none', padding: '0.24rem 0.8rem 0.24rem 0',
+                                        cursor: 'pointer', fontFamily: 'inherit', textAlign: 'left', borderRadius: '4px',
+                                      }}
+                                      onMouseEnter={e => { if (!cardIsEditing) e.currentTarget.style.background = `${node.color}08` }}
+                                      onMouseLeave={e => { if (!cardIsEditing) e.currentTarget.style.background = 'transparent' }}
+                                    >
+                                      <span style={{ fontSize: '0.5rem', flexShrink: 0, color: card.status === 'reviewed' ? '#059669' : card.status === 'draft' ? '#D97706' : '#CBD5E1' }}>
+                                        {card.status === 'reviewed' ? '●' : card.status === 'draft' ? '◑' : '○'}
+                                      </span>
+                                      <span style={{ fontSize: '0.72rem', color: 'var(--text-primary)', flex: 1, lineHeight: 1.4 }}>{card.label}</span>
+                                    </button>
+
+                                    {cardIsEditing && (
+                                      <div style={{ paddingBottom: '0.45rem', paddingRight: '0.8rem' }}>
+                                        <textarea
+                                          value={cardDraft}
+                                          onChange={e => setDrillDrafts(d => ({ ...d, [card.draftKey]: e.target.value }))}
+                                          rows={5}
+                                          autoFocus
+                                          placeholder="Escreva aqui..."
+                                          style={{
+                                            width: '100%', fontSize: '0.73rem', lineHeight: 1.6,
+                                            border: `1px solid ${node.color}35`, borderRadius: '7px',
+                                            padding: '7px 9px', fontFamily: 'inherit', resize: 'vertical',
+                                            outline: 'none', boxSizing: 'border-box',
+                                            color: 'var(--text-primary)', background: 'var(--surface)',
+                                          }}
+                                        />
+                                        <div style={{ display: 'flex', gap: '0.35rem', marginTop: '5px' }}>
+                                          <button
+                                            disabled={cardSaving}
+                                            onClick={async () => { await saveDrillCard(card.sectionSlug, card.id, cardDraft); setEditingOutlineCard(null) }}
+                                            style={{ flex: 1, background: node.color, color: '#fff', border: 'none', borderRadius: '6px', padding: '5px 8px', fontSize: '0.65rem', fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit', opacity: cardSaving ? 0.6 : 1 }}
+                                          >
+                                            {cardSaving ? 'Salvando...' : 'Salvar'}
+                                          </button>
+                                          <button
+                                            onClick={() => setEditingOutlineCard(null)}
+                                            style={{ background: 'transparent', color: '#64748B', border: '1px solid var(--border)', borderRadius: '6px', padding: '5px 8px', fontSize: '0.65rem', cursor: 'pointer', fontFamily: 'inherit' }}
+                                          >
+                                            Cancelar
+                                          </button>
+                                        </div>
+                                      </div>
+                                    )}
+                                  </div>
+                                )
+                              })}
+                            </div>
+                          )}
+
+                          {/* Level-2: card inline editor */}
                           {isEditing && item.type === 'card' && (
                             <div style={{ paddingBottom: '0.45rem', paddingRight: '1rem' }}>
                               <textarea
