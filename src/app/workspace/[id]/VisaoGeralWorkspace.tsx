@@ -604,6 +604,37 @@ export default function VisaoGeralWorkspace({
   const [readingPopup, setReadingPopup] = useState<{ title: string; html: string; color: string } | null>(null)
   const [activePanel,  setActivePanel] = useState<string | null>(null)
   const [hoveredNode,  setHoveredNode] = useState<string | null>(null)
+
+  // ── Ordem personalizável dos blocos Investigar ────────────────────────────
+  const isInvestigarVG = sectionDef.slug === 'investigar_visao_geral'
+  const [investigarOrder, setInvestigarOrder] = useState<string[]>(() => {
+    if (!isInvestigarVG) return []
+    try {
+      const saved = localStorage.getItem(`investigar_order_${project.id}`)
+      if (saved) { const arr = JSON.parse(saved) as string[]; if (Array.isArray(arr) && arr.length > 0) return arr }
+    } catch {}
+    return INVESTIGAR_PHASE_NODES.map(n => n.key)
+  })
+  const [dragNodeKey, setDragNodeKey] = useState<string | null>(null)
+  const [dragOverKey, setDragOverKey] = useState<string | null>(null)
+
+  const saveInvestigarOrder = useCallback((newOrder: string[]) => {
+    setInvestigarOrder(newOrder)
+    try { localStorage.setItem(`investigar_order_${project.id}`, JSON.stringify(newOrder)) } catch {}
+  }, [project.id])
+
+  const moveInvestigarNode = useCallback((key: string, dir: -1 | 1) => {
+    setInvestigarOrder(prev => {
+      const idx = prev.indexOf(key)
+      if (idx === -1) return prev
+      const next = idx + dir
+      if (next < 0 || next >= prev.length) return prev
+      const arr = [...prev]
+      ;[arr[idx], arr[next]] = [arr[next], arr[idx]]
+      try { localStorage.setItem(`investigar_order_${project.id}`, JSON.stringify(arr)) } catch {}
+      return arr
+    })
+  }, [project.id])
   // Drill-down popup stack (single click → popup, double click → navegar)
   const [drillStack, setDrillStack] = useState<DrillLevel[]>([])
   const [drillDrafts, setDrillDrafts] = useState<Record<string, string>>({})
@@ -837,7 +868,13 @@ export default function VisaoGeralWorkspace({
   }
 
   const totalItems = nodes.reduce((s, n) => s + getCount(n), 0)
-  const canvasNodes = nodes.filter(n => n.kind !== 'obs')
+  const canvasNodes = useMemo(() => {
+    const base = nodes.filter(n => n.kind !== 'obs')
+    if (!isInvestigarVG || investigarOrder.length === 0) return base
+    const ordered = investigarOrder.map(k => base.find(n => n.key === k)).filter(Boolean) as NodeDef[]
+    const missing = base.filter(n => !investigarOrder.includes(n.key))
+    return [...ordered, ...missing]
+  }, [nodes, investigarOrder, isInvestigarVG])
 
   const buildOutlineItems = (node: NodeDef): DrillItem[] => {
     if (node.kind === 'cls') {
@@ -1535,50 +1572,135 @@ export default function VisaoGeralWorkspace({
           {(() => {
             const isInvestigar = sectionDef.slug === 'investigar_visao_geral'
             return canvasNodes.map((node, nodeIdx) => {
-            const isExpanded = expandedOutlineNodes.has(node.key)
-            const count      = getCount(node)
-            const items      = buildOutlineItems(node)
-            const toggleNode = () => setExpandedOutlineNodes(prev => {
+            const isExpanded  = expandedOutlineNodes.has(node.key)
+            const count       = getCount(node)
+            const items       = buildOutlineItems(node)
+            const toggleNode  = () => setExpandedOutlineNodes(prev => {
               const next = new Set(prev)
               if (next.has(node.key)) { next.delete(node.key) } else { next.add(node.key) }
               return next
             })
-            const nodeNum = isInvestigar ? nodeIdx + 1 : null
+            const nodeNum     = isInvestigar ? nodeIdx + 1 : null
+            const isDragging  = dragNodeKey === node.key
+            const isDragOver  = dragOverKey === node.key && dragNodeKey !== node.key
 
             return (
-              <div key={node.key} style={{ borderTop: nodeIdx === 0 ? 'none' : '1px solid var(--border-subtle)' }}>
-                {/* Node header row */}
-                <button
-                  onClick={toggleNode}
-                  style={{
-                    display: 'flex', alignItems: 'center', gap: '0.55rem',
-                    width: '100%', background: isExpanded ? `${node.color}09` : 'transparent',
-                    border: 'none', padding: '0.6rem 1.1rem',
-                    cursor: items.length > 0 ? 'pointer' : 'default',
-                    fontFamily: 'inherit', textAlign: 'left',
-                    borderLeft: isExpanded ? `3px solid ${node.color}` : '3px solid transparent',
-                    transition: 'background 0.12s, border-left-color 0.12s',
-                  }}
-                  onMouseEnter={e => { if (!isExpanded && items.length > 0) e.currentTarget.style.background = `${node.color}06` }}
-                  onMouseLeave={e => { if (!isExpanded) e.currentTarget.style.background = 'transparent' }}
-                >
-                  <span style={{ fontSize: '0.55rem', color: isExpanded ? node.color : '#94A3B8', width: '0.7rem', flexShrink: 0, lineHeight: 1 }}>
-                    {items.length === 0 ? '·' : isExpanded ? '▼' : '▶'}
-                  </span>
-                  {nodeNum === null && <span style={{ fontSize: '0.88rem', flexShrink: 0, lineHeight: 1 }}>{node.icon}</span>}
-                  {nodeNum !== null && (
-                    <span style={{ fontSize: '0.65rem', fontWeight: 800, color: isExpanded ? node.color : '#94A3B8', flexShrink: 0, minWidth: '1.1rem', lineHeight: 1, letterSpacing: '-0.01em' }}>
-                      {nodeNum}.
-                    </span>
-                  )}
-                  <span style={{ fontSize: '0.8rem', fontWeight: 600, color: isExpanded ? node.color : 'var(--text-primary)', flex: 1, minWidth: 0, lineHeight: 1.3 }}>
-                    {node.label}
-                  </span>
-                  {count > 0
-                    ? <span style={{ fontSize: '0.58rem', fontWeight: 700, color: '#fff', background: node.color, borderRadius: '999px', padding: '1px 6px', flexShrink: 0 }}>{count}</span>
-                    : <span style={{ fontSize: '0.6rem', color: '#CBD5E1' }}>vazio</span>
+              <div
+                key={node.key}
+                draggable={isInvestigar}
+                onDragStart={isInvestigar ? (e) => { e.dataTransfer.effectAllowed = 'move'; setDragNodeKey(node.key) } : undefined}
+                onDragOver={isInvestigar ? (e) => { e.preventDefault(); e.dataTransfer.dropEffect = 'move'; setDragOverKey(node.key) } : undefined}
+                onDragLeave={isInvestigar ? () => setDragOverKey(prev => prev === node.key ? null : prev) : undefined}
+                onDrop={isInvestigar ? (e) => {
+                  e.preventDefault()
+                  if (dragNodeKey && dragNodeKey !== node.key) {
+                    const order = canvasNodes.map(n => n.key)
+                    const fromIdx = order.indexOf(dragNodeKey)
+                    const toIdx   = order.indexOf(node.key)
+                    if (fromIdx !== -1 && toIdx !== -1) {
+                      const next = [...order]
+                      next.splice(fromIdx, 1)
+                      next.splice(toIdx, 0, dragNodeKey)
+                      saveInvestigarOrder(next)
+                    }
                   }
-                </button>
+                  setDragNodeKey(null); setDragOverKey(null)
+                } : undefined}
+                onDragEnd={isInvestigar ? () => { setDragNodeKey(null); setDragOverKey(null) } : undefined}
+                style={{
+                  borderTop: nodeIdx === 0 ? 'none' : '1px solid var(--border-subtle)',
+                  opacity: isDragging ? 0.45 : 1,
+                  background: isDragOver ? `${node.color}0C` : 'transparent',
+                  transition: 'opacity 0.12s, background 0.1s',
+                  outline: isDragOver ? `2px solid ${node.color}40` : 'none',
+                  outlineOffset: '-2px',
+                }}
+              >
+                {/* Node header row */}
+                <div style={{ display: 'flex', alignItems: 'center' }}>
+
+                  {/* Drag handle */}
+                  {isInvestigar && (
+                    <div
+                      title="Arrastar para reordenar"
+                      style={{
+                        padding: '0.6rem 0.3rem 0.6rem 0.7rem',
+                        cursor: 'grab', flexShrink: 0,
+                        display: 'flex', alignItems: 'center',
+                        color: '#C8D5E0',
+                        fontSize: '0.72rem', letterSpacing: '-1px', lineHeight: 1,
+                        userSelect: 'none',
+                      }}
+                      onMouseEnter={e => { e.currentTarget.style.color = '#94A3B8' }}
+                      onMouseLeave={e => { e.currentTarget.style.color = '#C8D5E0' }}
+                    >
+                      ⋮⋮
+                    </div>
+                  )}
+
+                  <button
+                    onClick={toggleNode}
+                    style={{
+                      display: 'flex', alignItems: 'center', gap: '0.55rem',
+                      flex: 1, background: isExpanded ? `${node.color}09` : 'transparent',
+                      border: 'none', padding: '0.6rem 0.6rem 0.6rem 0.35rem',
+                      cursor: items.length > 0 ? 'pointer' : 'default',
+                      fontFamily: 'inherit', textAlign: 'left',
+                      borderLeft: isExpanded ? `3px solid ${node.color}` : '3px solid transparent',
+                      transition: 'background 0.12s, border-left-color 0.12s',
+                      minWidth: 0,
+                    }}
+                    onMouseEnter={e => { if (!isExpanded && items.length > 0) e.currentTarget.style.background = `${node.color}06` }}
+                    onMouseLeave={e => { if (!isExpanded) e.currentTarget.style.background = 'transparent' }}
+                  >
+                    <span style={{ fontSize: '0.55rem', color: isExpanded ? node.color : '#94A3B8', width: '0.7rem', flexShrink: 0, lineHeight: 1 }}>
+                      {items.length === 0 ? '·' : isExpanded ? '▼' : '▶'}
+                    </span>
+                    {nodeNum === null && <span style={{ fontSize: '0.88rem', flexShrink: 0, lineHeight: 1 }}>{node.icon}</span>}
+                    {nodeNum !== null && (
+                      <span style={{ fontSize: '0.65rem', fontWeight: 800, color: isExpanded ? node.color : '#94A3B8', flexShrink: 0, minWidth: '1.1rem', lineHeight: 1, letterSpacing: '-0.01em' }}>
+                        {nodeNum}.
+                      </span>
+                    )}
+                    <span style={{ fontSize: '0.8rem', fontWeight: 600, color: isExpanded ? node.color : 'var(--text-primary)', flex: 1, minWidth: 0, lineHeight: 1.3 }}>
+                      {node.label}
+                    </span>
+                    {count > 0
+                      ? <span style={{ fontSize: '0.58rem', fontWeight: 700, color: '#fff', background: node.color, borderRadius: '999px', padding: '1px 6px', flexShrink: 0 }}>{count}</span>
+                      : <span style={{ fontSize: '0.6rem', color: '#CBD5E1' }}>vazio</span>
+                    }
+                  </button>
+
+                  {/* Move up / down buttons */}
+                  {isInvestigar && (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '1px', paddingRight: '0.5rem', flexShrink: 0 }}>
+                      <button
+                        onClick={(e) => { e.stopPropagation(); moveInvestigarNode(node.key, -1) }}
+                        disabled={nodeIdx === 0}
+                        title="Mover para cima"
+                        style={{
+                          background: 'none', border: 'none', cursor: nodeIdx === 0 ? 'default' : 'pointer',
+                          color: nodeIdx === 0 ? '#E2E8F0' : '#94A3B8', fontSize: '0.6rem', padding: '1px 3px',
+                          lineHeight: 1, fontFamily: 'inherit', transition: 'color 0.1s',
+                        }}
+                        onMouseEnter={e => { if (nodeIdx > 0) e.currentTarget.style.color = node.color }}
+                        onMouseLeave={e => { e.currentTarget.style.color = nodeIdx === 0 ? '#E2E8F0' : '#94A3B8' }}
+                      >▲</button>
+                      <button
+                        onClick={(e) => { e.stopPropagation(); moveInvestigarNode(node.key, 1) }}
+                        disabled={nodeIdx === canvasNodes.length - 1}
+                        title="Mover para baixo"
+                        style={{
+                          background: 'none', border: 'none', cursor: nodeIdx === canvasNodes.length - 1 ? 'default' : 'pointer',
+                          color: nodeIdx === canvasNodes.length - 1 ? '#E2E8F0' : '#94A3B8', fontSize: '0.6rem', padding: '1px 3px',
+                          lineHeight: 1, fontFamily: 'inherit', transition: 'color 0.1s',
+                        }}
+                        onMouseEnter={e => { if (nodeIdx < canvasNodes.length - 1) e.currentTarget.style.color = node.color }}
+                        onMouseLeave={e => { e.currentTarget.style.color = nodeIdx === canvasNodes.length - 1 ? '#E2E8F0' : '#94A3B8' }}
+                      >▼</button>
+                    </div>
+                  )}
+                </div>
 
                 {/* Sub-items (level 2) */}
                 {isExpanded && items.length > 0 && (
