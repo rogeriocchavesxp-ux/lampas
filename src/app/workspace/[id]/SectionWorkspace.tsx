@@ -658,6 +658,16 @@ export default function SectionWorkspace({
                       placeholder={card.placeholder}
                       moduleColor={moduleColor}
                       minHeight={200}
+                      aiContext={{
+                        project: { id: project.id, book: project.book, passage_ref: project.passage_ref, testament: project.testament, original_language: project.original_language, study_mode: project.study_mode ?? undefined },
+                        phase: sectionDef.phase,
+                        phaseLabel: ({ preparar: 'Preparar', investigar: 'Investigar', comunicar: 'Pregar', ferramentas: 'Ferramentas' } as Record<string, string>)[sectionDef.phase ?? ''] ?? sectionDef.phase,
+                        section: sectionDef.slug,
+                        sectionLabel: sectionDef.title,
+                        field: card.id,
+                        fieldLabel: card.title,
+                        userId,
+                      }}
                     />
                   ) : (
                     <div style={{
@@ -1062,6 +1072,16 @@ export default function SectionWorkspace({
                       placeholder={card.placeholder}
                       moduleColor={moduleColor}
                       minHeight={200}
+                      aiContext={{
+                        project: { id: project.id, book: project.book, passage_ref: project.passage_ref, testament: project.testament, original_language: project.original_language, study_mode: project.study_mode ?? undefined },
+                        phase: sectionDef.phase,
+                        phaseLabel: ({ preparar: 'Preparar', investigar: 'Investigar', comunicar: 'Pregar', ferramentas: 'Ferramentas' } as Record<string, string>)[sectionDef.phase ?? ''] ?? sectionDef.phase,
+                        section: sectionDef.slug,
+                        sectionLabel: sectionDef.title,
+                        field: card.id,
+                        fieldLabel: card.title,
+                        userId,
+                      }}
                     />
                   ) : (
                     <div

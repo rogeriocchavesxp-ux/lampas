@@ -585,6 +585,14 @@ export default function VisaoGeralWorkspace({
   const PHASE_COLOR: Record<string, string> = {
     preparar: '#D97706', investigar: '#163A6B', pregar: '#7C3AED', ferramentas: '#64748B',
   }
+  const AI_PHASE_LABEL: Record<string, string> = {
+    preparar: 'Preparar', investigar: 'Investigar', pregar: 'Pregar', ferramentas: 'Ferramentas',
+  }
+  const aiProjectContext = {
+    id: project.id, book: project.book, passage_ref: project.passage_ref,
+    testament: project.testament, original_language: project.original_language,
+    study_mode: project.study_mode ?? undefined,
+  }
 
   const [mounted,      setMounted]     = useState(false)
   useEffect(() => { const t = requestAnimationFrame(() => setMounted(true)); return () => cancelAnimationFrame(t) }, [])
@@ -1663,6 +1671,7 @@ export default function VisaoGeralWorkspace({
                                           minHeight={120}
                                           moduleColor={node.color}
                                           autoFocus
+                                          aiContext={{ project: aiProjectContext, phase, phaseLabel: AI_PHASE_LABEL[phase], section: card.sectionSlug, sectionLabel: node.label, field: card.id, fieldLabel: card.label, userId }}
                                         />
                                         <div style={{ display: 'flex', gap: '0.35rem', marginTop: '5px' }}>
                                           <button
@@ -1703,6 +1712,7 @@ export default function VisaoGeralWorkspace({
                                 minHeight={120}
                                 moduleColor={node.color}
                                 autoFocus
+                                aiContext={{ project: aiProjectContext, phase, phaseLabel: AI_PHASE_LABEL[phase], section: item.sectionSlug, sectionLabel: node.label, field: item.id, fieldLabel: item.label, userId }}
                               />
                               <div style={{ display: 'flex', gap: '0.35rem', marginTop: '5px' }}>
                                 <button
@@ -2301,6 +2311,7 @@ export default function VisaoGeralWorkspace({
                                     minHeight={120}
                                     moduleColor={level.color}
                                     autoFocus
+                                    aiContext={{ project: aiProjectContext, phase, phaseLabel: AI_PHASE_LABEL[phase], section: item.sectionSlug, sectionLabel: level.title, field: item.id, fieldLabel: item.label, userId }}
                                   />
                                   <div style={{ display: 'flex', gap: '0.3rem', marginTop: '5px' }}>
                                     <button
@@ -2809,6 +2820,7 @@ export default function VisaoGeralWorkspace({
                           onChange={html => setCardDraft(p => ({ ...p, [cardId]: html }))}
                           minHeight={180}
                           moduleColor={activeNode.color}
+                          aiContext={{ project: aiProjectContext, phase, phaseLabel: AI_PHASE_LABEL[phase], section: sectionDef.slug, sectionLabel: activeNode.label, field: cardId, fieldLabel: cardMeta?.title ?? cardId, userId }}
                         />
                         <button
                           onClick={() => saveCard(cardId, draft)}

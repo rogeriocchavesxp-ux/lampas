@@ -9,8 +9,11 @@ import Highlight from '@tiptap/extension-highlight'
 import { Link } from '@tiptap/extension-link'
 import { TaskList, TaskItem } from '@tiptap/extension-list'
 import { useState, useEffect, useRef, useCallback } from 'react'
+import AIAssistantPanel, { type AIContext } from './AIAssistantPanel'
 
 // ── Types ─────────────────────────────────────────────────────────────────────
+
+export type { AIContext }
 
 export interface InsertMenuItem {
   icon: string
@@ -25,8 +28,9 @@ interface Props {
   moduleColor?: string
   minHeight?: number
   insertMenu?: InsertMenuItem[]
-  compact?: boolean   // compact toolbar: only essential formatting buttons
+  compact?: boolean
   autoFocus?: boolean
+  aiContext?: AIContext
 }
 
 // ── Color palettes ────────────────────────────────────────────────────────────
@@ -111,7 +115,7 @@ function Sep() {
 
 export default function RichEditor({
   value, onChange, placeholder, moduleColor = 'var(--accent)', minHeight = 180,
-  insertMenu, compact = false, autoFocus = false,
+  insertMenu, compact = false, autoFocus = false, aiContext,
 }: Props) {
   const [structuralMode, setStructuralMode] = useState(false)
   const [hlOpen,         setHlOpen]         = useState(false)
@@ -120,6 +124,7 @@ export default function RichEditor({
   const [linkOpen,       setLinkOpen]       = useState(false)
   const [linkUrl,        setLinkUrl]        = useState('')
   const [focused,        setFocused]        = useState(false)
+  const [aiOpen,         setAiOpen]         = useState(false)
   const structuralRef = useRef(false)
   const hlRef         = useRef<HTMLDivElement>(null)
   const colorRef      = useRef<HTMLDivElement>(null)
@@ -211,7 +216,25 @@ export default function RichEditor({
     setLinkUrl('')
   }
 
+  // ── AI helpers ────────────────────────────────────────────────────────────
+  const handleAiInsert  = useCallback((html: string) => {
+    editor.chain().focus().insertContent(html).run()
+    onChange(editor.getHTML())
+  }, [editor, onChange])
+
+  const handleAiReplace = useCallback((html: string) => {
+    editor.chain().focus().setContent(html).run()
+    onChange(html)
+  }, [editor, onChange])
+
+  const handleAiAppend = useCallback((html: string) => {
+    const end = editor.state.doc.content.size
+    editor.chain().focus().setTextSelection(end).insertContent(html).run()
+    onChange(editor.getHTML())
+  }, [editor, onChange])
+
   return (
+    <>
     <div style={{ position: 'relative' }}>
       {/* ── Toolbar ── */}
       <div style={{
@@ -412,6 +435,32 @@ export default function RichEditor({
             </div>
           </>
         )}
+
+        {/* ── AI button ── */}
+        {aiContext && (
+          <>
+            <div style={{ flex: 1 }} />
+            <button
+              type="button"
+              onMouseDown={e => { e.preventDefault(); setAiOpen(o => !o); closeAll() }}
+              title="Assistente IA"
+              style={{
+                display: 'flex', alignItems: 'center', gap: '0.3rem',
+                background: aiOpen ? `${moduleColor}15` : 'transparent',
+                border: aiOpen ? `1px solid ${moduleColor}40` : '1px solid transparent',
+                borderRadius: '6px', padding: '0.22rem 0.55rem',
+                cursor: 'pointer', fontFamily: 'inherit',
+                fontSize: '0.72rem', fontWeight: 700,
+                color: aiOpen ? moduleColor : 'var(--text-muted)',
+                transition: 'all 0.12s',
+              }}
+              onMouseEnter={e => { if (!aiOpen) { e.currentTarget.style.background = `${moduleColor}08`; e.currentTarget.style.color = moduleColor } }}
+              onMouseLeave={e => { if (!aiOpen) { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = 'var(--text-muted)' } }}
+            >
+              ✨ IA
+            </button>
+          </>
+        )}
       </div>
 
       {/* ── Editor area ── */}
@@ -482,5 +531,17 @@ export default function RichEditor({
         </div>
       </div>
     </div>
+
+    {aiOpen && aiContext && (
+      <AIAssistantPanel
+        context={aiContext}
+        currentContent={editor.getHTML()}
+        onInsert={handleAiInsert}
+        onReplace={handleAiReplace}
+        onAppend={handleAiAppend}
+        onClose={() => setAiOpen(false)}
+      />
+    )}
+    </>
   )
 }
