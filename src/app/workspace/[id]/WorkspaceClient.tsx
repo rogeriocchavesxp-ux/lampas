@@ -1876,6 +1876,8 @@ export default function WorkspaceClient({ user, project, initialSections }: Prop
       {/* ── Navigation Tree Panel ──────────────────────────────────── */}
       {!focusMode && (() => {
         if (!openPhasePopover) return null
+        const openPhaseObj = navPhases.find(p => p.id === openPhasePopover)
+        const openPhaseProg = phaseProgress.find(p => p.id === openPhasePopover)
         return (
           <>
             <div onClick={() => setOpenPhasePopover(null)} style={{ position: 'fixed', inset: '0 0 60px 0', zIndex: 98 }} />
@@ -1886,61 +1888,38 @@ export default function WorkspaceClient({ user, project, initialSections }: Prop
               display: 'flex', flexDirection: 'column', overflow: 'hidden',
             }}>
               {/* Panel header */}
-              <div style={{ padding: '0.9rem 1rem 0.8rem', borderBottom: '1px solid var(--border)', display: 'flex', alignItems: 'center', gap: '0.6rem', flexShrink: 0 }}>
+              <div style={{ padding: '0.9rem 1rem 0.8rem', borderBottom: `1px solid ${openPhaseObj?.color ?? 'var(--border)'}25`, display: 'flex', alignItems: 'center', gap: '0.6rem', flexShrink: 0 }}>
                 <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ fontSize: '0.62rem', fontWeight: 700, letterSpacing: '0.08em', color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: '0.1rem' }}>Navegação</div>
+                  <div style={{ fontSize: '0.62rem', fontWeight: 700, letterSpacing: '0.08em', color: openPhaseObj?.color ?? 'var(--text-muted)', textTransform: 'uppercase', marginBottom: '0.1rem' }}>
+                    {openPhaseObj?.label ?? 'Navegação'}
+                  </div>
                   <div style={{ fontSize: '0.8rem', fontWeight: 700, color: 'var(--text-primary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{project.passage_ref}</div>
                 </div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.32rem', flexShrink: 0 }}>
-                  <div style={{ width: '36px', height: '3px', background: 'var(--border-subtle)', borderRadius: '2px', overflow: 'hidden' }}>
-                    <div style={{ width: `${pct}%`, height: '100%', background: 'var(--text-muted)', borderRadius: '2px', transition: 'width 0.4s' }} />
+                {openPhaseProg && openPhaseProg.total > 0 && (
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.32rem', flexShrink: 0 }}>
+                    <div style={{ width: '36px', height: '3px', background: 'var(--border-subtle)', borderRadius: '2px', overflow: 'hidden' }}>
+                      <div style={{ width: `${openPhaseProg.pct}%`, height: '100%', background: openPhaseObj?.color ?? 'var(--text-muted)', borderRadius: '2px', transition: 'width 0.4s' }} />
+                    </div>
+                    <span style={{ fontSize: '0.62rem', fontWeight: 700, color: 'var(--text-muted)' }}>{openPhaseProg.pct}%</span>
                   </div>
-                  <span style={{ fontSize: '0.62rem', fontWeight: 700, color: 'var(--text-muted)' }}>{pct}%</span>
-                </div>
+                )}
                 <button onClick={() => setOpenPhasePopover(null)} style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: 'var(--text-muted)', padding: '0.15rem', borderRadius: '4px', display: 'flex', alignItems: 'center', flexShrink: 0 }}>
                   <X size={13} />
                 </button>
               </div>
 
-              {/* Full tree */}
-              <div style={{ overflowY: 'auto', padding: '0.5rem 0.35rem', flex: 1 }}>
-                {navPhases.map((ph, phIdx) => {
+              {/* Contextual tree — somente a fase selecionada, sempre expandida */}
+              <div style={{ overflowY: 'auto', padding: '0.35rem 0.35rem', flex: 1 }}>
+                {navPhases.filter(ph => ph.id === openPhasePopover).map(ph => {
                   const prog = phaseProgress.find(p => p.id === ph.id)
-                  const phOpen = expandedPhases.has(ph.id)
+                  const phOpen = true  // sempre expandido: é a única fase visível
                   return (
-                    <div key={ph.id} style={{ marginBottom: '0.1rem' }}>
-                      <button
-                        onClick={() => togglePhase(ph.id)}
-                        style={{ width: '100%', border: 'none', cursor: 'pointer', background: 'transparent', borderRadius: '8px', textAlign: 'left', fontFamily: 'inherit', padding: '0.36rem 0.52rem', display: 'flex', alignItems: 'center', gap: '0.42rem' }}
-                        onMouseEnter={e => { e.currentTarget.style.background = 'rgba(0,0,0,0.04)' }}
-                        onMouseLeave={e => { e.currentTarget.style.background = 'transparent' }}
-                      >
-                        <div style={{ width: '18px', height: '18px', borderRadius: '50%', background: ph.color, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                          <span style={{ fontSize: '0.52rem', fontWeight: 800, color: '#fff', lineHeight: 1 }}>{phIdx + 1}</span>
-                        </div>
-                        <div style={{ flex: 1, minWidth: 0 }}>
-                          <div style={{ fontSize: '0.72rem', fontWeight: 750, color: ph.color, letterSpacing: '0.02em', lineHeight: 1.15 }}>{ph.label.toUpperCase()}</div>
-                        </div>
-                        {prog && prog.total > 0 && (
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '0.26rem', flexShrink: 0 }}>
-                            <div style={{ width: '26px', height: '2px', background: 'var(--border-subtle)', borderRadius: '2px', overflow: 'hidden' }}>
-                              <div style={{ width: `${prog.pct}%`, height: '100%', background: ph.color, borderRadius: '2px' }} />
-                            </div>
-                            <span style={{ fontSize: '0.55rem', fontWeight: 700, color: 'var(--text-muted)' }}>{prog.pct}%</span>
-                          </div>
-                        )}
-                        {phOpen ? <ChevronDown size={10} style={{ flexShrink: 0, color: 'var(--text-muted)' }} /> : <ChevronRight size={10} style={{ flexShrink: 0, color: 'var(--text-muted)' }} />}
-                      </button>
-                      {prog && prog.total > 0 && (
-                        <div style={{ height: '2px', marginLeft: '1.62rem', marginRight: '0.5rem', background: 'var(--border-subtle)', borderRadius: '1px', overflow: 'hidden', marginBottom: '0.08rem' }}>
-                          <div style={{ width: `${prog.pct}%`, height: '100%', background: ph.color, borderRadius: '1px', transition: 'width 0.4s' }} />
-                        </div>
-                      )}
+                    <div key={ph.id}>
                       {phOpen && (
                         <div style={{ paddingBottom: '0.1rem' }}>
                           {ph.modes.map((mode, modeIdx) => {
                             const singleMode = ph.modes.length === 1
-                            const modeOpen = singleMode || expandedCanons.has(mode.id)
+                            const modeOpen = true  // sempre expandido no painel contextual
                             return (
                               <div key={mode.id}>
                                 {!singleMode && (() => {
