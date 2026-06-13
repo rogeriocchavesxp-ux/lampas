@@ -160,11 +160,12 @@ function buildSegs(vNum: number, text: string, cls: Classification[], hls: Highl
 interface Props {
   book: string; passageRef: string; testament: string
   projectId: string; userId: string; onClose: () => void
+  sidebarMode?: boolean
 }
 
 // ── Component ─────────────────────────────────────────────────────────────────
 
-export default function BibleFloatingWindow({ book, passageRef, testament, projectId, userId, onClose }: Props) {
+export default function BibleFloatingWindow({ book, passageRef, testament, projectId, userId, onClose, sidebarMode = false }: Props) {
   const textRef  = useRef<HTMLDivElement>(null)
   const menuRef  = useRef<HTMLDivElement>(null)
   const supabase = useMemo(() => createClient(), [])
@@ -727,7 +728,7 @@ export default function BibleFloatingWindow({ book, passageRef, testament, proje
 
   // ── Minimized ─────────────────────────────────────────────────────────────
 
-  if (minimized) {
+  if (minimized && !sidebarMode) {
     return (
       <div style={{ position: 'fixed', right: '16px', bottom: '16px', zIndex: 500, background: '#FFFFFF', border: '1px solid var(--border)', borderRadius: '12px', boxShadow: '0 4px 16px rgba(0,0,0,0.1)', display: 'flex', alignItems: 'center', gap: '0.6rem', padding: '0.55rem 0.85rem', cursor: 'default', animation: 'fadeIn 0.15s ease-out' }}>
         <BookOpen size={13} strokeWidth={1.75} style={{ color: accent }} />
@@ -738,7 +739,9 @@ export default function BibleFloatingWindow({ book, passageRef, testament, proje
     )
   }
 
-  const windowStyle: React.CSSProperties = maximized
+  const windowStyle: React.CSSProperties = sidebarMode
+    ? { position: 'relative', width: '100%', height: '100%', borderRadius: 0 }
+    : maximized
     ? { position: 'fixed', top: '8px', left: '8px', right: '8px', bottom: '8px', width: 'auto', height: 'auto' }
     : { position: 'fixed', left: pos.x, top: pos.y, width: size.w, height: size.h }
 
@@ -750,20 +753,30 @@ export default function BibleFloatingWindow({ book, passageRef, testament, proje
         </div>
       )}
 
-      <div style={{ ...windowStyle, zIndex: 500, background: '#FFFFFF', border: '1px solid var(--border)', borderRadius: maximized ? '0' : '14px', boxShadow: '0 8px 40px rgba(0,0,0,0.12), 0 2px 8px rgba(0,0,0,0.08)', display: 'flex', flexDirection: 'column', overflow: 'hidden', animation: 'fadeInScale 0.18s cubic-bezier(0.16,1,0.3,1)' }}>
+      <div style={{ ...windowStyle, zIndex: sidebarMode ? 1 : 500, background: '#FFFFFF', border: sidebarMode ? 'none' : '1px solid var(--border)', borderLeft: sidebarMode ? '1px solid var(--border-subtle)' : undefined, borderRadius: sidebarMode ? 0 : maximized ? '0' : '14px', boxShadow: sidebarMode ? 'none' : '0 8px 40px rgba(0,0,0,0.12), 0 2px 8px rgba(0,0,0,0.08)', display: 'flex', flexDirection: 'column', overflow: 'hidden', animation: sidebarMode ? 'none' : 'fadeInScale 0.18s cubic-bezier(0.16,1,0.3,1)' }}>
 
         {/* ── Chrome header ── */}
-        <div onMouseDown={onTitleMouseDown} style={{ flexShrink: 0, display: 'flex', flexDirection: 'column', background: 'var(--surface)', borderBottom: '1px solid var(--border-subtle)', cursor: maximized ? 'default' : 'move', userSelect: 'none' }}>
+        <div onMouseDown={sidebarMode ? undefined : onTitleMouseDown} style={{ flexShrink: 0, display: 'flex', flexDirection: 'column', background: 'var(--surface)', borderBottom: '1px solid var(--border-subtle)', cursor: sidebarMode ? 'default' : maximized ? 'default' : 'move', userSelect: 'none' }}>
 
-          {/* Row 1: traffic + title + controls */}
+          {/* Row 1: traffic/close + title + controls */}
           <div style={{ height: '42px', display: 'flex', alignItems: 'center', gap: '0.55rem', padding: '0 0.85rem' }}>
-            <div style={{ display: 'flex', gap: '6px', flexShrink: 0 }} onMouseEnter={() => setIsHoveringTraffic(true)} onMouseLeave={() => setIsHoveringTraffic(false)}>
-              {[{ color: '#FF5F56', action: onClose, sym: '×' }, { color: '#FFBE2E', action: () => setMinimized(true), sym: '–' }, { color: '#27C840', action: () => setMaximized(m => !m), sym: maximized ? '⤡' : '⤢' }].map(({ color, action, sym }) => (
-                <button key={color} onMouseDown={e => e.stopPropagation()} onClick={action} style={{ width: '12px', height: '12px', borderRadius: '50%', background: color, border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '8px', fontWeight: 700, color: 'rgba(0,0,0,0.6)', padding: 0, lineHeight: 1 }}>
-                  {isHoveringTraffic ? sym : ''}
-                </button>
-              ))}
-            </div>
+            {sidebarMode ? (
+              /* Sidebar: só botão fechar simples */
+              <button
+                onClick={onClose}
+                style={{ width: '20px', height: '20px', borderRadius: '4px', background: 'transparent', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.9rem', color: 'var(--text-muted)', padding: 0, lineHeight: 1, flexShrink: 0 }}
+                onMouseEnter={e => e.currentTarget.style.background = 'var(--border-subtle)'}
+                onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+              >×</button>
+            ) : (
+              <div style={{ display: 'flex', gap: '6px', flexShrink: 0 }} onMouseEnter={() => setIsHoveringTraffic(true)} onMouseLeave={() => setIsHoveringTraffic(false)}>
+                {[{ color: '#FF5F56', action: onClose, sym: '×' }, { color: '#FFBE2E', action: () => setMinimized(true), sym: '–' }, { color: '#27C840', action: () => setMaximized(m => !m), sym: maximized ? '⤡' : '⤢' }].map(({ color, action, sym }) => (
+                  <button key={color} onMouseDown={e => e.stopPropagation()} onClick={action} style={{ width: '12px', height: '12px', borderRadius: '50%', background: color, border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '8px', fontWeight: 700, color: 'rgba(0,0,0,0.6)', padding: 0, lineHeight: 1 }}>
+                    {isHoveringTraffic ? sym : ''}
+                  </button>
+                ))}
+              </div>
+            )}
 
             <BookOpen size={12} strokeWidth={1.75} style={{ color: accent, flexShrink: 0 }} />
 
@@ -920,7 +933,7 @@ export default function BibleFloatingWindow({ book, passageRef, testament, proje
         )}
 
         {/* Resize handle */}
-        {!maximized && (
+        {!maximized && !sidebarMode && (
           <div onMouseDown={onResizeMouseDown} style={{ position: 'absolute', bottom: 0, right: 0, width: '16px', height: '16px', cursor: 'se-resize', background: 'linear-gradient(135deg, transparent 50%, var(--border) 50%)', borderRadius: '0 0 14px 0', opacity: 0.5 }} />
         )}
       </div>

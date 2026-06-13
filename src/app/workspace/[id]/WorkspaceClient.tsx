@@ -391,6 +391,7 @@ export default function WorkspaceClient({ user, project, initialSections }: Prop
   const [sidebarWidth, setSidebarWidth] = useState(264)
   const [referenceWidth, setReferenceWidth] = useState(280)
   const [aiWidth, setAiWidth] = useState(308)
+  const [biblePanelWidth, setBiblePanelWidth] = useState(380)
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
   const [referenceCollapsed, setReferenceCollapsed] = useState(false)
   const [focusMode, setFocusMode] = useState(false)
@@ -415,21 +416,25 @@ export default function WorkspaceClient({ user, project, initialSections }: Prop
   const [navDrillDrafts, setNavDrillDrafts] = useState<Record<string, string>>({})
   const [navDrillSaving, setNavDrillSaving] = useState<string | null>(null)
 
-  const sidebarWidthRef = useRef(264)
+  const sidebarWidthRef  = useRef(264)
   const referenceWidthRef = useRef(280)
-  const aiWidthRef = useRef(308)
-  sidebarWidthRef.current = sidebarWidth
-  referenceWidthRef.current = referenceWidth
-  aiWidthRef.current = aiWidth
+  const aiWidthRef        = useRef(308)
+  const biblePanelWidthRef = useRef(380)
+  sidebarWidthRef.current    = sidebarWidth
+  referenceWidthRef.current  = referenceWidth
+  aiWidthRef.current         = aiWidth
+  biblePanelWidthRef.current = biblePanelWidth
 
   useEffect(() => {
     const sw = localStorage.getItem('lampas_sidebar_w')
     const rw = localStorage.getItem('lampas_ref_w')
     const aw = localStorage.getItem('lampas_ai_w')
+    const bw = localStorage.getItem('lampas_bible_pw')
     const sc = localStorage.getItem('lampas_sidebar_c')
     if (sw) setSidebarWidth(Number(sw))
     if (rw) setReferenceWidth(Number(rw))
     if (aw) setAiWidth(Number(aw))
+    if (bw) setBiblePanelWidth(Number(bw))
     if (sc) setSidebarCollapsed(sc === '1')
   }, [])
 
@@ -496,6 +501,20 @@ export default function WorkspaceClient({ user, project, initialSections }: Prop
     }
     const onUp = () => {
       localStorage.setItem('lampas_ai_w', String(aiWidthRef.current))
+      window.removeEventListener('mousemove', onMove); window.removeEventListener('mouseup', onUp)
+    }
+    window.addEventListener('mousemove', onMove); window.addEventListener('mouseup', onUp)
+  }, [])
+
+  const startBibleResize = useCallback((e: React.MouseEvent) => {
+    e.preventDefault()
+    const startX = e.clientX; const startW = biblePanelWidthRef.current
+    const onMove = (ev: MouseEvent) => {
+      const w = Math.max(260, Math.min(640, startW - (ev.clientX - startX)))
+      setBiblePanelWidth(w); biblePanelWidthRef.current = w
+    }
+    const onUp = () => {
+      localStorage.setItem('lampas_bible_pw', String(biblePanelWidthRef.current))
       window.removeEventListener('mousemove', onMove); window.removeEventListener('mouseup', onUp)
     }
     window.addEventListener('mousemove', onMove); window.addEventListener('mouseup', onUp)
@@ -1859,6 +1878,28 @@ export default function WorkspaceClient({ user, project, initialSections }: Prop
             )}
           </main>
 
+          {/* Bible side panel — flex sibling, acoplado ao workspace */}
+          {bibleOpen && <ResizeHandle onMouseDown={startBibleResize} />}
+          {bibleOpen && (
+            <aside style={{
+              flexShrink: 0,
+              width: `${biblePanelWidth}px`,
+              overflow: 'hidden',
+              display: 'flex', flexDirection: 'column',
+              background: 'var(--surface)',
+            }}>
+              <BibleFloatingWindow
+                book={project.book}
+                passageRef={project.passage_ref}
+                testament={project.testament}
+                projectId={project.id}
+                userId={user.id}
+                onClose={() => setBibleOpen(false)}
+                sidebarMode={true}
+              />
+            </aside>
+          )}
+
           {/* AI panel — flex sibling so content is never obscured */}
           {aiOpen && <ResizeHandle onMouseDown={startAiResize} />}
           <aside style={{
@@ -1883,18 +1924,6 @@ export default function WorkspaceClient({ user, project, initialSections }: Prop
 
         </div>
       </div>
-
-      {/* ── Bible floating window ─────────────────────────────────── */}
-      {bibleOpen && (
-        <BibleFloatingWindow
-          book={project.book}
-          passageRef={project.passage_ref}
-          testament={project.testament}
-          projectId={project.id}
-          userId={user.id}
-          onClose={() => setBibleOpen(false)}
-        />
-      )}
 
       {/* ── Modal Enviar ──────────────────────────────────────────── */}
       {enviarParaSermaOpen && (
