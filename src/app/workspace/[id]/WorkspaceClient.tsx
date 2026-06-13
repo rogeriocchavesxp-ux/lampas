@@ -403,6 +403,18 @@ export default function WorkspaceClient({ user, project, initialSections }: Prop
   const [openPhasePopover, setOpenPhasePopover] = useState<string | null>(null)
   const [popoverAnchor,    setPopoverAnchor]    = useState<{ left: number; width: number } | null>(null)
 
+  // Drill-down dentro do popover da barra inferior
+  interface NavDrillLevel {
+    id: string
+    title: string
+    groupId?: string        // mostra seções deste grupo
+    sectionSlug?: string    // mostra cards desta seção
+    editingCardId?: string
+  }
+  const [navDrillStack, setNavDrillStack] = useState<NavDrillLevel[]>([])
+  const [navDrillDrafts, setNavDrillDrafts] = useState<Record<string, string>>({})
+  const [navDrillSaving, setNavDrillSaving] = useState<string | null>(null)
+
   const sidebarWidthRef = useRef(264)
   const referenceWidthRef = useRef(280)
   const aiWidthRef = useRef(308)
@@ -608,6 +620,26 @@ export default function WorkspaceClient({ user, project, initialSections }: Prop
       return [...prev, updated]
     })
   }, [])
+
+  const saveNavDrillCard = useCallback(async (sectionSlug: string, cardId: string, value: string) => {
+    const draftKey = `${sectionSlug}:${cardId}`
+    setNavDrillSaving(draftKey)
+    try {
+      const existing = sections.find(s => s.slug === sectionSlug)
+      const prev     = (existing?.content as { cards?: Record<string, string> } | null)?.cards ?? {}
+      const payload  = {
+        project_id: project.id, user_id: user.id, slug: sectionSlug,
+        module: 'inventio' as const, title: sectionSlug,
+        status: 'draft' as const, content: { cards: { ...prev, [cardId]: value } },
+      }
+      const op = existing?.id
+        ? supabase.from('sections').update(payload).eq('id', existing.id).select().single()
+        : supabase.from('sections').insert(payload).select().single()
+      const { data: updated } = await op
+      if (updated) handleSectionUpdate(updated as Section)
+    } catch { }
+    finally { setNavDrillSaving(null) }
+  }, [supabase, project.id, user.id, sections, handleSectionUpdate])
 
   const handleAskAI = useCallback((prompt: string) => {
     setAiPrompt(prompt)
@@ -1886,7 +1918,16 @@ export default function WorkspaceClient({ user, project, initialSections }: Prop
         const popLeft    = Math.max(8, Math.min(viewportW - POPUP_W - 8, rawLeft))
         const arrowX     = Math.max(18, Math.min(POPUP_W - 18, Math.round(btnCX - popLeft)))
         const phaseProg  = phaseProgress.find(p => p.id === openPhasePopover)
-        const closePopover = () => { setOpenPhasePopover(null); setPopoverAnchor(null) }
+        const closePopover = () => { setOpenPhasePopover(null); setPopoverAnchor(null); setNavDrillStack([]) }
+        const drillLevel   = navDrillStack.length > 0 ? navDrillStack[navDrillStack.length - 1] : null
+
+        // Helper de status de card
+        function navCardStatus(text: string): 'empty' | 'draft' | 'reviewed' {
+          if (!text?.trim()) return 'empty'
+          if (text.trim().length < 80) return 'draft'
+          return 'reviewed'
+        }
+
         return (
           <>
             {/* Backdrop */}
@@ -1902,13 +1943,21 @@ export default function WorkspaceClient({ user, project, initialSections }: Prop
                 borderRadius: '12px',
                 boxShadow: `0 -6px 28px rgba(0,0,0,0.13), 0 -1px 4px rgba(0,0,0,0.05)`,
                 overflow: 'hidden',
-                maxHeight: '420px',
+                maxHeight: '480px',
                 display: 'flex', flexDirection: 'column',
               }}>
                 {/* Header */}
                 <div style={{ padding: '0.6rem 0.85rem 0.5rem', borderBottom: `1px solid ${ph.color}18`, background: `${ph.color}09`, display: 'flex', alignItems: 'center', gap: '0.5rem', flexShrink: 0 }}>
-                  <span style={{ flex: 1, fontSize: '0.67rem', fontWeight: 800, letterSpacing: '0.07em', textTransform: 'uppercase', color: ph.color }}>{ph.label}</span>
-                  {phaseProg && phaseProg.total > 0 && (
+                  {drillLevel && (
+                    <button
+                      onClick={() => setNavDrillStack(prev => prev.slice(0, -1))}
+                      style={{ background: 'none', border: 'none', cursor: 'pointer', color: ph.color, fontSize: '1rem', lineHeight: 1, padding: '0', flexShrink: 0, opacity: 0.7 }}
+                    >‹</button>
+                  )}
+                  <span style={{ flex: 1, fontSize: '0.67rem', fontWeight: 800, letterSpacing: drillLevel ? '0' : '0.07em', textTransform: drillLevel ? 'none' : 'uppercase', color: ph.color }}>
+                    {drillLevel ? drillLevel.title : ph.label}
+                  </span>
+                  {!drillLevel && phaseProg && phaseProg.total > 0 && (
                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
                       <div style={{ width: '30px', height: '2px', background: 'var(--border-subtle)', borderRadius: '2px', overflow: 'hidden' }}>
                         <div style={{ width: `${phaseProg.pct}%`, height: '100%', background: ph.color, borderRadius: '2px', transition: 'width 0.4s' }} />
@@ -1919,42 +1968,180 @@ export default function WorkspaceClient({ user, project, initialSections }: Prop
                   <button onClick={closePopover} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)', fontSize: '1.05rem', lineHeight: 1, padding: '0 2px', flexShrink: 0 }}>×</button>
                 </div>
 
-                {/* Groups */}
-                <div style={{ overflowY: 'auto', padding: '0.4rem 0.45rem' }}>
-                  {ph.modes.flatMap(mode => mode.groups).map(group => {
-                    const isUtility = isToolSlug(group.id) || group.id === 'colagens' || group.id === 'comentario_expositivo'
-                    const secs      = isUtility ? [] : getSectionsByGroupNav(group.id)
-                    const tool      = getToolAreaBySlug(group.id)
-                    const navSlug   = isUtility ? (tool?.slug ?? group.id) : (secs[0]?.slug ?? group.id)
-                    const isActive  = activeSlug === navSlug || (!isUtility && secs.some(s => s.slug === activeSlug))
-                    const { done, total } = groupProgress(group.id)
-                    const GroupIcon = GROUP_ICONS[group.id]
-                    return (
-                      <button
-                        key={group.id}
-                        onClick={() => { navigate(navSlug); closePopover() }}
-                        style={{
-                          width: '100%', border: isActive ? `1px solid ${ph.color}22` : '1px solid transparent',
-                          background: isActive ? `${ph.color}09` : 'transparent',
-                          borderRadius: '8px', cursor: 'pointer', fontFamily: 'inherit',
-                          textAlign: 'left', padding: '0.45rem 0.55rem',
-                          display: 'flex', alignItems: 'center', gap: '0.45rem',
-                        }}
-                        onMouseEnter={e => { if (!isActive) e.currentTarget.style.background = 'rgba(0,0,0,0.035)' }}
-                        onMouseLeave={e => { if (!isActive) e.currentTarget.style.background = 'transparent' }}
-                      >
-                        {GroupIcon && <GroupIcon size={14} strokeWidth={1.75} style={{ flexShrink: 0, color: isActive ? ph.color : 'var(--text-muted)', opacity: isActive ? 1 : 0.7 }} />}
-                        <span style={{ flex: 1, fontSize: '0.76rem', fontWeight: isActive ? 660 : 470, color: isActive ? ph.color : 'var(--text-primary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                          {group.label}
-                        </span>
-                        {total > 0 && (
-                          <span style={{ fontSize: '0.62rem', fontWeight: 700, flexShrink: 0, letterSpacing: '-0.01em', color: done === total ? 'var(--success)' : done > 0 ? ph.color : 'var(--border)' }}>
-                            {done === total ? '✓' : `${done}/${total}`}
+                {/* Content — groups list OR drill-down level */}
+                <div style={{ overflowY: 'auto', padding: '0.4rem 0.45rem', flex: 1 }}>
+                  {!drillLevel ? (
+                    // ── Nível 0: lista de grupos ────────────────────────────────
+                    ph.modes.flatMap(mode => mode.groups).map(group => {
+                      const isUtility = isToolSlug(group.id) || group.id === 'colagens' || group.id === 'comentario_expositivo'
+                      const secs      = isUtility ? [] : getSectionsByGroupNav(group.id)
+                      const tool      = getToolAreaBySlug(group.id)
+                      const navSlug   = isUtility ? (tool?.slug ?? group.id) : (secs[0]?.slug ?? group.id)
+                      const isActive  = activeSlug === navSlug || (!isUtility && secs.some(s => s.slug === activeSlug))
+                      const { done, total } = groupProgress(group.id)
+                      const GroupIcon = GROUP_ICONS[group.id]
+                      return (
+                        <button
+                          key={group.id}
+                          onClick={() => {
+                            if (isUtility || secs.length === 0) { navigate(navSlug); closePopover(); return }
+                            if (secs.length === 1) {
+                              setNavDrillStack([{ id: group.id, title: group.label, sectionSlug: secs[0].slug }])
+                            } else {
+                              setNavDrillStack([{ id: group.id, title: group.label, groupId: group.id }])
+                            }
+                          }}
+                          style={{
+                            width: '100%', border: isActive ? `1px solid ${ph.color}22` : '1px solid transparent',
+                            background: isActive ? `${ph.color}09` : 'transparent',
+                            borderRadius: '8px', cursor: 'pointer', fontFamily: 'inherit',
+                            textAlign: 'left', padding: '0.45rem 0.55rem',
+                            display: 'flex', alignItems: 'center', gap: '0.45rem',
+                          }}
+                          onMouseEnter={e => { if (!isActive) e.currentTarget.style.background = 'rgba(0,0,0,0.035)' }}
+                          onMouseLeave={e => { if (!isActive) e.currentTarget.style.background = 'transparent' }}
+                        >
+                          {GroupIcon && <GroupIcon size={14} strokeWidth={1.75} style={{ flexShrink: 0, color: isActive ? ph.color : 'var(--text-muted)', opacity: isActive ? 1 : 0.7 }} />}
+                          <span style={{ flex: 1, fontSize: '0.76rem', fontWeight: isActive ? 660 : 470, color: isActive ? ph.color : 'var(--text-primary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                            {group.label}
                           </span>
-                        )}
-                      </button>
+                          {total > 0 && (
+                            <span style={{ fontSize: '0.62rem', fontWeight: 700, flexShrink: 0, letterSpacing: '-0.01em', color: done === total ? 'var(--success)' : done > 0 ? ph.color : 'var(--border)' }}>
+                              {done === total ? '✓' : `${done}/${total}`}
+                            </span>
+                          )}
+                          {!isUtility && <span style={{ fontSize: '0.65rem', color: ph.color, opacity: 0.5, flexShrink: 0 }}>›</span>}
+                        </button>
+                      )
+                    })
+                  ) : drillLevel.groupId ? (
+                    // ── Nível 1: lista de seções do grupo ──────────────────────
+                    getSectionsByGroupNav(drillLevel.groupId).map(sec => {
+                      const secData   = sections.find(s => s.slug === sec.slug)
+                      const secCards  = (secData?.content as { cards?: Record<string, string> } | null)?.cards ?? {}
+                      const sNav      = getSectionNavBySlug(sec.slug)
+                      const total     = sNav?.cards?.length ?? 0
+                      const done      = sNav?.cards?.filter(c => secCards[c.id]?.trim()).length ?? 0
+                      const isActive  = activeSlug === sec.slug
+                      return (
+                        <button
+                          key={sec.slug}
+                          onClick={() => setNavDrillStack(prev => [...prev, { id: sec.slug, title: sec.shortTitle, sectionSlug: sec.slug }])}
+                          style={{
+                            width: '100%', border: isActive ? `1px solid ${ph.color}22` : '1px solid transparent',
+                            background: isActive ? `${ph.color}09` : 'transparent',
+                            borderRadius: '8px', cursor: 'pointer', fontFamily: 'inherit',
+                            textAlign: 'left', padding: '0.45rem 0.55rem',
+                            display: 'flex', alignItems: 'center', gap: '0.45rem',
+                          }}
+                          onMouseEnter={e => { if (!isActive) e.currentTarget.style.background = 'rgba(0,0,0,0.035)' }}
+                          onMouseLeave={e => { if (!isActive) e.currentTarget.style.background = 'transparent' }}
+                        >
+                          <span style={{ flex: 1, fontSize: '0.76rem', fontWeight: isActive ? 660 : 470, color: isActive ? ph.color : 'var(--text-primary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                            {sec.shortTitle}
+                          </span>
+                          {total > 0 && (
+                            <span style={{ fontSize: '0.62rem', fontWeight: 700, flexShrink: 0, color: done === total ? 'var(--success)' : done > 0 ? ph.color : 'var(--border)' }}>
+                              {done === total ? '✓' : `${done}/${total}`}
+                            </span>
+                          )}
+                          <span style={{ fontSize: '0.65rem', color: ph.color, opacity: 0.5, flexShrink: 0 }}>›</span>
+                        </button>
+                      )
+                    })
+                  ) : drillLevel.sectionSlug ? (() => {
+                    // ── Nível 2+: cards da seção com editor inline ───────────
+                    const sNav      = getSectionNavBySlug(drillLevel.sectionSlug)
+                    const secData   = sections.find(s => s.slug === drillLevel.sectionSlug)
+                    const savedCards = (secData?.content as { cards?: Record<string, string> } | null)?.cards ?? {}
+                    if (!sNav?.cards?.length) return (
+                      <div style={{ padding: '0.6rem', fontSize: '0.72rem', color: 'var(--text-muted)' }}>Nenhum campo disponível.</div>
                     )
-                  })}
+                    return sNav.cards.map(card => {
+                      const isEditing = drillLevel.editingCardId === card.id
+                      const draftKey  = `${drillLevel.sectionSlug}:${card.id}`
+                      const draft     = navDrillDrafts[draftKey] ?? ''
+                      const saving    = navDrillSaving === draftKey
+                      const status    = navCardStatus(savedCards[card.id] ?? '')
+                      return (
+                        <div key={card.id}>
+                          <button
+                            onClick={() => {
+                              setNavDrillStack(prev => {
+                                const last = prev[prev.length - 1]
+                                return [...prev.slice(0, -1), { ...last, editingCardId: last.editingCardId === card.id ? undefined : card.id }]
+                              })
+                              setNavDrillDrafts(d => {
+                                const k = draftKey
+                                return { ...d, [k]: d[k] ?? (savedCards[card.id] ?? '') }
+                              })
+                            }}
+                            style={{
+                              width: '100%', background: isEditing ? `${ph.color}0D` : 'transparent',
+                              border: isEditing ? `1px solid ${ph.color}22` : '1px solid transparent',
+                              borderRadius: '8px', cursor: 'pointer', fontFamily: 'inherit',
+                              textAlign: 'left', padding: '0.4rem 0.55rem',
+                              display: 'flex', alignItems: 'center', gap: '0.45rem',
+                            }}
+                            onMouseEnter={e => { if (!isEditing) e.currentTarget.style.background = 'rgba(0,0,0,0.035)' }}
+                            onMouseLeave={e => { if (!isEditing) e.currentTarget.style.background = isEditing ? `${ph.color}0D` : 'transparent' }}
+                          >
+                            <span style={{
+                              fontSize: '0.58rem', flexShrink: 0, lineHeight: 1,
+                              color: status === 'reviewed' ? '#059669' : status === 'draft' ? '#D97706' : '#CBD5E1',
+                            }}>
+                              {status === 'reviewed' ? '●' : status === 'draft' ? '◑' : '○'}
+                            </span>
+                            <span style={{ flex: 1, fontSize: '0.76rem', fontWeight: 470, color: 'var(--text-primary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                              {card.title}
+                            </span>
+                          </button>
+                          {isEditing && (
+                            <div style={{ padding: '0.3rem 0.4rem 0.4rem' }}>
+                              <textarea
+                                value={draft}
+                                onChange={e => setNavDrillDrafts(d => ({ ...d, [draftKey]: e.target.value }))}
+                                rows={4}
+                                autoFocus
+                                placeholder="Escreva aqui..."
+                                style={{
+                                  width: '100%', fontSize: '0.72rem', lineHeight: 1.5,
+                                  border: `1px solid ${ph.color}35`, borderRadius: '6px',
+                                  padding: '6px 8px', fontFamily: 'inherit', resize: 'vertical',
+                                  outline: 'none', boxSizing: 'border-box', color: 'var(--text-primary)',
+                                  background: 'var(--surface)',
+                                }}
+                              />
+                              <div style={{ display: 'flex', gap: '0.3rem', marginTop: '4px' }}>
+                                <button
+                                  disabled={saving}
+                                  onClick={async () => {
+                                    await saveNavDrillCard(drillLevel.sectionSlug!, card.id, draft)
+                                    setNavDrillStack(prev => {
+                                      const last = prev[prev.length - 1]
+                                      return [...prev.slice(0, -1), { ...last, editingCardId: undefined }]
+                                    })
+                                  }}
+                                  style={{ flex: 1, background: ph.color, color: '#fff', border: 'none', borderRadius: '6px', padding: '5px 8px', fontSize: '0.67rem', fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit', opacity: saving ? 0.65 : 1 }}
+                                >
+                                  {saving ? 'Salvando...' : 'Salvar'}
+                                </button>
+                                <button
+                                  onClick={() => setNavDrillStack(prev => {
+                                    const last = prev[prev.length - 1]
+                                    return [...prev.slice(0, -1), { ...last, editingCardId: undefined }]
+                                  })}
+                                  style={{ background: 'transparent', color: 'var(--text-muted)', border: '1px solid var(--border)', borderRadius: '6px', padding: '5px 8px', fontSize: '0.67rem', cursor: 'pointer', fontFamily: 'inherit' }}
+                                >
+                                  Cancelar
+                                </button>
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      )
+                    })
+                  })() : null}
                 </div>
               </div>
 
