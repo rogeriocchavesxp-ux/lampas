@@ -392,10 +392,13 @@ export default function ProductionsLibrary({ project, userId, existingSection, o
   const [showNewModal, setShowNewModal]       = useState(false)
   const [openProduction, setOpenProduction]   = useState<Production | null>(null)
   const [openLegacy, setOpenLegacy]           = useState(false)
+  const [legacyDismissed, setLegacyDismissed] = useState(() => {
+    try { return localStorage.getItem(`lampas_legacy_migrated_${project.id}`) === '1' } catch { return false }
+  })
 
   // Conteúdo legado — sermão criado antes da Biblioteca de Produções
   const legacyRaw = existingSection?.content as Record<string, unknown> | null | undefined
-  const hasLegacy = Boolean(
+  const hasLegacy = !legacyDismissed && Boolean(
     existingSection?.id &&
     legacyRaw &&
     (legacyRaw.produzir_mode !== undefined || legacyRaw.livre || legacyRaw.blocos_montado)
@@ -473,6 +476,11 @@ export default function ProductionsLibrary({ project, userId, existingSection, o
     setOpenProduction(updated)
   }
 
+  function dismissLegacy() {
+    try { localStorage.setItem(`lampas_legacy_migrated_${project.id}`, '1') } catch {}
+    setLegacyDismissed(true)
+  }
+
   async function migrateLegacy() {
     if (!legacyRaw) return
     setMigrating(true)
@@ -492,6 +500,7 @@ export default function ProductionsLibrary({ project, userId, existingSection, o
     if (res.ok) {
       const p = await res.json() as Production
       setProductions(prev => [p, ...prev])
+      dismissLegacy()
       setOpenProduction(p)
     }
     setMigrating(false)
@@ -581,13 +590,22 @@ export default function ProductionsLibrary({ project, userId, existingSection, o
                 Produção anterior encontrada
               </span>
               <span style={{
-                marginLeft: 'auto', fontSize: '0.6rem', fontWeight: 700,
+                fontSize: '0.6rem', fontWeight: 700,
                 color: '#F59E0B', background: '#FEF3C7',
                 border: '1px solid #FDE68A', borderRadius: '4px',
                 padding: '0.02rem 0.35rem', textTransform: 'uppercase', letterSpacing: '0.05em',
               }}>
                 Legado
               </span>
+              <button
+                onClick={dismissLegacy}
+                title="Dispensar"
+                style={{
+                  marginLeft: 'auto', background: 'transparent', border: 'none',
+                  cursor: 'pointer', color: '#B45309', fontSize: '0.85rem',
+                  padding: '0.1rem 0.25rem', lineHeight: 1,
+                }}
+              >✕</button>
             </div>
             <div style={{ fontSize: '0.8rem', color: '#78350F', marginBottom: '0.85rem', lineHeight: 1.55 }}>
               {(legacyRaw?.livre as { title?: string } | undefined)?.title
