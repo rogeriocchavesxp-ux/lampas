@@ -29,6 +29,7 @@ import SermonBuilderWorkspace from './SermonBuilderWorkspace'
 import CommentaryWorkspace from './CommentaryWorkspace'
 import ComentarioExegeticoWorkspace from './ComentarioExegeticoWorkspace'
 import ProduzirWorkspace from './ProduzirWorkspace'
+import ProductionsLibrary from './ProductionsLibrary'
 import WorkspaceMenuBar from './WorkspaceMenuBar'
 import FloatingBrowser from './FloatingBrowser'
 import ImprovementChecklistPanel from './ImprovementChecklistPanel'
@@ -1666,7 +1667,7 @@ export default function WorkspaceClient({ user, project, initialSections }: Prop
                 onAskAI={handleAskAI}
               />
             ) : activeSlug === 'pregar_visao_geral' ? (
-              <ProduzirWorkspace
+              <ProductionsLibrary
                 key={activeSlug}
                 project={project}
                 userId={user.id}

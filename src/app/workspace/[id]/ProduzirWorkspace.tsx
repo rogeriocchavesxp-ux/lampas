@@ -2,7 +2,7 @@
 
 import { useState, useRef, useCallback, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import type { Project, Section } from '@/types/database'
+import type { Project, Section, Production } from '@/types/database'
 import RichEditor, { type AIContext } from '@/components/RichEditor'
 
 // ── Types ─────────────────────────────────────────────────────────────────────
@@ -28,6 +28,10 @@ interface Props {
   existingSection: Section | undefined
   onUpdate: (s: Section) => void
   onAskAI: (prompt: string) => void
+  // production mode
+  production?: Production
+  onUpdateProduction?: (p: Production) => void
+  onBackToLibrary?: () => void
 }
 
 // ── Constants ─────────────────────────────────────────────────────────────────
@@ -50,8 +54,8 @@ function genId(): string {
   return Date.now().toString(36) + Math.random().toString(36).slice(2, 6)
 }
 
-function loadContent(section: Section | undefined): ProduzirContent {
-  const raw = section?.content as Record<string, unknown> | null
+function loadContent(section: Section | undefined, production?: Production): ProduzirContent {
+  const raw = (production?.content ?? section?.content) as Record<string, unknown> | null
   if (raw?.produzir_mode !== undefined) {
     return {
       produzir_mode:  (raw.produzir_mode as ProduzirMode) ?? null,
@@ -65,7 +69,7 @@ function loadContent(section: Section | undefined): ProduzirContent {
 
 // ── Hub — 3 cards ─────────────────────────────────────────────────────────────
 
-function Hub({ onSelect }: { onSelect: (mode: ProduzirMode) => void }) {
+function Hub({ onSelect, productionTitle, onBack }: { onSelect: (mode: ProduzirMode) => void; productionTitle?: string; onBack?: () => void }) {
   const cards = [
     {
       mode: 'livre'           as ProduzirMode,
@@ -89,8 +93,13 @@ function Hub({ onSelect }: { onSelect: (mode: ProduzirMode) => void }) {
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '60vh', padding: '2rem 1.5rem' }}>
+      {onBack && (
+        <button onClick={onBack} style={{ alignSelf: 'flex-start', background: 'transparent', border: 'none', cursor: 'pointer', color: 'var(--text-secondary,#64748b)', fontSize: '0.75rem', padding: '0.2rem 0.4rem', borderRadius: '4px', fontFamily: 'inherit', marginBottom: '1.5rem' }}>
+          ← Voltar à Biblioteca
+        </button>
+      )}
       <div style={{ marginBottom: '0.4rem', fontSize: '1.05rem', fontWeight: 700, color: 'var(--text-primary,#1e293b)', letterSpacing: '-0.01em' }}>
-        Produzir
+        {productionTitle ?? 'Produzir'}
       </div>
       <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary,#64748b)', marginBottom: '2.2rem' }}>
         Selecione o modo de produção
@@ -427,9 +436,9 @@ function ProduzirModular({ project, userId, blocos, mode, saving, savedAt, onCha
 
 // ── Main component ────────────────────────────────────────────────────────────
 
-export default function ProduzirWorkspace({ project, userId, existingSection, onUpdate, onAskAI }: Props) {
+export default function ProduzirWorkspace({ project, userId, existingSection, onUpdate, onAskAI, production, onUpdateProduction, onBackToLibrary }: Props) {
   const supabase  = createClient()
-  const [content, setContent] = useState<ProduzirContent>(() => loadContent(existingSection))
+  const [content, setContent] = useState<ProduzirContent>(() => loadContent(existingSection, production))
   const [saving,  setSaving]  = useState(false)
   const [savedAt, setSavedAt] = useState<Date | null>(null)
 
@@ -443,24 +452,37 @@ export default function ProduzirWorkspace({ project, userId, existingSection, on
 
   const performSave = useCallback(async (c: ProduzirContent) => {
     setSaving(true)
-    const hasContent = c.livre.html.trim().length > 0 || c.blocos_montado.some(b => b.html.trim()) || c.blocos_livre.some(b => b.html.trim())
-    const payload = {
-      project_id: project.id, user_id: userId,
-      slug: 'pregar_visao_geral', module: 'dispositio',
-      title: 'Produzir', content: c,
-      status: (hasContent ? 'draft' : 'empty') as 'empty' | 'draft' | 'reviewed',
-    }
-    const sec = sectionRef.current
-    if (sec?.id) {
-      const { data } = await supabase.from('sections').update(payload).eq('id', sec.id).select().single()
-      if (data) { onUpdate(data as Section); sectionRef.current = data as Section }
+
+    if (production) {
+      // Save to productions table
+      const res = await fetch(`/api/productions/${production.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ content: c }),
+      })
+      if (res.ok && onUpdateProduction) onUpdateProduction(await res.json() as Production)
     } else {
-      const { data } = await supabase.from('sections').insert(payload).select().single()
-      if (data) { onUpdate(data as Section); sectionRef.current = data as Section }
+      // Legacy: save to sections table
+      const hasContent = c.livre.html.trim().length > 0 || c.blocos_montado.some(b => b.html.trim()) || c.blocos_livre.some(b => b.html.trim())
+      const payload = {
+        project_id: project.id, user_id: userId,
+        slug: 'pregar_visao_geral', module: 'dispositio',
+        title: 'Produzir', content: c,
+        status: (hasContent ? 'draft' : 'empty') as 'empty' | 'draft' | 'reviewed',
+      }
+      const sec = sectionRef.current
+      if (sec?.id) {
+        const { data } = await supabase.from('sections').update(payload).eq('id', sec.id).select().single()
+        if (data) { onUpdate(data as Section); sectionRef.current = data as Section }
+      } else {
+        const { data } = await supabase.from('sections').insert(payload).select().single()
+        if (data) { onUpdate(data as Section); sectionRef.current = data as Section }
+      }
     }
+
     setSaving(false)
     setSavedAt(new Date())
-  }, [project.id, userId, supabase, onUpdate])
+  }, [production, project.id, userId, supabase, onUpdate, onUpdateProduction])
 
   function scheduleAutosave(c: ProduzirContent) {
     latestContent.current = c
@@ -490,7 +512,7 @@ export default function ProduzirWorkspace({ project, userId, existingSection, on
 
   const { produzir_mode } = content
 
-  if (produzir_mode === null) return <Hub onSelect={selectMode} />
+  if (produzir_mode === null) return <Hub onSelect={selectMode} productionTitle={production?.title} onBack={onBackToLibrary} />
 
   if (produzir_mode === 'livre') return (
     <ProduzirLivre

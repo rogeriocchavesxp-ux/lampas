@@ -85,6 +85,18 @@ export interface Footnote {
   created_at: string
 }
 
+export interface Production {
+  id: string
+  project_id: string
+  user_id: string
+  type: string
+  title: string
+  content: Record<string, unknown>
+  status: 'draft' | 'published'
+  created_at: string
+  updated_at: string
+}
+
 export interface StructureEvaluation {
   id: string
   project_id: string
