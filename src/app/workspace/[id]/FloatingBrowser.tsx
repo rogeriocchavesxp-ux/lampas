@@ -1,317 +1,246 @@
 'use client'
 
-import { useState, useRef, useCallback, useEffect } from 'react'
+import { useState, useRef, useEffect, useCallback } from 'react'
 
-const PILGRIM_URL = 'https://app.pilgrim.com.br/'
-const MIN_W = 420
-const MIN_H = 320
-const DEFAULT_W = 840
-const DEFAULT_H = 600
-
-type WinState = 'normal' | 'minimized' | 'maximized'
-
-interface Pos  { x: number; y: number }
-interface Size { w: number; h: number }
+const PILGRIM_URL  = 'https://app.pilgrim.com.br/'
+const POPUP_OPTS   = 'width=1200,height=820,left=80,top=60,resizable=yes,scrollbars=yes,toolbar=no,menubar=no,location=no'
+const POLL_INTERVAL = 1000 // ms para checar se o popup ainda está aberto
 
 interface FloatingBrowserProps {
   onClose: () => void
 }
 
+type PanelState = 'idle' | 'open' | 'closed_by_user'
+
 export default function FloatingBrowser({ onClose }: FloatingBrowserProps) {
-  const [winState, setWinState] = useState<WinState>('normal')
-  const [pos,      setPos]      = useState<Pos>({ x: 80, y: 60 })
-  const [size,     setSize]     = useState<Size>({ w: DEFAULT_W, h: DEFAULT_H })
-  const [iframeOk, setIframeOk] = useState<boolean | null>(null) // null = loading
-  const [interacting, setInteracting] = useState(false)          // overlay to prevent iframe stealing events
+  const [panelState, setPanelState] = useState<PanelState>('idle')
+  const popupRef = useRef<Window | null>(null)
+  const pollRef  = useRef<ReturnType<typeof setInterval> | null>(null)
 
-  const savedPos  = useRef<Pos>(pos)
-  const savedSize = useRef<Size>(size)
+  // Monitora se o popup foi fechado pelo usuário
+  const startPolling = useCallback(() => {
+    if (pollRef.current) clearInterval(pollRef.current)
+    pollRef.current = setInterval(() => {
+      if (popupRef.current?.closed) {
+        setPanelState('closed_by_user')
+        popupRef.current = null
+        if (pollRef.current) clearInterval(pollRef.current)
+      }
+    }, POLL_INTERVAL)
+  }, [])
 
-  // ── Drag ──────────────────────────────────────────────────────────────────
-
-  function startDrag(e: React.MouseEvent) {
-    if (winState !== 'normal') return
-    e.preventDefault()
-    setInteracting(true)
-    const startX = e.clientX, startY = e.clientY
-    const origX = pos.x, origY = pos.y
-
-    function onMove(ev: MouseEvent) {
-      setPos({
-        x: Math.max(0, origX + ev.clientX - startX),
-        y: Math.max(0, origY + ev.clientY - startY),
-      })
-    }
-    function onUp() {
-      setInteracting(false)
-      document.removeEventListener('mousemove', onMove)
-      document.removeEventListener('mouseup',   onUp)
-    }
-    document.addEventListener('mousemove', onMove)
-    document.addEventListener('mouseup',   onUp)
-  }
-
-  // ── Resize ─────────────────────────────────────────────────────────────────
-
-  type Handle = 'n' | 's' | 'e' | 'w' | 'ne' | 'nw' | 'se' | 'sw'
-
-  function startResize(e: React.MouseEvent, handle: Handle) {
-    if (winState !== 'normal') return
-    e.preventDefault()
-    e.stopPropagation()
-    setInteracting(true)
-    const startX = e.clientX, startY = e.clientY
-    const origW = size.w, origH = size.h, origX = pos.x, origY = pos.y
-
-    function onMove(ev: MouseEvent) {
-      const dx = ev.clientX - startX
-      const dy = ev.clientY - startY
-      let w = origW, h = origH, x = origX, y = origY
-
-      if (handle.includes('e')) w = Math.max(MIN_W, origW + dx)
-      if (handle.includes('s')) h = Math.max(MIN_H, origH + dy)
-      if (handle.includes('w')) { w = Math.max(MIN_W, origW - dx); x = origX + (origW - w) }
-      if (handle.includes('n')) { h = Math.max(MIN_H, origH - dy); y = origY + (origH - h) }
-
-      setSize({ w, h })
-      setPos({ x: Math.max(0, x), y: Math.max(0, y) })
-    }
-    function onUp() {
-      setInteracting(false)
-      document.removeEventListener('mousemove', onMove)
-      document.removeEventListener('mouseup',   onUp)
-    }
-    document.addEventListener('mousemove', onMove)
-    document.addEventListener('mouseup',   onUp)
-  }
-
-  // ── Toggle maximize ────────────────────────────────────────────────────────
-
-  function toggleMaximize() {
-    if (winState === 'maximized') {
-      setWinState('normal')
-      setPos(savedPos.current)
-      setSize(savedSize.current)
-    } else {
-      savedPos.current  = pos
-      savedSize.current = size
-      setWinState('maximized')
-    }
-  }
-
-  // ── iframe load / error ────────────────────────────────────────────────────
-  // X-Frame-Options blocks don't fire onerror — the frame just stays blank.
-  // We use a 12s timeout after mount: if onLoad hasn't fired → assume blocked.
-
+  // Limpa o interval ao desmontar
   useEffect(() => {
-    const t = setTimeout(() => {
-      if (iframeOk === null) setIframeOk(false)
-    }, 12000)
-    return () => clearTimeout(t)
-  }, [iframeOk])
+    return () => {
+      if (pollRef.current) clearInterval(pollRef.current)
+    }
+  }, [])
 
-  // ── Computed styles ────────────────────────────────────────────────────────
+  function openPopup() {
+    // Foca se já existe
+    if (popupRef.current && !popupRef.current.closed) {
+      popupRef.current.focus()
+      return
+    }
+    const popup = window.open(PILGRIM_URL, 'lampas_pilgrim', POPUP_OPTS)
+    if (!popup) {
+      // Popup bloqueado pelo browser
+      setPanelState('idle')
+      return
+    }
+    popupRef.current = popup
+    setPanelState('open')
+    startPolling()
+  }
 
-  const isMaximized = winState === 'maximized'
-  const isMinimized = winState === 'minimized'
+  function focusPopup() {
+    if (popupRef.current && !popupRef.current.closed) {
+      popupRef.current.focus()
+    }
+  }
 
-  const containerStyle: React.CSSProperties = isMaximized
-    ? { position: 'fixed', inset: 0, zIndex: 900 }
-    : isMinimized
-    ? { position: 'fixed', left: pos.x, top: pos.y, width: 280, zIndex: 900 }
-    : { position: 'fixed', left: pos.x, top: pos.y, width: size.w, height: size.h, zIndex: 900 }
-
-  const RADIUS = isMaximized ? 0 : 10
+  function closePopup() {
+    if (popupRef.current && !popupRef.current.closed) {
+      popupRef.current.close()
+    }
+    popupRef.current = null
+    setPanelState('idle')
+    if (pollRef.current) clearInterval(pollRef.current)
+  }
 
   return (
     <div style={{
-      ...containerStyle,
-      display: 'flex', flexDirection: 'column',
+      position: 'fixed',
+      right: 24, bottom: 80,   // acima da bottom nav
+      width: 320,
       background: 'var(--surface)',
-      border: isMaximized ? 'none' : '1px solid var(--border)',
-      borderRadius: RADIUS,
-      boxShadow: isMaximized ? 'none' : '0 24px 64px rgba(0,0,0,0.22), 0 4px 16px rgba(0,0,0,0.12)',
+      border: '1px solid var(--border)',
+      borderRadius: 12,
+      boxShadow: '0 12px 40px rgba(0,0,0,0.18), 0 3px 10px rgba(0,0,0,0.08)',
+      zIndex: 900,
       overflow: 'hidden',
       userSelect: 'none',
     }}>
 
-      {/* ── Title bar ── */}
-      <div
-        onMouseDown={startDrag}
-        onDoubleClick={toggleMaximize}
-        style={{
-          height: 40, flexShrink: 0,
-          background: 'var(--surface-2)',
-          borderBottom: '1px solid var(--border-subtle)',
-          display: 'flex', alignItems: 'center',
-          padding: '0 0.6rem', gap: '0.5rem',
-          cursor: winState === 'normal' ? 'grab' : 'default',
-        }}
-      >
-        {/* macOS-style dots */}
-        <div style={{ display: 'flex', gap: '6px', flexShrink: 0 }}>
-          <WinDot color="#FF5F57" title="Fechar"    onClick={onClose} />
-          <WinDot color="#FEBC2E" title="Minimizar" onClick={() => setWinState(s => s === 'minimized' ? 'normal' : 'minimized')} />
-          <WinDot color="#28C840" title={isMaximized ? 'Restaurar' : 'Maximizar'} onClick={toggleMaximize} />
-        </div>
-
-        <div style={{ width: '1px', height: 16, background: 'var(--border-subtle)', flexShrink: 0 }} />
-
-        {/* Favicon + label */}
-        <span style={{ fontSize: '0.68rem', color: 'var(--text-muted)', flexShrink: 0 }}>🕊</span>
-        <span style={{ fontSize: '0.77rem', fontWeight: 600, color: 'var(--text-primary)', flexShrink: 0 }}>Pilgrim</span>
-
-        {/* URL bar */}
-        <div style={{
-          flex: 1, minWidth: 0,
-          background: 'var(--surface)', border: '1px solid var(--border-subtle)',
-          borderRadius: 5, padding: '0.15rem 0.5rem',
-          fontSize: '0.7rem', color: 'var(--text-muted)',
-          overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
-          cursor: 'default',
-        }}>
-          {PILGRIM_URL}
-        </div>
-
-        {/* Abrir em nova aba — sempre visível */}
+      {/* ── Cabeçalho ── */}
+      <div style={{
+        display: 'flex', alignItems: 'center', gap: '0.5rem',
+        padding: '0.7rem 0.85rem',
+        background: 'var(--surface-2)',
+        borderBottom: '1px solid var(--border-subtle)',
+      }}>
+        <span style={{ fontSize: '1rem' }}>🕊</span>
+        <span style={{ fontSize: '0.82rem', fontWeight: 700, color: 'var(--text-primary)', flex: 1 }}>Pilgrim</span>
+        <StatusDot state={panelState} />
         <button
-          onMouseDown={e => e.stopPropagation()}
-          onClick={() => window.open(PILGRIM_URL, '_blank', 'noopener')}
-          title="Abrir Pilgrim em nova aba"
+          onClick={onClose}
           style={{
-            background: 'transparent', border: '1px solid var(--border-subtle)',
-            borderRadius: 5, padding: '0.15rem 0.5rem',
-            fontSize: '0.68rem', color: 'var(--text-muted)', cursor: 'pointer',
-            fontFamily: 'inherit', flexShrink: 0, whiteSpace: 'nowrap',
-            display: 'flex', alignItems: 'center', gap: '0.25rem',
+            background: 'none', border: 'none', cursor: 'pointer',
+            color: 'var(--text-muted)', fontSize: '1rem', lineHeight: 1, padding: '2px 4px',
           }}
-          onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--accent)'; e.currentTarget.style.color = 'var(--accent)' }}
-          onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border-subtle)'; e.currentTarget.style.color = 'var(--text-muted)' }}
+          onMouseEnter={e => (e.currentTarget.style.color = 'var(--text-primary)')}
+          onMouseLeave={e => (e.currentTarget.style.color = 'var(--text-muted)')}
+          title="Fechar painel"
         >
-          ↗ Nova aba
+          ✕
         </button>
       </div>
 
-      {/* ── Content (hidden when minimized) ── */}
-      {!isMinimized && (
-        <div style={{ flex: 1, position: 'relative', overflow: 'hidden', background: '#fff' }}>
+      {/* ── Corpo ── */}
+      <div style={{ padding: '1.1rem 1rem' }}>
 
-          {/* Loading state */}
-          {iframeOk === null && (
-            <div style={{
-              position: 'absolute', inset: 0, zIndex: 2,
-              display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-              background: 'var(--surface)', gap: '0.75rem',
+        {panelState === 'idle' && (
+          <>
+            <p style={{
+              fontSize: '0.78rem', color: 'var(--text-secondary)',
+              margin: '0 0 1rem 0', lineHeight: 1.6,
             }}>
-              <LoadingSpinner />
-              <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Carregando Pilgrim…</span>
-            </div>
-          )}
-
-          {/* Blocked state */}
-          {iframeOk === false && (
-            <div style={{
-              position: 'absolute', inset: 0, zIndex: 2,
-              display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-              background: 'var(--surface)', gap: '1rem', padding: '2rem', textAlign: 'center',
+              O Pilgrim abre em uma janela separada do browser onde o login e os cookies funcionam normalmente.
+            </p>
+            <p style={{
+              fontSize: '0.72rem', color: 'var(--text-muted)',
+              margin: '0 0 1rem 0', lineHeight: 1.5,
             }}>
-              <span style={{ fontSize: '2rem' }}>🔒</span>
-              <p style={{ fontSize: '0.88rem', color: 'var(--text-secondary)', margin: 0, maxWidth: 340, lineHeight: 1.5 }}>
-                O Pilgrim não permite abertura incorporada por questões de segurança.
-              </p>
-              <button
-                onClick={() => window.open(PILGRIM_URL, '_blank', 'noopener')}
-                style={{
-                  background: 'var(--accent)', color: '#fff', border: 'none',
-                  borderRadius: 8, padding: '0.55rem 1.2rem',
-                  fontSize: '0.85rem', fontWeight: 600, fontFamily: 'inherit',
-                  cursor: 'pointer',
-                }}
-                onMouseEnter={e => (e.currentTarget.style.background = 'var(--accent-hover)')}
-                onMouseLeave={e => (e.currentTarget.style.background = 'var(--accent)')}
-              >
-                Abrir Pilgrim em nova aba ↗
-              </button>
+              ℹ️ Iframes bloqueiam cookies de terceiros — por isso o login não funciona incorporado.
+            </p>
+            <PrimaryBtn onClick={openPopup}>
+              Abrir Pilgrim em janela popup
+            </PrimaryBtn>
+            <SecondaryBtn onClick={() => window.open(PILGRIM_URL, '_blank', 'noopener')}>
+              Abrir em nova aba ↗
+            </SecondaryBtn>
+          </>
+        )}
+
+        {panelState === 'open' && (
+          <>
+            <div style={{
+              display: 'flex', alignItems: 'center', gap: '0.5rem',
+              background: 'rgba(34,197,94,0.08)', border: '1px solid rgba(34,197,94,0.25)',
+              borderRadius: 8, padding: '0.6rem 0.75rem', marginBottom: '1rem',
+            }}>
+              <span style={{ fontSize: '0.72rem', color: '#16a34a', lineHeight: 1.5 }}>
+                Pilgrim está aberto em popup separado. Faça login normalmente.
+              </span>
             </div>
-          )}
+            <PrimaryBtn onClick={focusPopup}>
+              Focar janela do Pilgrim
+            </PrimaryBtn>
+            <SecondaryBtn onClick={closePopup}>
+              Fechar popup
+            </SecondaryBtn>
+          </>
+        )}
 
-          {/* Drag/resize overlay — prevents iframe from stealing mouse events */}
-          {interacting && (
-            <div style={{ position: 'absolute', inset: 0, zIndex: 3, cursor: 'inherit' }} />
-          )}
+        {panelState === 'closed_by_user' && (
+          <>
+            <p style={{
+              fontSize: '0.78rem', color: 'var(--text-secondary)',
+              margin: '0 0 1rem 0', lineHeight: 1.6,
+            }}>
+              A janela do Pilgrim foi fechada.
+            </p>
+            <PrimaryBtn onClick={openPopup}>
+              Reabrir Pilgrim
+            </PrimaryBtn>
+            <SecondaryBtn onClick={() => { setPanelState('idle') }}>
+              Cancelar
+            </SecondaryBtn>
+          </>
+        )}
+      </div>
 
-          {/* The iframe */}
-          <iframe
-            src={PILGRIM_URL}
-            onLoad={() => setIframeOk(true)}
-            onError={() => setIframeOk(false)}
-            style={{
-              width: '100%', height: '100%', border: 'none', display: 'block',
-              opacity: iframeOk === true ? 1 : 0,
-              transition: 'opacity 0.2s',
-            }}
-            allow="clipboard-read; clipboard-write"
-            title="Pilgrim"
-          />
-        </div>
-      )}
-
-      {/* ── Resize handles (normal state only) ── */}
-      {winState === 'normal' && (
-        <>
-          {/* Edges */}
-          <ResizeHandle handle="n"  style={{ top: 0,    left: 4,   right: 4,  height: 4,              cursor: 'n-resize'  }} onMouseDown={e => startResize(e, 'n')} />
-          <ResizeHandle handle="s"  style={{ bottom: 0, left: 4,   right: 4,  height: 4,              cursor: 's-resize'  }} onMouseDown={e => startResize(e, 's')} />
-          <ResizeHandle handle="e"  style={{ right: 0,  top: 4,    bottom: 4, width: 4,               cursor: 'e-resize'  }} onMouseDown={e => startResize(e, 'e')} />
-          <ResizeHandle handle="w"  style={{ left: 0,   top: 4,    bottom: 4, width: 4,               cursor: 'w-resize'  }} onMouseDown={e => startResize(e, 'w')} />
-          {/* Corners */}
-          <ResizeHandle handle="nw" style={{ top: 0,    left: 0,   width: 8,  height: 8,              cursor: 'nw-resize' }} onMouseDown={e => startResize(e, 'nw')} />
-          <ResizeHandle handle="ne" style={{ top: 0,    right: 0,  width: 8,  height: 8,              cursor: 'ne-resize' }} onMouseDown={e => startResize(e, 'ne')} />
-          <ResizeHandle handle="sw" style={{ bottom: 0, left: 0,   width: 8,  height: 8,              cursor: 'sw-resize' }} onMouseDown={e => startResize(e, 'sw')} />
-          <ResizeHandle handle="se" style={{ bottom: 0, right: 0,  width: 8,  height: 8,              cursor: 'se-resize' }} onMouseDown={e => startResize(e, 'se')} />
-        </>
-      )}
+      {/* ── Rodapé ── */}
+      <div style={{
+        borderTop: '1px solid var(--border-subtle)',
+        padding: '0.5rem 1rem',
+        display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+      }}>
+        <span style={{ fontSize: '0.65rem', color: 'var(--text-muted)' }}>
+          app.pilgrim.com.br
+        </span>
+        <button
+          onClick={() => window.open(PILGRIM_URL, '_blank', 'noopener')}
+          style={{
+            background: 'none', border: 'none', cursor: 'pointer',
+            fontSize: '0.65rem', color: 'var(--text-muted)', fontFamily: 'inherit', padding: 0,
+          }}
+          onMouseEnter={e => (e.currentTarget.style.color = 'var(--accent)')}
+          onMouseLeave={e => (e.currentTarget.style.color = 'var(--text-muted)')}
+        >
+          ↗ nova aba
+        </button>
+      </div>
     </div>
   )
 }
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
 
-function WinDot({ color, title, onClick }: { color: string; title: string; onClick: () => void }) {
+function StatusDot({ state }: { state: PanelState }) {
+  const color = state === 'open' ? '#22c55e' : state === 'closed_by_user' ? '#f59e0b' : 'var(--border)'
+  const title = state === 'open' ? 'Popup aberto' : state === 'closed_by_user' ? 'Popup fechado' : 'Inativo'
+  return (
+    <span title={title} style={{
+      width: 8, height: 8, borderRadius: '50%', background: color,
+      display: 'inline-block', flexShrink: 0,
+    }} />
+  )
+}
+
+function PrimaryBtn({ children, onClick }: { children: React.ReactNode; onClick: () => void }) {
   return (
     <button
-      onMouseDown={e => e.stopPropagation()}
       onClick={onClick}
-      title={title}
       style={{
-        width: 12, height: 12, borderRadius: '50%',
-        background: color, border: 'none', cursor: 'pointer', padding: 0, flexShrink: 0,
+        width: '100%', padding: '0.55rem', marginBottom: '0.45rem',
+        background: 'var(--accent)', color: '#fff', border: 'none',
+        borderRadius: 8, fontSize: '0.82rem', fontWeight: 600,
+        fontFamily: 'inherit', cursor: 'pointer', transition: 'background 0.13s',
       }}
-    />
+      onMouseEnter={e => (e.currentTarget.style.background = 'var(--accent-hover)')}
+      onMouseLeave={e => (e.currentTarget.style.background = 'var(--accent)')}
+    >
+      {children}
+    </button>
   )
 }
 
-function ResizeHandle({ handle, style, onMouseDown }: {
-  handle: string
-  style: React.CSSProperties
-  onMouseDown: (e: React.MouseEvent) => void
-}) {
+function SecondaryBtn({ children, onClick }: { children: React.ReactNode; onClick: () => void }) {
   return (
-    <div
-      data-resize={handle}
-      onMouseDown={onMouseDown}
-      style={{ position: 'absolute', zIndex: 10, ...style }}
-    />
-  )
-}
-
-function LoadingSpinner() {
-  return (
-    <div style={{
-      width: 28, height: 28, borderRadius: '50%',
-      border: '3px solid var(--border)',
-      borderTopColor: 'var(--accent)',
-      animation: 'spin 0.8s linear infinite',
-    }} />
+    <button
+      onClick={onClick}
+      style={{
+        width: '100%', padding: '0.48rem',
+        background: 'transparent', color: 'var(--text-secondary)',
+        border: '1px solid var(--border-subtle)',
+        borderRadius: 8, fontSize: '0.8rem', fontWeight: 500,
+        fontFamily: 'inherit', cursor: 'pointer', transition: 'border-color 0.13s',
+      }}
+      onMouseEnter={e => (e.currentTarget.style.borderColor = 'var(--border)')}
+      onMouseLeave={e => (e.currentTarget.style.borderColor = 'var(--border-subtle)')}
+    >
+      {children}
+    </button>
   )
 }
