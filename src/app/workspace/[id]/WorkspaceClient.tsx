@@ -381,13 +381,27 @@ export default function WorkspaceClient({ user, project, initialSections }: Prop
   )
 
   const [sections, setSections] = useState<Section[]>(initialSections)
-  const [activeSlug, setActiveSlug] = useState(() => searchParams.get('section') || modeConfig.defaultSection)
+  const [activeSlug, setActiveSlug] = useState(() => {
+    const fromUrl = searchParams.get('section')
+    if (fromUrl) return fromUrl
+    try {
+      const saved = localStorage.getItem(`lampas_section_${project.id}`)
+      if (saved) return saved
+    } catch {}
+    return modeConfig.defaultSection
+  })
   const [expandedPhases, setExpandedPhases] = useState<Set<string>>(() => new Set(modeConfig.defaultExpandedPhases))
   const [expandedCanons, setExpandedCanons] = useState<Set<string>>(() => new Set(modeConfig.defaultExpandedCanons))
   const [expandedGroups, setExpandedGroups] = useState<Set<string>>(() => new Set(modeConfig.defaultExpandedGroups))
-  const [expandedSectionCards, setExpandedSectionCards] = useState<Set<string>>(
-    () => new Set([searchParams.get('section') || modeConfig.defaultSection])
-  )
+  const [expandedSectionCards, setExpandedSectionCards] = useState<Set<string>>(() => {
+    const fromUrl = searchParams.get('section')
+    if (fromUrl) return new Set([fromUrl])
+    try {
+      const saved = localStorage.getItem(`lampas_section_${project.id}`)
+      if (saved) return new Set([saved])
+    } catch {}
+    return new Set([modeConfig.defaultSection])
+  })
   const [aiOpen, setAiOpen] = useState(false)
   const [aiPrompt, setAiPrompt] = useState('')
 
@@ -526,7 +540,7 @@ export default function WorkspaceClient({ user, project, initialSections }: Prop
     window.addEventListener('mousemove', onMove); window.addEventListener('mouseup', onUp)
   }, [])
 
-  const activeDef = useSectionDef(activeSlug)
+  const { def: activeDef, loading: activeDefLoading } = useSectionDef(activeSlug)
   const activeTool = getToolAreaBySlug(activeSlug)
   const activeSection = sections.find(s => s.slug === activeSlug)
   const activePhase = navPhases.find(p => p.id === getPhaseFor(activeSlug))
@@ -697,6 +711,10 @@ export default function WorkspaceClient({ user, project, initialSections }: Prop
     if (g) setExpandedGroups(prev => new Set([...prev, g]))
     setExpandedSectionCards(prev => new Set([...prev, slug]))
     setActiveSlug(slug)
+    try { localStorage.setItem(`lampas_section_${project.id}`, slug) } catch {}
+    const p = new URLSearchParams(searchParams.toString())
+    p.set('section', slug)
+    router.replace(`?${p.toString()}`, { scroll: false })
   }
 
   useEffect(() => {
@@ -1637,6 +1655,10 @@ export default function WorkspaceClient({ user, project, initialSections }: Prop
                 onNavigate={navigate}
                 onAskAI={handleAskAI}
               />
+            ) : activeDefLoading ? (
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%' }}>
+                <div style={{ color: 'var(--text-muted)', fontSize: '0.85rem' }}>Carregando...</div>
+              </div>
             ) : (
               <div style={{
                 display: 'flex', flexDirection: 'column', alignItems: 'center',
