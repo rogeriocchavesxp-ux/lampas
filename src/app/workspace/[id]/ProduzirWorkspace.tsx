@@ -56,14 +56,27 @@ function genId(): string {
 
 function loadContent(section: Section | undefined, production?: Production): ProduzirContent {
   const raw = (production?.content ?? section?.content) as Record<string, unknown> | null
-  if (raw?.produzir_mode !== undefined) {
+  const storedMode = raw?.produzir_mode as ProduzirMode | null | undefined
+
+  if (storedMode) {
     return {
-      produzir_mode:  (raw.produzir_mode as ProduzirMode) ?? null,
-      livre:          (raw.livre as { title: string; html: string }) ?? { title: '', html: '' },
-      blocos_montado: (raw.blocos_montado as ProduzirBloco[]) ?? (raw.blocos as ProduzirBloco[]) ?? [],
-      blocos_livre:   (raw.blocos_livre   as ProduzirBloco[]) ?? [],
+      produzir_mode:  storedMode,
+      livre:          (raw!.livre as { title: string; html: string }) ?? { title: '', html: '' },
+      blocos_montado: (raw!.blocos_montado as ProduzirBloco[]) ?? (raw!.blocos as ProduzirBloco[]) ?? [],
+      blocos_livre:   (raw!.blocos_livre   as ProduzirBloco[]) ?? [],
     }
   }
+
+  // production presente → nunca mostrar o Hub; default 'livre' para produções sem modo gravado
+  if (production) {
+    return {
+      produzir_mode:  'livre',
+      livre:          (raw?.livre as { title: string; html: string }) ?? { title: '', html: '' },
+      blocos_montado: (raw?.blocos_montado as ProduzirBloco[]) ?? [],
+      blocos_livre:   (raw?.blocos_livre   as ProduzirBloco[]) ?? [],
+    }
+  }
+
   return { produzir_mode: null, livre: { title: '', html: '' }, blocos_montado: [], blocos_livre: [] }
 }
 
