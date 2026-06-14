@@ -1580,6 +1580,37 @@ export default function WorkspaceClient({ user, project, initialSections }: Prop
 
           {/* Reading area */}
           <main style={{ flex: 1, minWidth: 0, overflowY: 'auto', background: 'var(--background)' }}>
+
+            {/* ← Voltar — fixo no topo de toda tela interna */}
+            <div style={{
+              position: 'sticky', top: 0, zIndex: 9,
+              display: 'flex', alignItems: 'center',
+              padding: '0.18rem 0.85rem',
+              background: 'var(--background)',
+              borderBottom: '1px solid var(--border-subtle)',
+              minHeight: '30px',
+              flexShrink: 0,
+            }}>
+              <button
+                onClick={() => prevSlug ? navigate(prevSlug) : router.push('/dashboard')}
+                title={prevSlug ? getSlugLabel(prevSlug) : 'Voltar ao painel'}
+                style={{
+                  background: 'transparent', border: 'none',
+                  cursor: 'pointer',
+                  color: 'var(--text-secondary)',
+                  fontSize: '0.72rem', fontWeight: 600,
+                  padding: '0.12rem 0.45rem', borderRadius: '5px',
+                  fontFamily: 'inherit',
+                  display: 'flex', alignItems: 'center', gap: '0.22rem',
+                }}
+                onMouseEnter={e => { e.currentTarget.style.background = 'rgba(0,0,0,0.05)'; e.currentTarget.style.color = 'var(--text-primary)' }}
+                onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = 'var(--text-secondary)' }}
+              >
+                <ChevronLeft size={12} strokeWidth={2.2} />
+                Voltar
+              </button>
+            </div>
+
             {activeSlug === 'colagens' ? (
               <CollagesWorkspace
                 key={activeSlug}
