@@ -494,7 +494,7 @@ export default function AIAssistantPanel({ context, currentContent, onInsert, on
           }}>
             <div
               ref={responseRef}
-              style={{ maxHeight: '320px', overflowY: 'auto', padding: '0.75rem 0.85rem' }}
+              style={{ maxHeight: '420px', overflowY: 'auto', padding: '0.75rem 0.85rem' }}
             >
               {error && (
                 <p style={{ fontSize: '0.78rem', color: '#EF4444', margin: 0 }}>{error}</p>
@@ -540,46 +540,51 @@ export default function AIAssistantPanel({ context, currentContent, onInsert, on
               </div>
             )}
 
-            {hasResponse && !loading && (
-              <div style={{
-                display: 'flex', gap: '0.35rem', flexWrap: 'wrap',
-                padding: '0.5rem 0.75rem',
-                borderTop: '1px solid #F1F5F9',
-                background: '#FFFFFF',
-              }}>
-                <button
-                  onClick={handleInsert}
-                  style={{ ...insertBtnStyle(true) }}
-                  onMouseEnter={e => { e.currentTarget.style.opacity = '0.88' }}
-                  onMouseLeave={e => { e.currentTarget.style.opacity = '1' }}
-                >
-                  Inserir
-                </button>
-                <button onClick={handleReplace} style={insertBtnStyle()}
-                  onMouseEnter={e => { e.currentTarget.style.borderColor = '#94A3B8'; e.currentTarget.style.color = '#1E293B' }}
-                  onMouseLeave={e => { e.currentTarget.style.borderColor = '#E2E8F0'; e.currentTarget.style.color = '#475569' }}
-                >
-                  Substituir
-                </button>
-                <button onClick={handleAppend} style={insertBtnStyle()}
-                  onMouseEnter={e => { e.currentTarget.style.borderColor = '#94A3B8'; e.currentTarget.style.color = '#1E293B' }}
-                  onMouseLeave={e => { e.currentTarget.style.borderColor = '#E2E8F0'; e.currentTarget.style.color = '#475569' }}
-                >
-                  Adicionar abaixo
-                </button>
-                <button onClick={handleCopy} style={{ ...insertBtnStyle(), marginLeft: 'auto' }}
-                  onMouseEnter={e => { e.currentTarget.style.borderColor = '#94A3B8' }}
-                  onMouseLeave={e => { e.currentTarget.style.borderColor = '#E2E8F0' }}
-                >
-                  {copied ? '✓ Copiado' : 'Copiar'}
-                </button>
-              </div>
-            )}
           </div>
         )}
 
         <div style={{ flex: 1 }} />
       </div>
+
+      {/* ── Action strip — sempre visível quando há resposta ── */}
+      {hasResponse && !loading && (
+        <div style={{
+          flexShrink: 0,
+          display: 'flex', gap: '0.35rem', flexWrap: 'wrap',
+          padding: '0.55rem 0.85rem',
+          borderTop: '1px solid #E2E8F0',
+          background: '#FFFFFF',
+          boxShadow: '0 -2px 8px rgba(0,0,0,0.05)',
+          zIndex: 10,
+        }}>
+          <button
+            onClick={handleInsert}
+            style={{ ...insertBtnStyle(true) }}
+            onMouseEnter={e => { e.currentTarget.style.opacity = '0.88' }}
+            onMouseLeave={e => { e.currentTarget.style.opacity = '1' }}
+          >
+            Inserir
+          </button>
+          <button onClick={handleReplace} style={insertBtnStyle()}
+            onMouseEnter={e => { e.currentTarget.style.borderColor = '#94A3B8'; e.currentTarget.style.color = '#1E293B' }}
+            onMouseLeave={e => { e.currentTarget.style.borderColor = '#E2E8F0'; e.currentTarget.style.color = '#475569' }}
+          >
+            Substituir
+          </button>
+          <button onClick={handleAppend} style={insertBtnStyle()}
+            onMouseEnter={e => { e.currentTarget.style.borderColor = '#94A3B8'; e.currentTarget.style.color = '#1E293B' }}
+            onMouseLeave={e => { e.currentTarget.style.borderColor = '#E2E8F0'; e.currentTarget.style.color = '#475569' }}
+          >
+            Adicionar abaixo
+          </button>
+          <button onClick={handleCopy} style={{ ...insertBtnStyle(), marginLeft: 'auto' }}
+            onMouseEnter={e => { e.currentTarget.style.borderColor = '#94A3B8' }}
+            onMouseLeave={e => { e.currentTarget.style.borderColor = '#E2E8F0' }}
+          >
+            {copied ? '✓ Copiado' : 'Copiar'}
+          </button>
+        </div>
+      )}
 
       {/* ── Chat input ── */}
       <div style={{
