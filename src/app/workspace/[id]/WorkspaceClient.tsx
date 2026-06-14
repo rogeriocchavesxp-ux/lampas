@@ -31,6 +31,7 @@ import ComentarioExegeticoWorkspace from './ComentarioExegeticoWorkspace'
 import ProduzirWorkspace from './ProduzirWorkspace'
 import WorkspaceMenuBar from './WorkspaceMenuBar'
 import FloatingBrowser from './FloatingBrowser'
+import ImprovementChecklistPanel from './ImprovementChecklistPanel'
 import LiveReferencePanel from './LiveReferencePanel'
 import AIPanel from './AIPanel'
 import BibleFloatingWindow from './BibleFloatingWindow'
@@ -404,7 +405,8 @@ export default function WorkspaceClient({ user, project, initialSections }: Prop
   const [enviarTargetMode, setEnviarTargetMode] = useState<'sermao' | 'devocional'>('sermao')
   const [enviarDropdownOpen, setEnviarDropdownOpen] = useState(false)
   const enviarDropdownRef = useRef<HTMLDivElement>(null)
-  const [pilgrimOpen, setPilgrimOpen] = useState(false)
+  const [pilgrimOpen, setPilgrimOpen]       = useState(false)
+  const [checklistOpen, setChecklistOpen]   = useState(false)
 
   const sidebarWidthRef  = useRef(264)
   const referenceWidthRef = useRef(280)
@@ -445,6 +447,13 @@ export default function WorkspaceClient({ user, project, initialSections }: Prop
     function handler() { setPilgrimOpen(true) }
     window.addEventListener('lampas:open-pilgrim', handler)
     return () => window.removeEventListener('lampas:open-pilgrim', handler)
+  }, [])
+
+  // Abre painel de checklist via evento global (disparado pelo AIAssistantPanel)
+  useEffect(() => {
+    function handler() { setChecklistOpen(true) }
+    window.addEventListener('lampas:open-checklist', handler)
+    return () => window.removeEventListener('lampas:open-checklist', handler)
   }, [])
 
   // Persiste contexto do workspace para o painel global da Base de Conhecimento
@@ -737,10 +746,12 @@ export default function WorkspaceClient({ user, project, initialSections }: Prop
         focusMode={focusMode}
         sideBySide={sideBySide}
         aiOpen={aiOpen}
+        checklistOpen={checklistOpen}
         onToggleBible={() => setBibleOpen(o => !o)}
         onToggleFocus={() => setFocusMode(o => !o)}
         onToggleSideBySide={() => setSideBySide(o => !o)}
         onToggleAI={() => setAiOpen(o => !o)}
+        onToggleChecklist={() => setChecklistOpen(o => !o)}
         onEnviarSermao={() => { setEnviarTargetMode('sermao'); setEnviarParaSermaOpen(true) }}
         onEnviarDevocional={() => { setEnviarTargetMode('devocional'); setEnviarParaSermaOpen(true) }}
         onEnviarKB={() => window.dispatchEvent(new CustomEvent('lampas:kb-open-create'))}
@@ -1700,6 +1711,22 @@ export default function WorkspaceClient({ user, project, initialSections }: Prop
 
         </div>
       </div>
+
+      {/* ── Checklist de Melhorias ───────────────────────────────── */}
+      {checklistOpen && (
+        <aside style={{
+          position: 'fixed', right: 0, top: 0, bottom: '60px',
+          width: '360px', zIndex: 4800,
+          background: '#FFFFFF',
+          boxShadow: '-4px 0 24px rgba(0,0,0,0.08)',
+          display: 'flex', flexDirection: 'column',
+        }}>
+          <ImprovementChecklistPanel
+            projectId={project.id}
+            onClose={() => setChecklistOpen(false)}
+          />
+        </aside>
+      )}
 
       {/* ── Janela flutuante Pilgrim ──────────────────────────────── */}
       {pilgrimOpen && <FloatingBrowser onClose={() => setPilgrimOpen(false)} />}

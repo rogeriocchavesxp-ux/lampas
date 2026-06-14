@@ -49,7 +49,15 @@ Apresente a avaliação neste formato:
 (Sugestões específicas e concretas considerando o contexto atual: projeto, etapa, seção e campo)
 
 ## Recomendação Final
-(Próximo passo mais importante)`
+(Próximo passo mais importante)
+
+Após a avaliação, inclua exatamente este bloco JSON com os itens de melhoria acionáveis (entre 3 e 7 itens):
+
+\`\`\`json
+{"items":[{"title":"título curto da melhoria","problem":"descrição objetiva do problema","justification":"por que isso importa para o sermão/texto","suggestion":"sugestão prática e específica de correção"}]}
+\`\`\`
+
+Gere somente o JSON após a avaliação, sem texto adicional depois do bloco.`
 
 // ── Action groups ─────────────────────────────────────────────────────────────
 
@@ -159,14 +167,15 @@ function stripHtml(html: string): string {
 // ── Component ─────────────────────────────────────────────────────────────────
 
 export default function AIAssistantPanel({ context, currentContent, onInsert, onReplace, onAppend, onClose }: Props) {
-  const [response, setResponse]     = useState('')
-  const [loading, setLoading]       = useState(false)
-  const [chatInput, setChatInput]   = useState('')
-  const [error, setError]           = useState('')
-  const [copied, setCopied]         = useState(false)
-  const [activeGroup, setActiveGroup] = useState<string | null>(null)
-  const streamBuffer                = useRef('')
-  const responseRef                 = useRef<HTMLDivElement>(null)
+  const [response, setResponse]         = useState('')
+  const [loading, setLoading]           = useState(false)
+  const [chatInput, setChatInput]       = useState('')
+  const [error, setError]               = useState('')
+  const [copied, setCopied]             = useState(false)
+  const [activeGroup, setActiveGroup]   = useState<string | null>(null)
+  const [savedCount, setSavedCount]     = useState<number | null>(null)
+  const streamBuffer                    = useRef('')
+  const responseRef                     = useRef<HTMLDivElement>(null)
 
   const buildSystemContext = useCallback(() => {
     const parts = [
@@ -251,6 +260,38 @@ export default function AIAssistantPanel({ context, currentContent, onInsert, on
         }
       }
       console.log('[AIAssistantPanel] stream concluído em', Date.now() - t0, 'ms')
+
+      // Extract JSON checklist block if present (Avaliar action)
+      const fullText = streamBuffer.current
+      const jsonMatch = fullText.match(/```json\s*(\{[\s\S]*?\})\s*```/)
+      if (jsonMatch) {
+        const cleanText = fullText.replace(/```json[\s\S]*?```/g, '').trim()
+        setResponse(cleanText)
+        streamBuffer.current = cleanText
+        try {
+          const parsed = JSON.parse(jsonMatch[1]) as { items: { title: string; problem?: string; justification?: string; suggestion?: string }[] }
+          if (Array.isArray(parsed.items) && parsed.items.length > 0) {
+            const res = await fetch('/api/improvement', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                project_id:    context.project.id,
+                section_slug:  context.section  ?? null,
+                section_label: context.sectionLabel ?? context.phaseLabel ?? null,
+                field_label:   context.fieldLabel ?? null,
+                items:         parsed.items,
+              }),
+            })
+            if (res.ok) {
+              setSavedCount(parsed.items.length)
+              window.dispatchEvent(new CustomEvent('lampas:checklist-updated'))
+              setTimeout(() => setSavedCount(null), 6000)
+            }
+          }
+        } catch {
+          console.warn('[AIAssistantPanel] Falha ao parsear JSON do checklist')
+        }
+      }
     } catch (err) {
       const isTimeout = err instanceof DOMException && err.name === 'AbortError'
       const msg = isTimeout
@@ -475,6 +516,29 @@ export default function AIAssistantPanel({ context, currentContent, onInsert, on
                 </div>
               )}
             </div>
+
+            {savedCount !== null && (
+              <div style={{
+                padding: '0.5rem 0.85rem',
+                borderTop: '1px solid #F1F5F9',
+                background: '#F0FDF4',
+                display: 'flex', alignItems: 'center', gap: '0.4rem',
+              }}>
+                <span style={{ fontSize: '0.72rem', color: '#16A34A', fontWeight: 600 }}>
+                  ✓ {savedCount} melhoria{savedCount !== 1 ? 's' : ''} salva{savedCount !== 1 ? 's' : ''} no checklist
+                </span>
+                <button
+                  onClick={() => window.dispatchEvent(new CustomEvent('lampas:open-checklist'))}
+                  style={{
+                    marginLeft: 'auto', background: 'none', border: 'none', cursor: 'pointer',
+                    fontSize: '0.7rem', color: '#16A34A', fontWeight: 700, fontFamily: 'inherit',
+                    textDecoration: 'underline', padding: 0,
+                  }}
+                >
+                  Ver checklist →
+                </button>
+              </div>
+            )}
 
             {hasResponse && !loading && (
               <div style={{

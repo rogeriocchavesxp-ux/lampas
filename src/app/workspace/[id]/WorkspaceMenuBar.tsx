@@ -27,18 +27,20 @@ export interface WorkspaceMenuBarProps {
   focusMode: boolean
   sideBySide: boolean
   aiOpen: boolean
+  checklistOpen: boolean
   onToggleBible: () => void
   onToggleFocus: () => void
   onToggleSideBySide: () => void
   onToggleAI: () => void
+  onToggleChecklist: () => void
   onEnviarSermao: () => void
   onEnviarDevocional: () => void
   onEnviarKB: () => void
 }
 
 export default function WorkspaceMenuBar({
-  bibleOpen, focusMode, sideBySide, aiOpen,
-  onToggleBible, onToggleFocus, onToggleSideBySide, onToggleAI,
+  bibleOpen, focusMode, sideBySide, aiOpen, checklistOpen,
+  onToggleBible, onToggleFocus, onToggleSideBySide, onToggleAI, onToggleChecklist,
   onEnviarSermao, onEnviarDevocional, onEnviarKB,
 }: WorkspaceMenuBarProps) {
   const router = useRouter()
@@ -170,6 +172,7 @@ export default function WorkspaceMenuBar({
       label: 'IA',
       items: [
         { label: 'Abrir Assistente', shortcut: '⌘I', checked: aiOpen, onClick: onToggleAI },
+        { label: 'Checklist de Melhorias', checked: checklistOpen, onClick: onToggleChecklist },
         { label: 'Analisar Passagem', separator: true, soon: true },
         { label: 'Gerar Comentário', soon: true },
         { label: 'Sugestões de Sermão', soon: true },
