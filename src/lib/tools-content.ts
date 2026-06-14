@@ -1,4 +1,4 @@
-export type ToolAreaId = 'sistematica' | 'biblica' | 'confissoes_catecismos' | 'dicionario' | 'livros' | 'refs_cruzadas'
+export type ToolAreaId = 'sistematica' | 'biblica' | 'confissoes_catecismos' | 'dicionario' | 'livros' | 'refs_cruzadas' | 'introducao_at' | 'introducao_nt'
 
 export interface ToolReference {
   title: string
@@ -293,6 +293,70 @@ export const TOOL_AREAS: ToolArea[] = [
       { label: 'Progressão redentiva', prompt: 'Posicione este texto na linha redentivo-histórica. O que prefigurou? O que cumpre? Como culmina em Cristo e aponta para nova criação? (Vos, Gaffin, Beale)' },
     ],
     visualization: ['Texto', 'Paralelos AT', 'Eco/Alusão', 'Tipologia', 'Cumprimento NT', 'Nova Criação'],
+  },
+  {
+    id: 'introducao_at',
+    slug: 'ferramentas_introducao_at',
+    title: 'Introdução ao Antigo Testamento',
+    shortTitle: 'Intro AT',
+    subtitle: 'Autoria, data, contexto e teologia',
+    objective: 'Consultar a introdução canônica de cada livro do AT: autoria, data, contexto histórico, propósito, estrutura e ênfases teológicas.',
+    color: '#B45309',
+    bgActive: 'rgba(180,83,9,0.08)',
+    sections: ['Gênesis', 'Êxodo', 'Levítico', 'Números', 'Deuteronômio', 'Josué', 'Juízes', 'Rute', '1 Samuel', '2 Samuel', '1 Reis', '2 Reis', '1 Crônicas', '2 Crônicas', 'Esdras', 'Neemias', 'Ester', 'Jó', 'Salmos', 'Provérbios', 'Eclesiastes', 'Cânticos', 'Isaías', 'Jeremias', 'Lamentações', 'Ezequiel', 'Daniel', 'Oseias', 'Joel', 'Amós', 'Obadias', 'Jonas', 'Miquéias', 'Naum', 'Habacuque', 'Sofonias', 'Ageu', 'Zacarias', 'Malaquias'],
+    capabilities: [
+      'Consultar introdução de cada livro',
+      'Ver autoria e datação',
+      'Estudar contexto histórico',
+      'Analisar ênfases teológicas',
+      'Comparar posições acadêmicas',
+      'Relacionar com a história da redenção',
+      'Ver relação com Cristo',
+    ],
+    aiRole: 'especialista em introdução ao Antigo Testamento, capaz de explicar autoria, data, contexto histórico, propósito, estrutura, ênfases teológicas e relação com Cristo para qualquer livro do AT, a partir de uma perspectiva conservadora e reformada.',
+    references: [
+      { title: 'Obras de referência AT', items: ['Waltke & Yu — Old Testament Theology', 'Dillard & Longman — Introdução ao AT', 'Harrison — Introduction to the OT', 'Archer — Survey of OT Introduction', 'Hill & Walton — Survey of the OT', 'LaSor, Hubbard & Bush — OT Survey', 'Childs — Introduction to the OT as Scripture'] },
+      { title: 'Exegetas AT prioritários', items: ['Bruce Waltke', 'Gordon Wenham', 'J.A. Motyer', 'Daniel Block', 'Tremper Longman III', 'Brevard Childs', 'Alec Motyer', 'John Walton'] },
+    ],
+    actions: [
+      { label: 'Visão geral do livro', prompt: 'Dê uma visão geral introdutória do livro que estou estudando: autoria, data, destinatários, propósito, estrutura e ênfases teológicas.' },
+      { label: 'Contexto histórico', prompt: 'Explique o contexto histórico e cultural do livro que estou estudando, situando-o na história de Israel e no mundo antigo.' },
+      { label: 'Relação com Cristo', prompt: 'Como este livro se relaciona com Cristo e com a história da redenção? Explique tipologias, profecias e antecipações cristológicas.' },
+      { label: 'Questões interpretativas', prompt: 'Quais são as principais questões interpretativas deste livro? Apresente as posições tradicionais, críticas e evangélicas conservadoras.' },
+    ],
+    visualization: ['Livro', 'Autoria', 'Data', 'Contexto histórico', 'Propósito', 'Ênfases teológicas', 'Relação com Cristo'],
+  },
+  {
+    id: 'introducao_nt',
+    slug: 'ferramentas_introducao_nt',
+    title: 'Introdução ao Novo Testamento',
+    shortTitle: 'Intro NT',
+    subtitle: 'Autoria, data, contexto e teologia',
+    objective: 'Consultar a introdução canônica de cada livro do NT: autoria, data, contexto histórico, propósito, estrutura e ênfases teológicas.',
+    color: '#1D4ED8',
+    bgActive: 'rgba(29,78,216,0.08)',
+    sections: ['Mateus', 'Marcos', 'Lucas', 'João', 'Atos', 'Romanos', '1 Coríntios', '2 Coríntios', 'Gálatas', 'Efésios', 'Filipenses', 'Colossenses', '1 Tessalonicenses', '2 Tessalonicenses', '1 Timóteo', '2 Timóteo', 'Tito', 'Filemom', 'Hebreus', 'Tiago', '1 Pedro', '2 Pedro', '1 João', '2 João', '3 João', 'Judas', 'Apocalipse'],
+    capabilities: [
+      'Consultar introdução de cada livro',
+      'Ver autoria e datação',
+      'Estudar contexto histórico',
+      'Analisar ênfases teológicas',
+      'Comparar posições acadêmicas',
+      'Relacionar com a história da redenção',
+      'Ver centralidade em Cristo',
+    ],
+    aiRole: 'especialista em introdução ao Novo Testamento, capaz de explicar autoria, data, contexto histórico, propósito, estrutura, ênfases teológicas e relação com a história da redenção para qualquer livro do NT, a partir de uma perspectiva conservadora e reformada.',
+    references: [
+      { title: 'Obras de referência NT', items: ['Carson & Moo — Introduction to the NT', 'Guthrie — New Testament Introduction', 'Blomberg — Jesus and the Gospels', 'Schreiner — Magnifying God in Christ', 'Moo — The Letter to the Romans', 'Bruce — Paul: Apostle of the Heart Set Free', 'Bauckham — Jesus and the Eyewitnesses'] },
+      { title: 'Exegetas NT prioritários', items: ['D.A. Carson', 'Douglas Moo', 'Thomas Schreiner', 'G.K. Beale', 'Leon Morris', 'F.F. Bruce', 'John Stott', 'Richard Bauckham'] },
+    ],
+    actions: [
+      { label: 'Visão geral do livro', prompt: 'Dê uma visão geral introdutória do livro que estou estudando: autoria, data, destinatários, propósito, estrutura e ênfases teológicas.' },
+      { label: 'Contexto histórico', prompt: 'Explique o contexto histórico e cultural do livro que estou estudando, situando-o no mundo greco-romano e na história do cristianismo primitivo.' },
+      { label: 'Centralidade em Cristo', prompt: 'Como este livro revela Cristo e contribui para a teologia do NT? Explique suas ênfases cristológicas e soteriológicas.' },
+      { label: 'Questões interpretativas', prompt: 'Quais são as principais questões interpretativas deste livro? Apresente as posições tradicionais, críticas e evangélicas conservadoras.' },
+    ],
+    visualization: ['Livro', 'Autoria', 'Data', 'Contexto histórico', 'Propósito', 'Ênfases teológicas', 'Centralidade em Cristo'],
   },
 ]
 

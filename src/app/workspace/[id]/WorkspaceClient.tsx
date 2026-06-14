@@ -39,6 +39,7 @@ import BibleFloatingWindow from './BibleFloatingWindow'
 import VisaoGeralWorkspace from './VisaoGeralWorkspace'
 import EnviarParaSermaModal from './EnviarParaSermaModal'
 import DicionarioWorkspace from './DicionarioWorkspace'
+import IntroducaoWorkspace from './IntroducaoWorkspace'
 import BibliotecaWorkspace from './BibliotecaWorkspace'
 import {
   Heart, BookOpen, FileText, Crosshair, Landmark, Languages, GraduationCap,
@@ -158,6 +159,8 @@ const GROUP_ICONS: Record<string, LucideIcon> = {
   ferramentas_dicionario:    Library,
   ferramentas_livros:        BookCopy,
   ferramentas_refs_cruzadas: Link2,
+  ferramentas_introducao_at: BookOpen,
+  ferramentas_introducao_nt: BookOpen,
   colagens:                  Paperclip,
 }
 
@@ -1598,6 +1601,20 @@ export default function WorkspaceClient({ user, project, initialSections }: Prop
                 key={activeSlug}
                 project={project}
                 userId={user.id}
+                onAskAI={handleAskAI}
+              />
+            ) : activeSlug === 'ferramentas_introducao_at' ? (
+              <IntroducaoWorkspace
+                key={activeSlug}
+                testament="AT"
+                project={project}
+                onAskAI={handleAskAI}
+              />
+            ) : activeSlug === 'ferramentas_introducao_nt' ? (
+              <IntroducaoWorkspace
+                key={activeSlug}
+                testament="NT"
+                project={project}
                 onAskAI={handleAskAI}
               />
             ) : isToolSlug(activeSlug) ? (
