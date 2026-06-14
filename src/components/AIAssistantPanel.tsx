@@ -144,26 +144,45 @@ export default function AIAssistantPanel({ context, currentContent, onInsert, on
     streamBuffer.current = ''
 
     const fullMessage = `${buildSystemContext()}\n\n${userMessage}`
+    const activeSlug  = context.section ?? 'investigar_visao_geral'
+    const activeTitle = context.sectionLabel ?? context.phaseLabel ?? 'Assistente'
+
+    const t0 = Date.now()
+    const controller = new AbortController()
+    const timeout = setTimeout(() => controller.abort(), 90_000)
+
+    const payload = {
+      messages: [{ role: 'user', content: fullMessage }],
+      project: context.project,
+      activeSlug,
+      activeTitle,
+    }
+    console.log('[AIAssistantPanel] enviando para /api/claude/stream', { activeSlug, activeTitle })
 
     try {
       const res = await fetch('/api/claude/stream', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          messages: [{ role: 'user', content: fullMessage }],
-          project: context.project,
-          activeSlug: context.section ?? 'investigar_visao_geral',
-          activeTitle: context.sectionLabel ?? context.phaseLabel ?? 'Assistente',
-        }),
+        body: JSON.stringify(payload),
+        signal: controller.signal,
       })
 
+      console.log('[AIAssistantPanel] status:', res.status, Date.now() - t0, 'ms')
+
       if (!res.ok) {
-        const err = await res.json().catch(() => ({ error: 'Erro na API' }))
-        setError(err.error ?? 'Erro. Tente novamente.')
+        const err = await res.json().catch(() => ({ error: `HTTP ${res.status}` }))
+        console.error('[AIAssistantPanel] erro HTTP:', res.status, err)
+        setError(err.error ?? `Erro ${res.status}. Tente novamente.`)
         return
       }
 
-      const reader = res.body!.getReader()
+      if (!res.body) {
+        console.error('[AIAssistantPanel] res.body é null')
+        setError('Resposta inválida do servidor.')
+        return
+      }
+
+      const reader = res.body.getReader()
       const decoder = new TextDecoder()
 
       while (true) {
@@ -175,16 +194,29 @@ export default function AIAssistantPanel({ context, currentContent, onInsert, on
           const data = line.slice(6)
           if (data === '[DONE]') continue
           try {
-            const delta = JSON.parse(data).delta?.text ?? ''
+            const parsed = JSON.parse(data)
+            if (parsed.error) {
+              console.error('[AIAssistantPanel] erro no stream:', parsed.error)
+              setError(`Erro da IA: ${parsed.error}`)
+              return
+            }
+            const delta = parsed.delta?.text ?? ''
             streamBuffer.current += delta
             setResponse(streamBuffer.current)
             setTimeout(() => { responseRef.current?.scrollTo({ top: responseRef.current.scrollHeight }) }, 0)
-          } catch { /* ignore */ }
+          } catch { /* ignore SSE parse errors */ }
         }
       }
-    } catch {
-      setError('Erro de conexão. Tente novamente.')
+      console.log('[AIAssistantPanel] stream concluído em', Date.now() - t0, 'ms')
+    } catch (err) {
+      const isTimeout = err instanceof DOMException && err.name === 'AbortError'
+      const msg = isTimeout
+        ? 'Tempo limite excedido (90s). Tente novamente.'
+        : err instanceof Error ? `Erro de conexão: ${err.message}` : 'Erro de conexão. Tente novamente.'
+      console.error('[AIAssistantPanel] catch:', err, 'duração:', Date.now() - t0, 'ms')
+      setError(msg)
     } finally {
+      clearTimeout(timeout)
       setLoading(false)
     }
   }, [context, currentContent, buildSystemContext, loading])

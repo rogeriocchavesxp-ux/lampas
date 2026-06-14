@@ -1,5 +1,8 @@
 import Anthropic from '@anthropic-ai/sdk'
 import { createClient } from '@/lib/supabase/server'
+
+// Vercel: aumentar duração máxima para suportar respostas longas do Claude
+export const maxDuration = 60
 import { checkAIUsage, incrementAIUsage } from '@/lib/billing'
 import { checkRateLimit, rateLimitHeaders } from '@/lib/rate-limit'
 import { getSystemPromptForMode } from '@/lib/prompts/mode-personas'
@@ -26,10 +29,18 @@ interface ChatMessage {
 }
 
 export async function POST(req: Request) {
+  const t0 = Date.now()
+  console.log('[AI/stream] POST iniciado', new Date().toISOString())
+
+  try {
   // Auth check
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return Response.json({ error: 'Não autorizado' }, { status: 401 })
+  if (!user) {
+    console.warn('[AI/stream] Não autorizado — sem usuário na sessão')
+    return Response.json({ error: 'Não autorizado' }, { status: 401 })
+  }
+  console.log('[AI/stream] userId:', user.id)
 
   // ── Verificar limite de IA do plano ──
   const usage = await checkAIUsage(user.id)
@@ -57,9 +68,19 @@ export async function POST(req: Request) {
     project: { id?: string; book: string; passage_ref: string; testament: string; original_language: string; study_mode?: string; meta?: { topic?: string } }
     activeSlug: string
     activeTitle: string
-    dictionaryQuery?: string   // termo explícito quando activeSlug = ferramentas_dicionario
+    dictionaryQuery?: string
     generationMode?: GenerationMode
   }
+
+  console.log('[AI/stream] payload recebido:', {
+    activeSlug, activeTitle,
+    projectBook: project?.book,
+    passageRef: project?.passage_ref,
+    msgCount: messages?.length,
+    firstMsgLen: messages?.[0]?.content?.length,
+    generationMode,
+    apiKeyPresent: !!process.env.ANTHROPIC_API_KEY,
+  })
 
   // ── Orquestrador: consulta base de conhecimento antes da IA ──────────────────
   if (activeSlug === 'ferramentas_dicionario') {
@@ -139,24 +160,32 @@ export async function POST(req: Request) {
     content: i === 0 ? `${m.content}` : m.content,
   }))
 
-  const stream = await anthropic.messages.stream({
-    model: 'claude-sonnet-4-6',
-    max_tokens: 4096,
-    system: [
-      {
-        type: 'text',
-        text: systemWithContext,
-        cache_control: { type: 'ephemeral' },
-      },
-    ],
-    messages: anthropicMessages,
-  })
+  if (!process.env.ANTHROPIC_API_KEY) {
+    console.error('[AI/stream] ANTHROPIC_API_KEY não configurada!')
+    return Response.json({ error: 'Configuração do servidor incompleta. Contate o suporte.' }, { status: 500 })
+  }
+
+  console.log('[AI/stream] chamando Anthropic claude-sonnet-4-6...')
+  let stream: Awaited<ReturnType<typeof anthropic.messages.stream>>
+  try {
+    stream = await anthropic.messages.stream({
+      model: 'claude-sonnet-4-6',
+      max_tokens: 4096,
+      system: [{ type: 'text', text: systemWithContext, cache_control: { type: 'ephemeral' } }],
+      messages: anthropicMessages,
+    })
+  } catch (anthropicErr) {
+    const msg = anthropicErr instanceof Error ? anthropicErr.message : String(anthropicErr)
+    console.error('[AI/stream] Erro ao iniciar stream Anthropic:', msg)
+    return Response.json({ error: `Erro na API de IA: ${msg}` }, { status: 502 })
+  }
+  console.log('[AI/stream] stream Anthropic iniciado', Date.now() - t0, 'ms')
 
   // Incrementar uso de IA (non-blocking)
   if (user) incrementAIUsage(user.id).catch(() => {})
 
   // Log token usage + auto-save na biblioteca para consultas do dicionário
-  stream.finalMessage().then(async (msg) => {
+  stream.finalMessage().then(async (msg: Anthropic.Message) => {
     const usage = msg.usage as {
       input_tokens: number
       output_tokens: number
@@ -203,19 +232,23 @@ export async function POST(req: Request) {
   const encoder = new TextEncoder()
   const readable = new ReadableStream({
     async start(controller) {
+      let tokenCount = 0
       try {
         for await (const event of stream) {
           if (
             event.type === 'content_block_delta' &&
             event.delta.type === 'text_delta'
           ) {
+            tokenCount++
             const data = JSON.stringify({ delta: { text: event.delta.text } })
             controller.enqueue(encoder.encode(`data: ${data}\n\n`))
           }
         }
+        console.log('[AI/stream] concluído:', tokenCount, 'deltas,', Date.now() - t0, 'ms total')
         controller.enqueue(encoder.encode('data: [DONE]\n\n'))
       } catch (err) {
         const msg = err instanceof Error ? err.message : 'Stream error'
+        console.error('[AI/stream] Erro durante streaming:', msg)
         controller.enqueue(encoder.encode(`data: ${JSON.stringify({ error: msg })}\n\n`))
       } finally {
         controller.close()
@@ -230,4 +263,10 @@ export async function POST(req: Request) {
       'Connection': 'keep-alive',
     },
   })
+
+  } catch (outerErr) {
+    const msg = outerErr instanceof Error ? outerErr.message : String(outerErr)
+    console.error('[AI/stream] Erro não capturado no handler:', msg, Date.now() - t0, 'ms')
+    return Response.json({ error: `Erro interno: ${msg}` }, { status: 500 })
+  }
 }

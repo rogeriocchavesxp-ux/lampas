@@ -55,36 +55,52 @@ export default function AIPanel({ project, activeSlug, activeTitle, context, onC
     const assistantMsg: Message = { role: 'assistant', content: '' }
     setMessages(m => [...m, assistantMsg])
 
+    const t0 = Date.now()
+    const controller = new AbortController()
+    const timeout = setTimeout(() => controller.abort(), 90_000) // 90s timeout
+
+    const payload = {
+      messages: nextMessages,
+      project: {
+        id: project.id,
+        book: project.book,
+        passage_ref: project.passage_ref,
+        testament: project.testament,
+        original_language: project.original_language,
+        study_mode: project.study_mode,
+      },
+      activeSlug,
+      activeTitle,
+    }
+    console.log('[AIPanel] enviando para /api/claude/stream', { activeSlug, activeTitle, msgCount: nextMessages.length })
+
     try {
       const res = await fetch('/api/claude/stream', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          messages: nextMessages,
-          project: {
-            id: project.id,
-            book: project.book,
-            passage_ref: project.passage_ref,
-            testament: project.testament,
-            original_language: project.original_language,
-            study_mode: project.study_mode,
-          },
-          activeSlug,
-          activeTitle,
-        }),
+        body: JSON.stringify(payload),
+        signal: controller.signal,
       })
 
+      console.log('[AIPanel] status da resposta:', res.status, Date.now() - t0, 'ms')
+
       if (!res.ok) {
-        const err = await res.json().catch(() => ({ error: 'Erro na API' }))
+        const err = await res.json().catch(() => ({ error: `HTTP ${res.status}` }))
+        console.error('[AIPanel] erro HTTP:', res.status, err)
         setMessages(m => {
           const next = [...m]
-          next[next.length - 1] = { role: 'assistant', content: `Erro: ${err.error || 'Tente novamente.'}` }
+          next[next.length - 1] = { role: 'assistant', content: `Erro ${res.status}: ${err.error || 'Tente novamente.'}` }
           return next
         })
         return
       }
 
-      const reader = res.body!.getReader()
+      if (!res.body) {
+        console.error('[AIPanel] res.body é null')
+        throw new Error('Resposta sem corpo (body null)')
+      }
+
+      const reader = res.body.getReader()
       const decoder = new TextDecoder()
       streamBufferRef.current = ''
 
@@ -99,6 +115,10 @@ export default function AIPanel({ project, activeSlug, activeTitle, context, onC
             if (data === '[DONE]') continue
             try {
               const parsed = JSON.parse(data)
+              if (parsed.error) {
+                console.error('[AIPanel] erro no stream SSE:', parsed.error)
+                streamBufferRef.current += `\n\n⚠️ Erro: ${parsed.error}`
+              }
               const delta = parsed.delta?.text ?? ''
               streamBufferRef.current += delta
               const full = streamBufferRef.current
@@ -108,18 +128,27 @@ export default function AIPanel({ project, activeSlug, activeTitle, context, onC
                 return next
               })
             } catch {
-              // ignore parse errors
+              // ignore parse errors on individual SSE lines
             }
           }
         }
       }
-    } catch {
+      console.log('[AIPanel] stream concluído em', Date.now() - t0, 'ms')
+    } catch (err) {
+      const isTimeout = err instanceof DOMException && err.name === 'AbortError'
+      const msg = isTimeout
+        ? 'Tempo limite excedido (90s). A IA demorou mais do que o esperado.'
+        : err instanceof Error
+        ? `Erro de conexão: ${err.message}`
+        : 'Erro de conexão. Tente novamente.'
+      console.error('[AIPanel] catch:', err, 'duração:', Date.now() - t0, 'ms')
       setMessages(m => {
         const next = [...m]
-        next[next.length - 1] = { role: 'assistant', content: 'Erro de conexão. Tente novamente.' }
+        next[next.length - 1] = { role: 'assistant', content: msg }
         return next
       })
     } finally {
+      clearTimeout(timeout)
       setLoading(false)
     }
   }
