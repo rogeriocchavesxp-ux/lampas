@@ -31,6 +31,7 @@ interface Props {
   compact?: boolean
   autoFocus?: boolean
   aiContext?: AIContext
+  sticky?: boolean
 }
 
 // ── Color palettes ────────────────────────────────────────────────────────────
@@ -115,7 +116,7 @@ function Sep() {
 
 export default function RichEditor({
   value, onChange, placeholder, moduleColor = 'var(--accent)', minHeight = 180,
-  insertMenu, compact = false, autoFocus = false, aiContext,
+  insertMenu, compact = false, autoFocus = false, aiContext, sticky = false,
 }: Props) {
   const [structuralMode, setStructuralMode] = useState(false)
   const [hlOpen,         setHlOpen]         = useState(false)
@@ -125,11 +126,13 @@ export default function RichEditor({
   const [linkUrl,        setLinkUrl]        = useState('')
   const [focused,        setFocused]        = useState(false)
   const [aiOpen,         setAiOpen]         = useState(false)
+  const [isStuck,        setIsStuck]        = useState(false)
   const structuralRef  = useRef(false)
   const hlRef          = useRef<HTMLDivElement>(null)
   const colorRef       = useRef<HTMLDivElement>(null)
   const insertRef      = useRef<HTMLDivElement>(null)
   const linkRef        = useRef<HTMLDivElement>(null)
+  const sentinelRef    = useRef<HTMLDivElement>(null)
   // Tracks whether the pending value change originated inside the editor (typing/AI commands).
   // When true, the sync useEffect must skip setContent to avoid resetting cursor position.
   const isInternalRef  = useRef(false)
@@ -151,6 +154,24 @@ export default function RichEditor({
     document.addEventListener('mousedown', h)
     return () => document.removeEventListener('mousedown', h)
   }, [closeAll])
+
+  // Sticky toolbar: detect when toolbar is "stuck" using IntersectionObserver on sentinel
+  useEffect(() => {
+    if (!sticky || !sentinelRef.current) return
+    function findScrollParent(node: Element | null): Element | null {
+      if (!node || node === document.documentElement) return null
+      const { overflowY } = window.getComputedStyle(node)
+      if (overflowY === 'auto' || overflowY === 'scroll') return node
+      return findScrollParent(node.parentElement)
+    }
+    const root = findScrollParent(sentinelRef.current.parentElement)
+    const observer = new IntersectionObserver(
+      ([entry]) => setIsStuck(!entry.isIntersecting),
+      { root, rootMargin: '-37px 0px 0px 0px', threshold: 0 },
+    )
+    observer.observe(sentinelRef.current)
+    return () => observer.disconnect()
+  }, [sticky])
 
   const normalizedValue = normalizeEditorContent(value || '')
 
@@ -247,15 +268,22 @@ export default function RichEditor({
   return (
     <>
     <div style={{ position: 'relative' }}>
+      {/* Sentinel: 1px invisible div used by IntersectionObserver to detect sticky state */}
+      {sticky && <div ref={sentinelRef} style={{ height: '1px', visibility: 'hidden', pointerEvents: 'none' }} />}
+
       {/* ── Toolbar ── */}
       <div style={{
         display: 'flex', alignItems: 'center', gap: '2px', flexWrap: 'wrap',
         padding: '0.3rem 0.45rem',
-        background: 'var(--surface)',
-        border: `1px solid ${focused ? `${moduleColor}50` : 'var(--border)'}`,
-        borderBottom: 'none',
-        borderRadius: '8px 8px 0 0',
-        transition: 'border-color 0.15s',
+        background: sticky && isStuck ? 'var(--background)' : 'var(--surface)',
+        border: sticky && isStuck
+          ? 'none'
+          : `1px solid ${focused ? `${moduleColor}50` : 'var(--border)'}`,
+        borderBottom: sticky && isStuck ? '1px solid rgba(0,0,0,0.08)' : 'none',
+        borderRadius: sticky && isStuck ? 0 : '8px 8px 0 0',
+        boxShadow: sticky && isStuck ? '0 2px 8px rgba(0,0,0,0.06)' : 'none',
+        transition: 'border-color 0.15s, background 0.15s, box-shadow 0.15s',
+        ...(sticky ? { position: 'sticky' as const, top: '37px', zIndex: 10 } : {}),
       }}>
 
         {/* ── Headings — hidden in compact ── */}

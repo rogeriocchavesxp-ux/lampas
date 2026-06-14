@@ -201,6 +201,7 @@ function ProduzirLivre({ project, userId, data, saving, savedAt, onChange, onBac
         moduleColor={PRODUZIR_COLOR}
         minHeight={400}
         aiContext={aiCtx}
+        sticky
       />
     </div>
   )
@@ -426,7 +427,7 @@ function ProduzirModular({ project, userId, blocos, mode, saving, savedAt, onCha
               <div className="prose-reading" style={{ padding: '0.75rem 1rem', fontSize: '0.87rem', lineHeight: 1.78, color: 'var(--text-primary,#1e293b)', minHeight: '60px' }} dangerouslySetInnerHTML={{ __html: bloco.html || '<p style="color:#9ca3af;font-style:italic">Sem conteúdo.</p>' }} />
             ) : (
               <div style={{ padding: '0.5rem 0.75rem' }}>
-                <RichEditor value={bloco.html} onChange={html => updateBloco(bloco.id, { html })} placeholder="Escreva o conteúdo deste módulo…" moduleColor={PRODUZIR_COLOR} minHeight={140} aiContext={aiCtx} />
+                <RichEditor value={bloco.html} onChange={html => updateBloco(bloco.id, { html })} placeholder="Escreva o conteúdo deste módulo…" moduleColor={PRODUZIR_COLOR} minHeight={140} aiContext={aiCtx} sticky />
               </div>
             )}
 
