@@ -4,6 +4,7 @@ import { useState, useRef, useCallback, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import type { Project, Section, Production } from '@/types/database'
 import RichEditor, { type AIContext } from '@/components/RichEditor'
+import SermonBuilderWorkspace from './SermonBuilderWorkspace'
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -455,11 +456,26 @@ export default function ProduzirWorkspace({ project, userId, existingSection, on
   const [saving,  setSaving]  = useState(false)
   const [savedAt, setSavedAt] = useState<Date | null>(null)
 
+  // Para modular_montado: busca a seção sermao_dispositio do projeto
+  const [sermaoSection, setSermaoSection] = useState<Section | undefined | null>(null)
+
   const latestContent = useRef<ProduzirContent>(content)
   const saveTimer     = useRef<ReturnType<typeof setTimeout> | null>(null)
   const sectionRef    = useRef<Section | undefined>(existingSection)
 
   useEffect(() => { sectionRef.current = existingSection }, [existingSection])
+
+  useEffect(() => {
+    if (content.produzir_mode !== 'modular_montado') return
+    supabase
+      .from('sections')
+      .select('*')
+      .eq('project_id', project.id)
+      .eq('slug', 'sermao_dispositio')
+      .maybeSingle()
+      .then(({ data }) => setSermaoSection((data as Section | null) ?? undefined))
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [project.id, content.produzir_mode])
 
   // ── Save ──────────────────────────────────────────────────────────────────
 
@@ -537,17 +553,46 @@ export default function ProduzirWorkspace({ project, userId, existingSection, on
     />
   )
 
-  if (produzir_mode === 'modular_montado' || produzir_mode === 'modular_livre') return (
+  if (produzir_mode === 'modular_montado') {
+    if (sermaoSection === null) {
+      return (
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '60vh', color: 'var(--text-muted)', fontSize: '0.83rem' }}>
+          Carregando construtor…
+        </div>
+      )
+    }
+    return (
+      <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+        {onBackToLibrary && (
+          <div style={{ padding: '0.2rem 1rem', borderBottom: '1px solid var(--border-subtle)', flexShrink: 0 }}>
+            <button
+              onClick={onBackToLibrary}
+              style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: 'var(--text-secondary,#64748b)', fontSize: '0.73rem', padding: '0.12rem 0.4rem', borderRadius: '4px', fontFamily: 'inherit' }}
+            >
+              ← Voltar à Biblioteca
+            </button>
+          </div>
+        )}
+        <div style={{ flex: 1, overflowY: 'auto' }}>
+          <SermonBuilderWorkspace
+            project={project}
+            userId={userId}
+            existingSection={sermaoSection}
+            onUpdate={s => { setSermaoSection(s); onUpdate(s) }}
+            onAskAI={onAskAI}
+          />
+        </div>
+      </div>
+    )
+  }
+
+  if (produzir_mode === 'modular_livre') return (
     <ProduzirModular
       project={project} userId={userId}
-      blocos={produzir_mode === 'modular_montado' ? content.blocos_montado : content.blocos_livre}
+      blocos={content.blocos_livre}
       mode={produzir_mode}
       saving={saving} savedAt={savedAt}
-      onChangeBlocos={blocos =>
-        produzir_mode === 'modular_montado'
-          ? updateContent({ blocos_montado: blocos })
-          : updateContent({ blocos_livre: blocos })
-      }
+      onChangeBlocos={blocos => updateContent({ blocos_livre: blocos })}
       onBack={goBack}
     />
   )
