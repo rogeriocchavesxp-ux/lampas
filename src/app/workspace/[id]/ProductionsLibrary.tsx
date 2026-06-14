@@ -388,8 +388,18 @@ export default function ProductionsLibrary({ project, userId, existingSection, o
   const [productions, setProductions]         = useState<Production[]>([])
   const [loading, setLoading]                 = useState(true)
   const [busy, setBusy]                       = useState(false)
+  const [migrating, setMigrating]             = useState(false)
   const [showNewModal, setShowNewModal]       = useState(false)
   const [openProduction, setOpenProduction]   = useState<Production | null>(null)
+  const [openLegacy, setOpenLegacy]           = useState(false)
+
+  // Conteúdo legado — sermão criado antes da Biblioteca de Produções
+  const legacyRaw = existingSection?.content as Record<string, unknown> | null | undefined
+  const hasLegacy = Boolean(
+    existingSection?.id &&
+    legacyRaw &&
+    (legacyRaw.produzir_mode !== undefined || legacyRaw.livre || legacyRaw.blocos_montado)
+  )
 
   const fetchProductions = useCallback(async () => {
     setLoading(true)
@@ -463,6 +473,46 @@ export default function ProductionsLibrary({ project, userId, existingSection, o
     setOpenProduction(updated)
   }
 
+  async function migrateLegacy() {
+    if (!legacyRaw) return
+    setMigrating(true)
+    const mode   = (legacyRaw.produzir_mode as string) || 'livre'
+    const livre  = legacyRaw.livre as { title?: string } | undefined
+    const title  = livre?.title?.trim() || 'Produção (recuperada)'
+    const res = await fetch('/api/productions', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        project_id: project.id,
+        type:       mode === 'livre' ? 'livre' : 'sermao',
+        title,
+        content:    legacyRaw,
+      }),
+    })
+    if (res.ok) {
+      const p = await res.json() as Production
+      setProductions(prev => [p, ...prev])
+      setOpenProduction(p)
+    }
+    setMigrating(false)
+  }
+
+  // ── Produção legada aberta (acesso direto, sem migrar) ────────────────────
+
+  if (openLegacy) {
+    return (
+      <ProduzirWorkspace
+        key="legacy"
+        project={project}
+        userId={userId}
+        existingSection={existingSection}
+        onUpdate={onUpdate}
+        onAskAI={onAskAI}
+        onBackToLibrary={() => setOpenLegacy(false)}
+      />
+    )
+  }
+
   // ── Produção aberta ──────────────────────────────────────────────────────
 
   if (openProduction) {
@@ -513,6 +563,67 @@ export default function ProductionsLibrary({ project, userId, existingSection, o
           + Nova Produção
         </button>
       </div>
+
+      {/* Card de produção legada */}
+      {hasLegacy && (
+        <div style={{
+          marginBottom: '1.5rem',
+          border: '1.5px solid #F59E0B',
+          borderRadius: '12px',
+          background: '#FFFBEB',
+          overflow: 'hidden',
+        }}>
+          <div style={{ height: '3px', background: '#F59E0B' }} />
+          <div style={{ padding: '1rem 1.1rem' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem' }}>
+              <span style={{ fontSize: '0.9rem' }}>⚠️</span>
+              <span style={{ fontSize: '0.75rem', fontWeight: 700, color: '#92400E' }}>
+                Produção anterior encontrada
+              </span>
+              <span style={{
+                marginLeft: 'auto', fontSize: '0.6rem', fontWeight: 700,
+                color: '#F59E0B', background: '#FEF3C7',
+                border: '1px solid #FDE68A', borderRadius: '4px',
+                padding: '0.02rem 0.35rem', textTransform: 'uppercase', letterSpacing: '0.05em',
+              }}>
+                Legado
+              </span>
+            </div>
+            <div style={{ fontSize: '0.8rem', color: '#78350F', marginBottom: '0.85rem', lineHeight: 1.55 }}>
+              {(legacyRaw?.livre as { title?: string } | undefined)?.title
+                ? `"${(legacyRaw?.livre as { title?: string }).title}" — salvo no formato anterior`
+                : 'Conteúdo salvo no formato anterior à Biblioteca de Produções'}
+            </div>
+            <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+              <button
+                onClick={() => setOpenLegacy(true)}
+                style={{
+                  flex: 1, padding: '0.42rem 0.75rem',
+                  background: '#F59E0B', border: 'none',
+                  borderRadius: '7px', fontSize: '0.75rem', fontWeight: 700,
+                  color: '#FFFFFF', cursor: 'pointer', fontFamily: 'inherit',
+                }}
+              >
+                Abrir
+              </button>
+              <button
+                onClick={migrateLegacy}
+                disabled={migrating}
+                title="Copia o conteúdo para a nova Biblioteca de Produções"
+                style={{
+                  padding: '0.42rem 0.85rem',
+                  background: 'transparent', border: '1.5px solid #F59E0B',
+                  borderRadius: '7px', fontSize: '0.72rem', fontWeight: 700,
+                  color: '#B45309', cursor: migrating ? 'default' : 'pointer', fontFamily: 'inherit',
+                  opacity: migrating ? 0.6 : 1,
+                }}
+              >
+                {migrating ? 'Migrando…' : 'Migrar para Biblioteca'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Loading */}
       {loading && (
