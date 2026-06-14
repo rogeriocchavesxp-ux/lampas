@@ -33,22 +33,55 @@ function formatDate(iso: string): string {
   return new Date(iso).toLocaleDateString('pt-BR', { day: '2-digit', month: 'short', year: 'numeric' })
 }
 
+// ── Helpers para conteúdo inicial ──────────────────────────────────────────────
+
+type ProduzirMode = 'livre' | 'modular_montado' | 'modular_livre'
+
+function genId(): string {
+  return Date.now().toString(36) + Math.random().toString(36).slice(2, 6)
+}
+
+const DEFAULT_MONTADO_TITLES = [
+  'Introdução', 'Contextualização', 'Transição',
+  'Desenvolvimento', 'Ilustração', 'Aplicação', 'Conclusão',
+]
+
+function makeInitialContent(mode: ProduzirMode) {
+  return {
+    produzir_mode:  mode,
+    livre:          { title: '', html: '' },
+    blocos_montado: mode === 'modular_montado'
+      ? DEFAULT_MONTADO_TITLES.map(title => ({ id: genId(), title, html: '' }))
+      : [],
+    blocos_livre:   [],
+  }
+}
+
 // ── Modal Nova Produção ────────────────────────────────────────────────────────
 
+const PROD_MODES = [
+  { id: 'livre'           as ProduzirMode, label: 'Produção Livre',  desc: 'Escreva livremente, sem estrutura predefinida',                    icon: '✍' },
+  { id: 'modular_montado' as ProduzirMode, label: 'Modular Montado', desc: 'Estrutura padrão com Introdução, Desenvolvimento, Conclusão…',    icon: '⊞' },
+  { id: 'modular_livre'   as ProduzirMode, label: 'Modular Livre',   desc: 'Monte sua própria estrutura adicionando módulos livremente',       icon: '⬡' },
+]
+
 interface NewProductionModalProps {
-  onConfirm: (type: string, title: string) => void
+  onConfirm: (type: string, mode: ProduzirMode, title: string) => void
   onCancel: () => void
   busy: boolean
 }
 
 function NewProductionModal({ onConfirm, onCancel, busy }: NewProductionModalProps) {
   const [selectedType, setSelectedType] = useState<string | null>(null)
+  const [selectedMode, setSelectedMode] = useState<ProduzirMode | null>(null)
   const [title, setTitle] = useState('')
 
+  const accentColor = selectedType ? getTypeInfo(selectedType).color : '#7C3AED'
+  const canCreate   = selectedType !== null && selectedMode !== null && !busy
+
   function handleConfirm() {
-    if (!selectedType) return
-    const t = getTypeInfo(selectedType)
-    onConfirm(selectedType, title.trim() || t.label)
+    if (!selectedType || !selectedMode) return
+    onConfirm(selectedType, selectedMode, title.trim() || getTypeInfo(selectedType).label)
   }
 
   return (
@@ -61,28 +94,32 @@ function NewProductionModal({ onConfirm, onCancel, busy }: NewProductionModalPro
     >
       <div style={{
         background: '#FFFFFF', borderRadius: '14px',
-        padding: '1.75rem', width: '100%', maxWidth: '560px',
+        padding: '1.75rem', width: '100%', maxWidth: '580px',
         boxShadow: '0 20px 60px rgba(0,0,0,0.18)',
-        maxHeight: '90vh', overflowY: 'auto',
+        maxHeight: '92vh', overflowY: 'auto',
       }}>
         <div style={{ fontWeight: 700, fontSize: '1rem', color: '#1e293b', marginBottom: '0.25rem' }}>
           Nova Produção
         </div>
         <div style={{ fontSize: '0.77rem', color: '#64748b', marginBottom: '1.4rem' }}>
-          Escolha o tipo de produção que deseja criar
+          Defina o tipo, o modo e o título da produção
         </div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.6rem', marginBottom: '1.4rem' }}>
+        {/* Tipo */}
+        <div style={{ fontSize: '0.72rem', fontWeight: 700, color: '#475569', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.55rem' }}>
+          1. Tipo de produção
+        </div>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.5rem', marginBottom: '1.35rem' }}>
           {PRODUCTION_TYPES.map(t => (
             <button
               key={t.id}
               onClick={() => setSelectedType(t.id)}
               style={{
                 border: selectedType === t.id ? `2px solid ${t.color}` : '1.5px solid #E2E8F0',
-                borderRadius: '10px', padding: '0.85rem 0.9rem',
+                borderRadius: '10px', padding: '0.75rem 0.85rem',
                 background: selectedType === t.id ? `${t.color}09` : '#FAFAFA',
                 cursor: 'pointer', textAlign: 'left', fontFamily: 'inherit',
-                display: 'flex', alignItems: 'flex-start', gap: '0.55rem',
+                display: 'flex', alignItems: 'flex-start', gap: '0.5rem',
                 transition: 'border-color 0.12s, background 0.12s',
               }}
               onMouseEnter={e => {
@@ -98,37 +135,73 @@ function NewProductionModal({ onConfirm, onCancel, busy }: NewProductionModalPro
                 }
               }}
             >
-              <span style={{ fontSize: '1.2rem', flexShrink: 0, lineHeight: 1.1 }}>{t.icon}</span>
+              <span style={{ fontSize: '1.1rem', flexShrink: 0, lineHeight: 1.2 }}>{t.icon}</span>
               <div>
-                <div style={{ fontSize: '0.8rem', fontWeight: 700, color: '#1e293b', lineHeight: 1.2 }}>{t.label}</div>
-                <div style={{ fontSize: '0.67rem', color: '#64748b', lineHeight: 1.4, marginTop: '0.15rem' }}>{t.description}</div>
+                <div style={{ fontSize: '0.78rem', fontWeight: 700, color: '#1e293b', lineHeight: 1.2 }}>{t.label}</div>
+                <div style={{ fontSize: '0.65rem', color: '#64748b', lineHeight: 1.35, marginTop: '0.12rem' }}>{t.description}</div>
               </div>
             </button>
           ))}
         </div>
 
-        {selectedType && (
-          <div style={{ marginBottom: '1.25rem' }}>
-            <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 600, color: '#475569', marginBottom: '0.4rem' }}>
-              Título (opcional)
-            </label>
-            <input
-              autoFocus
-              value={title}
-              onChange={e => setTitle(e.target.value)}
-              onKeyDown={e => { if (e.key === 'Enter' && !busy) handleConfirm() }}
-              placeholder={getTypeInfo(selectedType).label}
+        {/* Modo */}
+        <div style={{ fontSize: '0.72rem', fontWeight: 700, color: '#475569', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.55rem' }}>
+          2. Modo de edição
+        </div>
+        <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1.35rem' }}>
+          {PROD_MODES.map(m => (
+            <button
+              key={m.id}
+              onClick={() => setSelectedMode(m.id)}
               style={{
-                width: '100%', boxSizing: 'border-box',
-                border: '1.5px solid #CBD5E1', borderRadius: '8px',
-                padding: '0.5rem 0.75rem', fontSize: '0.87rem',
-                fontFamily: 'inherit', outline: 'none', color: '#1e293b',
+                flex: 1,
+                border: selectedMode === m.id ? `2px solid ${accentColor}` : '1.5px solid #E2E8F0',
+                borderRadius: '10px', padding: '0.75rem 0.65rem',
+                background: selectedMode === m.id ? `${accentColor}09` : '#FAFAFA',
+                cursor: 'pointer', textAlign: 'left', fontFamily: 'inherit',
+                transition: 'border-color 0.12s, background 0.12s',
               }}
-              onFocus={e => { e.currentTarget.style.borderColor = getTypeInfo(selectedType!).color }}
-              onBlur={e => { e.currentTarget.style.borderColor = '#CBD5E1' }}
-            />
-          </div>
-        )}
+              onMouseEnter={e => {
+                if (selectedMode !== m.id) {
+                  e.currentTarget.style.borderColor = `${accentColor}55`
+                  e.currentTarget.style.background = `${accentColor}05`
+                }
+              }}
+              onMouseLeave={e => {
+                if (selectedMode !== m.id) {
+                  e.currentTarget.style.borderColor = '#E2E8F0'
+                  e.currentTarget.style.background = '#FAFAFA'
+                }
+              }}
+            >
+              <div style={{ fontSize: '1.1rem', marginBottom: '0.3rem' }}>{m.icon}</div>
+              <div style={{ fontSize: '0.77rem', fontWeight: 700, color: '#1e293b', lineHeight: 1.2, marginBottom: '0.2rem' }}>{m.label}</div>
+              <div style={{ fontSize: '0.63rem', color: '#64748b', lineHeight: 1.4 }}>{m.desc}</div>
+            </button>
+          ))}
+        </div>
+
+        {/* Título */}
+        <div style={{ fontSize: '0.72rem', fontWeight: 700, color: '#475569', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.55rem' }}>
+          3. Título (opcional)
+        </div>
+        <input
+          value={title}
+          onChange={e => setTitle(e.target.value)}
+          onKeyDown={e => { if (e.key === 'Enter' && canCreate) handleConfirm() }}
+          placeholder={selectedType ? getTypeInfo(selectedType).label : 'Ex: O Salvador que Rompe Barreiras'}
+          style={{
+            width: '100%', boxSizing: 'border-box',
+            border: `1.5px solid ${title ? accentColor + '55' : '#CBD5E1'}`,
+            borderRadius: '8px', padding: '0.5rem 0.75rem',
+            fontSize: '0.87rem', fontFamily: 'inherit',
+            outline: 'none', color: '#1e293b',
+            marginBottom: '1.4rem',
+            transition: 'border-color 0.12s',
+          }}
+          onFocus={e => { e.currentTarget.style.borderColor = accentColor }}
+          onBlur={e => { e.currentTarget.style.borderColor = title ? `${accentColor}55` : '#CBD5E1' }}
+        />
 
         <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.6rem' }}>
           <button
@@ -144,14 +217,13 @@ function NewProductionModal({ onConfirm, onCancel, busy }: NewProductionModalPro
           </button>
           <button
             onClick={handleConfirm}
-            disabled={!selectedType || busy}
+            disabled={!canCreate}
             style={{
-              padding: '0.5rem 1.25rem', borderRadius: '8px',
-              border: 'none',
-              background: selectedType ? getTypeInfo(selectedType).color : '#CBD5E1',
+              padding: '0.5rem 1.25rem', borderRadius: '8px', border: 'none',
+              background: canCreate ? accentColor : '#CBD5E1',
               fontSize: '0.8rem', fontWeight: 700, color: '#FFFFFF',
-              cursor: selectedType && !busy ? 'pointer' : 'default',
-              fontFamily: 'inherit', opacity: !selectedType || busy ? 0.6 : 1,
+              cursor: canCreate ? 'pointer' : 'default',
+              fontFamily: 'inherit', opacity: canCreate ? 1 : 0.55,
               transition: 'background 0.12s',
             }}
           >
@@ -328,12 +400,17 @@ export default function ProductionsLibrary({ project, userId, existingSection, o
 
   useEffect(() => { void fetchProductions() }, [fetchProductions])
 
-  async function createProduction(type: string, title: string) {
+  async function createProduction(type: string, mode: ProduzirMode, title: string) {
     setBusy(true)
     const res = await fetch('/api/productions', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ project_id: project.id, type, title }),
+      body: JSON.stringify({
+        project_id: project.id,
+        type,
+        title,
+        content: makeInitialContent(mode),
+      }),
     })
     if (res.ok) {
       const p = await res.json() as Production
@@ -496,7 +573,7 @@ export default function ProductionsLibrary({ project, userId, existingSection, o
       {showNewModal && (
         <NewProductionModal
           busy={busy}
-          onConfirm={createProduction}
+          onConfirm={(type, mode, title) => createProduction(type, mode, title)}
           onCancel={() => setShowNewModal(false)}
         />
       )}
