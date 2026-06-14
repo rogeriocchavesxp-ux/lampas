@@ -109,6 +109,17 @@ const GROUP_SUBTITLES: Record<string, string> = {
   comentario_expositivo: 'Análise versículo a versículo',
 }
 
+// Cores de acento por grupo — usadas para identidade visual das seções de investigação
+const GROUP_ACCENT_COLORS: Record<string, string> = {
+  textual:               '#163A6B',  // azul escuro
+  contextual:            '#B45309',  // âmbar
+  teologico:             '#7C3AED',  // roxo
+  investigar_visao_geral: '#0F766E', // verde-azulado
+  ec_ocasiao_grp:        '#B45309',
+  ec_estrutura_grp:      '#163A6B',
+  ec_argumento_grp:      '#7C3AED',
+}
+
 const GROUP_ICONS: Record<string, LucideIcon> = {
   // Preparar
   preparar_espiritual:       Heart,
@@ -1203,49 +1214,63 @@ export default function WorkspaceClient({ user, project, initialSections }: Prop
                                     const groupSub   = GROUP_SUBTITLES[group.id]
                                       ?? (isToolSlug(group.id) ? getToolAreaBySlug(group.id)?.subtitle : undefined)
                                       ?? ''
+                                    const accentColor = GROUP_ACCENT_COLORS[group.id]
+                                    const isEnhanced  = Boolean(accentColor)
+                                    const groupColor  = isEnhanced ? accentColor : mode.color
+                                    const pct         = isEnhanced && total > 0 ? Math.round((done / total) * 100) : 0
 
                                     return (
-                                      <div key={group.id} style={{ marginBottom: groupOpen ? '0.22rem' : 0 }}>
+                                      <div key={group.id} style={{ marginBottom: groupOpen ? '0.22rem' : 0, marginTop: isEnhanced && groupIdx > 0 ? '0.35rem' : 0 }}>
 
                                         {/* ── Group header ── */}
                                         {(() => {
                                           const GroupIcon = GROUP_ICONS[group.id]
                                           return (
+                                            <>
                                             <button
                                               onClick={() => isDirect ? navigate(directSlug) : toggleGroup(group.id)}
                                               style={{
                                                 width: 'calc(100% - 12px)',
                                                 marginLeft: '6px', marginRight: '6px',
-                                                border: isActive ? `1px solid ${mode.color}28` : '1px solid transparent',
+                                                border: isEnhanced
+                                                  ? (highlight ? `1px solid ${groupColor}45` : `1px solid ${groupColor}1A`)
+                                                  : (isActive ? `1px solid ${mode.color}28` : '1px solid transparent'),
+                                                borderLeft: isEnhanced
+                                                  ? `3px solid ${highlight ? groupColor : groupColor + '66'}`
+                                                  : undefined,
                                                 cursor: 'pointer',
-                                                background: isActive ? mode.bgActive : 'transparent',
-                                                borderRadius: '7px',
+                                                background: isEnhanced
+                                                  ? (highlight ? `${groupColor}0E` : `${groupColor}06`)
+                                                  : (isActive ? mode.bgActive : 'transparent'),
+                                                borderRadius: isEnhanced ? '8px' : '7px',
                                                 textAlign: 'left', fontFamily: 'inherit',
-                                                padding: '0.34rem 0.52rem',
+                                                padding: isEnhanced ? '0.44rem 0.52rem 0.38rem 0.42rem' : '0.34rem 0.52rem',
                                                 display: 'flex', alignItems: 'center', gap: '0.42rem',
                                                 transition: 'background 0.12s, border-color 0.12s, box-shadow 0.12s',
-                                                boxShadow: isActive ? '0 1px 3px rgba(0,0,0,0.06)' : 'none',
+                                                boxShadow: isEnhanced
+                                                  ? (highlight ? `0 1px 6px ${groupColor}1C` : 'none')
+                                                  : (isActive ? '0 1px 3px rgba(0,0,0,0.06)' : 'none'),
                                               }}
                                               onMouseEnter={e => {
-                                                if (!isActive) {
-                                                  e.currentTarget.style.background = 'rgba(0,0,0,0.04)'
-                                                  e.currentTarget.style.borderColor = 'var(--border)'
+                                                if (!highlight) {
+                                                  e.currentTarget.style.background = isEnhanced ? `${groupColor}0D` : 'rgba(0,0,0,0.04)'
+                                                  if (!isEnhanced) e.currentTarget.style.borderColor = 'var(--border)'
                                                 }
                                               }}
                                               onMouseLeave={e => {
-                                                if (!isActive) {
-                                                  e.currentTarget.style.background = 'transparent'
-                                                  e.currentTarget.style.borderColor = 'transparent'
+                                                if (!highlight) {
+                                                  e.currentTarget.style.background = isEnhanced ? `${groupColor}06` : 'transparent'
+                                                  if (!isEnhanced) e.currentTarget.style.borderColor = 'transparent'
                                                 }
                                               }}
                                             >
                                               {/* Lucide icon */}
                                               {GroupIcon && (
                                                 <GroupIcon
-                                                  size={15} strokeWidth={1.75}
+                                                  size={isEnhanced ? 14 : 15} strokeWidth={isEnhanced ? 2 : 1.75}
                                                   style={{
                                                     flexShrink: 0,
-                                                    color: highlight ? mode.color : 'var(--text-muted)',
+                                                    color: highlight ? groupColor : (isEnhanced ? `${groupColor}99` : 'var(--text-muted)'),
                                                     transition: 'color 0.15s',
                                                   }}
                                                 />
@@ -1253,17 +1278,20 @@ export default function WorkspaceClient({ user, project, initialSections }: Prop
 
                                               <div style={{ flex: 1, minWidth: 0 }}>
                                                 <div style={{
-                                                  fontSize: '0.73rem', fontWeight: 650, lineHeight: 1.15,
-                                                  color: highlight ? mode.color : 'var(--text-primary)',
+                                                  fontSize: isEnhanced ? '0.74rem' : '0.73rem',
+                                                  fontWeight: isEnhanced ? 700 : 650,
+                                                  lineHeight: 1.15,
+                                                  color: highlight ? groupColor : 'var(--text-primary)',
                                                   transition: 'color 0.15s',
                                                   overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
-                                                  letterSpacing: '-0.01em',
+                                                  letterSpacing: isEnhanced ? '-0.02em' : '-0.01em',
                                                 }}>
                                                   {groupTitle}
                                                 </div>
                                                 {groupSub && (
                                                   <div style={{
-                                                    fontSize: '0.58rem', color: 'var(--text-muted)',
+                                                    fontSize: '0.58rem',
+                                                    color: isEnhanced ? `${groupColor}99` : 'var(--text-muted)',
                                                     marginTop: '0.04rem', lineHeight: 1.15,
                                                     overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
                                                   }}>
@@ -1279,7 +1307,7 @@ export default function WorkspaceClient({ user, project, initialSections }: Prop
                                                   background: mode.color, flexShrink: 0,
                                                 }} />
                                               )}
-                                              {!isDirect && done > 0 && !isActive && (
+                                              {!isDirect && done > 0 && !isActive && !isEnhanced && (
                                                 <span style={{
                                                   fontSize: '0.56rem', flexShrink: 0, fontWeight: 700,
                                                   color: done === total ? 'var(--success)' : mode.color,
@@ -1287,12 +1315,36 @@ export default function WorkspaceClient({ user, project, initialSections }: Prop
                                                   {done === total ? '✓' : `${done}/${total}`}
                                                 </span>
                                               )}
+                                              {!isDirect && isEnhanced && done === total && total > 0 && !highlight && (
+                                                <span style={{ fontSize: '0.58rem', flexShrink: 0, color: '#059669', fontWeight: 700 }}>✓</span>
+                                              )}
                                               {!isDirect && (
                                                 groupOpen
                                                   ? <ChevronDown size={10} style={{ flexShrink: 0, color: 'var(--text-muted)', opacity: 0.55 }} />
                                                   : <ChevronRight size={10} style={{ flexShrink: 0, color: 'var(--text-muted)', opacity: 0.4 }} />
                                               )}
                                             </button>
+                                            {/* Barra de progresso para grupos com identidade visual */}
+                                            {isEnhanced && total > 0 && (
+                                              <div style={{
+                                                height: '2px',
+                                                marginLeft: '6px', marginRight: '6px',
+                                                marginTop: '-1px',
+                                                marginBottom: groupOpen ? '3px' : '3px',
+                                                borderRadius: '0 0 5px 5px',
+                                                background: `${groupColor}16`,
+                                                overflow: 'hidden',
+                                              }}>
+                                                <div style={{
+                                                  height: '100%',
+                                                  width: `${pct}%`,
+                                                  background: done === total && total > 0 ? '#059669' : groupColor,
+                                                  transition: 'width 0.5s ease',
+                                                  borderRadius: '0 0 5px 5px',
+                                                }} />
+                                              </div>
+                                            )}
+                                            </>
                                           )
                                         })()}
 
@@ -1300,7 +1352,7 @@ export default function WorkspaceClient({ user, project, initialSections }: Prop
                                         {!isDirect && groupOpen && (
                                           <div style={{
                                             marginLeft: '1.2rem',
-                                            borderLeft: `1px solid var(--border-subtle)`,
+                                            borderLeft: `1px solid ${isEnhanced ? `${groupColor}30` : 'var(--border-subtle)'}`,
                                             marginBottom: '0.08rem',
                                           }}>
                                             {secs.map((sd, secIdx) => {
@@ -1319,7 +1371,7 @@ export default function WorkspaceClient({ user, project, initialSections }: Prop
                                                       onClick={() => navigate(sd.slug)}
                                                       style={{
                                                         flex: 1, border: 'none', fontFamily: 'inherit',
-                                                        background: isActive ? `${mode.color}10` : 'transparent',
+                                                        background: isActive ? `${groupColor}10` : 'transparent',
                                                         padding: '0.18rem 0.2rem 0.18rem 0.42rem',
                                                         display: 'flex', alignItems: 'center', gap: '0.35rem',
                                                         cursor: 'pointer', textAlign: 'left',
@@ -1332,12 +1384,12 @@ export default function WorkspaceClient({ user, project, initialSections }: Prop
                                                     >
                                                       <span style={{
                                                         width: '3px', height: '3px', borderRadius: '50%',
-                                                        background: isActive ? mode.color : 'var(--border)',
+                                                        background: isActive ? groupColor : 'var(--border)',
                                                         flexShrink: 0, transition: 'background 0.15s',
                                                       }} />
                                                       <span style={{
                                                         flex: 1, fontSize: '0.69rem', lineHeight: 1.22,
-                                                        color: isActive ? mode.color : 'var(--text-secondary)',
+                                                        color: isActive ? groupColor : 'var(--text-secondary)',
                                                         fontWeight: isActive ? 600 : 400,
                                                         overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
                                                       }}>
@@ -1346,7 +1398,7 @@ export default function WorkspaceClient({ user, project, initialSections }: Prop
                                                       {cTotal > 0 && (
                                                         <span style={{
                                                           fontSize: '0.56rem', flexShrink: 0, fontWeight: 700,
-                                                          color: cDone === cTotal ? 'var(--success)' : cDone > 0 ? mode.color : 'var(--border)',
+                                                          color: cDone === cTotal ? 'var(--success)' : cDone > 0 ? groupColor : 'var(--border)',
                                                         }}>
                                                           {cDone === cTotal ? '✓' : `${cDone}/${cTotal}`}
                                                         </span>
