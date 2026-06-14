@@ -30,55 +30,99 @@ interface Props {
   onClose: () => void
 }
 
-// ── Quick actions ─────────────────────────────────────────────────────────────
+// ── Avaliar prompt ────────────────────────────────────────────────────────────
 
-const UNIVERSAL: { label: string; prompt: string }[] = [
-  { label: 'Desenvolver',            prompt: 'Desenvolva este conteúdo com mais profundidade e detalhes exegéticos.' },
-  { label: 'Melhorar',               prompt: 'Melhore a qualidade, clareza e precisão deste conteúdo.' },
-  { label: 'Resumir',                prompt: 'Resuma este conteúdo de forma concisa e clara.' },
-  { label: 'Expandir',               prompt: 'Expanda com mais detalhes, evidências e referências.' },
-  { label: 'Explicar',               prompt: 'Explique este conteúdo de forma mais clara e acessível.' },
-  { label: 'Corrigir',               prompt: 'Corrija erros e aprimore a precisão deste conteúdo.' },
-  { label: 'Exemplificar',           prompt: 'Adicione exemplos concretos para ilustrar este conteúdo.' },
-  { label: 'Aplicar',                prompt: 'Desenvolva aplicações práticas para a vida cristã contemporânea.' },
-  { label: 'Referências bíblicas',   prompt: 'Encontre referências bíblicas relevantes para este conteúdo.' },
-  { label: 'Relacionar com Cristo',  prompt: 'Relacione este conteúdo com Cristo, o evangelho e a redenção.' },
-  { label: 'Teologia Bíblica',       prompt: 'Relacione com a teologia bíblica e a progressão revelacional.' },
-  { label: 'Teologia Sistemática',   prompt: 'Relacione com as doutrinas da teologia sistemática reformada.' },
-]
+const AVALIAR_PROMPT = `Avalie o conteúdo atual sem alterar, reescrever ou corrigir o texto. Atue como professor ou editor especializado.
 
-const PHASE_ACTIONS: Record<string, { label: string; prompt: string }[]> = {
-  preparar: [
-    { label: 'Gerar oração',               prompt: 'Gere uma oração pastoral para abertura deste estudo bíblico.' },
-    { label: 'Perguntas iniciais',          prompt: 'Gere perguntas iniciais de observação e contemplação para esta passagem.' },
-    { label: 'Gerar observações',           prompt: 'Gere observações iniciais sobre o texto desta passagem.' },
-    { label: 'Primeiras impressões',        prompt: 'Descreva as primeiras impressões e impacto desta passagem.' },
-  ],
-  investigar: [
-    { label: 'Contexto histórico',          prompt: 'Descreva o contexto histórico desta passagem com rigor acadêmico.' },
-    { label: 'Contexto cultural',           prompt: 'Descreva o contexto cultural e social relevante para esta passagem.' },
-    { label: 'Análise do autor',            prompt: 'Analise o autor, suas intenções e perspectiva nesta passagem.' },
-    { label: 'Propósito do livro',          prompt: 'Explique o propósito do livro e como esta passagem se encaixa.' },
-    { label: 'Gerar estrutura',             prompt: 'Proponha a estrutura literária e o esboço desta passagem.' },
-    { label: 'Termos-chave',                prompt: 'Identifique e explique os termos-chave originais desta passagem.' },
-    { label: 'Análise teológica',           prompt: 'Analise as principais questões teológicas desta passagem.' },
-    { label: 'Paralelos bíblicos',          prompt: 'Encontre e analise paralelos bíblicos relevantes.' },
-  ],
-  comunicar: [
-    { label: 'Gerar introdução',            prompt: 'Gere uma introdução impactante para o sermão desta passagem.' },
-    { label: 'Gerar ilustração',            prompt: 'Gere uma ilustração relevante e memorável para este ponto.' },
-    { label: 'Gerar aplicação',             prompt: 'Desenvolva aplicações práticas e específicas para a congregação.' },
-    { label: 'Gerar conclusão',             prompt: 'Gere uma conclusão que convoque à ação e glorifique a Cristo.' },
-    { label: 'Gerar transição',             prompt: 'Gere uma transição fluida para o próximo ponto do sermão.' },
-    { label: 'Gerar esboço',               prompt: 'Gere um esboço homilético completo para esta passagem.' },
-    { label: 'Sermão completo',             prompt: 'Gere um sermão completo, estruturado e cristocêntrico para esta passagem.' },
-  ],
-  ferramentas: [
-    { label: 'Analise o termo',             prompt: 'Analise este termo em seu contexto original e bíblico.' },
-    { label: 'Etimologia',                  prompt: 'Explique a etimologia e o campo semântico deste termo.' },
-    { label: 'Paralelos canônicos',         prompt: 'Liste paralelos canônicos e sua progressão revelacional.' },
-  ],
+Apresente a avaliação neste formato:
+
+## NOTA GERAL
+(Nota de 0–10 com avaliação sintética em uma linha)
+
+## Pontos Fortes
+(Clareza, fidelidade bíblica, consistência argumentativa, precisão teológica, aplicabilidade)
+
+## Pontos Fracos
+(Dimensões que precisam melhorar)
+
+## Oportunidades de Aprimoramento
+(Sugestões específicas e concretas considerando o contexto atual: projeto, etapa, seção e campo)
+
+## Recomendação Final
+(Próximo passo mais importante)`
+
+// ── Action groups ─────────────────────────────────────────────────────────────
+
+interface ActionGroup {
+  id: string
+  label: string
+  color: string
+  actions: { label: string; prompt: string; highlight?: boolean }[]
 }
+
+const ACTION_GROUPS: ActionGroup[] = [
+  {
+    id: 'compreender',
+    label: 'Compreender',
+    color: '#0D9488',
+    actions: [
+      { label: 'Explicar',             prompt: 'Explique este conteúdo de forma mais clara e acessível.' },
+      { label: 'Exemplificar',         prompt: 'Adicione exemplos concretos para ilustrar este conteúdo.' },
+      { label: 'Resumir',              prompt: 'Resuma este conteúdo de forma concisa e clara.' },
+      { label: 'Expandir',             prompt: 'Expanda com mais detalhes, evidências e referências.' },
+      { label: 'Referências Bíblicas', prompt: 'Encontre referências bíblicas relevantes para este conteúdo.' },
+    ],
+  },
+  {
+    id: 'analisar',
+    label: 'Analisar',
+    color: '#D97706',
+    actions: [
+      { label: 'Avaliar',              prompt: AVALIAR_PROMPT, highlight: true },
+      { label: 'Corrigir',             prompt: 'Corrija erros e aprimore a precisão deste conteúdo.' },
+      { label: 'Melhorar',             prompt: 'Melhore a qualidade, clareza e precisão deste conteúdo.' },
+      { label: 'Relacionar com Cristo', prompt: 'Relacione este conteúdo com Cristo, o evangelho e a redenção.' },
+    ],
+  },
+  {
+    id: 'investigar',
+    label: 'Investigar',
+    color: '#163A6B',
+    actions: [
+      { label: 'Contexto Histórico',  prompt: 'Descreva o contexto histórico desta passagem com rigor acadêmico.' },
+      { label: 'Contexto Cultural',   prompt: 'Descreva o contexto cultural e social relevante para esta passagem.' },
+      { label: 'Análise do Autor',    prompt: 'Analise o autor, suas intenções e perspectiva nesta passagem.' },
+      { label: 'Propósito do Livro',  prompt: 'Explique o propósito do livro e como esta passagem se encaixa.' },
+      { label: 'Gerar Estrutura',     prompt: 'Proponha a estrutura literária e o esboço desta passagem.' },
+      { label: 'Termos-Chave',        prompt: 'Identifique e explique os termos-chave originais desta passagem.' },
+      { label: 'Paralelos Bíblicos',  prompt: 'Encontre e analise paralelos bíblicos relevantes.' },
+      { label: 'Análise Teológica',   prompt: 'Analise as principais questões teológicas desta passagem.' },
+    ],
+  },
+  {
+    id: 'teologia',
+    label: 'Teologia',
+    color: '#7C3AED',
+    actions: [
+      { label: 'Teologia Bíblica',     prompt: 'Relacione com a teologia bíblica e a progressão revelacional.' },
+      { label: 'Teologia Sistemática', prompt: 'Relacione com as doutrinas da teologia sistemática reformada.' },
+    ],
+  },
+  {
+    id: 'produzir',
+    label: 'Produzir',
+    color: '#059669',
+    actions: [
+      { label: 'Gerar Introdução',  prompt: 'Gere uma introdução impactante para o sermão desta passagem.' },
+      { label: 'Gerar Transição',   prompt: 'Gere uma transição fluida para o próximo ponto do sermão.' },
+      { label: 'Gerar Ilustração',  prompt: 'Gere uma ilustração relevante e memorável para este ponto.' },
+      { label: 'Gerar Aplicação',   prompt: 'Desenvolva aplicações práticas e específicas para a congregação.' },
+      { label: 'Gerar Conclusão',   prompt: 'Gere uma conclusão que convoque à ação e glorifique a Cristo.' },
+      { label: 'Gerar Esboço',      prompt: 'Gere um esboço homilético completo para esta passagem.' },
+      { label: 'Sermão Completo',   prompt: 'Gere um sermão completo, estruturado e cristocêntrico para esta passagem.' },
+    ],
+  },
+]
 
 // ── Markdown → HTML (básico, para inserção no TipTap) ────────────────────────
 
@@ -115,22 +159,21 @@ function stripHtml(html: string): string {
 // ── Component ─────────────────────────────────────────────────────────────────
 
 export default function AIAssistantPanel({ context, currentContent, onInsert, onReplace, onAppend, onClose }: Props) {
-  const [response, setResponse] = useState('')
-  const [loading, setLoading]   = useState(false)
-  const [chatInput, setChatInput] = useState('')
-  const [error, setError]       = useState('')
-  const [copied, setCopied]     = useState(false)
-  const streamBuffer            = useRef('')
-  const responseRef             = useRef<HTMLDivElement>(null)
-
-  const phaseActions = PHASE_ACTIONS[context.phase ?? ''] ?? []
+  const [response, setResponse]     = useState('')
+  const [loading, setLoading]       = useState(false)
+  const [chatInput, setChatInput]   = useState('')
+  const [error, setError]           = useState('')
+  const [copied, setCopied]         = useState(false)
+  const [activeGroup, setActiveGroup] = useState<string | null>(null)
+  const streamBuffer                = useRef('')
+  const responseRef                 = useRef<HTMLDivElement>(null)
 
   const buildSystemContext = useCallback(() => {
     const parts = [
       `Projeto: ${context.project.book} ${context.project.passage_ref}`,
-      context.phaseLabel ? `Etapa: ${context.phaseLabel}` : '',
+      context.phaseLabel   ? `Etapa: ${context.phaseLabel}`   : '',
       context.sectionLabel ? `Seção: ${context.sectionLabel}` : '',
-      context.fieldLabel  ? `Campo: ${context.fieldLabel}` : '',
+      context.fieldLabel   ? `Campo: ${context.fieldLabel}`   : '',
       currentContent.trim() ? `\n\nConteúdo atual do campo:\n${stripHtml(currentContent)}` : '',
     ].filter(Boolean)
     return parts.join('\n')
@@ -234,20 +277,39 @@ export default function AIAssistantPanel({ context, currentContent, onInsert, on
 
   const hasResponse = response.trim().length > 0
 
-  const btnStyle = (active = false): React.CSSProperties => ({
-    display: 'flex', alignItems: 'center', gap: '0.35rem',
-    background: active ? '#EEF2FF' : '#F8FAFC',
-    border: `1px solid ${active ? '#C7D2FE' : '#E2E8F0'}`,
-    borderRadius: '7px', padding: '0.38rem 0.65rem',
-    fontSize: '0.74rem', fontWeight: 500, color: active ? '#4F46E5' : '#475569',
-    cursor: 'pointer', fontFamily: 'inherit', whiteSpace: 'nowrap',
-    transition: 'all 0.12s', flexShrink: 0,
-  })
-
   const phaseColor = context.phase === 'preparar'
     ? '#0F766E' : context.phase === 'investigar'
     ? '#163A6B' : context.phase === 'comunicar'
     ? '#7C3AED' : '#6366F1'
+
+  // ── Button style helpers ──────────────────────────────────────────────────
+
+  function actionBtnStyle(groupColor: string, highlight = false): React.CSSProperties {
+    return {
+      display: 'flex', alignItems: 'center', gap: '0.3rem',
+      background: highlight ? `${groupColor}0D` : '#F8FAFC',
+      border: `1px solid ${highlight ? `${groupColor}35` : '#E2E8F0'}`,
+      borderRadius: '7px', padding: '0.35rem 0.6rem',
+      fontSize: '0.74rem', fontWeight: highlight ? 600 : 500,
+      color: highlight ? groupColor : '#475569',
+      cursor: 'pointer', fontFamily: 'inherit', whiteSpace: 'nowrap',
+      transition: 'all 0.12s', flexShrink: 0,
+      opacity: loading ? 0.5 : 1,
+    }
+  }
+
+  function insertBtnStyle(primary = false): React.CSSProperties {
+    return {
+      display: 'flex', alignItems: 'center', gap: '0.35rem',
+      background: primary ? phaseColor : '#F8FAFC',
+      border: `1px solid ${primary ? phaseColor : '#E2E8F0'}`,
+      borderRadius: '7px', padding: '0.38rem 0.65rem',
+      fontSize: '0.74rem', fontWeight: 500,
+      color: primary ? '#fff' : '#475569',
+      cursor: 'pointer', fontFamily: 'inherit', whiteSpace: 'nowrap',
+      transition: 'all 0.12s', flexShrink: 0,
+    }
+  }
 
   return (
     <div style={{
@@ -261,7 +323,7 @@ export default function AIAssistantPanel({ context, currentContent, onInsert, on
       animation: 'slideInRight 0.18s ease-out',
     }}>
 
-      {/* Header */}
+      {/* ── Header ── */}
       <div style={{
         display: 'flex', alignItems: 'center', gap: '0.6rem',
         padding: '0.85rem 1rem 0.75rem',
@@ -280,7 +342,7 @@ export default function AIAssistantPanel({ context, currentContent, onInsert, on
         >✕</button>
       </div>
 
-      {/* Context pill */}
+      {/* ── Context pill ── */}
       <div style={{
         padding: '0.55rem 1rem',
         borderBottom: '1px solid #F1F5F9',
@@ -306,67 +368,92 @@ export default function AIAssistantPanel({ context, currentContent, onInsert, on
         </div>
       </div>
 
-      {/* Scrollable body */}
+      {/* ── Scrollable body ── */}
       <div style={{ flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column' }}>
 
-        {/* Quick actions — universal */}
-        <div style={{ padding: '0.75rem 1rem 0.5rem' }}>
-          <p style={{ fontSize: '0.62rem', fontWeight: 700, color: '#94A3B8', letterSpacing: '0.07em', textTransform: 'uppercase', marginBottom: '0.5rem' }}>
-            Ações rápidas
-          </p>
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.35rem' }}>
-            {UNIVERSAL.map(a => (
-              <button
-                key={a.label}
-                onClick={() => send(a.prompt)}
-                disabled={loading}
-                style={{ ...btnStyle(), opacity: loading ? 0.5 : 1 }}
-                onMouseEnter={e => { if (!loading) { e.currentTarget.style.borderColor = '#94A3B8'; e.currentTarget.style.color = '#1E293B' } }}
-                onMouseLeave={e => { e.currentTarget.style.borderColor = '#E2E8F0'; e.currentTarget.style.color = '#475569' }}
-              >
-                {a.label}
-              </button>
-            ))}
-          </div>
+        {/* ── Action groups ── */}
+        <div style={{ padding: '0.85rem 1rem 0.5rem' }}>
+          {ACTION_GROUPS.map((group, gIdx) => {
+            const isExpanded = activeGroup === null || activeGroup === group.id
+            return (
+              <div key={group.id} style={{ marginBottom: gIdx < ACTION_GROUPS.length - 1 ? '1rem' : '0.4rem' }}>
+
+                {/* Group header */}
+                <button
+                  type="button"
+                  onClick={() => setActiveGroup(prev => prev === group.id ? null : group.id)}
+                  style={{
+                    display: 'flex', alignItems: 'center', gap: '0.5rem',
+                    width: '100%', background: 'none', border: 'none',
+                    cursor: 'pointer', padding: '0 0 0.45rem 0',
+                    marginBottom: isExpanded ? '0.45rem' : 0,
+                  }}
+                >
+                  <span style={{
+                    fontSize: '0.6rem', fontWeight: 800,
+                    color: group.color,
+                    letterSpacing: '0.1em',
+                    textTransform: 'uppercase',
+                  }}>
+                    {group.label}
+                  </span>
+                  <div style={{ flex: 1, height: '1px', background: `${group.color}22` }} />
+                  <span style={{
+                    fontSize: '0.55rem', color: group.color, opacity: 0.6,
+                    transform: isExpanded ? 'rotate(0deg)' : 'rotate(-90deg)',
+                    transition: 'transform 0.15s',
+                    lineHeight: 1,
+                  }}>▾</span>
+                </button>
+
+                {/* Group buttons */}
+                {isExpanded && (
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.3rem' }}>
+                    {group.actions.map(a => (
+                      <button
+                        key={a.label}
+                        onClick={() => send(a.prompt)}
+                        disabled={loading}
+                        style={actionBtnStyle(group.color, a.highlight)}
+                        onMouseEnter={e => {
+                          if (loading) return
+                          e.currentTarget.style.borderColor = `${group.color}55`
+                          e.currentTarget.style.color = group.color
+                          e.currentTarget.style.background = `${group.color}0D`
+                        }}
+                        onMouseLeave={e => {
+                          if (a.highlight) {
+                            e.currentTarget.style.borderColor = `${group.color}35`
+                            e.currentTarget.style.color = group.color
+                            e.currentTarget.style.background = `${group.color}0D`
+                          } else {
+                            e.currentTarget.style.borderColor = '#E2E8F0'
+                            e.currentTarget.style.color = '#475569'
+                            e.currentTarget.style.background = '#F8FAFC'
+                          }
+                        }}
+                      >
+                        {a.highlight && <span style={{ fontSize: '0.7rem' }}>⭐</span>}
+                        {a.label}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )
+          })}
         </div>
 
-        {/* Phase-specific actions */}
-        {phaseActions.length > 0 && (
-          <div style={{ padding: '0.5rem 1rem 0.75rem' }}>
-            <p style={{ fontSize: '0.62rem', fontWeight: 700, color: phaseColor, letterSpacing: '0.07em', textTransform: 'uppercase', marginBottom: '0.5rem', opacity: 0.8 }}>
-              {context.phaseLabel ?? 'Módulo'}
-            </p>
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.35rem' }}>
-              {phaseActions.map(a => (
-                <button
-                  key={a.label}
-                  onClick={() => send(a.prompt)}
-                  disabled={loading}
-                  style={{ ...btnStyle(), borderColor: `${phaseColor}30`, color: phaseColor, background: `${phaseColor}08`, opacity: loading ? 0.5 : 1 }}
-                  onMouseEnter={e => { if (!loading) { e.currentTarget.style.background = `${phaseColor}14`; e.currentTarget.style.borderColor = `${phaseColor}50` } }}
-                  onMouseLeave={e => { e.currentTarget.style.background = `${phaseColor}08`; e.currentTarget.style.borderColor = `${phaseColor}30` }}
-                >
-                  {a.label}
-                </button>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* Response area */}
+        {/* ── Response area ── */}
         {(loading || hasResponse || error) && (
           <div style={{
             margin: '0 1rem 0.75rem',
             border: '1px solid #E2E8F0', borderRadius: '10px', overflow: 'hidden',
             background: '#FAFAFA',
           }}>
-            {/* Response content */}
             <div
               ref={responseRef}
-              style={{
-                maxHeight: '320px', overflowY: 'auto',
-                padding: '0.75rem 0.85rem',
-              }}
+              style={{ maxHeight: '320px', overflowY: 'auto', padding: '0.75rem 0.85rem' }}
             >
               {error && (
                 <p style={{ fontSize: '0.78rem', color: '#EF4444', margin: 0 }}>{error}</p>
@@ -389,7 +476,6 @@ export default function AIAssistantPanel({ context, currentContent, onInsert, on
               )}
             </div>
 
-            {/* Insert actions */}
             {hasResponse && !loading && (
               <div style={{
                 display: 'flex', gap: '0.35rem', flexWrap: 'wrap',
@@ -399,25 +485,25 @@ export default function AIAssistantPanel({ context, currentContent, onInsert, on
               }}>
                 <button
                   onClick={handleInsert}
-                  style={{ ...btnStyle(true), background: phaseColor, color: '#fff', borderColor: phaseColor }}
+                  style={{ ...insertBtnStyle(true) }}
                   onMouseEnter={e => { e.currentTarget.style.opacity = '0.88' }}
                   onMouseLeave={e => { e.currentTarget.style.opacity = '1' }}
                 >
                   Inserir
                 </button>
-                <button onClick={handleReplace} style={btnStyle()}
+                <button onClick={handleReplace} style={insertBtnStyle()}
                   onMouseEnter={e => { e.currentTarget.style.borderColor = '#94A3B8'; e.currentTarget.style.color = '#1E293B' }}
                   onMouseLeave={e => { e.currentTarget.style.borderColor = '#E2E8F0'; e.currentTarget.style.color = '#475569' }}
                 >
                   Substituir
                 </button>
-                <button onClick={handleAppend} style={btnStyle()}
+                <button onClick={handleAppend} style={insertBtnStyle()}
                   onMouseEnter={e => { e.currentTarget.style.borderColor = '#94A3B8'; e.currentTarget.style.color = '#1E293B' }}
                   onMouseLeave={e => { e.currentTarget.style.borderColor = '#E2E8F0'; e.currentTarget.style.color = '#475569' }}
                 >
                   Adicionar abaixo
                 </button>
-                <button onClick={handleCopy} style={{ ...btnStyle(), marginLeft: 'auto' }}
+                <button onClick={handleCopy} style={{ ...insertBtnStyle(), marginLeft: 'auto' }}
                   onMouseEnter={e => { e.currentTarget.style.borderColor = '#94A3B8' }}
                   onMouseLeave={e => { e.currentTarget.style.borderColor = '#E2E8F0' }}
                 >
@@ -428,11 +514,10 @@ export default function AIAssistantPanel({ context, currentContent, onInsert, on
           </div>
         )}
 
-        {/* Spacer */}
         <div style={{ flex: 1 }} />
       </div>
 
-      {/* Chat input */}
+      {/* ── Chat input ── */}
       <div style={{
         padding: '0.65rem 1rem',
         borderTop: '1px solid #F1F5F9',
@@ -444,9 +529,7 @@ export default function AIAssistantPanel({ context, currentContent, onInsert, on
           background: '#FFFFFF', border: '1px solid #E2E8F0',
           borderRadius: '10px', padding: '0.5rem 0.65rem',
           transition: 'border-color 0.12s',
-        }}
-          onFocus={() => {}}
-        >
+        }}>
           <textarea
             value={chatInput}
             onChange={e => setChatInput(e.target.value)}
@@ -471,8 +554,10 @@ export default function AIAssistantPanel({ context, currentContent, onInsert, on
               flexShrink: 0, width: '30px', height: '30px',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
               background: chatInput.trim() && !loading ? phaseColor : '#E2E8F0',
-              border: 'none', borderRadius: '7px', cursor: chatInput.trim() && !loading ? 'pointer' : 'default',
-              fontSize: '0.8rem', color: chatInput.trim() && !loading ? '#fff' : '#94A3B8',
+              border: 'none', borderRadius: '7px',
+              cursor: chatInput.trim() && !loading ? 'pointer' : 'default',
+              fontSize: '0.8rem',
+              color: chatInput.trim() && !loading ? '#fff' : '#94A3B8',
               transition: 'all 0.12s',
             }}
           >
