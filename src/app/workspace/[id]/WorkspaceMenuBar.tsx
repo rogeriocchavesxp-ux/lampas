@@ -150,7 +150,8 @@ export default function WorkspaceMenuBar({
       id: 'ferramentas',
       label: 'Ferramentas',
       items: [
-        { label: 'Dicionário Bíblico', soon: true },
+        { label: 'Pilgrim', onClick: () => window.dispatchEvent(new CustomEvent('lampas:open-pilgrim')) },
+        { label: 'Dicionário Bíblico', separator: true, soon: true },
         { label: 'Concordância', soon: true },
         { label: 'Texto Original', onClick: () => router.push('/knowledge') },
         { label: 'Referências Cruzadas', onClick: () => router.push('/knowledge') },

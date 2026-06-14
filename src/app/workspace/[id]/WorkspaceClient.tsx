@@ -30,6 +30,7 @@ import CommentaryWorkspace from './CommentaryWorkspace'
 import ComentarioExegeticoWorkspace from './ComentarioExegeticoWorkspace'
 import ProduzirWorkspace from './ProduzirWorkspace'
 import WorkspaceMenuBar from './WorkspaceMenuBar'
+import FloatingBrowser from './FloatingBrowser'
 import LiveReferencePanel from './LiveReferencePanel'
 import AIPanel from './AIPanel'
 import BibleFloatingWindow from './BibleFloatingWindow'
@@ -403,6 +404,7 @@ export default function WorkspaceClient({ user, project, initialSections }: Prop
   const [enviarTargetMode, setEnviarTargetMode] = useState<'sermao' | 'devocional'>('sermao')
   const [enviarDropdownOpen, setEnviarDropdownOpen] = useState(false)
   const enviarDropdownRef = useRef<HTMLDivElement>(null)
+  const [pilgrimOpen, setPilgrimOpen] = useState(false)
 
   const sidebarWidthRef  = useRef(264)
   const referenceWidthRef = useRef(280)
@@ -437,6 +439,13 @@ export default function WorkspaceClient({ user, project, initialSections }: Prop
     window.addEventListener('mousedown', handler)
     return () => window.removeEventListener('mousedown', handler)
   }, [enviarDropdownOpen])
+
+  // Abre janela flutuante do Pilgrim via evento global
+  useEffect(() => {
+    function handler() { setPilgrimOpen(true) }
+    window.addEventListener('lampas:open-pilgrim', handler)
+    return () => window.removeEventListener('lampas:open-pilgrim', handler)
+  }, [])
 
   // Persiste contexto do workspace para o painel global da Base de Conhecimento
   useEffect(() => {
@@ -1691,6 +1700,9 @@ export default function WorkspaceClient({ user, project, initialSections }: Prop
 
         </div>
       </div>
+
+      {/* ── Janela flutuante Pilgrim ──────────────────────────────── */}
+      {pilgrimOpen && <FloatingBrowser onClose={() => setPilgrimOpen(false)} />}
 
       {/* ── Modal Enviar ──────────────────────────────────────────── */}
       {enviarParaSermaOpen && (
