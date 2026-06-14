@@ -125,11 +125,16 @@ export default function RichEditor({
   const [linkUrl,        setLinkUrl]        = useState('')
   const [focused,        setFocused]        = useState(false)
   const [aiOpen,         setAiOpen]         = useState(false)
-  const structuralRef = useRef(false)
-  const hlRef         = useRef<HTMLDivElement>(null)
-  const colorRef      = useRef<HTMLDivElement>(null)
-  const insertRef     = useRef<HTMLDivElement>(null)
-  const linkRef       = useRef<HTMLDivElement>(null)
+  const structuralRef  = useRef(false)
+  const hlRef          = useRef<HTMLDivElement>(null)
+  const colorRef       = useRef<HTMLDivElement>(null)
+  const insertRef      = useRef<HTMLDivElement>(null)
+  const linkRef        = useRef<HTMLDivElement>(null)
+  // Tracks whether the pending value change originated inside the editor (typing/AI commands).
+  // When true, the sync useEffect must skip setContent to avoid resetting cursor position.
+  const isInternalRef  = useRef(false)
+  // Skips the initial useEffect run — editor already has correct content from useEditor's `content` prop.
+  const isMountedRef   = useRef(false)
 
   useEffect(() => { structuralRef.current = structuralMode }, [structuralMode])
 
@@ -163,7 +168,7 @@ export default function RichEditor({
     ],
     content: normalizedValue,
     autofocus: autoFocus ? 'end' : false,
-    onUpdate: ({ editor }) => { onChange(editor.getHTML()) },
+    onUpdate: ({ editor }) => { isInternalRef.current = true; onChange(editor.getHTML()) },
     onFocus: () => setFocused(true),
     onBlur:  () => setFocused(false),
     editorProps: {
@@ -195,11 +200,17 @@ export default function RichEditor({
     },
   })
 
-  // Sync external value changes (e.g., AI generation)
+  // Sync external value changes (AI injection, section change) without disturbing cursor.
+  // Root-cause guard: normalizeEditorContent decodes HTML entities (&amp;→&, &lt;→<, etc.)
+  // so normalizedValue always differs from editor.getHTML() when the text contains those chars,
+  // causing setContent on every keystroke and resetting the cursor to the end.
+  // Fix: skip the effect whenever the value change originated from the editor itself.
   useEffect(() => {
     if (!editor) return
-    const current = editor.getHTML()
-    if (normalizedValue !== current) editor.commands.setContent(normalizedValue)
+    if (!isMountedRef.current) { isMountedRef.current = true; return }
+    if (isInternalRef.current) { isInternalRef.current = false; return }
+    // Genuine external update — setContent defaults to emitUpdate=false in TipTap v3.
+    editor.commands.setContent(normalizedValue)
   }, [normalizedValue]) // eslint-disable-line react-hooks/exhaustive-deps
 
   if (!editor) return null
