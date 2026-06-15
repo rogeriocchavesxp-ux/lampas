@@ -224,13 +224,15 @@ export default function SectionWorkspace({
   async function performSave(content: Record<string, string>, pointCards = latestDynamicPointCards.current) {
     setSaving(true)
     const hasContent = Object.values(content).some(v => v.trim().length > 0)
+    const allFilled = sectionDef.cards.length > 0 &&
+      sectionDef.cards.every(card => (content[card.id] ?? '').trim().length > 0)
     const storedContent: Record<string, unknown> = { cards: content }
     if (isPalestraConstruir) storedContent.dynamicPointCards = pointCards
     const payload = {
       project_id: project.id, user_id: userId,
       slug: sectionDef.slug, module: sectionDef.module,
       title: sectionDef.title, content: storedContent,
-      status: (hasContent ? 'draft' : 'empty') as 'empty' | 'draft' | 'reviewed',
+      status: (allFilled ? 'reviewed' : hasContent ? 'draft' : 'empty') as 'empty' | 'draft' | 'reviewed',
     }
     if (existingSection?.id) {
       const { data } = await supabase.from('sections').update(payload).eq('id', existingSection.id).select().single()

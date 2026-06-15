@@ -723,9 +723,11 @@ export default function WorkspaceClient({ user, project, initialSections }: Prop
   const activeSection = sections.find(s => s.slug === activeSlug)
   const activePhase = navPhases.find(p => p.id === getPhaseFor(activeSlug))
 
-  const isSectionDone = useCallback((slug: string) => {
+  const sectionProgressValue = useCallback((slug: string): number => {
     const section = sections.find(sec => sec.slug === slug)
-    return section?.status === 'draft' || section?.status === 'reviewed'
+    if (!section || section.status === 'empty') return 0
+    if (section.status === 'reviewed') return 1
+    return 0.5
   }, [sections])
 
   function progressGroupWeight(groupId: string): number {
@@ -764,7 +766,7 @@ export default function WorkspaceClient({ user, project, initialSections }: Prop
       ...(synthesis ? [synthesis.slug] : []),
     ]
     if (slugs.length === 0) return 0
-    return slugs.filter(isSectionDone).length / slugs.length
+    return slugs.reduce((sum, slug) => sum + sectionProgressValue(slug), 0) / slugs.length
   }
 
   const phaseProgress = useMemo(() => navPhases
@@ -781,7 +783,7 @@ export default function WorkspaceClient({ user, project, initialSections }: Prop
         done,
         pct: total > 0 ? Math.round((done / total) * 100) : 0,
       }
-    }), [navPhases, sections, isSectionDone])
+    }), [navPhases, sections, sectionProgressValue])
 
   const progressTotal = phaseProgress.reduce((sum, phase) => sum + phase.total, 0)
   const progressDone = phaseProgress.reduce((sum, phase) => sum + phase.done, 0)
@@ -909,17 +911,21 @@ export default function WorkspaceClient({ user, project, initialSections }: Prop
   }, [searchParams])
 
 
-  function groupProgress(groupId: string) {
-    if (groupId === 'colagens') return toolProgress(groupId)
-    if (groupId === 'comentario_expositivo') return toolProgress(groupId)
-    if (isToolSlug(groupId)) return toolProgress(groupId)
+  function groupProgress(groupId: string): { done: number; total: number; pct: number } {
+    if (groupId === 'colagens' || groupId === 'comentario_expositivo' || isToolSlug(groupId)) {
+      const t = toolProgress(groupId)
+      return { ...t, pct: t.total > 0 ? Math.round(t.done / t.total * 100) : 0 }
+    }
     const gs = getSectionsByGroupNav(groupId)
+    const done = gs.filter(sd => {
+      const s = sections.find(sec => sec.slug === sd.slug)
+      return s?.status === 'draft' || s?.status === 'reviewed'
+    }).length
+    const totalValue = gs.reduce((sum, sd) => sum + sectionProgressValue(sd.slug), 0)
     return {
       total: gs.length,
-      done: gs.filter(sd => {
-        const s = sections.find(sec => sec.slug === sd.slug)
-        return s?.status === 'draft' || s?.status === 'reviewed'
-      }).length,
+      done,
+      pct: gs.length > 0 ? Math.round(totalValue / gs.length * 100) : 0,
     }
   }
 
@@ -1379,7 +1385,7 @@ export default function WorkspaceClient({ user, project, initialSections }: Prop
                                     const tool            = getToolAreaBySlug(group.id)
                                     const directSlug      = isSingleSection ? secs[0].slug : (tool?.slug ?? group.id)
                                     const directLabel     = isSingleSection ? secs[0].shortTitle : group.label
-                                    const { done, total } = groupProgress(group.id)
+                                    const { done, total, pct: gpPct } = groupProgress(group.id)
                                     const syn        = !isDirect ? SYNTHESIS_DEFS[group.id] : undefined
                                     const isActive   = isDirect && activeSlug === directSlug
                                     const isExpanded = !isDirect && groupOpen
@@ -1391,7 +1397,7 @@ export default function WorkspaceClient({ user, project, initialSections }: Prop
                                     const accentColor = GROUP_ACCENT_COLORS[group.id]
                                     const isEnhanced  = Boolean(accentColor)
                                     const groupColor  = isEnhanced ? accentColor : mode.color
-                                    const pct         = isEnhanced && total > 0 ? Math.round((done / total) * 100) : 0
+                                    const pct         = isEnhanced ? gpPct : 0
 
                                     return (
                                       <div key={group.id} style={{ marginBottom: isEnhanced ? '4px' : (groupOpen ? '0.22rem' : 0), marginTop: isEnhanced && groupIdx > 0 ? '16px' : 0 }}>
