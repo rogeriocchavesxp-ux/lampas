@@ -46,7 +46,7 @@ import {
   Sparkles, BookMarked, Flame, MessageSquareText, Layers, Book, Library,
   BookCopy, Link2, Paperclip, ChevronDown, ChevronRight, ChevronLeft, ChevronUp,
   MapPin, Network, TrendingUp, LayoutTemplate, Mic, Brain, Megaphone,
-  AlignJustify, GitBranch, Palette, Tag, X, Lightbulb,
+  AlignJustify, GitBranch, Palette, Tag, X, Lightbulb, Home,
   type LucideIcon,
 } from 'lucide-react'
 import {
@@ -2300,6 +2300,36 @@ export default function WorkspaceClient({ user, project, initialSections }: Prop
           </>
         )
       })()}
+
+      {/* ── Botão Painel — acesso permanente ao Dashboard ────────── */}
+      <div style={{ position: 'fixed', top: '108px', left: '8px', zIndex: 300 }}>
+        <button
+          onClick={() => router.push('/dashboard')}
+          title="Ir para o Painel"
+          style={{
+            width: '40px', height: '40px', borderRadius: '50%',
+            background: 'var(--surface)',
+            border: '1.5px solid var(--border)',
+            cursor: 'pointer',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            boxShadow: '0 2px 12px rgba(0,0,0,0.13)',
+            transition: 'all 0.15s',
+            color: 'var(--text-secondary)',
+          }}
+          onMouseEnter={e => {
+            e.currentTarget.style.borderColor = 'var(--accent)'
+            e.currentTarget.style.color = 'var(--accent)'
+            e.currentTarget.style.background = 'rgba(var(--accent-rgb, 30,64,175),0.08)'
+          }}
+          onMouseLeave={e => {
+            e.currentTarget.style.borderColor = 'var(--border)'
+            e.currentTarget.style.color = 'var(--text-secondary)'
+            e.currentTarget.style.background = 'var(--surface)'
+          }}
+        >
+          <Home size={16} strokeWidth={1.75} />
+        </button>
+      </div>
 
       {/* ── Botão Bíblia — acesso permanente ao texto bíblico ─────── */}
       <div style={{ position: 'fixed', top: '108px', right: '16px', zIndex: 300 }}>
