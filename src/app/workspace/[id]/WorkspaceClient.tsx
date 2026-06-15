@@ -216,6 +216,28 @@ function getSlugLabel(slug: string): string {
     ?? slug
 }
 
+// ── Phase-level navigation ─────────────────────────────────────────────────
+
+const PHASE_MAIN_NAV = ['preparar_visao_geral', 'investigar_visao_geral', 'pregar_visao_geral'] as const
+
+const PHASE_NAV_LABELS: Record<string, string> = {
+  preparar_visao_geral:    'Preparar',
+  investigar_visao_geral:  'Investigar',
+  pregar_visao_geral:      'Produzir',
+}
+
+function getPhaseOverviewSlug(slug: string): string | null {
+  // Explicit mappings first to avoid ambiguity from data mismatches
+  if (slug === 'preparar_visao_geral')   return 'preparar_visao_geral'
+  if (slug === 'investigar_visao_geral') return 'investigar_visao_geral'
+  if (slug === 'pregar_visao_geral')     return 'pregar_visao_geral'
+  const phase = getPhaseFor(slug)
+  if (phase === 'preparar')   return 'preparar_visao_geral'
+  if (phase === 'investigar') return 'investigar_visao_geral'
+  if (phase === 'comunicar')  return 'pregar_visao_geral'
+  return null  // ferramentas or unknown — outside main flow
+}
+
 function statusDot(status: 'empty' | 'draft' | 'reviewed' | undefined): string {
   if (!status || status === 'empty') return 'var(--border)'
   if (status === 'draft') return 'var(--accent)'
@@ -655,6 +677,12 @@ export default function WorkspaceClient({ user, project, initialSections }: Prop
   const prevSlug = currentNavIdx > 0 ? orderedSlugs[currentNavIdx - 1] : null
   const nextSlug = currentNavIdx >= 0 && currentNavIdx < orderedSlugs.length - 1
     ? orderedSlugs[currentNavIdx + 1] : null
+
+  // Phase-level navigation (Biblioteca → Preparar → Investigar → Produzir)
+  const phaseNavIdx      = PHASE_MAIN_NAV.indexOf((getPhaseOverviewSlug(activeSlug) ?? '') as typeof PHASE_MAIN_NAV[number])
+  const prevPhaseNavSlug = phaseNavIdx > 0 ? PHASE_MAIN_NAV[phaseNavIdx - 1] : null
+  const nextPhaseNavSlug = phaseNavIdx >= 0 && phaseNavIdx < PHASE_MAIN_NAV.length - 1
+    ? PHASE_MAIN_NAV[phaseNavIdx + 1] : null
 
   const activeGroupId = getGroupFor(activeSlug)
   const activeGroupLabel = activeGroupId
@@ -1592,8 +1620,8 @@ export default function WorkspaceClient({ user, project, initialSections }: Prop
               flexShrink: 0,
             }}>
               <button
-                onClick={() => prevSlug ? navigate(prevSlug) : router.push('/dashboard')}
-                title={prevSlug ? getSlugLabel(prevSlug) : 'Voltar ao painel'}
+                onClick={() => prevPhaseNavSlug ? navigate(prevPhaseNavSlug) : router.push('/dashboard')}
+                title={prevPhaseNavSlug ? PHASE_NAV_LABELS[prevPhaseNavSlug] : 'Painel'}
                 style={{
                   background: 'transparent', border: 'none',
                   cursor: 'pointer',
@@ -1878,24 +1906,24 @@ export default function WorkspaceClient({ user, project, initialSections }: Prop
 
           {/* ← Voltar */}
           <button
-            onClick={() => { if (prevSlug) navigate(prevSlug) }}
-            title={prevSlug ? getSlugLabel(prevSlug) : ''}
+            onClick={() => { prevPhaseNavSlug ? navigate(prevPhaseNavSlug) : router.push('/dashboard') }}
+            title={prevPhaseNavSlug ? PHASE_NAV_LABELS[prevPhaseNavSlug] : 'Painel'}
             style={{
               height: '44px', flexShrink: 0,
               border: '1.5px solid var(--border-subtle)',
               borderRadius: '10px', background: 'transparent',
-              cursor: prevSlug ? 'pointer' : 'default',
+              cursor: 'pointer',
               fontFamily: 'inherit',
               display: 'flex', alignItems: 'center', gap: '3px',
               padding: '0 10px',
               fontSize: '0.75rem', fontWeight: 600,
-              color: prevSlug ? 'var(--text-secondary)' : 'var(--text-muted)',
-              opacity: prevSlug ? 1 : 0.3,
+              color: 'var(--text-secondary)',
+              opacity: 1,
               transition: 'all 0.15s',
               whiteSpace: 'nowrap',
             }}
-            onMouseEnter={e => { if (prevSlug) e.currentTarget.style.borderColor = 'var(--border)' }}
-            onMouseLeave={e => { if (prevSlug) e.currentTarget.style.borderColor = 'var(--border-subtle)' }}
+            onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--border)' }}
+            onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border-subtle)' }}
           >
             <ChevronLeft size={13} strokeWidth={2.2} />
             Voltar
@@ -2022,31 +2050,31 @@ export default function WorkspaceClient({ user, project, initialSections }: Prop
 
           {/* Avançar → */}
           {(() => {
-            const nextPhaseColor = nextSlug
-              ? (navPhases.find(p => p.id === getPhaseFor(nextSlug))?.color ?? activePhase?.color)
+            const nextPhaseColor = nextPhaseNavSlug
+              ? (navPhases.find(p => p.id === getPhaseFor(nextPhaseNavSlug))?.color ?? activePhase?.color)
               : activePhase?.color
-            const isLast = !nextSlug && currentNavIdx >= 0
+            const isLast = phaseNavIdx === PHASE_MAIN_NAV.length - 1
             return (
               <button
-                onClick={() => { if (nextSlug) navigate(nextSlug) }}
-                title={nextSlug ? getSlugLabel(nextSlug) : isLast ? 'Estudo concluído' : ''}
+                onClick={() => { if (nextPhaseNavSlug) navigate(nextPhaseNavSlug) }}
+                title={nextPhaseNavSlug ? PHASE_NAV_LABELS[nextPhaseNavSlug] : isLast ? 'Estudo concluído' : ''}
                 style={{
                   height: '44px', flexShrink: 0,
-                  border: `1.5px solid ${nextSlug ? `${nextPhaseColor}55` : isLast ? 'var(--success)' : 'var(--border-subtle)'}`,
+                  border: `1.5px solid ${nextPhaseNavSlug ? `${nextPhaseColor}55` : isLast ? 'var(--success)' : 'var(--border-subtle)'}`,
                   borderRadius: '10px',
-                  background: nextSlug ? `${nextPhaseColor}09` : isLast ? 'rgba(0,200,100,0.05)' : 'transparent',
-                  cursor: nextSlug ? 'pointer' : 'default',
+                  background: nextPhaseNavSlug ? `${nextPhaseColor}09` : isLast ? 'rgba(0,200,100,0.05)' : 'transparent',
+                  cursor: nextPhaseNavSlug ? 'pointer' : 'default',
                   fontFamily: 'inherit',
                   display: 'flex', alignItems: 'center', gap: '3px',
                   padding: '0 10px',
                   fontSize: '0.75rem', fontWeight: 600,
-                  color: nextSlug ? (nextPhaseColor ?? 'var(--text-secondary)') : isLast ? 'var(--success)' : 'var(--text-muted)',
-                  opacity: nextSlug || isLast ? 1 : 0.3,
+                  color: nextPhaseNavSlug ? (nextPhaseColor ?? 'var(--text-secondary)') : isLast ? 'var(--success)' : 'var(--text-muted)',
+                  opacity: nextPhaseNavSlug || isLast ? 1 : 0.3,
                   transition: 'all 0.15s',
                   whiteSpace: 'nowrap',
                 }}
-                onMouseEnter={e => { if (nextSlug) e.currentTarget.style.borderColor = `${nextPhaseColor}88` }}
-                onMouseLeave={e => { if (nextSlug) e.currentTarget.style.borderColor = `${nextPhaseColor}55` }}
+                onMouseEnter={e => { if (nextPhaseNavSlug) e.currentTarget.style.borderColor = `${nextPhaseColor}88` }}
+                onMouseLeave={e => { if (nextPhaseNavSlug) e.currentTarget.style.borderColor = `${nextPhaseColor}55` }}
               >
                 {isLast ? 'Concluir' : 'Avançar'}
                 <ChevronRight size={13} strokeWidth={2.2} />
