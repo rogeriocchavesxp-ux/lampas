@@ -145,6 +145,15 @@ const GROUP_ACCENT_COLORS: Record<string, string> = {
   ec_ocasiao_grp:        '#B45309',
   ec_estrutura_grp:      '#163A6B',
   ec_argumento_grp:      '#7C3AED',
+  // Doutrinário
+  doutr_conceito_grp:           '#1E40AF',
+  doutr_fundbiblica_grp:        '#B45309',
+  doutr_desenvolvredentivo_grp: '#0F766E',
+  doutr_relacoes_grp:           '#7C3AED',
+  doutr_historia_grp:           '#1E40AF',
+  doutr_controversias_grp:      '#BE185D',
+  doutr_sintese_grp:            '#163A6B',
+  doutr_implicacoes_grp:        '#7C3AED',
 }
 
 const GROUP_EMOJI: Record<string, string> = {
@@ -184,6 +193,15 @@ const GROUP_ICONS: Record<string, LucideIcon> = {
   sermao_pronuntiatio:       Megaphone,
   // Produzir — Comentário
   comentario_expositivo:     MessageSquareText,
+  // Doutrinário
+  doutr_conceito_grp:           Lightbulb,
+  doutr_fundbiblica_grp:        BookOpen,
+  doutr_desenvolvredentivo_grp: TrendingUp,
+  doutr_relacoes_grp:           Link2,
+  doutr_historia_grp:           Landmark,
+  doutr_controversias_grp:      Crosshair,
+  doutr_sintese_grp:            Layers,
+  doutr_implicacoes_grp:        GraduationCap,
   // Ferramentas
   ferramentas_sistematica:   Layers,
   ferramentas_biblica:       Book,
