@@ -152,6 +152,9 @@ export default function WorkspaceMenuBar({
         { label: 'Estudo de Termos',                onClick: sectionNav('termos_chave') },
         { label: 'Dicionário Bíblico',              onClick: sectionNav('ferramentas_dicionario') },
         { label: 'Concordância',    soon: true },
+        { label: 'Introdução', header: true, separator: true },
+        { label: 'Introdução ao AT',                onClick: sectionNav('ferramentas_introducao_at') },
+        { label: 'Introdução ao NT',                onClick: sectionNav('ferramentas_introducao_nt') },
       ],
     },
 
