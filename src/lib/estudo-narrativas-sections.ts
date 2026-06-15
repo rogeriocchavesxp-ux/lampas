@@ -169,6 +169,41 @@ export const ESTUDO_NARRATIVAS_SECTIONS: SectionDef[] = [
     ],
   },
 
+  // ── Preparar — Visão Geral (específico para Narrativas) ─────────────────
+  {
+    slug: 'nr_preparar_visao_geral',
+    title: 'Visão Geral da Narrativa',
+    shortTitle: 'Visão Geral',
+    phase: 'preparar',
+    module: 'inventio',
+    group: 'nr_visao_geral_grp',
+    groupLabel: 'Mapa inicial da narrativa',
+    order: -37,
+    objective:
+      'Registrar a percepção inicial da narrativa antes de qualquer análise técnica — tema, estrutura, personagens e movimento do texto.',
+    keyQuestions: [
+      'Qual é o tema provável antes de consultar qualquer comentário?',
+      'Que estrutura ou divisões naturais você percebe no texto?',
+      'Quem são os personagens e como o narrador os apresenta?',
+      'Como o texto se move — há clímax, repetições, contrastes, tensão?',
+    ],
+    relevantAuthors: ['Robert Alter', 'Shimon Bar-Efrat', 'Adele Berlin', 'Sidney Greidanus'],
+    cards: [
+      card('nr_vg_tema', 'Tema provável',
+        'Nomeie o tema provável da narrativa em uma frase simples e provisória. O que esta história parece ser "sobre"?',
+        'Ajude-me a formular um tema provável para esta narrativa, mantendo caráter provisório e observacional.'),
+      card('nr_vg_estrutura', 'Estrutura percebida',
+        'Esboce as partes da narrativa como você as percebe neste momento inicial. Há introdução, desenvolvimento, virada, resolução?',
+        'Ajude-me a perceber uma estrutura inicial da narrativa com base nos movimentos visíveis do texto.'),
+      card('nr_vg_personagens', 'Personagens',
+        'Quem são os personagens da narrativa? Como o narrador os apresenta? Que papel cada um parece desempenhar?',
+        'Ajude-me a identificar e descrever os personagens desta narrativa com base no primeiro contato com o texto.'),
+      card('nr_vg_movimento', 'Movimento do texto',
+        'Descreva como o texto se move. Orientações para observação:\n→ Há um clímax identificável?\n→ Existem repetições ou palavras-chave recorrentes?\n→ Há contrastes entre personagens ou situações?\n→ O texto apresenta progressão ou escalada?\n→ Existe uma mudança de direção ou virada?\n→ Há tensão sendo construída — e como ela se resolve?',
+        'Ajude-me a descrever o movimento desta narrativa: clímax, repetições, contrastes, progressão e tensão.'),
+    ],
+  },
+
   // ── Teologia Narrativa ────────────────────────────────────────────────────
   {
     slug: 'nr_teologia',

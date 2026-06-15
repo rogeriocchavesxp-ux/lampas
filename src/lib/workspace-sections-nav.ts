@@ -91,14 +91,22 @@ export const WORKSPACE_SECTIONS_NAV: SectionNav[] = [
         "id": "preparar_conexoes_iniciais",
         "title": "Conexões iniciais"
       },
-      {
-        "id": "preparar_marcacoes",
-        "title": "Marcações e destaques"
-      },
-      {
-        "id": "preparar_modo_imersao",
-        "title": "Modo Imersão"
-      }
+    ]
+  },
+  {
+    "slug": "nr_preparar_visao_geral",
+    "title": "Visão Geral da Narrativa",
+    "shortTitle": "Visão Geral",
+    "phase": "preparar",
+    "module": "inventio",
+    "group": "nr_visao_geral_grp",
+    "groupLabel": "Mapa inicial da narrativa",
+    "order": -37,
+    "cards": [
+      { "id": "nr_vg_tema",         "title": "Tema provável" },
+      { "id": "nr_vg_estrutura",    "title": "Estrutura percebida" },
+      { "id": "nr_vg_personagens",  "title": "Personagens" },
+      { "id": "nr_vg_movimento",    "title": "Movimento do texto" }
     ]
   },
   {
