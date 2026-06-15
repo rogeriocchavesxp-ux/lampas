@@ -1,5 +1,5 @@
 -- =============================================
--- KERYX — Seed: 1000 usuários simulados
+-- LAMPAS — Seed: 1000 usuários simulados
 -- Execute no SQL Editor do Supabase (projeto Keryx)
 -- =============================================
 
