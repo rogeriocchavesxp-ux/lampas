@@ -122,6 +122,13 @@ const GROUP_ACCENT_COLORS: Record<string, string> = {
   ec_argumento_grp:      '#7C3AED',
 }
 
+const GROUP_EMOJI: Record<string, string> = {
+  textual:                '📖',
+  contextual:             '🏛',
+  teologico:              '✝',
+  investigar_visao_geral: '🧠',
+}
+
 const GROUP_ICONS: Record<string, LucideIcon> = {
   // Preparar
   preparar_espiritual:       Heart,
@@ -1264,7 +1271,7 @@ export default function WorkspaceClient({ user, project, initialSections }: Prop
                                     const pct         = isEnhanced && total > 0 ? Math.round((done / total) * 100) : 0
 
                                     return (
-                                      <div key={group.id} style={{ marginBottom: groupOpen ? '0.22rem' : 0, marginTop: isEnhanced && groupIdx > 0 ? '0.35rem' : 0 }}>
+                                      <div key={group.id} style={{ marginBottom: isEnhanced ? '4px' : (groupOpen ? '0.22rem' : 0), marginTop: isEnhanced && groupIdx > 0 ? '16px' : 0 }}>
 
                                         {/* ── Group header ── */}
                                         {(() => {
@@ -1277,33 +1284,33 @@ export default function WorkspaceClient({ user, project, initialSections }: Prop
                                                 width: 'calc(100% - 12px)',
                                                 marginLeft: '6px', marginRight: '6px',
                                                 border: isEnhanced
-                                                  ? (highlight ? `1px solid ${groupColor}45` : `1px solid ${groupColor}1A`)
+                                                  ? (highlight ? `1px solid ${groupColor}55` : `1px solid ${groupColor}22`)
                                                   : (isActive ? `1px solid ${mode.color}28` : '1px solid transparent'),
                                                 borderLeft: isEnhanced
-                                                  ? `3px solid ${highlight ? groupColor : groupColor + '66'}`
+                                                  ? `3px solid ${highlight ? groupColor : groupColor + '55'}`
                                                   : undefined,
                                                 cursor: 'pointer',
                                                 background: isEnhanced
-                                                  ? (highlight ? `${groupColor}0E` : `${groupColor}06`)
+                                                  ? (highlight ? `${groupColor}14` : `${groupColor}08`)
                                                   : (isActive ? mode.bgActive : 'transparent'),
                                                 borderRadius: isEnhanced ? '8px' : '7px',
                                                 textAlign: 'left', fontFamily: 'inherit',
-                                                padding: isEnhanced ? '0.44rem 0.52rem 0.38rem 0.42rem' : '0.34rem 0.52rem',
+                                                padding: isEnhanced ? '0.55rem 0.6rem 0.48rem 0.5rem' : '0.34rem 0.52rem',
                                                 display: 'flex', alignItems: 'center', gap: '0.42rem',
                                                 transition: 'background 0.12s, border-color 0.12s, box-shadow 0.12s',
                                                 boxShadow: isEnhanced
-                                                  ? (highlight ? `0 1px 6px ${groupColor}1C` : 'none')
+                                                  ? (highlight ? `0 2px 8px ${groupColor}28` : 'none')
                                                   : (isActive ? '0 1px 3px rgba(0,0,0,0.06)' : 'none'),
                                               }}
                                               onMouseEnter={e => {
                                                 if (!highlight) {
-                                                  e.currentTarget.style.background = isEnhanced ? `${groupColor}0D` : 'rgba(0,0,0,0.04)'
+                                                  e.currentTarget.style.background = isEnhanced ? `${groupColor}11` : 'rgba(0,0,0,0.04)'
                                                   if (!isEnhanced) e.currentTarget.style.borderColor = 'var(--border)'
                                                 }
                                               }}
                                               onMouseLeave={e => {
                                                 if (!highlight) {
-                                                  e.currentTarget.style.background = isEnhanced ? `${groupColor}06` : 'transparent'
+                                                  e.currentTarget.style.background = isEnhanced ? `${groupColor}08` : 'transparent'
                                                   if (!isEnhanced) e.currentTarget.style.borderColor = 'transparent'
                                                 }
                                               }}
@@ -1322,22 +1329,27 @@ export default function WorkspaceClient({ user, project, initialSections }: Prop
 
                                               <div style={{ flex: 1, minWidth: 0 }}>
                                                 <div style={{
-                                                  fontSize: isEnhanced ? '0.74rem' : '0.73rem',
-                                                  fontWeight: isEnhanced ? 700 : 650,
+                                                  fontSize: isEnhanced ? '0.67rem' : '0.73rem',
+                                                  fontWeight: isEnhanced ? 800 : 650,
                                                   lineHeight: 1.15,
-                                                  color: highlight ? groupColor : 'var(--text-primary)',
+                                                  color: highlight ? groupColor : (isEnhanced ? 'var(--text-secondary)' : 'var(--text-primary)'),
                                                   transition: 'color 0.15s',
                                                   overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
-                                                  letterSpacing: isEnhanced ? '-0.02em' : '-0.01em',
+                                                  letterSpacing: isEnhanced ? '0.08em' : '-0.01em',
+                                                  textTransform: isEnhanced ? 'uppercase' : 'none',
                                                 }}>
                                                   {groupTitle}
                                                 </div>
                                                 {groupSub && (
                                                   <div style={{
-                                                    fontSize: '0.58rem',
-                                                    color: isEnhanced ? `${groupColor}99` : 'var(--text-muted)',
-                                                    marginTop: '0.04rem', lineHeight: 1.15,
+                                                    fontSize: isEnhanced ? '0.64rem' : '0.58rem',
+                                                    color: isEnhanced
+                                                      ? (highlight ? `${groupColor}BB` : 'var(--text-muted)')
+                                                      : 'var(--text-muted)',
+                                                    marginTop: isEnhanced ? '0.18rem' : '0.04rem',
+                                                    lineHeight: 1.2,
                                                     overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+                                                    transition: 'color 0.15s',
                                                   }}>
                                                     {groupSub}
                                                   </div>
@@ -1345,7 +1357,17 @@ export default function WorkspaceClient({ user, project, initialSections }: Prop
                                               </div>
 
                                               {/* Right indicators */}
-                                              {isActive && (
+                                              {isEnhanced && GROUP_EMOJI[group.id] && (
+                                                <span style={{
+                                                  fontSize: '0.9rem', flexShrink: 0,
+                                                  opacity: highlight ? 0.28 : 0.13,
+                                                  transition: 'opacity 0.15s',
+                                                  lineHeight: 1,
+                                                }}>
+                                                  {GROUP_EMOJI[group.id]}
+                                                </span>
+                                              )}
+                                              {isActive && !isEnhanced && (
                                                 <span style={{
                                                   width: '6px', height: '6px', borderRadius: '50%',
                                                   background: mode.color, flexShrink: 0,
