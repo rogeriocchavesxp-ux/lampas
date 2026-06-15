@@ -3577,280 +3577,126 @@ export const WORKSPACE_SECTIONS_NAV: SectionNav[] = [
     ]
   },
   {
-    "slug": "termos_definir",
-    "title": "I. Definir",
-    "shortTitle": "Definir",
+    "slug": "termos_definicao",
+    "title": "Definição",
+    "shortTitle": "Definição",
     "phase": "preparar",
     "module": "inventio",
-    "group": "termos_definir_grp",
-    "groupLabel": "I. Definir",
+    "group": "termos_definicao_grp",
+    "groupLabel": "Definição",
     "order": 1225,
     "cards": [
-      {
-        "id": "termo_principal",
-        "title": "Termo principal"
-      },
-      {
-        "id": "idioma",
-        "title": "Idioma"
-      },
-      {
-        "id": "forma_original",
-        "title": "Forma original"
-      },
-      {
-        "id": "transliteracao",
-        "title": "Transliteração"
-      },
-      {
-        "id": "campo_semantico",
-        "title": "Campo semântico"
-      },
-      {
-        "id": "pergunta_central",
-        "title": "Pergunta central"
-      }
+      { "id": "forma_original",      "title": "Forma Original" },
+      { "id": "campo_semantico",     "title": "Campo Semântico" },
+      { "id": "definicao_biblica",   "title": "Definição Bíblica" },
+      { "id": "definicao_teologica", "title": "Definição Teológica" },
+      { "id": "definicao_inicial",   "title": "Definição Inicial" }
     ]
   },
   {
-    "slug": "termos_analisar",
-    "title": "II. Analisar",
-    "shortTitle": "Analisar",
-    "phase": "interpretar",
+    "slug": "termos_comparacao",
+    "title": "Comparação",
+    "shortTitle": "Comparação",
+    "phase": "preparar",
     "module": "inventio",
-    "group": "termos_analisar_grp",
-    "groupLabel": "II. Analisar",
+    "group": "termos_comparacao_grp",
+    "groupLabel": "Comparação",
     "order": 1226,
     "cards": [
-      {
-        "id": "definicao_lexical",
-        "title": "Definição lexical"
-      },
-      {
-        "id": "contexto_imediato",
-        "title": "Uso no contexto imediato"
-      },
-      {
-        "id": "uso_livro_biblico",
-        "title": "Uso no livro bíblico"
-      },
-      {
-        "id": "uso_antigo_testamento",
-        "title": "Uso no Antigo Testamento"
-      },
-      {
-        "id": "uso_novo_testamento",
-        "title": "Uso no Novo Testamento"
-      },
-      {
-        "id": "termos_relacionados",
-        "title": "Variações e termos relacionados"
-      }
+      { "id": "sinonimos_biblicos",     "title": "Sinônimos Bíblicos" },
+      { "id": "antonimos_biblicos",     "title": "Antônimos Bíblicos" },
+      { "id": "conceitos_relacionados", "title": "Conceitos Relacionados" },
+      { "id": "distincoes",             "title": "Distinções Importantes" }
     ]
   },
   {
-    "slug": "termos_rastrear",
-    "title": "III. Rastrear",
-    "shortTitle": "Rastrear",
-    "phase": "interpretar",
-    "module": "dispositio",
-    "group": "termos_rastrear_grp",
-    "groupLabel": "III. Rastrear",
+    "slug": "termos_relacao",
+    "title": "Relação",
+    "shortTitle": "Relação",
+    "phase": "investigar",
+    "module": "inventio",
+    "group": "termos_relacao_grp",
+    "groupLabel": "Relação",
     "order": 1227,
     "cards": [
-      {
-        "id": "ocorrencias_principais",
-        "title": "Ocorrências principais"
-      },
-      {
-        "id": "desenvolvimento_canonico",
-        "title": "Desenvolvimento canônico"
-      },
-      {
-        "id": "relacao_aliancas",
-        "title": "Relação com alianças"
-      },
-      {
-        "id": "relacao_cristo",
-        "title": "Relação com Cristo"
-      },
-      {
-        "id": "relacao_povo_de_deus",
-        "title": "Relação com o povo de Deus"
-      }
+      { "id": "relacao_deus",      "title": "Relação com Deus" },
+      { "id": "relacao_cristo",    "title": "Relação com Cristo" },
+      { "id": "relacao_espirito",  "title": "Relação com o Espírito Santo" },
+      { "id": "relacao_igreja",    "title": "Relação com a Igreja" },
+      { "id": "relacao_salvacao",  "title": "Relação com a Salvação" },
+      { "id": "relacao_reino",     "title": "Relação com o Reino de Deus" },
+      { "id": "relacao_doutrinas", "title": "Relação com Doutrinas Associadas" }
     ]
   },
   {
-    "slug": "termos_sintetizar",
-    "title": "IV. Sintetizar",
-    "shortTitle": "Sintetizar",
-    "phase": "comunicar",
-    "module": "elocutio",
-    "group": "termos_sintetizar_grp",
-    "groupLabel": "IV. Sintetizar",
+    "slug": "termos_circunstancia",
+    "title": "Circunstância",
+    "shortTitle": "Circunstância",
+    "phase": "investigar",
+    "module": "inventio",
+    "group": "termos_circunstancia_grp",
+    "groupLabel": "Circunstância",
     "order": 1228,
     "cards": [
-      {
-        "id": "sintese_biblico_teologica",
-        "title": "Síntese bíblico-teológica"
-      },
-      {
-        "id": "implicacoes_doutrinarias",
-        "title": "Implicações doutrinárias"
-      },
-      {
-        "id": "implicacoes_pastorais",
-        "title": "Implicações pastorais"
-      },
-      {
-        "id": "erros_comuns",
-        "title": "Erros comuns de interpretação"
-      }
+      { "id": "contexto_historico",     "title": "Contexto Histórico" },
+      { "id": "contexto_cultural",      "title": "Contexto Cultural" },
+      { "id": "contexto_literario",     "title": "Contexto Literário" },
+      { "id": "principais_ocorrencias", "title": "Principais Ocorrências" }
     ]
   },
   {
-    "slug": "termos_produzir",
-    "title": "V. Produzir",
-    "shortTitle": "Produzir",
-    "phase": "comunicar",
-    "module": "pronuntiatio",
-    "group": "termos_produzir_grp",
-    "groupLabel": "V. Produzir",
-    "order": 1229,
-    "cards": [
-      {
-        "id": "verbete_final",
-        "title": "Verbete final"
-      },
-      {
-        "id": "esboco_estudo",
-        "title": "Esboço do estudo"
-      },
-      {
-        "id": "perguntas_discussao",
-        "title": "Perguntas para discussão"
-      },
-      {
-        "id": "aplicacoes",
-        "title": "Aplicações"
-      }
-    ]
-  },
-  {
-    "slug": "termos_ocorrencias",
-    "title": "Ocorrências",
-    "shortTitle": "Ocorrências",
-    "module": "inventio",
-    "group": "termos_ocorrencias_grp",
-    "groupLabel": "Ocorrências",
-    "order": 1230,
-    "cards": [
-      { "id": "total_ocorrencias",  "title": "Total de ocorrências" },
-      { "id": "distribuicao",       "title": "Distribuição por livro" },
-      { "id": "ocorrencias_chave",  "title": "Ocorrências-chave" }
-    ]
-  },
-  {
-    "slug": "termos_lexico",
-    "title": "Léxico",
-    "shortTitle": "Léxico",
-    "module": "inventio",
-    "group": "termos_lexico_grp",
-    "groupLabel": "Léxico",
-    "order": 1231,
-    "cards": [
-      { "id": "definicao_basica",  "title": "Definição básica" },
-      { "id": "etimologia",        "title": "Etimologia" },
-      { "id": "glossos",           "title": "Glossos e equivalentes" },
-      { "id": "uso_linguistico",   "title": "Uso linguístico" }
-    ]
-  },
-  {
-    "slug": "termos_campo_semantico",
-    "title": "Campo Semântico",
-    "shortTitle": "Campo Semântico",
-    "module": "inventio",
-    "group": "termos_campo_semantico_grp",
-    "groupLabel": "Campo Semântico",
-    "order": 1232,
-    "cards": [
-      { "id": "sinonimos",          "title": "Sinônimos" },
-      { "id": "antonimos",          "title": "Antônimos" },
-      { "id": "termos_relacionados","title": "Termos relacionados" },
-      { "id": "familia_lexical",    "title": "Família lexical" }
-    ]
-  },
-  {
-    "slug": "termos_uso_at",
-    "title": "Uso no Antigo Testamento",
-    "shortTitle": "Uso no AT",
-    "module": "inventio",
-    "group": "termos_uso_at_grp",
-    "groupLabel": "Uso no Antigo Testamento",
-    "order": 1233,
-    "cards": [
-      { "id": "uso_pentateuco",  "title": "Pentateuco" },
-      { "id": "uso_historicos",  "title": "Históricos" },
-      { "id": "uso_profetas",    "title": "Profetas" },
-      { "id": "uso_sabedoria",   "title": "Sabedoria" }
-    ]
-  },
-  {
-    "slug": "termos_uso_nt",
-    "title": "Uso no Novo Testamento",
-    "shortTitle": "Uso no NT",
-    "module": "inventio",
-    "group": "termos_uso_nt_grp",
-    "groupLabel": "Uso no Novo Testamento",
-    "order": 1234,
-    "cards": [
-      { "id": "uso_evangelhos",  "title": "Evangelhos" },
-      { "id": "uso_atos",        "title": "Atos" },
-      { "id": "uso_epistolas",   "title": "Epístolas" },
-      { "id": "uso_apocalipse",  "title": "Apocalipse" }
-    ]
-  },
-  {
-    "slug": "termos_desenv_canonico",
+    "slug": "termos_canonico",
     "title": "Desenvolvimento Canônico",
     "shortTitle": "Desenv. Canônico",
+    "phase": "investigar",
     "module": "inventio",
-    "group": "termos_desenv_canonico_grp",
-    "groupLabel": "Desenvolvimento Canônico",
-    "order": 1235,
+    "group": "termos_circunstancia_grp",
+    "groupLabel": "Circunstância",
+    "order": 1229,
     "cards": [
-      { "id": "progressao_at",          "title": "Progressão no AT" },
-      { "id": "transicao_nt",           "title": "Transição para o NT" },
-      { "id": "cumprimento_cristo",     "title": "Cumprimento em Cristo" },
-      { "id": "desenv_epistolar",       "title": "Desenvolvimento epistolar" }
+      { "id": "canon_pentateuco",  "title": "Pentateuco" },
+      { "id": "canon_historicos",  "title": "Livros Históricos" },
+      { "id": "canon_sapienciais", "title": "Livros Sapienciais" },
+      { "id": "canon_profetas",    "title": "Profetas" },
+      { "id": "canon_evangelhos",  "title": "Evangelhos" },
+      { "id": "canon_atos",        "title": "Atos" },
+      { "id": "canon_epistolas",   "title": "Epístolas" },
+      { "id": "canon_apocalipse",  "title": "Apocalipse" }
     ]
   },
   {
-    "slug": "termos_relacao_cristo",
-    "title": "Relação com Cristo",
-    "shortTitle": "Relação com Cristo",
+    "slug": "termos_testemunho",
+    "title": "Testemunho",
+    "shortTitle": "Testemunho",
+    "phase": "investigar",
     "module": "inventio",
-    "group": "termos_relacao_cristo_grp",
-    "groupLabel": "Relação com Cristo",
-    "order": 1236,
+    "group": "termos_testemunho_grp",
+    "groupLabel": "Testemunho",
+    "order": 1230,
     "cards": [
-      { "id": "prefiguracao",       "title": "Prefiguração e tipologia" },
-      { "id": "cumprimento",        "title": "Cumprimento em Cristo" },
-      { "id": "aplicacao",          "title": "Aplicação redentor-histórica" }
+      { "id": "principais_textos",     "title": "Principais Textos" },
+      { "id": "testemunho_at",         "title": "Testemunho do Antigo Testamento" },
+      { "id": "testemunho_nt",         "title": "Testemunho do Novo Testamento" },
+      { "id": "testemunho_cristo",     "title": "Testemunho de Cristo" },
+      { "id": "testemunho_apostolico", "title": "Testemunho Apostólico" },
+      { "id": "sintese_biblica",       "title": "Síntese Bíblica" }
     ]
   },
   {
-    "slug": "termos_implicacoes",
-    "title": "Implicações Teológicas",
-    "shortTitle": "Implicações",
+    "slug": "termos_sintese_def",
+    "title": "Síntese",
+    "shortTitle": "Síntese",
+    "phase": "comunicar",
     "module": "inventio",
-    "group": "termos_implicacoes_grp",
-    "groupLabel": "Implicações Teológicas",
-    "order": 1237,
+    "group": "termos_sintese_def_grp",
+    "groupLabel": "Síntese",
+    "order": 1231,
     "cards": [
-      { "id": "doutrina",              "title": "Doutrina relacionada" },
-      { "id": "aplicacao_pastoral",    "title": "Aplicação pastoral" },
-      { "id": "erros_interpretacao",   "title": "Erros de interpretação comuns" }
+      { "id": "definicao_final",           "title": "Definição Final" },
+      { "id": "grande_ideia",              "title": "Grande Ideia" },
+      { "id": "implicacoes_teologicas",    "title": "Implicações Teológicas" },
+      { "id": "implicacoes_eclesiasticas", "title": "Implicações Eclesiásticas" },
+      { "id": "implicacoes_pastorais",     "title": "Implicações Pastorais" }
     ]
   },
   {
