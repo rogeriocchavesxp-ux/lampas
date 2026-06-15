@@ -3524,7 +3524,7 @@ export const WORKSPACE_SECTIONS_NAV: SectionNav[] = [
     "slug": "termos_relacao",
     "title": "Relação",
     "shortTitle": "Relação",
-    "phase": "interpretar",
+    "phase": "preparar",
     "module": "inventio",
     "group": "termos_relacao_grp",
     "groupLabel": "Relação",
@@ -3543,7 +3543,7 @@ export const WORKSPACE_SECTIONS_NAV: SectionNav[] = [
     "slug": "termos_circunstancia",
     "title": "Circunstância",
     "shortTitle": "Circunstância",
-    "phase": "interpretar",
+    "phase": "preparar",
     "module": "inventio",
     "group": "termos_circunstancia_grp",
     "groupLabel": "Circunstância",
@@ -3556,30 +3556,10 @@ export const WORKSPACE_SECTIONS_NAV: SectionNav[] = [
     ]
   },
   {
-    "slug": "termos_canonico",
-    "title": "Desenvolvimento Canônico",
-    "shortTitle": "Desenv. Canônico",
-    "phase": "interpretar",
-    "module": "inventio",
-    "group": "termos_circunstancia_grp",
-    "groupLabel": "Circunstância",
-    "order": 1229,
-    "cards": [
-      { "id": "canon_pentateuco",  "title": "Pentateuco" },
-      { "id": "canon_historicos",  "title": "Livros Históricos" },
-      { "id": "canon_sapienciais", "title": "Livros Sapienciais" },
-      { "id": "canon_profetas",    "title": "Profetas" },
-      { "id": "canon_evangelhos",  "title": "Evangelhos" },
-      { "id": "canon_atos",        "title": "Atos" },
-      { "id": "canon_epistolas",   "title": "Epístolas" },
-      { "id": "canon_apocalipse",  "title": "Apocalipse" }
-    ]
-  },
-  {
     "slug": "termos_testemunho",
     "title": "Testemunho",
     "shortTitle": "Testemunho",
-    "phase": "interpretar",
+    "phase": "preparar",
     "module": "inventio",
     "group": "termos_testemunho_grp",
     "groupLabel": "Testemunho",
@@ -3594,20 +3574,181 @@ export const WORKSPACE_SECTIONS_NAV: SectionNav[] = [
     ]
   },
   {
+    "slug": "termos_sint_inicial",
+    "title": "Síntese Inicial",
+    "shortTitle": "Síntese Inicial",
+    "phase": "preparar",
+    "module": "inventio",
+    "group": "termos_sint_inicial_grp",
+    "groupLabel": "Síntese Inicial",
+    "order": 1231,
+    "cards": [
+      { "id": "sintese_conceitual",  "title": "Síntese Conceitual" },
+      { "id": "questao_central",     "title": "Questão Central" },
+      { "id": "hipotese_inicial",    "title": "Hipótese Inicial" }
+    ]
+  },
+  {
+    "slug": "termos_uso_biblico",
+    "title": "Uso Bíblico",
+    "shortTitle": "Uso Bíblico",
+    "phase": "interpretar",
+    "module": "inventio",
+    "group": "termos_uso_biblico_grp",
+    "groupLabel": "Uso Bíblico",
+    "order": 1232,
+    "cards": [
+      { "id": "ocorrencias_totais",    "title": "Ocorrências Totais" },
+      { "id": "uso_predominante",      "title": "Uso Predominante" },
+      { "id": "texto_central_biblico", "title": "Texto Central" },
+      { "id": "distribuicao_canonica", "title": "Distribuição Canônica" }
+    ]
+  },
+  {
+    "slug": "termos_canonico",
+    "title": "Desenvolvimento Canônico",
+    "shortTitle": "Desenv. Canônico",
+    "phase": "interpretar",
+    "module": "inventio",
+    "group": "termos_canonico_grp",
+    "groupLabel": "Desenvolvimento Canônico",
+    "order": 1233,
+    "cards": [
+      { "id": "canon_pentateuco",  "title": "Pentateuco" },
+      { "id": "canon_historicos",  "title": "Livros Históricos" },
+      { "id": "canon_sapienciais", "title": "Livros Sapienciais" },
+      { "id": "canon_profetas",    "title": "Profetas" },
+      { "id": "canon_evangelhos",  "title": "Evangelhos" },
+      { "id": "canon_atos",        "title": "Atos" },
+      { "id": "canon_epistolas",   "title": "Epístolas" },
+      { "id": "canon_apocalipse",  "title": "Apocalipse" }
+    ]
+  },
+  {
+    "slug": "termos_uso_pericope",
+    "title": "Uso no Livro / Perícope",
+    "shortTitle": "Uso na Perícope",
+    "phase": "interpretar",
+    "module": "inventio",
+    "group": "termos_uso_pericope_grp",
+    "groupLabel": "Uso no Livro / Perícope",
+    "order": 1234,
+    "cards": [
+      { "id": "uso_no_livro",          "title": "Uso no Livro" },
+      { "id": "uso_na_pericope",       "title": "Uso na Perícope" },
+      { "id": "funcao_no_argumento",   "title": "Função no Argumento" },
+      { "id": "contribuicao_tematica", "title": "Contribuição Temática" }
+    ]
+  },
+  {
+    "slug": "termos_campo_sem",
+    "title": "Campo Semântico",
+    "shortTitle": "Campo Semântico",
+    "phase": "interpretar",
+    "module": "inventio",
+    "group": "termos_campo_sem_grp",
+    "groupLabel": "Campo Semântico",
+    "order": 1235,
+    "cards": [
+      { "id": "nucleo_semantico",   "title": "Núcleo Semântico" },
+      { "id": "periferia_sem",      "title": "Periferia Semântica" },
+      { "id": "evolucao_semantica", "title": "Evolução do Significado" },
+      { "id": "uso_metaforico",     "title": "Uso Metafórico" }
+    ]
+  },
+  {
+    "slug": "termos_rel_teol",
+    "title": "Relações Teológicas",
+    "shortTitle": "Rel. Teológicas",
+    "phase": "interpretar",
+    "module": "inventio",
+    "group": "termos_rel_teol_grp",
+    "groupLabel": "Relações Teológicas",
+    "order": 1236,
+    "cards": [
+      { "id": "rel_alianca",       "title": "Aliança" },
+      { "id": "rel_soteriologia",  "title": "Soteriologia" },
+      { "id": "rel_cristologia",   "title": "Cristologia" },
+      { "id": "rel_escatologia",   "title": "Escatologia" },
+      { "id": "rel_ecclesiologia", "title": "Eclesiologia" }
+    ]
+  },
+  {
+    "slug": "termos_conceitos",
+    "title": "Conceitos Associados",
+    "shortTitle": "Conceitos",
+    "phase": "interpretar",
+    "module": "inventio",
+    "group": "termos_conceitos_grp",
+    "groupLabel": "Conceitos Associados",
+    "order": 1237,
+    "cards": [
+      { "id": "sinonimos_tematicos",  "title": "Sinônimos Temáticos" },
+      { "id": "antonimos_tematicos",  "title": "Antônimos Temáticos" },
+      { "id": "clusters_tematicos",   "title": "Clusters Temáticos" },
+      { "id": "constelacao_lexical",  "title": "Constelação Lexical" }
+    ]
+  },
+  {
+    "slug": "termos_sint_invest",
+    "title": "Síntese Investigativa",
+    "shortTitle": "Síntese Invest.",
+    "phase": "interpretar",
+    "module": "inventio",
+    "group": "termos_sint_invest_grp",
+    "groupLabel": "Síntese Investigativa",
+    "order": 1238,
+    "cards": [
+      { "id": "achados_principais",  "title": "Achados Principais" },
+      { "id": "tese_biblica",        "title": "Tese Bíblica" },
+      { "id": "padrao_global",       "title": "Padrão Global" }
+    ]
+  },
+  {
     "slug": "termos_sintese_def",
-    "title": "Síntese",
-    "shortTitle": "Síntese",
+    "title": "Definição Final",
+    "shortTitle": "Def. Final",
     "phase": "comunicar",
     "module": "inventio",
     "group": "termos_sintese_def_grp",
-    "groupLabel": "Síntese",
-    "order": 1231,
+    "groupLabel": "Definição Final",
+    "order": 1239,
     "cards": [
       { "id": "definicao_final",           "title": "Definição Final" },
       { "id": "grande_ideia",              "title": "Grande Ideia" },
       { "id": "implicacoes_teologicas",    "title": "Implicações Teológicas" },
       { "id": "implicacoes_eclesiasticas", "title": "Implicações Eclesiásticas" },
       { "id": "implicacoes_pastorais",     "title": "Implicações Pastorais" }
+    ]
+  },
+  {
+    "slug": "termos_aplicacoes",
+    "title": "Aplicações",
+    "shortTitle": "Aplicações",
+    "phase": "comunicar",
+    "module": "inventio",
+    "group": "termos_aplicacoes_grp",
+    "groupLabel": "Aplicações",
+    "order": 1240,
+    "cards": [
+      { "id": "aplicacao_vida_crista",  "title": "Vida Cristã" },
+      { "id": "aplicacao_pregacao",     "title": "Pregação e Ensino" },
+      { "id": "aplicacao_pastoral",     "title": "Cuidado Pastoral" },
+      { "id": "aplicacao_missao",       "title": "Missão" }
+    ]
+  },
+  {
+    "slug": "termos_sint_final",
+    "title": "Síntese Final",
+    "shortTitle": "Síntese Final",
+    "phase": "comunicar",
+    "module": "inventio",
+    "group": "termos_sint_final_grp",
+    "groupLabel": "Síntese Final",
+    "order": 1241,
+    "cards": [
+      { "id": "sintese_completa",  "title": "Síntese Completa" },
+      { "id": "produto_final",     "title": "Produto Final" }
     ]
   },
   {

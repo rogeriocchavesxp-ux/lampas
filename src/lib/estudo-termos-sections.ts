@@ -121,7 +121,7 @@ export const ESTUDO_TERMOS_SECTIONS: SectionDef[] = [
     'termos_relacao',
     'Relação',
     'Relação',
-    'interpretar',
+    'preparar',
     'termos_relacao_grp',
     'Relação',
     1227,
@@ -183,7 +183,7 @@ export const ESTUDO_TERMOS_SECTIONS: SectionDef[] = [
     'termos_circunstancia',
     'Circunstância',
     'Circunstância',
-    'interpretar',
+    'preparar',
     'termos_circunstancia_grp',
     'Circunstância',
     1228,
@@ -222,14 +222,14 @@ export const ESTUDO_TERMOS_SECTIONS: SectionDef[] = [
     ]
   ),
 
-  // ── 4b. DESENVOLVIMENTO CANÔNICO (dentro de Circunstância) ──────────────────
+  // ── 4b. DESENVOLVIMENTO CANÔNICO ─────────────────────────────────────────────
   termsSection(
     'termos_canonico',
     'Desenvolvimento Canônico',
     'Desenv. Canônico',
     'interpretar',
-    'termos_circunstancia_grp',
-    'Circunstância',
+    'termos_canonico_grp',
+    'Desenvolvimento Canônico',
     1229,
     'Rastrear a progressão do conceito ao longo da história da revelação — do Pentateuco ao Apocalipse.',
     [
@@ -295,7 +295,7 @@ export const ESTUDO_TERMOS_SECTIONS: SectionDef[] = [
     'termos_testemunho',
     'Testemunho',
     'Testemunho',
-    'interpretar',
+    'preparar',
     'termos_testemunho_grp',
     'Testemunho',
     1230,
@@ -346,15 +346,321 @@ export const ESTUDO_TERMOS_SECTIONS: SectionDef[] = [
     ]
   ),
 
-  // ── 6. SÍNTESE ──────────────────────────────────────────────────────────────
+  // ── 6. SÍNTESE INICIAL ───────────────────────────────────────────────────────
+  termsSection(
+    'termos_sint_inicial',
+    'Síntese Inicial',
+    'Síntese Inicial',
+    'preparar',
+    'termos_sint_inicial_grp',
+    'Síntese Inicial',
+    1231,
+    'Formular uma síntese provisória dos 5 tópicos — uma compreensão inicial do termo antes da investigação bíblica.',
+    [
+      'Qual a melhor definição provisória após os 5 tópicos?',
+      'Qual a questão central que orienta a investigação?',
+      'Qual a hipótese inicial sobre o significado teológico do termo?',
+    ],
+    ['Moisés Silva', 'James Barr', 'Louw & Nida', 'G. K. Beale'],
+    [
+      card(
+        'sintese_conceitual',
+        'Síntese Conceitual',
+        'Com base nos 5 tópicos (Definição, Comparação, Relação, Circunstância, Testemunho), formule uma síntese provisória do que este termo significa.\n\nEsta síntese será refinada após a investigação bíblica.',
+        'Com base nos 5 tópicos da análise conceitual, gere uma síntese provisória do significado deste termo bíblico. Integre os elementos de definição, comparação, relação teológica, circunstância e testemunho em um parágrafo coerente.'
+      ),
+      card(
+        'questao_central',
+        'Questão Central',
+        'Qual a questão mais importante que ainda precisa ser respondida pela investigação bíblica?\n\nEsta questão orientará toda a fase de investigação.',
+        'Com base na análise inicial, identifique a questão central que este estudo de termos deve responder. Que aspecto do significado do termo ainda é incerto ou precisa de confirmação pela investigação bíblica?'
+      ),
+      card(
+        'hipotese_inicial',
+        'Hipótese Inicial',
+        'Qual é sua hipótese inicial sobre o significado teológico pleno deste termo?\n\nEsta hipótese será testada e refinada durante a investigação.',
+        'Formule a hipótese inicial sobre o significado teológico deste termo — o que você espera encontrar na investigação bíblica, com base no que foi analisado até aqui. Seja claro sobre o que precisa ser confirmado ou corrigido.'
+      ),
+    ]
+  ),
+
+  // ── FASE II — INVESTIGAR ─────────────────────────────────────────────────────
+
+  // ── 7. USO BÍBLICO ────────────────────────────────────────────────────────────
+  termsSection(
+    'termos_uso_biblico',
+    'Uso Bíblico',
+    'Uso Bíblico',
+    'interpretar',
+    'termos_uso_biblico_grp',
+    'Uso Bíblico',
+    1232,
+    'Mapear a presença e o uso do termo no conjunto das Escrituras — quantidade, distribuição e padrão de uso.',
+    [
+      'Em quantas passagens este termo aparece na Escritura?',
+      'Em qual contexto ele é usado com mais frequência?',
+      'Qual o texto mais importante para a compreensão do termo?',
+    ],
+    ['BDAG', 'HALOT', 'Louw & Nida', 'Moisés Silva', 'TWOT', 'NIDNTTE'],
+    [
+      card(
+        'ocorrencias_totais',
+        'Ocorrências Totais',
+        'Quantas vezes este termo aparece na Escritura?\n\nListe o número de ocorrências no AT (hebraico/aramaico) e no NT (grego).',
+        'Pesquise o número total de ocorrências deste termo na Escritura. Separe AT e NT, e identifique os livros com maior concentração de uso.'
+      ),
+      card(
+        'uso_predominante',
+        'Uso Predominante',
+        'Em qual gênero literário ou contexto teológico este termo aparece com mais frequência?\n\nPoético, legal, profético, narrativo, epistolar?',
+        'Identifique o uso predominante deste termo nas Escrituras. Em qual contexto literário, teológico ou situacional ele aparece com maior frequência e intensidade?'
+      ),
+      card(
+        'texto_central_biblico',
+        'Texto Central',
+        'Qual o texto bíblico mais importante para a compreensão deste termo?\n\nEste texto deve ser o ponto de referência para toda a investigação.',
+        'Identifique o texto bíblico central para a compreensão deste termo — aquele que melhor revela seu significado pleno, uso intencionado e peso teológico.'
+      ),
+      card(
+        'distribuicao_canonica',
+        'Distribuição Canônica',
+        'Como o uso deste termo está distribuído ao longo do cânon?\n\nEle aparece mais no AT ou no NT? Em determinado período ou autor?',
+        'Analise a distribuição canônica deste termo — como seu uso se distribui entre AT e NT, entre diferentes autores, períodos e gêneros literários. Há concentração em alguma seção do cânon?'
+      ),
+    ]
+  ),
+
+  // ── 8. USO NO LIVRO / PERÍCOPE ───────────────────────────────────────────────
+  termsSection(
+    'termos_uso_pericope',
+    'Uso no Livro / Perícope',
+    'Uso na Perícope',
+    'interpretar',
+    'termos_uso_pericope_grp',
+    'Uso no Livro / Perícope',
+    1234,
+    'Examinar como o termo é usado especificamente no livro e na perícope em estudo.',
+    [
+      'Como o autor do livro usa este termo em seu argumento?',
+      'Qual o papel do termo na perícope específica em estudo?',
+      'O autor usa o termo de forma técnica, poética ou ordinária?',
+    ],
+    ['D. A. Carson', 'Thomas Schreiner', 'Douglas Moo', 'Gordon Fee', 'I. Howard Marshall'],
+    [
+      card(
+        'uso_no_livro',
+        'Uso no Livro',
+        'Como o autor deste livro utiliza este termo? Quantas vezes aparece? Qual o papel no argumento geral?\n\nEle é um termo-chave do livro ou uso incidental?',
+        'Analise como o autor usa este termo no livro em estudo. Identifique todas as ocorrências no livro, o padrão de uso e a função no argumento teológico do autor.'
+      ),
+      card(
+        'uso_na_pericope',
+        'Uso na Perícope',
+        'Como o termo aparece e funciona na perícope específica?\n\nQual o papel gramatical, retórico e teológico do termo nesta unidade literária?',
+        'Examine o uso do termo na perícope em estudo. Qual o papel gramatical do termo? Como ele contribui para a argumentação ou narrativa desta unidade? Que ênfase o autor quer comunicar?'
+      ),
+      card(
+        'funcao_no_argumento',
+        'Função no Argumento',
+        'Como este termo sustenta ou avança o argumento teológico do autor neste contexto?\n\nEle é central para a tese ou elemento de suporte?',
+        'Explique a função deste termo no argumento teológico do autor. Ele é central para a tese da perícope? Serve como fundamento, ilustração, qualificação ou conclusão do argumento?'
+      ),
+      card(
+        'contribuicao_tematica',
+        'Contribuição Temática',
+        'Como o uso do termo neste contexto contribui para o tema geral do livro e da perícope?',
+        'Avalie como o uso deste termo neste contexto contribui para o(s) tema(s) central(is) do livro e da perícope. Que aspecto do tema o termo ilumina ou aprofunda?'
+      ),
+    ]
+  ),
+
+  // ── 9. CAMPO SEMÂNTICO ────────────────────────────────────────────────────────
+  termsSection(
+    'termos_campo_sem',
+    'Campo Semântico',
+    'Campo Semântico',
+    'interpretar',
+    'termos_campo_sem_grp',
+    'Campo Semântico',
+    1235,
+    'Explorar o campo semântico expandido do termo — seus vizinhos lexicais, uso metafórico e evolução semântica.',
+    [
+      'Quais termos compõem o campo semântico mais amplo deste conceito?',
+      'Como o significado do termo evoluiu ao longo da história bíblica?',
+      'O termo é usado metaforicamente? Com que finalidade?',
+    ],
+    ['Moisés Silva', 'James Barr', 'Louw & Nida', 'BDAG', 'HALOT'],
+    [
+      card(
+        'nucleo_semantico',
+        'Núcleo Semântico',
+        'Qual o significado nuclear do termo — o elemento invariável presente em todos os usos?\n\nEste é o sentido mínimo garantido em qualquer contexto.',
+        'Identifique o núcleo semântico deste termo — o elemento de significado que se mantém constante em todas as suas ocorrências bíblicas, independente de contexto ou autor.'
+      ),
+      card(
+        'periferia_sem',
+        'Periferia Semântica',
+        'Quais significados secundários ou periféricos o termo assume em certos contextos?\n\nListe os usos especializados, metafóricos ou menos comuns.',
+        'Mapeie a periferia semântica deste termo — os significados secundários, especializados ou contextuais que ele assume em usos menos frequentes. Como esses usos enriquecem a compreensão do conceito?'
+      ),
+      card(
+        'evolucao_semantica',
+        'Evolução do Significado',
+        'O significado do termo mudou ao longo da revelação?\n\nComo ele é usado no AT em comparação com o NT?',
+        'Analise se houve evolução semântica deste termo ao longo da revelação bíblica. O significado foi aprofundado, ampliado ou reorientado pelo NT em relação ao AT? Há desenvolvimento cristológico no significado?'
+      ),
+      card(
+        'uso_metaforico',
+        'Uso Metafórico',
+        'O termo é usado metaforicamente na Escritura?\n\nQue imagens ou metáforas são associadas a ele? Com que intenção teológica?',
+        'Examine o uso metafórico deste termo na Escritura. Que imagens, metáforas ou figuras de linguagem são associadas a ele? Como o uso metafórico contribui para o significado teológico?'
+      ),
+    ]
+  ),
+
+  // ── 10. RELAÇÕES TEOLÓGICAS ──────────────────────────────────────────────────
+  termsSection(
+    'termos_rel_teol',
+    'Relações Teológicas',
+    'Rel. Teológicas',
+    'interpretar',
+    'termos_rel_teol_grp',
+    'Relações Teológicas',
+    1236,
+    'Investigar como o termo se conecta às grandes doutrinas da teologia bíblica e sistemática.',
+    [
+      'Como este termo está relacionado à teologia da aliança?',
+      'Qual o papel do termo na soteriologia bíblica?',
+      'Como o termo contribui para a cristologia e escatologia?',
+    ],
+    ['Geerhardus Vos', 'Herman Bavinck', 'John Murray', 'Thomas Schreiner', 'D. A. Carson'],
+    [
+      card(
+        'rel_alianca',
+        'Aliança',
+        'Como este termo está inserido na teologia da aliança?\n\nEle pertence à aliança das obras, da graça, abraâmica, mosaica, davídica ou nova aliança?',
+        'Analise a relação deste termo com a teologia da aliança. Em qual(is) aliança(s) ele ocupa papel central? Como a estrutura da aliança ilumina seu significado?'
+      ),
+      card(
+        'rel_soteriologia',
+        'Soteriologia',
+        'Qual o papel deste termo no ensino bíblico sobre a salvação?\n\nEle está relacionado à justificação, santificação, adoção, glorificação?',
+        'Explique a relação deste termo com a soteriologia bíblica. Como ele contribui para a compreensão da salvação? A qual aspecto da aplicação da redenção ele está mais diretamente ligado?'
+      ),
+      card(
+        'rel_cristologia',
+        'Cristologia',
+        'Como este termo aponta para Cristo ou é plenamente compreendido à luz de Cristo?\n\nHá tipologia, promessa ou cumprimento cristológico?',
+        'Examine a relação deste termo com a cristologia. Como Cristo é o cumprimento ou a encarnação deste conceito? Há tipologia, promessa messiânica ou aplicação cristológica direta?'
+      ),
+      card(
+        'rel_escatologia',
+        'Escatologia',
+        'Como este termo se projeta escatologicamente?\n\nEle aponta para a consumação do reino, a nova criação ou o estado final?',
+        'Analise a dimensão escatológica deste termo. Como ele aponta para a esperança futura, a consumação do reino ou o estado final? Há tensão entre "já e ainda não" neste conceito?'
+      ),
+      card(
+        'rel_ecclesiologia',
+        'Eclesiologia',
+        'Como este termo molda a compreensão da Igreja — seu ser, missão, culto e comunhão?',
+        'Examine como este termo contribui para a eclesiologia. O que ele ensina sobre a natureza, missão, culto ou comunhão da Igreja?'
+      ),
+    ]
+  ),
+
+  // ── 11. CONCEITOS ASSOCIADOS ─────────────────────────────────────────────────
+  termsSection(
+    'termos_conceitos',
+    'Conceitos Associados',
+    'Conceitos',
+    'interpretar',
+    'termos_conceitos_grp',
+    'Conceitos Associados',
+    1237,
+    'Mapear os conceitos, termos e clusters temáticos que orbitam este termo e enriquecem sua compreensão.',
+    [
+      'Quais outros termos bíblicos estão intimamente ligados a este?',
+      'Quais conceitos se opõem ou contrastam com este termo?',
+      'Que "constelação lexical" emerge em torno deste conceito?',
+    ],
+    ['Louw & Nida', 'Moisés Silva', 'BDAG', 'NIDNTTE', 'TWOT', 'NIDOTTE'],
+    [
+      card(
+        'sinonimos_tematicos',
+        'Sinônimos Temáticos',
+        'Quais termos bíblicos são mais próximos em significado a este?\n\nComo cada um se distingue por nuance, ênfase ou contexto de uso?',
+        'Liste os sinônimos temáticos mais próximos deste termo nas Escrituras. Como cada um se distingue por nuance, ênfase ou uso contextual? O que eles revelam sobre o campo semântico do conceito?'
+      ),
+      card(
+        'antonimos_tematicos',
+        'Antônimos Temáticos',
+        'Quais termos se opõem ou contrastam diretamente com este conceito nas Escrituras?\n\nO contraste ilumina o significado positivo do termo.',
+        'Identifique os antônimos temáticos — termos que se opõem ou contrastam diretamente com este conceito nas Escrituras. Como esses contrastes iluminam e definem o significado positivo do termo?'
+      ),
+      card(
+        'clusters_tematicos',
+        'Clusters Temáticos',
+        'Quais grupos ou clusters de conceitos aparecem junto a este termo?\n\nHá um campo léxico-temático recorrente associado a ele?',
+        'Identifique os clusters temáticos — grupos de conceitos que frequentemente aparecem junto a este termo nas Escrituras. Que campo léxico-temático recorrente está associado a ele?'
+      ),
+      card(
+        'constelacao_lexical',
+        'Constelação Lexical',
+        'Qual é a "constelação lexical" deste termo — todos os conceitos que orbitam ao seu redor na Escritura?\n\nEsta constelação define o espaço semântico do termo.',
+        'Mapeie a constelação lexical deste termo — o conjunto de conceitos que orbitam ao seu redor e que juntos definem seu espaço semântico na Escritura. Como eles se inter-relacionam?'
+      ),
+    ]
+  ),
+
+  // ── 12. SÍNTESE INVESTIGATIVA ────────────────────────────────────────────────
+  termsSection(
+    'termos_sint_invest',
+    'Síntese Investigativa',
+    'Síntese Invest.',
+    'interpretar',
+    'termos_sint_invest_grp',
+    'Síntese Investigativa',
+    1238,
+    'Consolidar os achados da investigação bíblica em uma tese clara e articulada.',
+    [
+      'Quais são os achados mais importantes da investigação?',
+      'Qual a tese bíblica que emerge deste estudo?',
+      'Como a hipótese inicial foi confirmada, corrigida ou aprofundada?',
+    ],
+    ['D. A. Carson', 'Herman Bavinck', 'Moisés Silva', 'Geerhardus Vos'],
+    [
+      card(
+        'achados_principais',
+        'Achados Principais',
+        'Quais são os 3 a 5 achados mais importantes da investigação bíblica?\n\nListar em ordem de importância teológica.',
+        'Resuma os 3 a 5 achados mais importantes da investigação bíblica sobre este termo. Organize-os em ordem de relevância teológica e explicite como cada um contribui para a compreensão do conceito.'
+      ),
+      card(
+        'tese_biblica',
+        'Tese Bíblica',
+        'Em uma ou duas frases, qual a tese bíblica que emerge desta investigação?\n\nEsta tese deve sintetizar o que a Escritura ensina sobre este termo.',
+        'Formule a tese bíblica que emerge desta investigação — uma ou duas frases que sintetizam o que a Escritura ensina sobre este termo, com base nos achados da investigação bíblica e teológica.'
+      ),
+      card(
+        'padrao_global',
+        'Padrão Global',
+        'Qual o padrão global de uso e significado que emerge de toda a investigação?\n\nComo os diferentes aspectos se integram em uma compreensão coerente?',
+        'Identifique o padrão global de uso e significado que emerge de toda a investigação. Como os diferentes aspectos — semântico, canônico, teológico e contextual — se integram em uma compreensão coerente e unificada?'
+      ),
+    ]
+  ),
+
+  // ── FASE III — PRODUZIR ──────────────────────────────────────────────────────
+
+  // ── 13. DEFINIÇÃO FINAL (herda termos_sintese_def) ───────────────────────────
   termsSection(
     'termos_sintese_def',
-    'Síntese',
-    'Síntese',
+    'Definição Final',
+    'Def. Final',
     'comunicar',
     'termos_sintese_def_grp',
-    'Síntese',
-    1231,
+    'Definição Final',
+    1239,
     'Consolidar todo o estudo — definição refinada, grande ideia e implicações teológicas, eclesiásticas e pastorais.',
     [
       'Qual a definição mais fiel e precisa do termo após toda a investigação?',
@@ -392,6 +698,82 @@ export const ESTUDO_TERMOS_SECTIONS: SectionDef[] = [
         'Implicações Pastorais',
         'Como este conceito se aplica concretamente à pregação, ao ensino, ao aconselhamento e à vida cristã cotidiana?',
         'Aponte as implicações pastorais concretas deste conceito — para pregação, ensino, aconselhamento, discipulado e vida cristã. Como este termo deve mudar o modo como pastores e professores ministram?'
+      ),
+    ]
+  ),
+
+  // ── 14. APLICAÇÕES ────────────────────────────────────────────────────────────
+  termsSection(
+    'termos_aplicacoes',
+    'Aplicações',
+    'Aplicações',
+    'comunicar',
+    'termos_aplicacoes_grp',
+    'Aplicações',
+    1240,
+    'Traduzir o estudo do termo em aplicações concretas para a vida cristã, a pregação, o ensino e a missão.',
+    [
+      'Como este conceito muda a vida cristã cotidiana?',
+      'Como ele deve ser comunicado na pregação e no ensino?',
+      'Quais aplicações missionais emergem deste estudo?',
+    ],
+    ['Tim Keller', 'J. I. Packer', 'Sinclair Ferguson', 'Bryan Chapell'],
+    [
+      card(
+        'aplicacao_vida_crista',
+        'Vida Cristã',
+        'Como este conceito deve mudar a vida cotidiana do cristão?\n\nQue atitudes, hábitos ou convicções são formadas a partir deste estudo?',
+        'Aplique este conceito bíblico à vida cristã cotidiana. Que mudanças concretas de atitude, hábito ou convicção este estudo deve produzir no crente?'
+      ),
+      card(
+        'aplicacao_pregacao',
+        'Pregação e Ensino',
+        'Como comunicar este conceito com clareza e poder na pregação e no ensino?\n\nQue ilustrações, analogias ou conexões tornam o conceito vivo para a congregação?',
+        'Como comunicar este conceito bíblico com clareza e poder na pregação e no ensino? Que abordagens, ilustrações ou conexões tornam este termo vivo e aplicável para a congregação?'
+      ),
+      card(
+        'aplicacao_pastoral',
+        'Cuidado Pastoral',
+        'Como este conceito se aplica ao aconselhamento e ao cuidado pastoral?\n\nEm que situações de vida este termo oferece luz, consolo ou correção?',
+        'Aplique este conceito ao cuidado pastoral e ao aconselhamento. Em que situações pastorais este termo oferece luz, consolo, orientação ou correção bíblica?'
+      ),
+      card(
+        'aplicacao_missao',
+        'Missão',
+        'Como este conceito informa e motiva a missão da Igreja?\n\nO que ele ensina sobre o chamado missionário e a proclamação do evangelho?',
+        'Explique as implicações missionais deste conceito. Como ele informa e motiva a missão da Igreja — a proclamação do evangelho, o discipulado de nações e o engajamento cultural?'
+      ),
+    ]
+  ),
+
+  // ── 15. SÍNTESE FINAL ─────────────────────────────────────────────────────────
+  termsSection(
+    'termos_sint_final',
+    'Síntese Final',
+    'Síntese Final',
+    'comunicar',
+    'termos_sint_final_grp',
+    'Síntese Final',
+    1241,
+    'Redigir a síntese final do estudo — um documento de referência que integra todo o trabalho realizado.',
+    [
+      'Como integrar tudo em um texto coerente e usável?',
+      'Qual o produto final deste estudo?',
+      'Que legado este estudo deixa para pregação e ensino futuros?',
+    ],
+    ['John Murray', 'Herman Bavinck', 'Geerhardus Vos', 'D. A. Carson'],
+    [
+      card(
+        'sintese_completa',
+        'Síntese Completa',
+        'Redija uma síntese completa do estudo — um texto que integra definição, investigação bíblica, relações teológicas e implicações em uma exposição coerente.\n\nEste é o documento de referência para uso futuro.',
+        'Redija a síntese completa deste estudo de termos — um texto integrado que une definição, investigação bíblica, relações teológicas, conceitos associados e implicações em uma exposição coerente e usável para pregação e ensino.'
+      ),
+      card(
+        'produto_final',
+        'Produto Final',
+        'Qual o produto concreto deste estudo?\n\nUm verbete? Uma entrada de dicionário? Um texto de pregação? Uma aula?\n\nDescreva o formato e o uso pretendido.',
+        'Defina o produto final deste estudo de termos — o formato, o público-alvo e o uso pretendido. Como este trabalho será usado na prática ministerial?'
       ),
     ]
   ),

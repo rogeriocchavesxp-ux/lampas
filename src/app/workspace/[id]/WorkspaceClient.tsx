@@ -91,13 +91,25 @@ const GROUP_SUBTITLES: Record<string, string> = {
   et_implicacoes_grp:      'Doutrina, ética e missão',
   et_aplicacoes_grp:       'Vida cristã, eclesial e missional',
   et_sistematica_grp:      'Formulação doutrinária e implicações',
-  // Termos
+  // Termos — Fase I Definir
   termos_definicao_grp:      'Forma original, campo semântico e definição',
   termos_comparacao_grp:     'Sinônimos, antônimos e distinções importantes',
   termos_relacao_grp:        'Deus, Cristo, Espírito, Igreja, Salvação e Reino',
-  termos_circunstancia_grp:  'Contexto histórico, cultural, literário e canônico',
+  termos_circunstancia_grp:  'Contexto histórico, cultural e literário',
   termos_testemunho_grp:     'AT, NT, Cristo e síntese apostólica',
+  termos_sint_inicial_grp:   'Síntese provisória, questão central e hipótese',
+  // Termos — Fase II Investigar
+  termos_uso_biblico_grp:    'Ocorrências, distribuição e texto central',
+  termos_canonico_grp:       'Do Pentateuco ao Apocalipse',
+  termos_uso_pericope_grp:   'Uso no livro, na perícope e no argumento',
+  termos_campo_sem_grp:      'Núcleo, periferia e evolução semântica',
+  termos_rel_teol_grp:       'Aliança, soteriologia, cristologia e escatologia',
+  termos_conceitos_grp:      'Sinônimos, antônimos e constelação lexical',
+  termos_sint_invest_grp:    'Achados principais, tese bíblica e padrão global',
+  // Termos — Fase III Produzir
   termos_sintese_def_grp:    'Definição final, grande ideia e implicações',
+  termos_aplicacoes_grp:     'Vida cristã, pregação, pastoral e missão',
+  termos_sint_final_grp:     'Síntese completa e produto final do estudo',
   // Doutrinário
   doutr_conceito_grp:          'Nome, definição preliminar e pergunta orientadora',
   doutr_fundbiblica_grp:       'Principais textos, AT, NT, Cristo e apóstolos',
@@ -145,6 +157,25 @@ const GROUP_ACCENT_COLORS: Record<string, string> = {
   ec_ocasiao_grp:        '#B45309',
   ec_estrutura_grp:      '#163A6B',
   ec_argumento_grp:      '#7C3AED',
+  // Termos — Fase I
+  termos_definicao_grp:      '#0D9488',
+  termos_comparacao_grp:     '#B45309',
+  termos_relacao_grp:        '#7C3AED',
+  termos_circunstancia_grp:  '#0F766E',
+  termos_testemunho_grp:     '#163A6B',
+  termos_sint_inicial_grp:   '#1E40AF',
+  // Termos — Fase II
+  termos_uso_biblico_grp:    '#B45309',
+  termos_canonico_grp:       '#0F766E',
+  termos_uso_pericope_grp:   '#163A6B',
+  termos_campo_sem_grp:      '#0D9488',
+  termos_rel_teol_grp:       '#7C3AED',
+  termos_conceitos_grp:      '#1E40AF',
+  termos_sint_invest_grp:    '#163A6B',
+  // Termos — Fase III
+  termos_sintese_def_grp:    '#7C3AED',
+  termos_aplicacoes_grp:     '#0D9488',
+  termos_sint_final_grp:     '#1E40AF',
   // Temático
   et_definicao_grp:        '#1E40AF',
   et_ocorrencias_grp:      '#B45309',
@@ -202,6 +233,25 @@ const GROUP_ICONS: Record<string, LucideIcon> = {
   sermao_pronuntiatio:       Megaphone,
   // Produzir — Comentário
   comentario_expositivo:     MessageSquareText,
+  // Termos — Fase I
+  termos_definicao_grp:      Lightbulb,
+  termos_comparacao_grp:     BookOpen,
+  termos_relacao_grp:        Link2,
+  termos_circunstancia_grp:  MapPin,
+  termos_testemunho_grp:     BookMarked,
+  termos_sint_inicial_grp:   Layers,
+  // Termos — Fase II
+  termos_uso_biblico_grp:    BookOpen,
+  termos_canonico_grp:       TrendingUp,
+  termos_uso_pericope_grp:   Crosshair,
+  termos_campo_sem_grp:      Network,
+  termos_rel_teol_grp:       GitBranch,
+  termos_conceitos_grp:      Tag,
+  termos_sint_invest_grp:    GraduationCap,
+  // Termos — Fase III
+  termos_sintese_def_grp:    Sparkles,
+  termos_aplicacoes_grp:     Heart,
+  termos_sint_final_grp:     Landmark,
   // Temático
   et_definicao_grp:        Lightbulb,
   et_ocorrencias_grp:      BookOpen,
