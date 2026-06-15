@@ -96,6 +96,11 @@ export default function WorkspaceMenuBar({
 
   const initial = (userEmail?.[0] ?? '?').toUpperCase()
 
+  // Navega para uma seção do workspace via evento (segue o padrão lampas:open-pilgrim)
+  function sectionNav(slug: string) {
+    return () => window.dispatchEvent(new CustomEvent('lampas:navigate', { detail: slug }))
+  }
+
   const menus: MenuDef[] = [
     {
       id: 'arquivo',
@@ -104,10 +109,10 @@ export default function WorkspaceMenuBar({
         { label: 'Novo Projeto', shortcut: '⌘N', onClick: () => router.push('/dashboard?new=1') },
         { label: 'Meus Projetos', onClick: () => router.push('/dashboard') },
         { label: 'Todos os Projetos', separator: true, onClick: () => router.push('/dashboard') },
-        { label: 'Sermões', onClick: () => router.push('/dashboard') },
-        { label: 'Estudos Exegéticos', onClick: () => router.push('/dashboard') },
+        { label: 'Sermões', onClick: () => router.push('/dashboard?type=sermao') },
+        { label: 'Estudos Exegéticos', onClick: () => router.push('/dashboard?type=exegese_biblica') },
         { label: 'Início', separator: true, onClick: () => router.push('/') },
-        { label: 'Salvar', shortcut: '⌘S', separator: true, disabled: true },
+        { label: 'Salvar', shortcut: '⌘S', separator: true, soon: true },
         { label: 'Exportar PDF', soon: true },
         { label: 'Imprimir', shortcut: '⌘P', onClick: () => window.print() },
       ],
@@ -120,7 +125,7 @@ export default function WorkspaceMenuBar({
         { label: 'Refazer', shortcut: '⌘⇧Z', onClick: () => document.execCommand('redo') },
         { label: 'Cortar', shortcut: '⌘X', separator: true, onClick: () => document.execCommand('cut') },
         { label: 'Copiar', shortcut: '⌘C', onClick: () => document.execCommand('copy') },
-        { label: 'Colar', shortcut: '⌘V', onClick: () => document.execCommand('paste') },
+        { label: 'Colar', shortcut: '⌘V', soon: true },
         { label: 'Selecionar Tudo', shortcut: '⌘A', separator: true, onClick: () => document.execCommand('selectAll') },
       ],
     },
@@ -153,17 +158,17 @@ export default function WorkspaceMenuBar({
       label: 'Ferramentas',
       items: [
         { label: 'Pilgrim', onClick: () => window.dispatchEvent(new CustomEvent('lampas:open-pilgrim')) },
-        { label: 'Dicionário Bíblico', separator: true, soon: true },
+        { label: 'Dicionário Bíblico', separator: true, onClick: sectionNav('ferramentas_dicionario') },
         { label: 'Concordância', soon: true },
-        { label: 'Texto Original', onClick: () => router.push('/knowledge') },
-        { label: 'Referências Cruzadas', onClick: () => router.push('/knowledge') },
+        { label: 'Texto Original', onClick: sectionNav('texto_original') },
+        { label: 'Referências Cruzadas', onClick: sectionNav('ferramentas_refs_cruzadas') },
         { label: 'Calendário', separator: true, onClick: () => router.push('/agenda/calendario') },
         { label: 'Todos os Eventos', onClick: () => router.push('/agenda/eventos') },
         { label: 'Pregações', onClick: () => router.push('/agenda/pregacoes') },
         { label: 'Linha do Tempo', onClick: () => router.push('/agenda/linha-do-tempo') },
-        { label: 'Biblioteca', separator: true, onClick: () => router.push('/knowledge') },
-        { label: 'Sistemática', onClick: () => router.push('/knowledge') },
-        { label: 'Catecismos', onClick: () => router.push('/knowledge') },
+        { label: 'Biblioteca', separator: true, onClick: sectionNav('ferramentas_livros') },
+        { label: 'Sistemática', onClick: sectionNav('ferramentas_sistematica') },
+        { label: 'Catecismos', onClick: sectionNav('ferramentas_confissoes_catecismos') },
         { label: 'Configurações', separator: true, soon: true },
       ],
     },

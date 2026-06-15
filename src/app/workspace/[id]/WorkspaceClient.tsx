@@ -500,6 +500,18 @@ export default function WorkspaceClient({ user, project, initialSections }: Prop
     return () => window.removeEventListener('lampas:open-pilgrim', handler)
   }, [])
 
+  // Navegação interna via evento (disparado pelo WorkspaceMenuBar → Ferramentas)
+  const navigateRef = useRef(navigate)
+  useEffect(() => { navigateRef.current = navigate })
+  useEffect(() => {
+    function handler(e: Event) {
+      const slug = (e as CustomEvent<string>).detail
+      if (slug) navigateRef.current(slug)
+    }
+    window.addEventListener('lampas:navigate', handler)
+    return () => window.removeEventListener('lampas:navigate', handler)
+  }, [])
+
   // Abre painel de checklist via evento global (disparado pelo AIAssistantPanel)
   useEffect(() => {
     function handler() { setChecklistOpen(true) }
