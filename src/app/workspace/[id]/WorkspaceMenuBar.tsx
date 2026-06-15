@@ -10,9 +10,10 @@ interface MenuAction {
   shortcut?: string
   checked?: boolean
   disabled?: boolean
-  separator?: boolean
+  separator?: boolean   // linha horizontal antes deste item
   soon?: boolean
   badge?: string
+  header?: boolean      // título de grupo — não clicável
   onClick?: () => void
 }
 
@@ -94,120 +95,235 @@ export default function WorkspaceMenuBar({
     router.refresh()
   }
 
-  const initial = (userEmail?.[0] ?? '?').toUpperCase()
-
-  // Navega para uma seção do workspace via evento (segue o padrão lampas:open-pilgrim)
+  // Navega para uma seção do workspace via evento (padrão lampas:open-pilgrim)
   function sectionNav(slug: string) {
     return () => window.dispatchEvent(new CustomEvent('lampas:navigate', { detail: slug }))
   }
 
+  const initial = (userEmail?.[0] ?? '?').toUpperCase()
+
   const menus: MenuDef[] = [
+    // ── ARQUIVO ───────────────────────────────────────────────────────────────
     {
       id: 'arquivo',
       label: 'Arquivo',
       items: [
-        { label: 'Novo Projeto', shortcut: '⌘N', onClick: () => router.push('/dashboard?new=1') },
-        { label: 'Meus Projetos', onClick: () => router.push('/dashboard') },
-        { label: 'Todos os Projetos', separator: true, onClick: () => router.push('/dashboard') },
-        { label: 'Sermões', onClick: () => router.push('/dashboard?type=sermao') },
-        { label: 'Estudos Exegéticos', onClick: () => router.push('/dashboard?type=exegese_biblica') },
-        { label: 'Início', separator: true, onClick: () => router.push('/') },
-        { label: 'Salvar', shortcut: '⌘S', separator: true, soon: true },
-        { label: 'Exportar PDF', soon: true },
-        { label: 'Imprimir', shortcut: '⌘P', onClick: () => window.print() },
+        { label: 'Projeto', header: true },
+        { label: 'Novo Projeto',          shortcut: '⌘N', onClick: () => router.push('/dashboard?new=1') },
+        { label: 'Abrir Projeto',                         onClick: () => router.push('/dashboard') },
+        { label: 'Projetos Recentes',     soon: true },
+        { label: 'Meus Projetos',                         onClick: () => router.push('/dashboard') },
+        { label: 'Biblioteca de Projetos',                onClick: () => router.push('/dashboard') },
+        { label: 'Organização', header: true, separator: true },
+        { label: 'Duplicar Projeto',      soon: true },
+        { label: 'Arquivar Projeto',      soon: true },
+        { label: 'Excluir Projeto',       soon: true },
+        { label: 'Visualização', header: true, separator: true },
+        { label: 'Texto Bíblico', shortcut: '⌘B', checked: bibleOpen,   onClick: onToggleBible },
+        { label: 'Modo Lado a Lado',      checked: sideBySide,           onClick: onToggleSideBySide },
+        { label: 'Modo Foco',             shortcut: '⌘.', checked: focusMode, onClick: onToggleFocus },
+        { label: 'Saída', header: true, separator: true },
+        { label: 'Salvar',                shortcut: '⌘S', soon: true },
+        { label: 'Imprimir',              shortcut: '⌘P', onClick: () => window.print() },
+        { label: 'Exportar PDF',          soon: true },
+        { label: 'Exportar DOCX',         soon: true },
+        { label: 'Exportar Slides',       soon: true },
+        { label: 'Navegação', header: true, separator: true },
+        { label: 'Início',                                onClick: () => router.push('/') },
       ],
     },
+
+    // ── BÍBLIA ────────────────────────────────────────────────────────────────
     {
-      id: 'editar',
-      label: 'Editar',
+      id: 'biblia',
+      label: 'Bíblia',
       items: [
-        { label: 'Desfazer', shortcut: '⌘Z', onClick: () => document.execCommand('undo') },
-        { label: 'Refazer', shortcut: '⌘⇧Z', onClick: () => document.execCommand('redo') },
-        { label: 'Cortar', shortcut: '⌘X', separator: true, onClick: () => document.execCommand('cut') },
-        { label: 'Copiar', shortcut: '⌘C', onClick: () => document.execCommand('copy') },
-        { label: 'Colar', shortcut: '⌘V', soon: true },
-        { label: 'Selecionar Tudo', shortcut: '⌘A', separator: true, onClick: () => document.execCommand('selectAll') },
-      ],
-    },
-    {
-      id: 'exibir',
-      label: 'Exibir',
-      items: [
+        { label: 'Texto', header: true },
         { label: 'Texto Bíblico', shortcut: '⌘B', checked: bibleOpen, onClick: onToggleBible },
-        { label: 'Modo Lado a Lado', checked: sideBySide, onClick: onToggleSideBySide },
-        { label: 'Modo Foco', shortcut: '⌘.', checked: focusMode, onClick: onToggleFocus },
-        { label: 'Tema Escuro / Claro', separator: true, soon: true },
-        { label: 'Tamanho da Fonte', soon: true },
+        { label: 'Texto Original',                  onClick: sectionNav('texto_original') },
+        { label: 'Interlinear',     soon: true },
+        { label: 'Traduções',       soon: true },
+        { label: 'Referências', header: true, separator: true },
+        { label: 'Referências Cruzadas',            onClick: sectionNav('ferramentas_refs_cruzadas') },
+        { label: 'Paralelos Bíblicos',  soon: true },
+        { label: 'Uso no Antigo Testamento', soon: true },
+        { label: 'Uso no Novo Testamento',  soon: true },
+        { label: 'Léxico', header: true, separator: true },
+        { label: 'Estudo de Termos',                onClick: sectionNav('termos_chave') },
+        { label: 'Dicionário Bíblico',              onClick: sectionNav('ferramentas_dicionario') },
+        { label: 'Concordância',    soon: true },
       ],
     },
+
+    // ── INVESTIGAR ────────────────────────────────────────────────────────────
     {
-      id: 'inserir',
-      label: 'Inserir',
+      id: 'investigar',
+      label: 'Investigar',
       items: [
-        { label: 'Novo Bloco', soon: true },
-        { label: 'Nova Seção', soon: true },
-        { label: 'Imagem', separator: true, soon: true },
-        { label: 'Link', soon: true },
-        { label: 'Citação', soon: true },
-        { label: 'Referência Bíblica', soon: true },
-        { label: 'Tabela', soon: true },
+        { label: 'Contexto', header: true },
+        { label: 'Histórico',             soon: true },
+        { label: 'Cultural',              soon: true },
+        { label: 'Geográfico',            soon: true },
+        { label: 'Arqueológico',          soon: true },
+        { label: 'Literatura', header: true, separator: true },
+        { label: 'Estrutura',                       onClick: sectionNav('estrutura_literaria') },
+        { label: 'Fluxo Argumentativo',   soon: true },
+        { label: 'Gênero Literário',      soon: true },
+        { label: 'Subgênero Literário',   soon: true },
+        { label: 'Teologia', header: true, separator: true },
+        { label: 'Teologia Bíblica',      soon: true },
+        { label: 'História da Redenção',  soon: true },
+        { label: 'Cristo na Passagem',    soon: true },
+        { label: 'Alianças',              soon: true },
+        { label: 'Temas Teológicos',      soon: true },
+        { label: 'Recursos', header: true, separator: true },
+        { label: 'Pilgrim',                         onClick: () => window.dispatchEvent(new CustomEvent('lampas:open-pilgrim')) },
+        { label: 'Mapas Bíblicos',        soon: true },
+        { label: 'Linha do Tempo',                  onClick: () => router.push('/agenda/linha-do-tempo') },
+        { label: 'Personagens',           soon: true },
+        { label: 'Eventos',               soon: true },
+        { label: 'Lugares',               soon: true },
       ],
     },
+
+    // ── PRODUZIR ──────────────────────────────────────────────────────────────
     {
-      id: 'ferramentas',
-      label: 'Ferramentas',
+      id: 'produzir',
+      label: 'Produzir',
       items: [
-        { label: 'Pilgrim', onClick: () => window.dispatchEvent(new CustomEvent('lampas:open-pilgrim')) },
-        { label: 'Dicionário Bíblico', separator: true, onClick: sectionNav('ferramentas_dicionario') },
-        { label: 'Concordância', soon: true },
-        { label: 'Texto Original', onClick: sectionNav('texto_original') },
-        { label: 'Referências Cruzadas', onClick: sectionNav('ferramentas_refs_cruzadas') },
-        { label: 'Calendário', separator: true, onClick: () => router.push('/agenda/calendario') },
-        { label: 'Todos os Eventos', onClick: () => router.push('/agenda/eventos') },
-        { label: 'Pregações', onClick: () => router.push('/agenda/pregacoes') },
-        { label: 'Linha do Tempo', onClick: () => router.push('/agenda/linha-do-tempo') },
-        { label: 'Biblioteca', separator: true, onClick: sectionNav('ferramentas_livros') },
-        { label: 'Sistemática', onClick: sectionNav('ferramentas_sistematica') },
-        { label: 'Catecismos', onClick: sectionNav('ferramentas_confissoes_catecismos') },
-        { label: 'Configurações', separator: true, soon: true },
+        { label: 'Produções', header: true },
+        { label: 'Sermão',                          onClick: sectionNav('pregar_visao_geral') },
+        { label: 'Estudo Bíblico',                  onClick: sectionNav('pregar_visao_geral') },
+        { label: 'Devocional',                      onClick: sectionNav('pregar_visao_geral') },
+        { label: 'Aula',                  soon: true },
+        { label: 'Curso',                 soon: true },
+        { label: 'Artigo',                soon: true },
+        { label: 'Componentes', header: true, separator: true },
+        { label: 'Introdução',            soon: true },
+        { label: 'Desenvolvimento',       soon: true },
+        { label: 'Ilustração',            soon: true },
+        { label: 'Aplicação',             soon: true },
+        { label: 'Conclusão',             soon: true },
+        { label: 'Revisão', header: true, separator: true },
+        { label: 'Checklist Homilético',  checked: checklistOpen, onClick: onToggleChecklist },
+        { label: 'Avaliar Sermão',        soon: true },
+        { label: 'Revisão Teológica',     soon: true },
+        { label: 'Revisão Exegética',     soon: true },
       ],
     },
+
+    // ── BIBLIOTECA ────────────────────────────────────────────────────────────
+    {
+      id: 'biblioteca',
+      label: 'Biblioteca',
+      items: [
+        { label: 'Teologia', header: true },
+        { label: 'Teologia Sistemática',            onClick: sectionNav('ferramentas_sistematica') },
+        { label: 'Teologia Bíblica',      soon: true },
+        { label: 'Teologia Histórica',    soon: true },
+        { label: 'Documentos', header: true, separator: true },
+        { label: 'Confissões de Fé',                onClick: sectionNav('ferramentas_confissoes_catecismos') },
+        { label: 'Catecismos',                      onClick: sectionNav('ferramentas_confissoes_catecismos') },
+        { label: 'Credos',                soon: true },
+        { label: 'Conteúdo', header: true, separator: true },
+        { label: 'Livros',                          onClick: sectionNav('ferramentas_livros') },
+        { label: 'Artigos',               soon: true },
+        { label: 'Cursos',                soon: true },
+        { label: 'Colagens',                        onClick: sectionNav('colagens') },
+        { label: 'Recursos', header: true, separator: true },
+        { label: 'Base de Conhecimento',            onClick: () => router.push('/knowledge') },
+        { label: 'Conteúdos Compartilhados', soon: true },
+      ],
+    },
+
+    // ── AGENDA ────────────────────────────────────────────────────────────────
+    {
+      id: 'agenda',
+      label: 'Agenda',
+      items: [
+        { label: 'Eventos', header: true },
+        { label: 'Calendário',                      onClick: () => router.push('/agenda/calendario') },
+        { label: 'Todos os Eventos',                onClick: () => router.push('/agenda/eventos') },
+        { label: 'Pregações',                       onClick: () => router.push('/agenda/pregacoes') },
+        { label: 'Cursos',                soon: true },
+        { label: 'Atendimentos',                    onClick: () => router.push('/agenda/atendimentos') },
+        { label: 'Convites', header: true, separator: true },
+        { label: 'Convites Recebidos',    soon: true },
+        { label: 'Formulário de Convite', soon: true },
+        { label: 'Planejamento', header: true, separator: true },
+        { label: 'Agenda Ministerial',    soon: true },
+        { label: 'Cronograma',            soon: true },
+      ],
+    },
+
+    // ── IA ────────────────────────────────────────────────────────────────────
     {
       id: 'ia',
       label: 'IA',
       items: [
+        { label: 'Assistente', header: true },
         { label: 'Abrir Assistente', shortcut: '⌘I', checked: aiOpen, onClick: onToggleAI },
+        { label: 'Exegese', header: true, separator: true },
+        { label: 'Analisar Passagem',     soon: true },
+        { label: 'Resumo Exegético',      soon: true },
+        { label: 'Estudo de Termos',      soon: true },
+        { label: 'Referências Inteligentes', soon: true },
+        { label: 'Produção', header: true, separator: true },
+        { label: 'Sugestões de Sermão',   soon: true },
+        { label: 'Gerar Aplicações',      soon: true },
+        { label: 'Gerar Ilustrações',     soon: true },
+        { label: 'Gerar Slides',          soon: true },
+        { label: 'Revisão', header: true, separator: true },
+        { label: 'Avaliar Fidelidade Bíblica', soon: true },
+        { label: 'Avaliar Clareza',       soon: true },
+        { label: 'Avaliar Estrutura',     soon: true },
         { label: 'Checklist de Melhorias', checked: checklistOpen, onClick: onToggleChecklist },
-        { label: 'Analisar Passagem', separator: true, soon: true },
-        { label: 'Gerar Comentário', soon: true },
-        { label: 'Sugestões de Sermão', soon: true },
-        { label: 'Resumo Exegético', soon: true },
-        { label: 'Configurar Modelo', separator: true, soon: true },
+        { label: 'Configurações', header: true, separator: true },
+        { label: 'Configurar Modelo',     soon: true },
+        { label: 'Preferências da IA',    soon: true },
       ],
     },
+
+    // ── PUBLICAR ──────────────────────────────────────────────────────────────
     {
       id: 'publicar',
       label: 'Publicar',
       items: [
-        { label: 'Enviar para Sermão', onClick: onEnviarSermao },
-        { label: 'Enviar para Devocional', onClick: onEnviarDevocional },
-        { label: 'Enviar para Base de Conhecimento', onClick: onEnviarKB },
-        { label: 'Meus Conteúdos', separator: true, soon: true },
-        { label: 'Sermões Publicados', soon: true },
-        { label: 'Exportar PDF', separator: true, soon: true },
-        { label: 'Slides', soon: true },
-        { label: 'Compartilhar Link', separator: true, soon: true },
+        { label: 'Compartilhar', header: true },
+        { label: 'Gerar Link Compartilhável', soon: true },
+        { label: 'Tornar Público',         soon: true },
+        { label: 'Publicação', header: true, separator: true },
+        { label: 'Enviar para Sermão',                    onClick: onEnviarSermao },
+        { label: 'Enviar para Devocional',                onClick: onEnviarDevocional },
+        { label: 'Enviar para Base de Conhecimento',      onClick: onEnviarKB },
+        { label: 'Publicar no Lampas',     soon: true },
+        { label: 'Publicar no Primeira Escola', soon: true },
+        { label: 'Exportação', header: true, separator: true },
+        { label: 'PDF',                    soon: true },
+        { label: 'Slides',                 soon: true },
+        { label: 'Impressão',                             onClick: () => window.print() },
+        { label: 'Histórico', header: true, separator: true },
+        { label: 'Publicações Realizadas', soon: true },
+        { label: 'Agendamentos',           soon: true },
       ],
     },
+
+    // ── AJUDA ─────────────────────────────────────────────────────────────────
     {
       id: 'ajuda',
       label: 'Ajuda',
       items: [
-        { label: 'Documentação', soon: true },
-        { label: 'Atalhos de Teclado', soon: true },
-        { label: 'Tour Guiado', soon: true },
-        { label: 'Sobre o Lampas', separator: true, soon: true },
-        { label: 'Enviar Feedback', soon: true },
+        { label: 'Aprender', header: true },
+        { label: 'Documentação',          soon: true },
+        { label: 'Tour Guiado',           soon: true },
+        { label: 'Atalhos de Teclado',    soon: true },
+        { label: 'Suporte', header: true, separator: true },
+        { label: 'Enviar Feedback',       soon: true },
+        { label: 'Suporte Técnico',       soon: true },
+        { label: 'Institucional', header: true, separator: true },
+        { label: 'Sobre o Lampas',        soon: true },
+        { label: 'Novidades',             soon: true },
+        { label: 'Changelog',             soon: true },
       ],
     },
   ]
@@ -221,7 +337,7 @@ export default function WorkspaceMenuBar({
   }
 
   function handleItemClick(item: MenuAction) {
-    if (item.disabled || item.soon) return
+    if (item.disabled || item.soon || item.header) return
     item.onClick?.()
     setOpenMenu(null)
   }
@@ -329,7 +445,7 @@ export default function WorkspaceMenuBar({
         </button>
 
         {/* Perfil do Usuário */}
-        <div ref={openMenu === 'user' ? undefined : undefined} style={{ position: 'relative' }}>
+        <div style={{ position: 'relative' }}>
           <button
             onClick={() => setOpenMenu(p => p === 'user' ? null : 'user')}
             style={{
@@ -419,7 +535,8 @@ function MenuDropdown({ items, onItemClick }: { items: MenuAction[]; onItemClick
       background: 'var(--surface)', border: '1px solid var(--border)',
       borderRadius: '8px',
       boxShadow: '0 8px 32px rgba(0,0,0,0.11), 0 2px 8px rgba(0,0,0,0.06)',
-      minWidth: '215px', zIndex: 600, padding: '0.3rem 0',
+      minWidth: '240px', zIndex: 600, padding: '0.3rem 0',
+      maxHeight: '80vh', overflowY: 'auto',
     }}>
       {items.map((item, i) => (
         <div key={i}>
@@ -434,6 +551,21 @@ function MenuDropdown({ items, onItemClick }: { items: MenuAction[]; onItemClick
 }
 
 function DropdownItem({ item, onClick }: { item: MenuAction; onClick: () => void }) {
+  // Cabeçalho de grupo — não clicável
+  if (item.header) {
+    return (
+      <div style={{
+        padding: '0.42rem 0.85rem 0.14rem',
+        fontSize: '0.6rem', fontWeight: 700,
+        color: 'var(--text-muted)',
+        letterSpacing: '0.07em', textTransform: 'uppercase',
+        pointerEvents: 'none', userSelect: 'none',
+      }}>
+        {item.label}
+      </div>
+    )
+  }
+
   const inactive = !!(item.disabled || item.soon)
   return (
     <button
