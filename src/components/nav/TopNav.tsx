@@ -57,11 +57,14 @@ const NAV: NavItem[] = [
   {
     id: 'ferramentas', label: 'Ferramentas',
     items: [
-      { label: 'Texto Original',       href: '/knowledge' },
+      { label: 'Texto Original',        href: '/knowledge' },
       { label: 'Dicionário Lampas',    href: '/knowledge' },
       { label: 'Biblioteca',           href: '/knowledge' },
       { label: 'Referências Cruzadas', href: '/knowledge' },
       { label: 'Colagens',             href: '/knowledge' },
+      { sep: true, label: 'Introdução Bíblica' },
+      { label: 'Introdução ao AT',     href: '/knowledge' },
+      { label: 'Introdução ao NT',     href: '/knowledge' },
       { sep: true, label: 'Teologia' },
       { label: 'Sistemática',          href: '/knowledge' },
       { label: 'Bíblica',              href: '/knowledge' },
