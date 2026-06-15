@@ -228,4 +228,230 @@ export const ESTUDO_TEMATICO_SECTIONS: SectionDef[] = [
       },
     ],
   },
+
+  // ── Seções do novo schema (Phase II — Investigar) ────────────────────────
+
+  {
+    slug: 'et_ocorrencias',
+    title: 'Ocorrências Bíblicas',
+    shortTitle: 'Ocorrências',
+    module: 'inventio',
+    group: 'et_ocorrencias_grp',
+    groupLabel: 'Ocorrências Bíblicas',
+    order: 506,
+    objective:
+      'Mapear as ocorrências do tema em todo o cânone, identificando sua distribuição nos Testamentos e as passagens centrais para a investigação.',
+    keyQuestions: [
+      'Em quantos livros e com que frequência o tema aparece no AT?',
+      'Quais passagens do NT são decisivas para compreender o tema?',
+      'Quais são os loci classici — textos que mais concentram o ensino sobre este tema?',
+      'Há distribuição desigual que revele ênfase em algum período ou gênero literário?',
+    ],
+    relevantAuthors: ['Geerhardus Vos', 'Walter Kaiser', 'Thomas Schreiner', 'D.A. Carson', 'Graeme Goldsworthy'],
+    cards: [
+      {
+        id: 'ocorrencias_at',
+        title: 'Ocorrências no AT',
+        placeholder: 'Liste as ocorrências principais do tema no Antigo Testamento, organizadas por livro ou período. Quais textos são mais relevantes?',
+        aiTrigger: 'Liste as principais ocorrências deste tema no Antigo Testamento, organizando por livro ou período histórico-canônico. Destaque os textos mais relevantes para a compreensão do tema.',
+      },
+      {
+        id: 'ocorrencias_nt',
+        title: 'Ocorrências no NT',
+        placeholder: 'Liste as ocorrências principais do tema no Novo Testamento. Como o NT desenvolve e cumpre o ensino do AT sobre este tema?',
+        aiTrigger: 'Liste as principais ocorrências deste tema no Novo Testamento, por autor e livro. Como o NT assume, transforma e cumpre o desenvolvimento veterotestamentário do tema?',
+      },
+      {
+        id: 'passagens_centrais',
+        title: 'Passagens centrais',
+        placeholder: 'Identifique os textos que mais concentram o ensino sobre o tema — os loci classici que qualquer investigação séria deve abordar.',
+        aiTrigger: 'Identifique os loci classici — as 5 a 8 passagens bíblicas que mais concentram o ensino sobre este tema e que são incontornáveis para qualquer investigação séria. Justifique cada escolha.',
+      },
+      {
+        id: 'frequencia',
+        title: 'Frequência e distribuição',
+        placeholder: 'Analise a distribuição do tema: está concentrado em algum período, gênero literário ou autor bíblico? O que isso revela sobre a progressão da revelação?',
+        aiTrigger: 'Analise a frequência e distribuição deste tema ao longo do cânone: está concentrado em algum período, livro, gênero ou autor? O que essa distribuição revela sobre a progressão da revelação divina?',
+      },
+    ],
+  },
+
+  {
+    slug: 'et_desenvolvimento',
+    title: 'Desenvolvimento Progressivo',
+    shortTitle: 'Desenvolvimento',
+    module: 'inventio',
+    group: 'et_desenvolvimento_grp',
+    groupLabel: 'Desenvolvimento Progressivo',
+    order: 507,
+    objective:
+      'Rastrear o desenvolvimento do tema ao longo do cânone, do Pentateuco ao Apocalipse, identificando a progressão da revelação em cada período.',
+    keyQuestions: [
+      'Como o tema emerge no Pentateuco e na narrativa criação-queda-redenção?',
+      'Qual é a contribuição dos livros históricos e proféticos?',
+      'Como os Evangelhos apresentam Cristo como cumprimento do tema?',
+      'Como as epístolas desenvolvem e aplicam o tema na Igreja?',
+      'Qual o horizonte escatológico do tema no Apocalipse?',
+    ],
+    relevantAuthors: ['Geerhardus Vos', 'Bruce Waltke', 'Christopher Wright', 'Herman Ridderbos', 'G.K. Beale'],
+    cards: [
+      {
+        id: 'pentateuco',
+        title: 'Pentateuco e fundação',
+        placeholder: 'Como o tema aparece no Pentateuco? Quais eventos e textos de Gênesis ao Deuteronômio são determinantes para o seu desenvolvimento?',
+        aiTrigger: 'Rastreie o desenvolvimento deste tema no Pentateuco: de Gênesis ao Deuteronômio. Quais passagens são decisivas? Como o tema se conecta à criação, queda, alianças e Lei mosaica?',
+      },
+      {
+        id: 'historicos_profetas',
+        title: 'Históricos e Profetas',
+        placeholder: 'Como o tema se desenvolve nos livros históricos (Josué ao Ester) e nos Profetas Maiores e Menores?',
+        aiTrigger: 'Rastreie o desenvolvimento deste tema nos livros históricos (Josué ao Ester) e nos Profetas Maiores (Isaías, Jeremias, Ezequiel) e Menores. Como os profetas projetam o tema escatologicamente?',
+      },
+      {
+        id: 'sabedoria',
+        title: 'Sabedoria e poesia',
+        placeholder: 'Qual é a contribuição da literatura sapiencial e poética (Salmos, Provérbios, Jó, Eclesiastes) para o tema?',
+        aiTrigger: 'Qual é a contribuição da literatura sapiencial e poética (Salmos, Provérbios, Jó, Eclesiastes, Cantares) para o desenvolvimento deste tema? Como esses livros enriquecem a compreensão?',
+      },
+      {
+        id: 'evangelhos',
+        title: 'Evangelhos',
+        placeholder: 'Como os Evangelhos apresentam Jesus como cumprimento ou desenvolvimento do tema? Quais ensinamentos, parábolas ou eventos são decisivos?',
+        aiTrigger: 'Como os quatro Evangelhos desenvolvem este tema? Como Jesus cumpre, redefine ou aprofunda o ensino do AT sobre este tema? Quais pericopes são determinantes?',
+      },
+      {
+        id: 'epistolas',
+        title: 'Epístolas apostólicas',
+        placeholder: 'Como as cartas paulinas, Pedro, João, Tiago, Judas e Hebreus desenvolvem o tema para a Igreja?',
+        aiTrigger: 'Analise o desenvolvimento deste tema na teologia paulina, em Hebreus e nas epístolas gerais. Quais passagens são loci classici? Use Ridderbos para Paulo e Schreiner para Hebreus.',
+      },
+      {
+        id: 'cumprimento',
+        title: 'Cumprimento escatológico',
+        placeholder: 'Como o Apocalipse e a escatologia neotestamentária representam o horizonte final e o cumprimento pleno do tema?',
+        aiTrigger: 'Como o Apocalipse representa o cumprimento final e consumação deste tema? Use Beale para Apocalipse. Como o tema aponta para a nova criação, o reino consumado e a nova Jerusalém?',
+      },
+    ],
+  },
+
+  {
+    slug: 'et_teologia_biblica',
+    title: 'Teologia Bíblica do Tema',
+    shortTitle: 'Teologia Bíblica',
+    module: 'inventio',
+    group: 'et_teologia_biblica_grp',
+    groupLabel: 'Teologia Bíblica do Tema',
+    order: 508,
+    objective:
+      'Sintetizar o fio condutor do tema ao longo de toda a Escritura, identificando a progressão da revelação, o centro cristológico e a unidade dos dois Testamentos.',
+    keyQuestions: [
+      'Qual é o fio condutor que perpassa o tema do Gênesis ao Apocalipse?',
+      'Como a revelação progressiva aprofunda a compreensão do tema?',
+      'Como Cristo é o centro e cumprimento do tema?',
+      'Como AT e NT se iluminam mutuamente neste tema?',
+    ],
+    relevantAuthors: ['Geerhardus Vos', 'Graeme Goldsworthy', 'Edmund Clowney', 'G.K. Beale', 'Brian Rosner'],
+    cards: [
+      {
+        id: 'fio_condutor',
+        title: 'Fio condutor canônico',
+        placeholder: 'Qual é o fio narrativo e teológico que une as ocorrências do tema ao longo de todo o cânone? Como ele se mantém coerente da criação à consumação?',
+        aiTrigger: 'Identifique o fio condutor canônico deste tema: a linha narrativa e teológica que o une do Gênesis ao Apocalipse. Use a metodologia de Vos e Goldsworthy para a teologia bíblica.',
+      },
+      {
+        id: 'progressao_revelacao',
+        title: 'Progressão da revelação',
+        placeholder: 'Como a revelação progressiva de Deus aprofunda, clarifica e expande a compreensão do tema ao longo dos séculos?',
+        aiTrigger: 'Mostre como a revelação progressiva aprofunda e expande a compreensão deste tema. Como cada etapa da revelação (patriarcal, mosaica, profética, apostólica) enriquece o ensino sobre o tema?',
+      },
+      {
+        id: 'centro_cristologico',
+        title: 'Centro cristológico',
+        placeholder: 'Como Jesus Cristo é o centro e cumprimento do tema? Em que dimensões de sua pessoa e obra o tema encontra seu ápice?',
+        aiTrigger: 'Demonstre como Jesus Cristo é o centro e cumprimento deste tema bíblico. Analise cada dimensão: encarnação, ministério, paixão, ressurreição e parousia. Use Clowney ou Goldsworthy.',
+      },
+      {
+        id: 'unidade_testamentos',
+        title: 'Unidade dos Testamentos',
+        placeholder: 'Como AT e NT formam uma unidade no tratamento deste tema? Como o NT ilumina o AT e como o AT prepara o NT?',
+        aiTrigger: 'Demonstre a unidade canônica entre AT e NT no tratamento deste tema: como o NT ilumina o AT e o AT prepara o NT. Evite tanto o supressivismo quanto a divisão rígida entre os Testamentos.',
+      },
+    ],
+  },
+
+  {
+    slug: 'et_relacao_cristo',
+    title: 'Relação com Cristo',
+    shortTitle: 'Relação com Cristo',
+    module: 'inventio',
+    group: 'et_relacao_cristo_grp',
+    groupLabel: 'Relação com Cristo',
+    order: 509,
+    objective:
+      'Analisar como o tema se relaciona com Cristo por meio de tipologia, prefigurações e cumprimento redentor-histórico, situando-o na história da redenção.',
+    keyQuestions: [
+      'Quais tipos ou prefigurações veterotestamentárias apontam para Cristo?',
+      'Como Cristo cumpre, realiza ou supera o tema em sua pessoa e obra?',
+      'Qual a aplicação redentor-histórica do tema para a Igreja hoje?',
+    ],
+    relevantAuthors: ['Edmund Clowney', 'Bryan Chapell', 'Sidney Greidanus', 'Graeme Goldsworthy', 'G.K. Beale'],
+    cards: [
+      {
+        id: 'tipologia',
+        title: 'Tipologia e prefigurações',
+        placeholder: 'Quais tipos, sombras e prefigurações veterotestamentárias apontam para Cristo no desenvolvimento deste tema? Como funcionam como antecipações?',
+        aiTrigger: 'Identifique os tipos e prefigurações veterotestamentárias relacionados a este tema. Como funcionam como sombras que apontam para Cristo? Use Beale ou Clowney para fundamentar a tipologia.',
+      },
+      {
+        id: 'cumprimento_cristologico',
+        title: 'Cumprimento em Cristo',
+        placeholder: 'Como Jesus Cristo cumpre este tema em sua pessoa (encarnação), obra (vida, morte, ressurreição) e reinado (glorificação e parousia)?',
+        aiTrigger: 'Demonstre como Jesus cumpre este tema em cada dimensão de sua pessoa e obra: encarnação, ministério público, paixão e morte, ressurreição, ascensão e parousia. Cite Ridderbos ou Carson.',
+      },
+      {
+        id: 'aplicacao_redentor',
+        title: 'Aplicação redentor-histórica',
+        placeholder: 'Como o cumprimento do tema em Cristo se aplica à Igreja — o povo do novo pacto que vive entre a primeira e a segunda vinda?',
+        aiTrigger: 'Como o cumprimento deste tema em Cristo se aplica à Igreja na era do Espírito Santo, entre as duas vindas? Quais implicações para a vida da comunidade cristã em seu contexto histórico?',
+      },
+    ],
+  },
+
+  {
+    slug: 'et_implicacoes',
+    title: 'Implicações Teológicas',
+    shortTitle: 'Implicações',
+    module: 'inventio',
+    group: 'et_implicacoes_grp',
+    groupLabel: 'Implicações Teológicas',
+    order: 510,
+    objective:
+      'Derivar as principais implicações doutrinárias, éticas e missionais do tema para a reflexão teológica e a prática cristã.',
+    keyQuestions: [
+      'Quais doutrinas sistemáticas são iluminadas ou fundamentadas por este tema?',
+      'Que imperativas éticas nascem do indicativo teológico do tema?',
+      'Como o tema informa a missão da Igreja no mundo?',
+    ],
+    relevantAuthors: ['Herman Bavinck', 'John Frame', 'Christopher Wright', 'Michael Horton', 'Wayne Grudem'],
+    cards: [
+      {
+        id: 'doutrina_relacionada',
+        title: 'Doutrina relacionada',
+        placeholder: 'Quais doutrinas da teologia sistemática são iluminadas, fundamentadas ou implicadas por este tema bíblico?',
+        aiTrigger: 'Identifique as doutrinas sistemáticas que são iluminadas ou fundamentadas por este tema bíblico. Em qual lócus da teologia ele se encaixa? Use Bavinck ou Berkhof para articulação sistemática.',
+      },
+      {
+        id: 'etica_crista',
+        title: 'Ética cristã',
+        placeholder: 'Que imperativos éticos nascem do indicativo teológico deste tema? Como a verdade revelada neste tema transforma a conduta cristã?',
+        aiTrigger: 'Quais imperativos éticos derivam do indicativo teológico deste tema? Como a verdade bíblica sobre ele transforma a conduta cristã pessoal, familiar, eclesial e social?',
+      },
+      {
+        id: 'missao',
+        title: 'Missão e evangelismo',
+        placeholder: 'Como este tema fundamenta, motiva ou orienta a missão da Igreja no mundo — o evangelismo, o discipulado e a expansão do reino?',
+        aiTrigger: 'Como este tema bíblico fundamenta e motiva a missão da Igreja? Que implicações para o evangelismo, o discipulado, a missão cross-cultural e o papel da Igreja no mundo?',
+      },
+    ],
+  },
 ]
