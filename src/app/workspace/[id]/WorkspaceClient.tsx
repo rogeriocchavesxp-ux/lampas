@@ -82,6 +82,26 @@ const GROUP_SUBTITLES: Record<string, string> = {
   contextual: 'Histórico, literário e canônico',
   textual:    'Texto original e estrutura',
   teologico:  'Mensagem e implicações',
+  // Temático
+  et_definicao_grp:        'Nome, campo semântico e questão orientadora',
+  et_ocorrencias_grp:      'AT, NT e passagens centrais',
+  et_desenvolvimento_grp:  'Do Pentateuco ao Apocalipse',
+  et_teologia_biblica_grp: 'Fio condutor e centro cristológico',
+  et_relacao_cristo_grp:   'Tipologia e cumprimento redentor',
+  et_implicacoes_grp:      'Doutrina, ética e missão',
+  et_aplicacoes_grp:       'Vida cristã, eclesial e missional',
+  et_sistematica_grp:      'Formulação doutrinária e implicações',
+  // Termos
+  termos_definir_grp:         'Forma original, idioma e pergunta central',
+  termos_ocorrencias_grp:     'Distribuição e ocorrências-chave',
+  termos_lexico_grp:          'Definição, etimologia e uso linguístico',
+  termos_campo_semantico_grp: 'Sinônimos, antônimos e família lexical',
+  termos_uso_at_grp:          'Pentateuco, Históricos, Profetas e Sabedoria',
+  termos_uso_nt_grp:          'Evangelhos, Atos, Epístolas e Apocalipse',
+  termos_desenv_canonico_grp: 'Progressão e cumprimento em Cristo',
+  termos_relacao_cristo_grp:  'Tipologia e aplicação redentor-histórica',
+  termos_implicacoes_grp:     'Doutrina, pastoral e erros comuns',
+  termos_sintetizar_grp:      'Síntese bíblico-teológica e implicações',
   // Preparar
   preparar_espiritual:  'Oração e dependência',
   preparar_assimilacao: 'Contato direto com o texto',
@@ -830,7 +850,7 @@ export default function WorkspaceClient({ user, project, initialSections }: Prop
   }
 
   return (
-    <div style={{ height: '100vh', display: 'flex', flexDirection: 'column', background: 'var(--background)', paddingBottom: focusMode ? 0 : '60px', boxSizing: 'border-box' }}>
+    <div style={{ height: 'calc(100vh - 52px)', display: 'flex', flexDirection: 'column', background: 'var(--background)', paddingBottom: focusMode ? 0 : '60px', boxSizing: 'border-box' }}>
 
       {/* ── Menu bar ──────────────────────────────────────────────────────── */}
       <WorkspaceMenuBar
