@@ -245,6 +245,16 @@ function getPhaseOverviewSlug(slug: string): string | null {
   return null  // ferramentas or unknown — outside main flow
 }
 
+// Returns the canonical navigation target for a phase (visão geral if present, else first section)
+function getPhaseNavSlug(phase: NavPhase): string {
+  const groups = phase.modes.flatMap(m => m.groups)
+  const vgGroup = groups.find(g => g.id.endsWith('_visao_geral') || g.id === 'pregar_visao_geral')
+  if (vgGroup) return vgGroup.id
+  const firstGroupId = groups[0]?.id ?? ''
+  const secs = getSectionsByGroupNav(firstGroupId)
+  return secs[0]?.slug ?? firstGroupId
+}
+
 function statusDot(status: 'empty' | 'draft' | 'reviewed' | undefined): string {
   if (!status || status === 'empty') return 'var(--border)'
   if (status === 'draft') return 'var(--accent)'
@@ -697,11 +707,12 @@ export default function WorkspaceClient({ user, project, initialSections }: Prop
   const nextSlug = currentNavIdx >= 0 && currentNavIdx < orderedSlugs.length - 1
     ? orderedSlugs[currentNavIdx + 1] : null
 
-  // Phase-level navigation (Biblioteca → Preparar → Investigar → Produzir)
-  const phaseNavIdx      = PHASE_MAIN_NAV.indexOf((getPhaseOverviewSlug(activeSlug) ?? '') as typeof PHASE_MAIN_NAV[number])
-  const prevPhaseNavSlug = phaseNavIdx > 0 ? PHASE_MAIN_NAV[phaseNavIdx - 1] : null
-  const nextPhaseNavSlug = phaseNavIdx >= 0 && phaseNavIdx < PHASE_MAIN_NAV.length - 1
-    ? PHASE_MAIN_NAV[phaseNavIdx + 1] : null
+  // Phase-level navigation — derived dynamically from mode's phases, not hardcoded slugs
+  const mainPhases       = navPhases.filter(p => p.id !== 'ferramentas')
+  const phaseNavIdx      = activePhase ? mainPhases.findIndex(p => p.id === activePhase.id) : -1
+  const prevPhaseNavSlug = phaseNavIdx > 0 ? getPhaseNavSlug(mainPhases[phaseNavIdx - 1]) : null
+  const nextPhaseNavSlug = phaseNavIdx >= 0 && phaseNavIdx < mainPhases.length - 1
+    ? getPhaseNavSlug(mainPhases[phaseNavIdx + 1]) : null
 
   const activeGroupId = getGroupFor(activeSlug)
   const activeGroupLabel = activeGroupId
@@ -1655,7 +1666,7 @@ export default function WorkspaceClient({ user, project, initialSections }: Prop
             }}>
               <button
                 onClick={() => prevPhaseNavSlug ? navigate(prevPhaseNavSlug) : router.push('/dashboard')}
-                title={prevPhaseNavSlug ? PHASE_NAV_LABELS[prevPhaseNavSlug] : 'Painel'}
+                title={prevPhaseNavSlug ? (mainPhases[phaseNavIdx - 1]?.label ?? 'Anterior') : 'Painel'}
                 style={{
                   background: 'transparent', border: 'none',
                   cursor: 'pointer',
@@ -1941,7 +1952,7 @@ export default function WorkspaceClient({ user, project, initialSections }: Prop
           {/* ← Voltar */}
           <button
             onClick={() => { prevPhaseNavSlug ? navigate(prevPhaseNavSlug) : router.push('/dashboard') }}
-            title={prevPhaseNavSlug ? PHASE_NAV_LABELS[prevPhaseNavSlug] : 'Painel'}
+            title={prevPhaseNavSlug ? (mainPhases[phaseNavIdx - 1]?.label ?? 'Anterior') : 'Painel'}
             style={{
               height: '44px', flexShrink: 0,
               border: '1.5px solid var(--border-subtle)',
@@ -1983,10 +1994,7 @@ export default function WorkspaceClient({ user, project, initialSections }: Prop
               const btn = (
                 <button
                   key={phase.id}
-                  onClick={() => {
-                    const vgSlug = phase.id === 'comunicar' ? 'pregar_visao_geral' : `${phase.id}_visao_geral`
-                    navigate(vgSlug)
-                  }}
+                  onClick={() => navigate(getPhaseNavSlug(phase))}
                   style={{
                     position: 'relative', overflow: 'hidden',
                     flex: 1, minWidth: 0, height: '44px',
@@ -2084,14 +2092,13 @@ export default function WorkspaceClient({ user, project, initialSections }: Prop
 
           {/* Avançar → */}
           {(() => {
-            const nextPhaseColor = nextPhaseNavSlug
-              ? (navPhases.find(p => p.id === getPhaseFor(nextPhaseNavSlug))?.color ?? activePhase?.color)
-              : activePhase?.color
-            const isLast = phaseNavIdx === PHASE_MAIN_NAV.length - 1
+            const nextPhase      = phaseNavIdx >= 0 && phaseNavIdx < mainPhases.length - 1 ? mainPhases[phaseNavIdx + 1] : null
+            const nextPhaseColor = nextPhase?.color ?? activePhase?.color
+            const isLast         = phaseNavIdx >= 0 && phaseNavIdx === mainPhases.length - 1
             return (
               <button
                 onClick={() => { if (nextPhaseNavSlug) navigate(nextPhaseNavSlug) }}
-                title={nextPhaseNavSlug ? PHASE_NAV_LABELS[nextPhaseNavSlug] : isLast ? 'Estudo concluído' : ''}
+                title={nextPhaseNavSlug ? (nextPhase?.label ?? 'Próxima fase') : isLast ? 'Estudo concluído' : ''}
                 style={{
                   height: '44px', flexShrink: 0,
                   border: `1.5px solid ${nextPhaseNavSlug ? `${nextPhaseColor}55` : isLast ? 'var(--success)' : 'var(--border-subtle)'}`,
