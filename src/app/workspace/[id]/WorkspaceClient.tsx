@@ -98,6 +98,15 @@ const GROUP_SUBTITLES: Record<string, string> = {
   termos_circunstancia_grp:  'Contexto histórico, cultural, literário e canônico',
   termos_testemunho_grp:     'AT, NT, Cristo e síntese apostólica',
   termos_sintese_def_grp:    'Definição final, grande ideia e implicações',
+  // Doutrinário
+  doutr_conceito_grp:          'Nome, definição preliminar e pergunta orientadora',
+  doutr_fundbiblica_grp:       'Principais textos, AT, NT, Cristo e apóstolos',
+  doutr_desenvolvredentivo_grp:'Promessa, desenvolvimento e cumprimento em Cristo',
+  doutr_relacoes_grp:          'Dependências e conexões com a teologia sistemática',
+  doutr_historia_grp:          'Igreja Antiga, Reforma, Pós-Reforma e debates atuais',
+  doutr_controversias_grp:     'Heresias, erros e avaliação bíblica',
+  doutr_sintese_grp:           'Definição final, grande afirmação e resumo executivo',
+  doutr_implicacoes_grp:       'Teológicas, eclesiásticas, pastorais, devocionais e missionais',
   // Preparar
   preparar_espiritual:  'Oração e dependência',
   preparar_assimilacao: 'Contato direto com o texto',

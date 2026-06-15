@@ -1,359 +1,392 @@
 import type { SectionDef } from './workspace-sections'
 
+function card(id: string, title: string, placeholder: string, aiTrigger: string) {
+  return { id, title, placeholder, aiTrigger }
+}
+
+function doutrSection(
+  slug: string,
+  title: string,
+  shortTitle: string,
+  phase: SectionDef['phase'],
+  group: string,
+  groupLabel: string,
+  order: number,
+  objective: string,
+  keyQuestions: string[],
+  relevantAuthors: string[],
+  cards: SectionDef['cards']
+): SectionDef {
+  return { slug, title, shortTitle, phase, module: 'inventio', group, groupLabel, order, objective, keyQuestions, relevantAuthors, cards }
+}
+
 export const ESTUDO_DOUTRINARIO_SECTIONS: SectionDef[] = [
-  {
-    slug: 'edt_definicao',
-    title: 'I. Definição',
-    shortTitle: 'Definição',
-    phase: 'preparar',
-    module: 'inventio',
-    group: 'edt_definicao_grp',
-    groupLabel: 'I. Definição',
-    order: 200,
-    objective:
-      'Estabelecer com precisão o nome da doutrina, suas definições resumida e expandida, e a questão central que o estudo se propõe a responder.',
-    keyQuestions: [
-      'Qual é o nome técnico e os nomes alternativos da doutrina?',
-      'Como a doutrina pode ser definida em uma sentença e em um parágrafo?',
-      'Qual é a questão central que a doutrina responde na teologia cristã?',
-      'Que outras doutrinas são logicamente relacionadas a esta?',
+
+  // ── I. FUNDAMENTAÇÃO ────────────────────────────────────────────────────────
+
+  doutrSection(
+    'doutr_conceito',
+    'Conceito',
+    'Conceito',
+    'preparar',
+    'doutr_conceito_grp',
+    'Conceito',
+    200,
+    'Estabelecer o nome, a definição preliminar, a importância e a pergunta orientadora da doutrina.',
+    [
+      'Qual o nome técnico desta doutrina e como a tradição a denomina?',
+      'Como a doutrina pode ser definida em uma sentença precisa?',
+      'Por que esta doutrina importa para a fé, a vida cristã e a saúde da Igreja?',
     ],
-    relevantAuthors: ['Louis Berkhof', 'Herman Bavinck', 'Wayne Grudem', 'John Murray', 'R.C. Sproul', 'Michael Horton'],
-    cards: [
-      {
-        id: 'nome_doutrina',
-        title: 'Nome da doutrina',
-        placeholder: 'Qual é o nome técnico da doutrina? Há sinônimos, nomes alternativos ou termos em outros idiomas (latim, grego) que o estudante precisa conhecer?',
-        aiTrigger: 'Qual é o nome técnico desta doutrina? Liste sinônimos, termos latinos ou gregos relevantes e explique a etimologia ou origem histórica do termo principal.',
-      },
-      {
-        id: 'definicao_resumida',
-        title: 'Definição resumida',
-        placeholder: 'Defina a doutrina em uma frase clara e precisa, adequada para ser memorizada. Deve capturar a essência sem ser simplista.',
-        aiTrigger: 'Formule uma definição resumida e precisa desta doutrina em uma sentença que possa ser memorizada. Deve capturar a essência da doutrina sem simplificação excessiva.',
-      },
-      {
-        id: 'definicao_expandida',
-        title: 'Definição expandida',
-        placeholder: 'Desenvolva a definição em um parágrafo que explique os elementos constitutivos da doutrina, suas distinções necessárias e seu alcance.',
-        aiTrigger: 'Desenvolva uma definição expandida desta doutrina (1 parágrafo) explicando seus elementos constitutivos, distinções necessárias e alcance, segundo Berkhof ou Bavinck.',
-      },
-      {
-        id: 'questao_central',
-        title: 'Questão central',
-        placeholder: 'Qual é a pergunta fundamental que esta doutrina responde? Formule a questão de modo que os debates históricos em torno dela façam sentido.',
-        aiTrigger: 'Qual é a questão teológica central que esta doutrina responde? Formule a pergunta de modo que os debates históricos e contemporâneos em torno dela se tornem compreensíveis.',
-      },
+    ['Louis Berkhof', 'Herman Bavinck', 'Wayne Grudem', 'John Murray', 'R. C. Sproul', 'Michael Horton'],
+    [
+      card(
+        'nome_doutrina',
+        'Nome da Doutrina',
+        'Qual o nome técnico desta doutrina? Há termos latinos, gregos ou alternativos que a tradição utiliza?\n\nExemplo: justificação → iustificatio; eleição → electio.',
+        'Qual o nome técnico desta doutrina e quais denominações alternativas a tradição usa? Inclua termos latinos ou gregos relevantes e explique a etimologia ou origem histórica do termo principal.'
+      ),
+      card(
+        'definicao_preliminar',
+        'Definição Preliminar',
+        'Em uma ou duas frases, defina provisoriamente a doutrina.\n\nEsta definição será refinada na Síntese Doutrinária.',
+        'Formule uma definição preliminar e precisa desta doutrina — clara o suficiente para orientar o estudo, mas aberta ao refinamento conforme a investigação avança.'
+      ),
+      card(
+        'importancia',
+        'Importância da Doutrina',
+        'Por que esta doutrina é importante?\n\nO que está em jogo se ela for mal compreendida, negada ou distorcida?',
+        'Explique a importância desta doutrina para a fé cristã — o que ela protege, o que ela garante e o que está em jogo quando ela é negada, distorcida ou negligenciada.'
+      ),
+      card(
+        'pergunta_orientadora',
+        'Pergunta Orientadora',
+        'Qual a pergunta central que este estudo doutrinário se propõe a responder?\n\nExemplo: "O que significa ser justificado diante de Deus?"',
+        'Formule a pergunta orientadora central deste estudo doutrinário — a questão que sintetiza o problema teológico e orienta toda a investigação.'
+      ),
+    ]
+  ),
+
+  doutrSection(
+    'doutr_fundbiblica',
+    'Fundamentação Bíblica',
+    'Fund. Bíblica',
+    'preparar',
+    'doutr_fundbiblica_grp',
+    'Fundamentação Bíblica',
+    201,
+    'Reunir o ensino bíblico que fundamenta a doutrina — os principais textos, o testemunho do AT e NT, o ensino de Cristo e o ensino apostólico.',
+    [
+      'Quais textos bíblicos são fundamentais para o ensino desta doutrina?',
+      'Como o AT prepara e o NT cumpre o ensino desta doutrina?',
+      'O que o próprio Cristo ensina sobre esta realidade?',
     ],
-  },
-  {
-    slug: 'edt_fundamentacao_biblica',
-    title: 'II. Fundamentação Bíblica',
-    shortTitle: 'Fundamentação Bíblica',
-    phase: 'interpretar',
-    module: 'inventio',
-    group: 'edt_fundamentacao_grp',
-    groupLabel: 'II. Fundamentação Bíblica',
-    order: 201,
-    objective:
-      'Estabelecer a base bíblica da doutrina através das passagens principais, seu desenvolvimento no Antigo e Novo Testamentos e a progressão revelacional.',
-    keyQuestions: [
-      'Quais são as passagens bíblicas que fundamentam diretamente esta doutrina?',
-      'Como o Antigo Testamento prepara ou antecipa esta doutrina?',
-      'Como o Novo Testamento desenvolve ou cumpre o que o AT antecipava?',
-      'Há progressão ou desenvolvimento desta doutrina ao longo do cânone?',
+    ['John Murray', 'D. A. Carson', 'Thomas Schreiner', 'Herman Ridderbos', 'F. F. Bruce'],
+    [
+      card(
+        'principais_textos',
+        'Principais Textos',
+        'Liste os textos bíblicos mais importantes para o ensino desta doutrina — aqueles que qualquer formulação teológica deve considerar.',
+        'Identifique os 6 a 10 textos bíblicos mais importantes para esta doutrina. Organize-os por relevância e explique brevemente por que cada um é decisivo.'
+      ),
+      card(
+        'antigo_testamento',
+        'Antigo Testamento',
+        'O que o Antigo Testamento ensina sobre esta doutrina?\n\nComo ela é prometida, prefigurada ou estabelecida no AT?',
+        'Sintetize o que o Antigo Testamento ensina sobre esta doutrina — como ela é prometida, prefigurada, tipologizada ou estabelecida antes de Cristo. Qual a contribuição do AT?'
+      ),
+      card(
+        'novo_testamento',
+        'Novo Testamento',
+        'O que o Novo Testamento ensina sobre esta doutrina?\n\nComo o NT aprofunda, cumpre ou desenvolve o ensino veterotestamentário?',
+        'Sintetize o que o Novo Testamento ensina sobre esta doutrina — como ela é cumprida, aprofundada e estabelecida à luz de Cristo e do Espírito. Qual a novidade do NT?'
+      ),
+      card(
+        'ensino_cristo',
+        'Ensino de Cristo',
+        'O que Jesus especificamente ensina sobre esta doutrina?\n\nQuais palavras, parábolas ou ações do Senhor são mais determinantes?',
+        'Reúna o que o próprio Cristo ensina sobre esta doutrina — seus discursos, parábolas e declarações que iluminam e definem esta realidade teológica.'
+      ),
+      card(
+        'ensino_apostolico',
+        'Ensino Apostólico',
+        'Como os apóstolos — Paulo, João, Pedro, Tiago, o autor de Hebreus — desenvolvem e aplicam esta doutrina?',
+        'Reúna o testemunho apostólico sobre esta doutrina — como cada apóstolo a ensina, fundamenta e aplica às comunidades cristãs. Há ênfases distintas entre os apóstolos?'
+      ),
+    ]
+  ),
+
+  doutrSection(
+    'doutr_desenvolvredentivo',
+    'Desenvolvimento Redentivo',
+    'Desenv. Redentivo',
+    'preparar',
+    'doutr_desenvolvredentivo_grp',
+    'Desenvolvimento Redentivo',
+    202,
+    'Mostrar como a doutrina se desenvolve ao longo da história da revelação — promessa, desenvolvimento, cumprimento em Cristo e aplicação à Igreja.',
+    [
+      'Como esta doutrina é prometida no começo da revelação?',
+      'Como ela se desenvolve progressivamente ao longo do cânone?',
+      'Onde encontra seu cumprimento em Cristo e sua aplicação na era da Igreja?',
     ],
-    relevantAuthors: ['Louis Berkhof', 'Herman Bavinck', 'Wayne Grudem', 'John Murray', 'R.C. Sproul', 'Michael Horton'],
-    cards: [
-      {
-        id: 'passagens_principais',
-        title: 'Passagens principais',
-        placeholder: 'Liste as passagens bíblicas primárias que fundamentam esta doutrina. Para cada passagem, indique como ela contribui para a fundamentação.',
-        aiTrigger: 'Liste as 5 a 8 passagens bíblicas mais importantes para a fundamentação desta doutrina. Para cada uma, explique sua contribuição específica para o ensino doutrinal.',
-      },
-      {
-        id: 'desenvolvimento_at',
-        title: 'Desenvolvimento no AT',
-        placeholder: 'Como o Antigo Testamento apresenta, prepara ou antecipa esta doutrina? Que textos, temas ou instituições veterotestamentárias estão relacionados?',
-        aiTrigger: 'Como o Antigo Testamento apresenta, prepara ou antecipa esta doutrina? Identifique textos, temas, tipos ou instituições veterotestamentárias que contribuem para seu desenvolvimento.',
-      },
-      {
-        id: 'desenvolvimento_nt',
-        title: 'Desenvolvimento no NT',
-        placeholder: 'Como o Novo Testamento desenvolve, clarifica ou cumpre o que o AT antecipava? Que autores neotestamentários contribuem mais para esta doutrina?',
-        aiTrigger: 'Como o Novo Testamento desenvolve, clarifica ou cumpre esta doutrina? Quais autores neotestamentários (Paulo, João, Pedro, Hebreus) oferecem as contribuições mais significativas?',
-      },
-      {
-        id: 'progressao_revelacional',
-        title: 'Progressão revelacional',
-        placeholder: 'Como esta doutrina se desenvolve ao longo da revelação progressiva? Há diferentes ênfases em diferentes períodos da história da redenção?',
-        aiTrigger: 'Trace a progressão revelacional desta doutrina: como ela se desenvolve do AT para o NT e como atinge sua formulação mais completa na revelação apostólica? Use Vos ou Goldsworthy como referência.',
-      },
+    ['Geerhardus Vos', 'Graeme Goldsworthy', 'Peter Gentry', 'Stephen Wellum', 'Edmund Clowney'],
+    [
+      card(
+        'promessa',
+        'Promessa',
+        'Como esta doutrina é prometida ou antecipada nos primeiros estágios da revelação bíblica?\n\nExemplo: a justificação prometida em Abraão (Gn 15:6).',
+        'Identifique como esta doutrina é prometida, antecipada ou estabelecida nos estágios iniciais da revelação — na criação, na queda, nos patriarcas ou na lei de Moisés.'
+      ),
+      card(
+        'desenvolvimento',
+        'Desenvolvimento',
+        'Como a doutrina se desenvolve progressivamente ao longo do AT — nos Profetas, nos Salmos, nas alianças e no avanço da revelação?',
+        'Rastreie o desenvolvimento progressivo desta doutrina ao longo do AT — como ela se aprofunda, expande e clarifica através das alianças, dos profetas e dos textos sapienciais.'
+      ),
+      card(
+        'cumprimento_cristo',
+        'Cumprimento em Cristo',
+        'Como esta doutrina encontra seu cumprimento pleno na pessoa e obra de Jesus Cristo?\n\nComo a encarnação, morte, ressurreição e ascensão iluminam esta doutrina?',
+        'Explique como esta doutrina encontra seu cumprimento pleno em Cristo — como sua encarnação, vida perfeita, morte expiatória, ressurreição e exaltação definem e cumprem o ensino bíblico.'
+      ),
+      card(
+        'aplicacao_igreja',
+        'Aplicação à Igreja',
+        'Como esta doutrina é aplicada à Igreja pela obra do Espírito Santo na era do novo pacto?',
+        'Explique como esta doutrina é aplicada à Igreja — pelo Espírito Santo, pelos sacramentos, pela pregação da Palavra e pela vida comunitária do povo de Deus na era do novo pacto.'
+      ),
+    ]
+  ),
+
+  // ── II. SISTEMATIZAÇÃO ──────────────────────────────────────────────────────
+
+  doutrSection(
+    'doutr_relacoes',
+    'Relações Doutrinárias',
+    'Relações',
+    'investigar',
+    'doutr_relacoes_grp',
+    'Relações Doutrinárias',
+    203,
+    'Mapear as dependências e conexões entre esta doutrina e o restante da teologia sistemática.',
+    [
+      'Com quais outras doutrinas esta tem dependência lógica?',
+      'O que acontece com a teologia sistemática se esta doutrina for negada?',
+      'Como ela se conecta à soteriologia, cristologia, eclesiologia e escatologia?',
     ],
-  },
-  {
-    slug: 'edt_historia_doutrina',
-    title: 'III. História da Doutrina',
-    shortTitle: 'História',
-    phase: 'interpretar',
-    module: 'inventio',
-    group: 'edt_historia_grp',
-    groupLabel: 'III. História',
-    order: 202,
-    objective:
-      'Rastrear o desenvolvimento histórico da doutrina desde a igreja primitiva até a atualidade, identificando os pontos de clarificação e os momentos de crise.',
-    keyQuestions: [
-      'Como os Pais da Igreja e os apologistas entenderam esta doutrina?',
-      'Como a teologia medieval desenvolveu ou distorceu este ensinamento?',
-      'Qual foi a contribuição dos Reformadores para a formulação correta da doutrina?',
-      'Como a doutrina se desenvolveu após a Reforma até o período contemporâneo?',
+    ['Herman Bavinck', 'Louis Berkhof', 'Francis Turretin', 'John Murray', 'Joel Beeke'],
+    [
+      card(
+        'doutrinas_relacionadas',
+        'Doutrinas Relacionadas',
+        'Liste as doutrinas mais diretamente relacionadas a esta.\n\nExemplo (justificação): União com Cristo, Fé, Regeneração, Santificação, Perseverança.',
+        'Identifique as doutrinas sistemáticas mais diretamente relacionadas a esta — aquelas que co-dependem, pressupõem ou são iluminadas por ela. Organize-as por grau de proximidade.'
+      ),
+      card(
+        'dependencias_teologicas',
+        'Dependências Teológicas',
+        'Que verdades teológicas esta doutrina pressupõe?\n\nO que é logicamente necessário para que esta doutrina faça sentido?',
+        'Explique as dependências teológicas desta doutrina — quais outras doutrinas ela pressupõe como verdadeiras, e quais doutrinas dependem dela para sustentação lógica.'
+      ),
+      card(
+        'conexoes_doutrinas',
+        'Conexões Doutrinárias',
+        'Como esta doutrina se conecta à cristologia, à soteriologia, à eclesiologia, à pneumatologia e à escatologia?',
+        'Mapeie as conexões desta doutrina com os grandes loci da teologia sistemática — cristologia, soteriologia, pneumatologia, eclesiologia e escatologia. Onde as conexões são mais determinantes?'
+      ),
+    ]
+  ),
+
+  doutrSection(
+    'doutr_historia',
+    'História da Doutrina',
+    'História',
+    'investigar',
+    'doutr_historia_grp',
+    'História da Doutrina',
+    204,
+    'Rastrear como esta doutrina foi compreendida, debatida e formulada ao longo da história da Igreja.',
+    [
+      'Como os Pais da Igreja compreenderam e transmitiram esta doutrina?',
+      'Como a Reforma Protestante reformulou ou recuperou este ensino?',
+      'Quais são os debates contemporâneos mais relevantes?',
     ],
-    relevantAuthors: ['Louis Berkhof', 'Herman Bavinck', 'Wayne Grudem', 'John Murray', 'R.C. Sproul', 'Michael Horton'],
-    cards: [
-      {
-        id: 'igreja_primitiva_patristica',
-        title: 'Igreja Primitiva e Patrística',
-        placeholder: 'Como os Pais da Igreja (Inácio, Irineu, Tertuliano, Agostinho, etc.) trataram esta doutrina? Que contribuições e que limitações marcaram o período?',
-        aiTrigger: 'Como a doutrina foi entendida pelos Pais da Igreja nos séculos II ao V? Identifique os principais teólogos patrísticos que contribuíram para seu desenvolvimento e as limitações do período.',
-      },
-      {
-        id: 'medieval',
-        title: 'Período Medieval',
-        placeholder: 'Como Anselmo, Tomás de Aquino e os escolásticos desenvolveram ou distorceram esta doutrina? Que debates medievais são relevantes?',
-        aiTrigger: 'Como a teologia medieval tratou esta doutrina? Que contribuições positivas foram feitas por Anselmo, Tomás de Aquino ou outros? Que distorções ou omissões precisaram ser corrigidas?',
-      },
-      {
-        id: 'reforma',
-        title: 'Reforma',
-        placeholder: 'Como Lutero, Calvino, Zuínglio e outros reformadores abordaram esta doutrina? Em que pontos a Reforma clarificou ou reformulou o ensinamento?',
-        aiTrigger: 'Qual foi a contribuição dos Reformadores — Lutero, Calvino, Melanchton, Zuínglio — para a formulação desta doutrina? Em que pontos a Reforma representou uma recuperação ou clarificação bíblica?',
-      },
-      {
-        id: 'pos_reforma_atualidade',
-        title: 'Pós-Reforma e atualidade',
-        placeholder: 'Como a teologia pós-Reforma (Puritan, Westminster, Princeton, século XX) e a teologia contemporânea desenvolveram esta doutrina?',
-        aiTrigger: 'Como esta doutrina foi desenvolvida pela teologia pós-Reforma (puritanos, teólogos de Westminster, escola de Princeton) e pelos teólogos do século XX? Que debates contemporâneos são relevantes?',
-      },
+    ['Richard Muller', 'Herman Bavinck', 'Francis Turretin', 'Joel Beeke', 'Philip Schaff'],
+    [
+      card(
+        'igreja_antiga',
+        'Igreja Antiga',
+        'Como os Pais da Igreja (séculos I–V) compreenderam e ensinaram esta doutrina?\n\nHá concílios ou credos que a definiram ou defenderam?',
+        'Rastreie como os Pais da Igreja compreenderam esta doutrina — Ireneu, Atanásio, Agostinho, Crisóstomo e outros. Há concílios ou credos que a definiram ou corrigiram?'
+      ),
+      card(
+        'idade_media',
+        'Idade Média',
+        'Como a doutrina foi ensinada na Idade Média?\n\nHá desenvolvimentos escolásticos, distorções ou sínteses relevantes (Anselmo, Tomás, Duns Scotus)?',
+        'Rastreie o ensino desta doutrina na Idade Média — os desenvolvimentos escolásticos (Anselmo, Pedro Lombardo, Tomás de Aquino), as sínteses e as possíveis distorções que a Reforma mais tarde corrigiria.'
+      ),
+      card(
+        'reforma',
+        'Reforma',
+        'Como Lutero, Calvino, Zuínglio, Bucer e os reformadores ensinaram esta doutrina?\n\nO que foi recuperado, reformulado ou clarificado?',
+        'Explique como a Reforma Protestante compreendeu esta doutrina — o que Lutero, Calvino e os outros reformadores ensinaram, recuperaram ou clarificaram em contraste com Roma.'
+      ),
+      card(
+        'pos_reforma',
+        'Pós-Reforma',
+        'Como os teólogos da ortodoxia reformada (Turretin, Owen, Voetius, Witsius) desenvolveram e sistematizaram esta doutrina?',
+        'Rastreie o desenvolvimento desta doutrina na ortodoxia reformada pós-Reforma — Turretin, Owen, Voetius, Witsius, os Símbolos confessionais. O que foi aprofundado, precisado ou consolidado?'
+      ),
+      card(
+        'debates_contemporaneos',
+        'Debates Contemporâneos',
+        'Quais são os debates mais relevantes sobre esta doutrina nos séculos XX e XXI?\n\nHá revisões, ataques ou reformulações que o estudante deve conhecer?',
+        'Identifique os debates contemporâneos mais relevantes sobre esta doutrina — revisões modernas, ataques liberais ou progressivos, a NPP (Nova Perspectiva sobre Paulo) se aplicável, e as respostas confessionais.'
+      ),
+    ]
+  ),
+
+  doutrSection(
+    'doutr_controversias',
+    'Controvérsias e Erros',
+    'Controvérsias',
+    'investigar',
+    'doutr_controversias_grp',
+    'Controvérsias e Erros',
+    205,
+    'Identificar heresias históricas, interpretações equivocadas e debates atuais que ameaçam ou distorcem esta doutrina.',
+    [
+      'Quais heresias históricas negaram ou distorceram esta doutrina?',
+      'Como erros contemporâneos se manifestam em relação a ela?',
+      'Qual a avaliação bíblica e confessional de cada posição?',
     ],
-  },
-  {
-    slug: 'edt_formulacao_sistematica',
-    title: 'IV. Formulação Sistemática',
-    shortTitle: 'Formulação Sistemática',
-    phase: 'interpretar',
-    module: 'inventio',
-    group: 'edt_formulacao_grp',
-    groupLabel: 'IV. Formulação Sistemática',
-    order: 203,
-    objective:
-      'Apresentar a formulação sistemática da doutrina: definição técnica, relações com outras doutrinas, implicações teológicas e distinções necessárias.',
-    keyQuestions: [
-      'Qual é a formulação técnica e precisa da doutrina na teologia sistemática?',
-      'Com quais outras doutrinas esta se relaciona logicamente?',
-      'Que implicações teológicas necessárias derivam desta doutrina?',
-      'Que distinções são essenciais para evitar mal-entendidos?',
+    ['Francis Turretin', 'Herman Bavinck', 'R. C. Sproul', 'John Murray', 'Joel Beeke'],
+    [
+      card(
+        'heresias_historicas',
+        'Heresias Históricas',
+        'Quais heresias ou erros históricos negaram, distorceram ou comprometeram esta doutrina?\n\nExemplo (justificação): pelagianismo, semi-pelagianismo, a posição tridentina.',
+        'Identifique as principais heresias e erros históricos que negaram ou distorceram esta doutrina. Nomeie os movimentos, explique a posição e mostre o que está errado biblicamente.'
+      ),
+      card(
+        'interpretacoes_equivocadas',
+        'Interpretações Equivocadas',
+        'Quais interpretações equivocadas — mesmo sem heresia formal — existem sobre esta doutrina?\n\nErros populares, confusões pastorais, mal-entendidos comuns.',
+        'Liste interpretações equivocadas sobre esta doutrina que não chegam a heresia formal mas comprometem o entendimento correto — erros populares, confusões pastorais ou leituras superficiais.'
+      ),
+      card(
+        'debates_atuais',
+        'Debates Atuais',
+        'Quais são os debates vivos na teologia contemporânea sobre esta doutrina?\n\nHá revisões dentro do próprio evangelicalismo que precisam ser avaliadas?',
+        'Identifique os debates teológicos ativos sobre esta doutrina — dentro do evangelicalismo, no ecumenismo e na academia. O que está sendo revisto ou redefinido? Quais são os riscos?'
+      ),
+      card(
+        'avaliacao_biblica',
+        'Avaliação Bíblica',
+        'Como a Escritura responde às heresias, erros e debates identificados?\n\nQual o critério escriturístico para avaliar essas posições?',
+        'Ofereça uma avaliação bíblica e confessional das heresias, erros e debates identificados — mostrando como a Escritura e os Símbolos reformados respondem a cada posição.'
+      ),
+    ]
+  ),
+
+  doutrSection(
+    'doutr_sintese',
+    'Síntese Doutrinária',
+    'Síntese',
+    'investigar',
+    'doutr_sintese_grp',
+    'Síntese Doutrinária',
+    206,
+    'Produzir uma formulação doutrinária clara, organizada e fiel à Escritura e à tradição reformada.',
+    [
+      'Qual a definição mais precisa e fiel desta doutrina após toda a investigação?',
+      'Qual a grande afirmação doutrinária que resume o ensino bíblico?',
+      'Quais os pontos essenciais que não podem ser comprometidos?',
     ],
-    relevantAuthors: ['Louis Berkhof', 'Herman Bavinck', 'Wayne Grudem', 'John Murray', 'R.C. Sproul', 'Michael Horton'],
-    cards: [
-      {
-        id: 'definicao_tecnica',
-        title: 'Definição técnica',
-        placeholder: 'Apresente a formulação sistemática da doutrina com precisão técnica, usando a terminologia estabelecida pela tradição teológica reformada.',
-        aiTrigger: 'Apresente a formulação técnica e precisa desta doutrina na teologia sistemática reformada, usando a terminologia de Berkhof, Bavinck ou Grudem.',
-      },
-      {
-        id: 'relacoes_doutrinarias',
-        title: 'Relações doutrinárias',
-        placeholder: 'Com que outras doutrinas esta se conecta logicamente? Como a Trindade, a Cristologia, a Soteriologia, a Eclesiologia ou a Escatologia informam e são informadas por esta doutrina?',
-        aiTrigger: 'Como esta doutrina se relaciona com outras doutrinas do sistema teológico? Mostre as conexões com: Trindade, Cristologia, Anthropologia, Soteriologia, Eclesiologia e Escatologia.',
-      },
-      {
-        id: 'implicacoes_teologicas',
-        title: 'Implicações teológicas',
-        placeholder: 'Que implicações teológicas necessárias derivam desta doutrina? O que ela exige que sejamos ou creijamos sobre Deus, o homem e a salvação?',
-        aiTrigger: 'Que implicações teológicas necessárias derivam desta doutrina? Explore o que ela implica sobre a natureza de Deus, a condição humana, a salvação e a vida cristã.',
-      },
-      {
-        id: 'distincoes_necessarias',
-        title: 'Distinções necessárias',
-        placeholder: 'Que distinções técnicas são essenciais para compreender corretamente esta doutrina? O que ela não é, e que confusões comuns precisam ser desfeitas?',
-        aiTrigger: 'Que distinções técnicas são necessárias para entender corretamente esta doutrina? Quais são as confusões mais comuns que precisam ser desfeitas? O que a doutrina não afirma?',
-      },
+    ['Louis Berkhof', 'Herman Bavinck', 'Francis Turretin', 'John Murray', 'Joel Beeke'],
+    [
+      card(
+        'definicao_final',
+        'Definição Final',
+        'Definição refinada e definitiva da doutrina após toda a investigação bíblica, histórica e sistemática.',
+        'Gere a definição final e refinada desta doutrina — integrando o fundamento bíblico, a precisão histórica e a formulação sistemática. Esta deve ser a definição de referência para uso pastoral e acadêmico.'
+      ),
+      card(
+        'grande_afirmacao',
+        'Grande Afirmação Doutrinária',
+        'Em uma frase poderosa e memorável, qual a grande afirmação desta doutrina?\n\nExemplo: "O pecador é declarado justo diante de Deus somente pela graça, mediante a fé somente, com base somente na obra de Cristo."',
+        'Formule a grande afirmação doutrinária desta doutrina — uma declaração clara, completa e memorável que captura o coração do ensino bíblico. Deve ser suficientemente rica para orientar pregação, ensino e defesa da fé.'
+      ),
+      card(
+        'pontos_essenciais',
+        'Pontos Essenciais',
+        'Quais são os pontos essenciais e inegociáveis desta doutrina — aqueles cuja negação compromete a ortodoxia?',
+        'Liste os pontos essenciais desta doutrina — os aspectos que constituem o núcleo inegociável do ensino bíblico e cuja negação representa afastamento da ortodoxia.'
+      ),
+      card(
+        'pontos_secundarios',
+        'Pontos Secundários',
+        'Quais são os pontos secundários ou debates internos à tradição reformada sobre esta doutrina — onde há espaço para diferentes posições sem comprometer a ortodoxia?',
+        'Identifique os pontos secundários desta doutrina — questões sobre as quais a tradição reformada tem diferentes posições sem comprometer a essência do ensino bíblico.'
+      ),
+      card(
+        'resumo_executivo',
+        'Resumo Executivo',
+        'Em um parágrafo, sintetize toda a doutrina de modo claro, pastoral e acadêmico — integrando definição, fundamento bíblico, história e implicações.',
+        'Gere um resumo executivo desta doutrina — um parágrafo denso e preciso que integra definição, fundamento bíblico, formulação histórica e implicações práticas. Deve ser utilizável em um dicionário teológico ou introdução pastoral.'
+      ),
+    ]
+  ),
+
+  // ── III. IMPLICAÇÕES ────────────────────────────────────────────────────────
+
+  doutrSection(
+    'doutr_implicacoes',
+    'Implicações',
+    'Implicações',
+    'comunicar',
+    'doutr_implicacoes_grp',
+    'Implicações',
+    207,
+    'Aplicar a doutrina à vida, à Igreja, ao ministério e à missão — respondendo à pergunta: o que essa doutrina muda?',
+    [
+      'O que esta doutrina muda na compreensão de Deus, do homem e da salvação?',
+      'Como ela deve moldar a vida e a prática da Igreja?',
+      'Quais são as implicações pastorais e missionais mais urgentes?',
     ],
-  },
-  {
-    slug: 'edt_controversias',
-    title: 'V. Controvérsias',
-    shortTitle: 'Controvérsias',
-    phase: 'interpretar',
-    module: 'inventio',
-    group: 'edt_controversias_grp',
-    groupLabel: 'V. Controvérsias',
-    order: 204,
-    objective:
-      'Examinar os erros históricos, as heresias relacionadas, as visões concorrentes e apresentar as respostas reformadas a cada desafio.',
-    keyQuestions: [
-      'Que erros históricos foram cometidos em relação a esta doutrina?',
-      'Que heresias foram condenadas pelos concílios da Igreja antiga?',
-      'Quais são as visões teológicas concorrentes nos dias de hoje?',
-      'Como a tradição reformada responde a esses erros com base na Escritura?',
-    ],
-    relevantAuthors: ['Louis Berkhof', 'Herman Bavinck', 'Wayne Grudem', 'John Murray', 'R.C. Sproul', 'Michael Horton'],
-    cards: [
-      {
-        id: 'erros_historicos',
-        title: 'Erros históricos',
-        placeholder: 'Quais foram os principais erros teológicos históricos relacionados a esta doutrina? Quem os ensinou e qual foi a resposta ortodoxa?',
-        aiTrigger: 'Quais foram os principais erros teológicos históricos relacionados a esta doutrina? Identifique os ensinantes, a natureza do erro e a resposta da ortodoxia cristã.',
-      },
-      {
-        id: 'heresias_relacionadas',
-        title: 'Heresias relacionadas',
-        placeholder: 'Que heresias formalmente condenadas pelos concílios ecumênicos ou pelos sínodos reformados afetam esta doutrina? Que conteúdo ensinavam e por que foram rejeitadas?',
-        aiTrigger: 'Que heresias relacionadas a esta doutrina foram condenadas pela Igreja histórica? Explique o conteúdo de cada uma e os fundamentos bíblicos e teológicos de sua rejeição.',
-      },
-      {
-        id: 'visoes_concorrentes',
-        title: 'Visões concorrentes',
-        placeholder: 'Quais são as posições teológicas concorrentes nos dias atuais? Como diferem da posição reformada e em que pontos há concordância parcial?',
-        aiTrigger: 'Quais são as principais posições teológicas concorrentes sobre esta doutrina no período contemporâneo? Como diferem da posição reformada? Onde há concordância e onde há divergência fundamental?',
-      },
-      {
-        id: 'respostas_reformadas',
-        title: 'Respostas reformadas',
-        placeholder: 'Como a tradição reformada responde aos erros e às visões concorrentes? Quais são os argumentos bíblicos e teológicos que sustentam a posição ortodoxa?',
-        aiTrigger: 'Como a tradição reformada — usando Berkhof, Bavinck, Murray ou Sproul — responde aos principais erros e visões concorrentes sobre esta doutrina? Quais são os argumentos bíblicos decisivos?',
-      },
-    ],
-  },
-  {
-    slug: 'edt_confissionalidade',
-    title: 'VI. Confissionalidade',
-    shortTitle: 'Confissionalidade',
-    phase: 'interpretar',
-    module: 'inventio',
-    group: 'edt_confissionalidade_grp',
-    groupLabel: 'VI. Confissionalidade',
-    order: 205,
-    objective:
-      'Apresentar como a doutrina está formulada nos símbolos de fé reformados — Confissão de Westminster, Catecismo Maior, Catecismo Menor e outros documentos confessionais.',
-    keyQuestions: [
-      'Como a Confissão de Westminster trata esta doutrina?',
-      'Que capítulos confessionais e perguntas catequéticas o Lampas sugere automaticamente para esta doutrina?',
-      'Que perguntas do Catecismo Maior abordam este ensinamento?',
-      'Como o Catecismo Menor formula esta doutrina de modo memorável?',
-      'Outros símbolos de fé (Heidelberg, Belgic, Cânones de Dort) contribuem de modo único?',
-    ],
-    relevantAuthors: ['Louis Berkhof', 'Herman Bavinck', 'Wayne Grudem', 'John Murray', 'R.C. Sproul', 'Michael Horton'],
-    cards: [
-      {
-        id: 'confissao_westminster',
-        title: 'Confissão de Westminster',
-        placeholder: 'Que capítulos e artigos da Confissão de Westminster tratam diretamente desta doutrina? Transcreva e comente os trechos mais relevantes.',
-        aiTrigger: 'Consulte primeiro a camada estrutural Confissões e Catecismos Lampas. Que capítulos e artigos da Confissão de Westminster (1647) tratam diretamente desta doutrina? Transcreva e explique os trechos mais relevantes.',
-      },
-      {
-        id: 'catecismo_maior',
-        title: 'Catecismo Maior',
-        placeholder: 'Que perguntas e respostas do Catecismo Maior de Westminster abordam esta doutrina? Como o Catecismo a desenvolve além da Confissão?',
-        aiTrigger: 'Consulte primeiro a camada estrutural Confissões e Catecismos Lampas. Que perguntas do Catecismo Maior de Westminster abordam esta doutrina? Transcreva as perguntas e respostas mais relevantes e explique sua contribuição.',
-      },
-      {
-        id: 'catecismo_menor',
-        title: 'Catecismo Menor',
-        placeholder: 'Como o Catecismo Menor de Westminster formula esta doutrina? Que pergunta e resposta capturam a essência de modo memorável?',
-        aiTrigger: 'Consulte primeiro a camada estrutural Confissões e Catecismos Lampas. Como o Catecismo Menor de Westminster aborda esta doutrina? Transcreva a pergunta e resposta mais relevante e explique por que essa formulação é pedagogicamente eficaz.',
-      },
-      {
-        id: 'outros_simbolos',
-        title: 'Outros símbolos',
-        placeholder: 'Como outros símbolos reformados — Catecismo de Heidelberg, Confissão Belga, Cânones de Dort, Segunda Confissão Helvética — tratam esta doutrina?',
-        aiTrigger: 'Consulte primeiro a camada estrutural Confissões e Catecismos Lampas. Como outros símbolos de fé reformados — Catecismo de Heidelberg, Confissão Belga ou Cânones de Dort — abordam esta doutrina? Que perspectiva única cada um oferece?',
-      },
-    ],
-  },
-  {
-    slug: 'edt_aplicacoes',
-    title: 'VII. Aplicações',
-    shortTitle: 'Aplicações',
-    phase: 'interpretar',
-    module: 'inventio',
-    group: 'edt_aplicacoes_grp',
-    groupLabel: 'VII. Aplicações',
-    order: 206,
-    objective:
-      'Desenvolver as implicações práticas da doutrina para a vida da igreja, da família, da vida cristã individual e do ministério.',
-    keyQuestions: [
-      'Como esta doutrina deve moldar a vida e a prática da igreja local?',
-      'Que implicações concretas ela tem para a criação dos filhos e a vida familiar?',
-      'Como ela transforma a vida de oração, devoção e santificação pessoal?',
-      'De que modo esta doutrina informa e motiva o ministério e o serviço cristão?',
-    ],
-    relevantAuthors: ['Louis Berkhof', 'Herman Bavinck', 'Wayne Grudem', 'John Murray', 'R.C. Sproul', 'Michael Horton'],
-    cards: [
-      {
-        id: 'aplicacao_eclesial',
-        title: 'Aplicação eclesial',
-        placeholder: 'Como esta doutrina deve moldar a pregação, a adoração, os sacramentos, a disciplina e a vida comunitária da igreja?',
-        aiTrigger: 'Como esta doutrina deve moldar a vida da igreja local? Explore implicações para a pregação, a adoração, os sacramentos, a disciplina eclesiástica e a comunhão dos santos.',
-      },
-      {
-        id: 'aplicacao_familiar',
-        title: 'Aplicação familiar',
-        placeholder: 'Que implicações esta doutrina tem para o casamento, a criação dos filhos, a ordem doméstica e o testemunho familiar?',
-        aiTrigger: 'Que implicações práticas esta doutrina tem para a vida familiar: casamento, criação de filhos, educação cristã em casa e o testemunho da família diante do mundo?',
-      },
-      {
-        id: 'vida_crista',
-        title: 'Vida cristã',
-        placeholder: 'Como esta doutrina transforma a vida de oração, a mortificação, a santificação, a esperança e a perseverança do cristão individual?',
-        aiTrigger: 'Como esta doutrina transforma a vida cristã individual: a oração, a mortificação do pecado, a busca da santidade, a esperança escatológica e a perseverança na fé?',
-      },
-      {
-        id: 'ministerio',
-        title: 'Ministério',
-        placeholder: 'Como esta doutrina informa e motiva o ministério da Palavra, do pastoreio, da evangelização e da diaconia?',
-        aiTrigger: 'Como esta doutrina informa e motiva o ministério cristão: a pregação, o pastoreio, o aconselhamento, a evangelização e o serviço diaconal?',
-      },
-    ],
-  },
-  {
-    slug: 'edt_bibliografia',
-    title: 'VIII. Bibliografia',
-    shortTitle: 'Bibliografia',
-    phase: 'interpretar',
-    module: 'inventio',
-    group: 'edt_bibliografia_grp',
-    groupLabel: 'VIII. Bibliografia',
-    order: 207,
-    objective:
-      'Organizar a bibliografia para o estudo doutrinário, priorizando obras primárias, secundárias e artigos que aprofundam o tema de modo confiável.',
-    keyQuestions: [
-      'Quais são os livros de referência indispensáveis para este estudo doutrinário?',
-      'Que artigos acadêmicos ou capítulos de obras coletivas oferecem perspectivas complementares?',
-      'Que fontes primárias (Pais da Igreja, Confissões, Concílios) devem ser consultadas diretamente?',
-      'Há recursos em português de qualidade para este tema?',
-    ],
-    relevantAuthors: ['Louis Berkhof', 'Herman Bavinck', 'Wayne Grudem', 'John Murray', 'R.C. Sproul', 'Michael Horton'],
-    cards: [
-      {
-        id: 'livros_principais',
-        title: 'Livros principais',
-        placeholder: 'Liste os 5 a 10 livros mais importantes para este estudo, com dados bibliográficos completos e uma anotação sobre a contribuição de cada obra.',
-        aiTrigger: 'Indique os 5 a 8 livros mais importantes para o estudo desta doutrina na tradição reformada. Inclua dados bibliográficos e uma linha sobre a contribuição específica de cada obra.',
-      },
-      {
-        id: 'artigos',
-        title: 'Artigos e capítulos',
-        placeholder: 'Liste artigos de revistas teológicas, capítulos de obras coletivas ou ensaios que aprofundam aspectos específicos desta doutrina.',
-        aiTrigger: 'Indique artigos de revistas teológicas ou capítulos de obras coletivas relevantes para o estudo desta doutrina. Inclua publicações como Westminster Theological Journal, Themelios ou similares.',
-      },
-      {
-        id: 'fontes_primarias',
-        title: 'Fontes primárias',
-        placeholder: 'Liste as fontes primárias relevantes: textos patrísticos, documentos conciliares, confissões de fé, tratados dos Reformadores.',
-        aiTrigger: 'Quais são as fontes primárias mais importantes para o estudo desta doutrina? Inclua textos patrísticos, documentos conciliares, confissões de fé e tratados dos Reformadores relevantes.',
-      },
-    ],
-  },
+    ['John Murray', 'Herman Bavinck', 'J. I. Packer', 'Sinclair Ferguson', 'Joel Beeke'],
+    [
+      card(
+        'impl_teologicas',
+        'Implicações Teológicas',
+        'Quais são as implicações desta doutrina para a compreensão de Deus, do homem, do pecado, da salvação e da criação?',
+        'Explique as implicações teológicas desta doutrina — como ela ilumina e é iluminada pela teologia própria, pela antropologia, pela hamartiologia e pela soteriologia.'
+      ),
+      card(
+        'impl_eclesiasticas',
+        'Implicações Eclesiásticas',
+        'Como esta doutrina deve moldar a vida, o culto, os sacramentos, o governo e a comunhão da Igreja?',
+        'Explique as implicações eclesiásticas desta doutrina — como ela deve moldar o culto, a pregação, os sacramentos, o governo da Igreja, a disciplina e a vida comunitária do povo de Deus.'
+      ),
+      card(
+        'impl_pastorais',
+        'Implicações Pastorais',
+        'Como esta doutrina deve ser ensinada, proclamada e aplicada na pregação, no aconselhamento e no discipulado?',
+        'Aponte as implicações pastorais desta doutrina — como ela deve informar a pregação, o aconselhamento, o discipulado e o cuidado de almas. Como um pastor aplica esta verdade ao seu rebanho?'
+      ),
+      card(
+        'impl_devocionais',
+        'Implicações Devocionais',
+        'Como esta doutrina alimenta a oração, a adoração, a gratidão e a vida devocional do crente?',
+        'Explique como esta doutrina alimenta e transforma a vida devocional — a oração, a adoração, a gratidão, a confiança em Deus e a vida interior do crente reformado.'
+      ),
+      card(
+        'impl_missionais',
+        'Implicações Missionais',
+        'Como esta doutrina molda a proclamação do Evangelho, a evangelização e o engajamento da Igreja com o mundo?',
+        'Explique as implicações missionais desta doutrina — como ela molda a proclamação do Evangelho, a evangelização, o engajamento cultural e a missão integral da Igreja no mundo.'
+      ),
+    ]
+  ),
 ]

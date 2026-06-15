@@ -3148,223 +3148,134 @@ export const WORKSPACE_SECTIONS_NAV: SectionNav[] = [
     ]
   },
   {
-    "slug": "edt_definicao",
-    "title": "I. Definição",
-    "shortTitle": "Definição",
+    "slug": "doutr_conceito",
+    "title": "Conceito",
+    "shortTitle": "Conceito",
     "phase": "preparar",
     "module": "inventio",
-    "group": "edt_definicao_grp",
-    "groupLabel": "I. Definição",
+    "group": "doutr_conceito_grp",
+    "groupLabel": "Conceito",
     "order": 200,
     "cards": [
-      {
-        "id": "nome_doutrina",
-        "title": "Nome da doutrina"
-      },
-      {
-        "id": "definicao_resumida",
-        "title": "Definição resumida"
-      },
-      {
-        "id": "definicao_expandida",
-        "title": "Definição expandida"
-      },
-      {
-        "id": "questao_central",
-        "title": "Questão central"
-      }
+      { "id": "nome_doutrina",       "title": "Nome da Doutrina" },
+      { "id": "definicao_preliminar","title": "Definição Preliminar" },
+      { "id": "importancia",         "title": "Importância da Doutrina" },
+      { "id": "pergunta_orientadora","title": "Pergunta Orientadora" }
     ]
   },
   {
-    "slug": "edt_fundamentacao_biblica",
-    "title": "II. Fundamentação Bíblica",
-    "shortTitle": "Fundamentação Bíblica",
-    "phase": "interpretar",
+    "slug": "doutr_fundbiblica",
+    "title": "Fundamentação Bíblica",
+    "shortTitle": "Fund. Bíblica",
+    "phase": "preparar",
     "module": "inventio",
-    "group": "edt_fundamentacao_grp",
-    "groupLabel": "II. Fundamentação Bíblica",
+    "group": "doutr_fundbiblica_grp",
+    "groupLabel": "Fundamentação Bíblica",
     "order": 201,
     "cards": [
-      {
-        "id": "passagens_principais",
-        "title": "Passagens principais"
-      },
-      {
-        "id": "desenvolvimento_at",
-        "title": "Desenvolvimento no AT"
-      },
-      {
-        "id": "desenvolvimento_nt",
-        "title": "Desenvolvimento no NT"
-      },
-      {
-        "id": "progressao_revelacional",
-        "title": "Progressão revelacional"
-      }
+      { "id": "principais_textos",  "title": "Principais Textos" },
+      { "id": "antigo_testamento",  "title": "Antigo Testamento" },
+      { "id": "novo_testamento",    "title": "Novo Testamento" },
+      { "id": "ensino_cristo",      "title": "Ensino de Cristo" },
+      { "id": "ensino_apostolico",  "title": "Ensino Apostólico" }
     ]
   },
   {
-    "slug": "edt_historia_doutrina",
-    "title": "III. História da Doutrina",
-    "shortTitle": "História",
-    "phase": "interpretar",
+    "slug": "doutr_desenvolvredentivo",
+    "title": "Desenvolvimento Redentivo",
+    "shortTitle": "Desenv. Redentivo",
+    "phase": "preparar",
     "module": "inventio",
-    "group": "edt_historia_grp",
-    "groupLabel": "III. História",
+    "group": "doutr_desenvolvredentivo_grp",
+    "groupLabel": "Desenvolvimento Redentivo",
     "order": 202,
     "cards": [
-      {
-        "id": "igreja_primitiva_patristica",
-        "title": "Igreja Primitiva e Patrística"
-      },
-      {
-        "id": "medieval",
-        "title": "Período Medieval"
-      },
-      {
-        "id": "reforma",
-        "title": "Reforma"
-      },
-      {
-        "id": "pos_reforma_atualidade",
-        "title": "Pós-Reforma e atualidade"
-      }
+      { "id": "promessa",          "title": "Promessa" },
+      { "id": "desenvolvimento",   "title": "Desenvolvimento" },
+      { "id": "cumprimento_cristo","title": "Cumprimento em Cristo" },
+      { "id": "aplicacao_igreja",  "title": "Aplicação à Igreja" }
     ]
   },
   {
-    "slug": "edt_formulacao_sistematica",
-    "title": "IV. Formulação Sistemática",
-    "shortTitle": "Formulação Sistemática",
-    "phase": "interpretar",
+    "slug": "doutr_relacoes",
+    "title": "Relações Doutrinárias",
+    "shortTitle": "Relações",
+    "phase": "investigar",
     "module": "inventio",
-    "group": "edt_formulacao_grp",
-    "groupLabel": "IV. Formulação Sistemática",
+    "group": "doutr_relacoes_grp",
+    "groupLabel": "Relações Doutrinárias",
     "order": 203,
     "cards": [
-      {
-        "id": "definicao_tecnica",
-        "title": "Definição técnica"
-      },
-      {
-        "id": "relacoes_doutrinarias",
-        "title": "Relações doutrinárias"
-      },
-      {
-        "id": "implicacoes_teologicas",
-        "title": "Implicações teológicas"
-      },
-      {
-        "id": "distincoes_necessarias",
-        "title": "Distinções necessárias"
-      }
+      { "id": "doutrinas_relacionadas",  "title": "Doutrinas Relacionadas" },
+      { "id": "dependencias_teologicas", "title": "Dependências Teológicas" },
+      { "id": "conexoes_doutrinas",      "title": "Conexões Doutrinárias" }
     ]
   },
   {
-    "slug": "edt_controversias",
-    "title": "V. Controvérsias",
-    "shortTitle": "Controvérsias",
-    "phase": "interpretar",
+    "slug": "doutr_historia",
+    "title": "História da Doutrina",
+    "shortTitle": "História",
+    "phase": "investigar",
     "module": "inventio",
-    "group": "edt_controversias_grp",
-    "groupLabel": "V. Controvérsias",
+    "group": "doutr_historia_grp",
+    "groupLabel": "História da Doutrina",
     "order": 204,
     "cards": [
-      {
-        "id": "erros_historicos",
-        "title": "Erros históricos"
-      },
-      {
-        "id": "heresias_relacionadas",
-        "title": "Heresias relacionadas"
-      },
-      {
-        "id": "visoes_concorrentes",
-        "title": "Visões concorrentes"
-      },
-      {
-        "id": "respostas_reformadas",
-        "title": "Respostas reformadas"
-      }
+      { "id": "igreja_antiga",         "title": "Igreja Antiga" },
+      { "id": "idade_media",           "title": "Idade Média" },
+      { "id": "reforma",               "title": "Reforma" },
+      { "id": "pos_reforma",           "title": "Pós-Reforma" },
+      { "id": "debates_contemporaneos","title": "Debates Contemporâneos" }
     ]
   },
   {
-    "slug": "edt_confissionalidade",
-    "title": "VI. Confissionalidade",
-    "shortTitle": "Confissionalidade",
-    "phase": "interpretar",
+    "slug": "doutr_controversias",
+    "title": "Controvérsias e Erros",
+    "shortTitle": "Controvérsias",
+    "phase": "investigar",
     "module": "inventio",
-    "group": "edt_confissionalidade_grp",
-    "groupLabel": "VI. Confissionalidade",
+    "group": "doutr_controversias_grp",
+    "groupLabel": "Controvérsias e Erros",
     "order": 205,
     "cards": [
-      {
-        "id": "confissao_westminster",
-        "title": "Confissão de Westminster"
-      },
-      {
-        "id": "catecismo_maior",
-        "title": "Catecismo Maior"
-      },
-      {
-        "id": "catecismo_menor",
-        "title": "Catecismo Menor"
-      },
-      {
-        "id": "outros_simbolos",
-        "title": "Outros símbolos"
-      }
+      { "id": "heresias_historicas",       "title": "Heresias Históricas" },
+      { "id": "interpretacoes_equivocadas","title": "Interpretações Equivocadas" },
+      { "id": "debates_atuais",            "title": "Debates Atuais" },
+      { "id": "avaliacao_biblica",         "title": "Avaliação Bíblica" }
     ]
   },
   {
-    "slug": "edt_aplicacoes",
-    "title": "VII. Aplicações",
-    "shortTitle": "Aplicações",
-    "phase": "interpretar",
+    "slug": "doutr_sintese",
+    "title": "Síntese Doutrinária",
+    "shortTitle": "Síntese",
+    "phase": "investigar",
     "module": "inventio",
-    "group": "edt_aplicacoes_grp",
-    "groupLabel": "VII. Aplicações",
+    "group": "doutr_sintese_grp",
+    "groupLabel": "Síntese Doutrinária",
     "order": 206,
     "cards": [
-      {
-        "id": "aplicacao_eclesial",
-        "title": "Aplicação eclesial"
-      },
-      {
-        "id": "aplicacao_familiar",
-        "title": "Aplicação familiar"
-      },
-      {
-        "id": "vida_crista",
-        "title": "Vida cristã"
-      },
-      {
-        "id": "ministerio",
-        "title": "Ministério"
-      }
+      { "id": "definicao_final",    "title": "Definição Final" },
+      { "id": "grande_afirmacao",   "title": "Grande Afirmação Doutrinária" },
+      { "id": "pontos_essenciais",  "title": "Pontos Essenciais" },
+      { "id": "pontos_secundarios", "title": "Pontos Secundários" },
+      { "id": "resumo_executivo",   "title": "Resumo Executivo" }
     ]
   },
   {
-    "slug": "edt_bibliografia",
-    "title": "VIII. Bibliografia",
-    "shortTitle": "Bibliografia",
-    "phase": "interpretar",
+    "slug": "doutr_implicacoes",
+    "title": "Implicações",
+    "shortTitle": "Implicações",
+    "phase": "comunicar",
     "module": "inventio",
-    "group": "edt_bibliografia_grp",
-    "groupLabel": "VIII. Bibliografia",
+    "group": "doutr_implicacoes_grp",
+    "groupLabel": "Implicações",
     "order": 207,
     "cards": [
-      {
-        "id": "livros_principais",
-        "title": "Livros principais"
-      },
-      {
-        "id": "artigos",
-        "title": "Artigos e capítulos"
-      },
-      {
-        "id": "fontes_primarias",
-        "title": "Fontes primárias"
-      }
+      { "id": "impl_teologicas",    "title": "Implicações Teológicas" },
+      { "id": "impl_eclesiasticas", "title": "Implicações Eclesiásticas" },
+      { "id": "impl_pastorais",     "title": "Implicações Pastorais" },
+      { "id": "impl_devocionais",   "title": "Implicações Devocionais" },
+      { "id": "impl_missionais",    "title": "Implicações Missionais" }
     ]
   },
   {
