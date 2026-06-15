@@ -2301,6 +2301,40 @@ export default function WorkspaceClient({ user, project, initialSections }: Prop
         )
       })()}
 
+      {/* ── Botão Bíblia — acesso permanente ao texto bíblico ─────── */}
+      <div style={{ position: 'fixed', top: '108px', right: '16px', zIndex: 300 }}>
+        <button
+          onClick={() => setBibleOpen(o => !o)}
+          title={bibleOpen ? 'Fechar texto bíblico' : 'Abrir texto bíblico'}
+          style={{
+            width: '40px', height: '40px', borderRadius: '50%',
+            background: bibleOpen ? '#1E40AF' : 'var(--surface)',
+            border: `1.5px solid ${bibleOpen ? '#1E40AF' : 'var(--border)'}`,
+            cursor: 'pointer',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            boxShadow: '0 2px 12px rgba(0,0,0,0.13)',
+            transition: 'all 0.15s',
+            color: bibleOpen ? '#fff' : 'var(--text-secondary)',
+          }}
+          onMouseEnter={e => {
+            if (!bibleOpen) {
+              e.currentTarget.style.borderColor = '#1E40AF'
+              e.currentTarget.style.color = '#1E40AF'
+              e.currentTarget.style.background = 'rgba(30,64,175,0.08)'
+            }
+          }}
+          onMouseLeave={e => {
+            if (!bibleOpen) {
+              e.currentTarget.style.borderColor = 'var(--border)'
+              e.currentTarget.style.color = 'var(--text-secondary)'
+              e.currentTarget.style.background = 'var(--surface)'
+            }
+          }}
+        >
+          <BookOpen size={16} strokeWidth={1.75} />
+        </button>
+      </div>
+
     </div>
   )
 }
