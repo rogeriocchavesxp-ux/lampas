@@ -125,6 +125,11 @@ const GROUP_SUBTITLES: Record<string, string> = {
   preparar_impressoes:  'Notas rápidas e perguntas',
   preparar_visao_geral:     'Tema, estrutura e clímax',
   investigar_visao_geral:   'Compreensão refinada após investigação',
+  // Narrativas — Investigar
+  nr_contextual_grp: 'Histórico, literário e canônico',
+  nr_textual_grp:    'Texto, estrutura, exegese e mensagem original',
+  nr_teologico_grp:  'Redenção, doutrina e implicações para a vida',
+  nr_ivg_grp:        'Grande ideia, verdades centrais e aplicações',
   pregar_visao_geral:       'Síntese final para comunicação',
   ferramentas_visao_geral:  'Mapa das ferramentas disponíveis',
   // Comunicar — Sermão
@@ -185,6 +190,11 @@ const GROUP_ACCENT_COLORS: Record<string, string> = {
   et_implicacoes_grp:      '#BE185D',
   et_aplicacoes_grp:       '#1E40AF',
   et_sistematica_grp:      '#163A6B',
+  // Narrativas — Investigar
+  nr_contextual_grp:  '#B45309',
+  nr_textual_grp:     '#92400E',
+  nr_teologico_grp:   '#7C3AED',
+  nr_ivg_grp:         '#0F766E',
   // Doutrinário
   doutr_conceito_grp:           '#1E40AF',
   doutr_fundbiblica_grp:        '#B45309',
@@ -220,6 +230,11 @@ const GROUP_ICONS: Record<string, LucideIcon> = {
   contextual:                Landmark,
   textual:                   Languages,
   teologico:                 GraduationCap,
+  // Investigar — Narrativas
+  nr_contextual_grp:         Landmark,
+  nr_textual_grp:            Languages,
+  nr_teologico_grp:          GraduationCap,
+  nr_ivg_grp:                Crosshair,
   // Investigar — Salmos e Sabedoria
   ss_paralelismo_grp:        AlignJustify,
   ss_estrutura_grp:          GitBranch,

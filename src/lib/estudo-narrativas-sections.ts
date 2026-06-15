@@ -204,6 +204,323 @@ export const ESTUDO_NARRATIVAS_SECTIONS: SectionDef[] = [
     ],
   },
 
+  // ── Investigar: Estudo Contextual ────────────────────────────────────────
+
+  {
+    slug: 'nr_ctx_historico',
+    title: 'Contexto Histórico-Cultural',
+    shortTitle: 'Contexto Histórico',
+    module: 'inventio',
+    group: 'nr_contextual_grp',
+    groupLabel: 'Estudo Contextual',
+    order: 710,
+    objective:
+      'Descrever o ambiente histórico e cultural da narrativa — período, cenário geopolítico, costumes e tensões que moldam os personagens e eventos.',
+    keyQuestions: [
+      'Que período? Data aproximada dos eventos?',
+      'Qual o cenário geopolítico — que nações, reis ou conflitos são relevantes?',
+      'Que costumes, valores ou instituições são refletidos no texto?',
+      'Como o contexto ilumina escolhas, reações ou conflitos dos personagens?',
+    ],
+    relevantAuthors: ['John Walton', 'Victor Matthews', 'Bruce Waltke', 'K.A. Kitchen'],
+    cards: [
+      card('nr_ctx_hist_main', 'Contexto Histórico-Cultural',
+        'Descreva o contexto histórico-cultural da narrativa.\n\nOrientações:\n→ Que período? Data aproximada dos eventos?\n→ Qual o cenário geopolítico — que nações, reis, conflitos são relevantes?\n→ Que costumes, valores ou instituições são refletidos no texto?\n→ Que tensões históricas moldam a situação dos personagens?\n→ Como esse contexto ilumina escolhas, reações ou conflitos na narrativa?',
+        'Descreva o contexto histórico-cultural desta narrativa: período, cenário geopolítico, costumes relevantes e como esse ambiente molda os personagens e eventos.'),
+    ],
+  },
+
+  {
+    slug: 'nr_ctx_literario',
+    title: 'Contexto Literário',
+    shortTitle: 'Contexto Literário',
+    module: 'inventio',
+    group: 'nr_contextual_grp',
+    groupLabel: 'Estudo Contextual',
+    order: 711,
+    objective:
+      'Situar a narrativa dentro do livro e do cânone — sua posição, conexões com textos vizinhos e papel na estrutura maior do livro.',
+    keyQuestions: [
+      'Onde esta perícope está no livro — início, meio, clímax, conclusão?',
+      'Que narrativas a precedem e sucedem? Como se conectam?',
+      'Que temas ou motivos do livro maior aparecem aqui?',
+      'Há paralelismos ou contrastes com outras perícopes do mesmo livro?',
+    ],
+    relevantAuthors: ['Robert Alter', 'Jan Fokkelman', 'David Howard Jr.', 'V. Philips Long'],
+    cards: [
+      card('nr_ctx_lit_main', 'Contexto Literário',
+        'Situe a narrativa dentro do livro e do cânone.\n\nOrientações:\n→ Onde esta perícope está no livro — início, meio, clímax, conclusão?\n→ Que narrativas a precedem e sucedem? Como se conectam?\n→ Que temas ou motivos do livro maior aparecem aqui?\n→ Como este episódio avança a narrativa do livro como um todo?\n→ Que paralelismos ou contrastes há com outras perícopes do mesmo livro?',
+        'Situe esta narrativa dentro do livro: onde aparece na estrutura maior, como se conecta às perícopes vizinhas e que temas do livro ela desenvolve.'),
+    ],
+  },
+
+  {
+    slug: 'nr_ctx_canonico',
+    title: 'Contexto Canônico',
+    shortTitle: 'Contexto Canônico',
+    module: 'inventio',
+    group: 'nr_contextual_grp',
+    groupLabel: 'Estudo Contextual',
+    order: 712,
+    objective:
+      'Descrever as conexões desta narrativa com o restante do cânone — ecos, tipologias, promessas da aliança e posição na história da redenção.',
+    keyQuestions: [
+      'Que textos do AT ou NT iluminam esta história?',
+      'Há paralelos, ecos ou tipologias com outras narrativas?',
+      'Que promessas da aliança aparecem ou são avançadas?',
+      'Como esta história aponta para a redenção e para Cristo?',
+    ],
+    relevantAuthors: ['Graeme Goldsworthy', 'T.D. Alexander', 'Sidney Greidanus', 'Geerhardus Vos'],
+    cards: [
+      card('nr_ctx_can_main', 'Contexto Canônico',
+        'Descreva as conexões desta narrativa com o restante do cânone.\n\nOrientações:\n→ Que textos do AT ou NT iluminam esta história?\n→ Há paralelos, ecos ou tipologias com outras narrativas?\n→ Que promessas da aliança aparecem ou são avançadas?\n→ Como esta história aponta para a redenção e para Cristo?\n→ Que lugar esta perícope ocupa no arco da história da redenção?',
+        'Descreva as conexões canônicas desta narrativa: textos que a iluminam, ecos e tipologias, promessas da aliança e como ela se encaixa na história da redenção.'),
+    ],
+  },
+
+  // ── Investigar: Estudo Textual ─────────────────────────────────────────────
+
+  {
+    slug: 'nr_txt_original',
+    title: 'Texto Original e Delimitação',
+    shortTitle: 'Texto Original',
+    module: 'inventio',
+    group: 'nr_textual_grp',
+    groupLabel: 'Estudo Textual',
+    order: 720,
+    objective:
+      'Delimitar a perícope, registrar o texto em hebraico ou grego e a tradução de trabalho.',
+    keyQuestions: [
+      'Onde começa e termina a unidade literária? Justifique os limites.',
+      'Há variantes textuais relevantes?',
+      'Que tradução(ões) serão usadas como base?',
+    ],
+    relevantAuthors: ['Emanuel Tov', 'Bruce Metzger', 'Gordon Fee', 'Douglas Stuart'],
+    cards: [
+      card('nr_txt_orig_main', 'Texto Original e Delimitação',
+        'Cole o texto em hebraico ou grego e sua tradução, e delimite a perícope.\n\nOrientações:\n→ Onde começa e termina a unidade literária? Justifique os limites.\n→ Que divisão textual você utiliza (BHS, NA28, LXX)?\n→ Há variantes textuais relevantes?\n→ Que tradução(ões) você usará como base para o trabalho?',
+        'Delimite a perícope justificando os limites, apresente o texto original e a tradução de trabalho, e note variantes textuais relevantes.'),
+    ],
+  },
+
+  {
+    slug: 'nr_txt_estrutura',
+    title: 'Estrutura e Movimento Narrativo',
+    shortTitle: 'Estrutura',
+    module: 'inventio',
+    group: 'nr_textual_grp',
+    groupLabel: 'Estudo Textual',
+    order: 721,
+    objective:
+      'Esboçar a estrutura da narrativa e descrever seu movimento interno — cenas, padrões literários e progressão da tensão.',
+    keyQuestions: [
+      'Quais são as cenas ou episódios identificáveis?',
+      'Há padrões literários — inclusio, quiasmo, paralelismo, repetição?',
+      'Como o texto se move: exposição → complicação → clímax → resolução?',
+      'O movimento apoia o significado teológico?',
+    ],
+    relevantAuthors: ['Robert Alter', 'Shimon Bar-Efrat', 'Jan Fokkelman', 'Meir Sternberg'],
+    cards: [
+      card('nr_txt_struct_main', 'Estrutura e Movimento Narrativo',
+        'Esboce a estrutura da narrativa e descreva seu movimento interno.\n\nOrientações:\n→ Quais são as cenas ou episódios identificáveis?\n→ Há padrões literários — inclusio, quiasmo, paralelismo, repetição?\n→ Como o texto se move: exposição → complicação → clímax → resolução?\n→ Onde está o ponto de maior tensão ou virada?\n→ O movimento estrutural apoia o significado teológico?',
+        'Esboce a estrutura da narrativa, identifique as cenas, descreva o movimento da tensão e note padrões literários como inclusio, quiasmo ou repetição.'),
+    ],
+  },
+
+  {
+    slug: 'nr_txt_exegese',
+    title: 'Observações Exegéticas',
+    shortTitle: 'Exegese',
+    module: 'inventio',
+    group: 'nr_textual_grp',
+    groupLabel: 'Estudo Textual',
+    order: 722,
+    objective:
+      'Registrar as observações exegéticas mais significativas — personagens, narrador, diálogos, silêncios, repetições e recursos literários.',
+    keyQuestions: [
+      'Que personagens, lugares, tempos ou objetos merecem atenção especial?',
+      'Como o narrador usa onisciência, ponto de vista e distância narrativa?',
+      'Que diálogos ou discursos revelam caráter, conflito ou teologia?',
+      'Que silêncios ou omissões são significativos?',
+      'Que palavras ou imagens se repetem e o que essa repetição sugere?',
+    ],
+    relevantAuthors: ['Robert Alter', 'Meir Sternberg', 'Adele Berlin', 'Shimon Bar-Efrat', 'Jan Fokkelman'],
+    cards: [
+      card('nr_txt_exeg_main', 'Observações Exegéticas',
+        'Registre as observações exegéticas mais significativas do texto.\n\nOrientações:\n→ Que personagens, lugares, tempos ou objetos merecem atenção?\n→ Como o narrador usa onisciência, ponto de vista e distância narrativa?\n→ Que diálogos ou discursos revelam caráter, conflito ou teologia?\n→ Que silêncios ou omissões são significativos?\n→ Que palavras ou imagens se repetem — e o que essa repetição sugere?',
+        'Registre as principais observações exegéticas: uso do narrador, personagens, diálogos, silêncios e repetições — o que cada detalhe contribui para o significado.'),
+    ],
+  },
+
+  {
+    slug: 'nr_txt_mensagem',
+    title: 'Mensagem para os Primeiros Ouvintes',
+    shortTitle: 'Mensagem Original',
+    module: 'inventio',
+    group: 'nr_textual_grp',
+    groupLabel: 'Estudo Textual',
+    order: 723,
+    objective:
+      'Identificar a mensagem desta narrativa para seus primeiros ouvintes — situação pastoral, resposta convocada e adequação da forma narrativa.',
+    keyQuestions: [
+      'Que situação pastoral ou histórica de Israel esta história endereçava?',
+      'Que resposta o autor buscava provocar — fé, arrependimento, esperança, obediência?',
+      'Que verdades sobre Deus, o homem ou a aliança eram cruciais para aquele contexto?',
+      'Como a forma narrativa era especialmente adequada para essa mensagem?',
+    ],
+    relevantAuthors: ['Sidney Greidanus', 'Gordon Fee', 'Douglas Stuart', 'Tremper Longman III'],
+    cards: [
+      card('nr_txt_msg_main', 'Mensagem para os Primeiros Ouvintes',
+        'Qual foi a mensagem desta narrativa para seus primeiros ouvintes?\n\nOrientações:\n→ Que situação pastoral ou histórica de Israel/da comunidade esta história endereçava?\n→ Que resposta o autor buscava provocar — fé, arrependimento, esperança, obediência, identidade?\n→ Que verdades sobre Deus, o homem ou a aliança eram cruciais para aquele contexto?\n→ Como a forma narrativa (em vez de lei ou profecia) era especialmente adequada para essa mensagem?',
+        'Qual foi a mensagem desta narrativa para seus primeiros ouvintes? Que situação ela endereçava, que resposta convocava e por que a forma narrativa era o meio ideal?'),
+    ],
+  },
+
+  // ── Investigar: Estudo Teológico ──────────────────────────────────────────
+
+  {
+    slug: 'nr_teo_redentor',
+    title: 'Relação com a História da Redenção',
+    shortTitle: 'História da Redenção',
+    module: 'inventio',
+    group: 'nr_teologico_grp',
+    groupLabel: 'Estudo Teológico',
+    order: 730,
+    objective:
+      'Situar a narrativa na história da redenção — época, ação de Deus, tipologias e avanço da aliança rumo a Cristo.',
+    keyQuestions: [
+      'Que época da história redentora (patriarcas, êxodo, monarquia, exílio, retorno)?',
+      'Como Deus age aqui — promessa, cumprimento, julgamento, graça, providência?',
+      'Há tipologia — pessoas, eventos ou instituições que apontam para Cristo?',
+      'Como esta história avança o fio da aliança desde Gênesis 3.15?',
+    ],
+    relevantAuthors: ['Graeme Goldsworthy', 'Geerhardus Vos', 'T.D. Alexander', 'Bryan Chapell'],
+    cards: [
+      card('nr_teo_redentor_main', 'Relação com a História da Redenção',
+        'Como esta narrativa se encaixa e avança a história da redenção?\n\nOrientações:\n→ Que época da história redentora (criação, queda, patriarcas, êxodo, monarquia, exílio, retorno)?\n→ Como Deus age aqui — promessa, cumprimento, julgamento, graça, providência?\n→ Há tipologia explícita ou implícita — pessoas, eventos ou instituições que apontam para Cristo?\n→ Como esta história avança o fio da aliança desde Gênesis 3.15?\n→ Que elos canônicos (Hebreus, NT, Salmos) iluminam a tipologia?',
+        'Como esta narrativa se encaixa na história da redenção? Que época representa, como Deus age, que tipologias aponta para Cristo e como avança a aliança?'),
+    ],
+  },
+
+  {
+    slug: 'nr_teo_doutrinas',
+    title: 'Doutrinas Ensinadas',
+    shortTitle: 'Doutrinas',
+    module: 'inventio',
+    group: 'nr_teologico_grp',
+    groupLabel: 'Estudo Teológico',
+    order: 731,
+    objective:
+      'Identificar as doutrinas que emergem da narrativa — ensinadas explicitamente ou pela forma da história — e os erros que ela corrige.',
+    keyQuestions: [
+      'O que o texto ensina sobre Deus, o homem, a salvação, a aliança, a lei, a graça?',
+      'Essas verdades são ensinadas explicitamente ou pela forma da história?',
+      'Como a experiência dos personagens ilustra ou problematiza essas doutrinas?',
+      'Que erros doutrinários esta narrativa corrige ou previne?',
+    ],
+    relevantAuthors: ['John Frame', 'Herman Ridderbos', 'Thomas Schreiner', 'Wayne Grudem'],
+    cards: [
+      card('nr_teo_doc_main', 'Doutrinas Ensinadas',
+        'Que doutrinas teológicas emergem desta narrativa?\n\nOrientações:\n→ O que o texto ensina sobre Deus, o homem, a salvação, a aliança, a lei, a graça?\n→ Essas verdades são ensinadas explicitamente (declarações) ou implicitamente (pela forma da história)?\n→ Como a experiência dos personagens ilustra, exemplifica ou problematiza essas doutrinas?\n→ Que erros doutrinários esta narrativa corrige ou previne?',
+        'Que doutrinas emergem desta narrativa — ensinadas explicitamente ou pela forma da história? Como os personagens as ilustram, e que erros teológicos a narrativa corrige?'),
+    ],
+  },
+
+  {
+    slug: 'nr_teo_implicacoes',
+    title: 'Implicações para a Vida',
+    shortTitle: 'Implicações',
+    module: 'inventio',
+    group: 'nr_teologico_grp',
+    groupLabel: 'Estudo Teológico',
+    order: 732,
+    objective:
+      'Identificar as implicações desta narrativa para a vida cristã — chamado à fé, ao arrependimento, padrões de vida e verdades que confortam ou desafiam.',
+    keyQuestions: [
+      'Como ela chama à fé, ao arrependimento, à obediência ou à esperança?',
+      'Que padrões de vida ela afirma ou condena?',
+      'Que verdades sobre Deus confortam, desafiam ou reorientam o povo de Deus hoje?',
+      'Como a tipologia cristológica molda a aplicação para o povo do novo pacto?',
+    ],
+    relevantAuthors: ['Bryan Chapell', 'Sidney Greidanus', 'Richard Pratt', 'Graeme Goldsworthy'],
+    cards: [
+      card('nr_teo_impl_main', 'Implicações para a Vida',
+        'Quais são as implicações desta narrativa para a vida cristã?\n\nOrientações:\n→ Como ela chama à fé, ao arrependimento, à obediência ou à esperança?\n→ Que padrões de vida ela afirma ou condena?\n→ Que verdades sobre Deus confortam, desafiam ou reorientam o povo de Deus hoje?\n→ Como a tipologia cristológica molda a aplicação para o povo do novo pacto?\n→ Que perigo aplicacional (moralismo, exemplarismo) esta narrativa exige evitar?',
+        'Quais são as implicações desta narrativa para a vida cristã? Que chamado ela convoca, que padrões afirma ou condena, e como a tipologia cristológica molda a aplicação?'),
+    ],
+  },
+
+  // ── Investigar: Visão Geral ────────────────────────────────────────────────
+
+  {
+    slug: 'nr_ivg_ideia',
+    title: 'Grande Ideia',
+    shortTitle: 'Grande Ideia',
+    module: 'inventio',
+    group: 'nr_ivg_grp',
+    groupLabel: 'Visão Geral da Investigação',
+    order: 740,
+    objective:
+      'Formular a grande ideia da narrativa — o que o texto ensina (sujeito) e o que afirma sobre isso (predicado).',
+    keyQuestions: [
+      'Do que a narrativa fala? (sujeito)',
+      'O que a narrativa afirma sobre esse sujeito? (predicado)',
+      'A grande ideia emerge da narrativa — não foi imposta sobre ela?',
+    ],
+    relevantAuthors: ['Haddon Robinson', 'Sidney Greidanus', 'Bryan Chapell'],
+    cards: [
+      card('nr_ivg_ideia_main', 'Grande Ideia',
+        'Formule a grande ideia desta narrativa.\n\nA grande ideia tem dois componentes:\n→ Sujeito: do que a narrativa fala?\n→ Predicado: o que a narrativa afirma sobre esse sujeito?\n\nCritérios:\n→ Emerge da narrativa — não imposta sobre ela\n→ Integra a mensagem histórica e a verdade atemporal\n→ É formulada como afirmação (não como pergunta)\n→ Pode guiar tanto a exposição quanto a pregação',
+        'Formule a grande ideia desta narrativa: sujeito (do que fala) + predicado (o que afirma). Deve emergir do texto e integrar mensagem histórica e verdade atemporal.'),
+    ],
+  },
+
+  {
+    slug: 'nr_ivg_verdades',
+    title: 'Verdades Centrais',
+    shortTitle: 'Verdades',
+    module: 'inventio',
+    group: 'nr_ivg_grp',
+    groupLabel: 'Visão Geral da Investigação',
+    order: 741,
+    objective:
+      'Listar as 2-3 verdades centrais que a narrativa ensina — derivadas do texto, ensinadas pela forma narrativa e confirmadas pelo cânone.',
+    keyQuestions: [
+      'Que verdades são derivadas diretamente do texto, não de paralelos externos?',
+      'São ensinadas pela forma narrativa — não apenas por declarações do narrador?',
+      'São atemporais mas articuladas historicamente?',
+    ],
+    relevantAuthors: ['Haddon Robinson', 'Bryan Chapell', 'Graeme Goldsworthy', 'Sidney Greidanus'],
+    cards: [
+      card('nr_ivg_verd_main', 'Verdades Centrais',
+        'Liste as 2-3 verdades centrais que a narrativa ensina.\n\nCritérios para cada verdade:\n→ Derivada diretamente do texto, não de paralelos externos\n→ Ensinada pela forma narrativa (não apenas por declarações do narrador)\n→ Atemporal, mas articulada historicamente\n→ Confirmada por paralelos canônicos\n→ Distinta — não repetição da grande ideia em outras palavras',
+        'Liste as 2-3 verdades centrais desta narrativa: cada uma deve emergir do texto, ser ensinada pela forma narrativa, ser atemporal e ser confirmada pelo cânone.'),
+    ],
+  },
+
+  {
+    slug: 'nr_ivg_aplic',
+    title: 'Aplicações Principais',
+    shortTitle: 'Aplicações',
+    module: 'inventio',
+    group: 'nr_ivg_grp',
+    groupLabel: 'Visão Geral da Investigação',
+    order: 742,
+    objective:
+      'Desenvolver as aplicações pastorais principais — derivadas das verdades centrais, não de moralismos da história.',
+    keyQuestions: [
+      'Que chamado à ação, à fé ou à reflexão o texto convoca?',
+      'As aplicações fluem das verdades identificadas (não de moralismos)?',
+      'Como a tipologia cristológica molda a aplicação para o povo do novo pacto?',
+    ],
+    relevantAuthors: ['Bryan Chapell', 'Sidney Greidanus', 'Bryan Chapell'],
+    cards: [
+      card('nr_ivg_aplic_main', 'Aplicações Principais',
+        'Desenvolva as aplicações pastorais principais desta narrativa.\n\nOrientações:\n→ Que chamado à ação, à fé ou à reflexão o texto convoca?\n→ Como as aplicações fluem das verdades identificadas (não de moralismos da história)?\n→ Que grupos de ouvintes são especialmente endereçados?\n→ Como a tipologia cristológica molda a aplicação para o povo do novo pacto?\n→ Que perigo aplicacional (moralismo, exemplarismo) esta narrativa exige evitar?',
+        'Desenvolva as principais aplicações pastorais: devem fluir das verdades centrais, não de moralismos da história, e ser moldadas pela tipologia cristológica.'),
+    ],
+  },
+
   // ── Teologia Narrativa ────────────────────────────────────────────────────
   {
     slug: 'nr_teologia',
