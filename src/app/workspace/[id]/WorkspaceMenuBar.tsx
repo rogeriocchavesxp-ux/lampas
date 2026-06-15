@@ -329,27 +329,6 @@ export default function WorkspaceMenuBar({
         { label: 'Changelog',             soon: true },
       ],
     },
-
-    // ── FERRAMENTAS ───────────────────────────────────────────────────────────
-    {
-      id: 'ferramentas',
-      label: 'Ferramentas',
-      items: [
-        { label: 'Texto e Léxico', header: true },
-        { label: 'Texto Original',                  onClick: sectionNav('texto_original') },
-        { label: 'Dicionário Bíblico',              onClick: sectionNav('ferramentas_dicionario') },
-        { label: 'Referências Cruzadas',            onClick: sectionNav('ferramentas_refs_cruzadas') },
-        { label: 'Colagens',                        onClick: sectionNav('colagens') },
-        { label: 'Livros',                          onClick: sectionNav('ferramentas_livros') },
-        { label: 'Introdução Bíblica', header: true, separator: true },
-        { label: 'Introdução ao AT',                onClick: sectionNav('ferramentas_introducao_at') },
-        { label: 'Introdução ao NT',                onClick: sectionNav('ferramentas_introducao_nt') },
-        { label: 'Teologia', header: true, separator: true },
-        { label: 'Teologia Sistemática',            onClick: sectionNav('ferramentas_sistematica') },
-        { label: 'Confissões e Catecismos',         onClick: sectionNav('ferramentas_confissoes_catecismos') },
-        { label: 'Teologia Bíblica',      soon: true },
-      ],
-    },
   ]
 
   function handleLabelClick(id: string) {
