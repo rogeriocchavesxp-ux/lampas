@@ -46,7 +46,7 @@ import {
   Sparkles, BookMarked, Flame, MessageSquareText, Layers, Book, Library,
   BookCopy, Link2, Paperclip, ChevronDown, ChevronRight, ChevronLeft, ChevronUp,
   MapPin, Network, TrendingUp, LayoutTemplate, Mic, Brain, Megaphone,
-  AlignJustify, GitBranch, Palette, Tag, X,
+  AlignJustify, GitBranch, Palette, Tag, X, Lightbulb,
   type LucideIcon,
 } from 'lucide-react'
 import {
@@ -475,6 +475,7 @@ export default function WorkspaceClient({ user, project, initialSections }: Prop
   const enviarDropdownRef = useRef<HTMLDivElement>(null)
   const [pilgrimOpen, setPilgrimOpen]       = useState(false)
   const [checklistOpen, setChecklistOpen]   = useState(false)
+  const [toolsOpen, setToolsOpen]           = useState(false)
 
   const sidebarWidthRef  = useRef(264)
   const referenceWidthRef = useRef(280)
@@ -2047,47 +2048,6 @@ export default function WorkspaceClient({ user, project, initialSections }: Prop
           })()}
 
           {/* Divider */}
-          <div style={{ width: '1px', height: '28px', background: 'var(--border-subtle)', flexShrink: 0, margin: '0 4px' }} />
-
-          {/* Ferramentas */}
-          {navPhases.filter(p => p.id === 'ferramentas').map(phase => {
-            const isActive = activePhase?.id === phase.id
-            return (
-              <button
-                key={phase.id}
-                onClick={() => navigate('ferramentas_visao_geral')}
-                style={{
-                  height: '44px', flexShrink: 0,
-                  border: `1.5px solid ${isActive ? phase.color : 'var(--border-subtle)'}`,
-                  borderRadius: '10px',
-                  background: isActive ? `${phase.color}10` : 'transparent',
-                  cursor: 'pointer', fontFamily: 'inherit',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  padding: '0 16px',
-                  fontSize: '0.82rem', fontWeight: 700, letterSpacing: '-0.01em',
-                  color: isActive ? phase.color : 'var(--text-secondary)',
-                  transition: 'all 0.15s',
-                  whiteSpace: 'nowrap',
-                }}
-                onMouseEnter={e => {
-                  if (!isActive) {
-                    e.currentTarget.style.borderColor = `${phase.color}55`
-                    e.currentTarget.style.color = 'var(--text-primary)'
-                  }
-                }}
-                onMouseLeave={e => {
-                  if (!isActive) {
-                    e.currentTarget.style.borderColor = 'var(--border-subtle)'
-                    e.currentTarget.style.color = 'var(--text-secondary)'
-                  }
-                }}
-              >
-                {phase.label}
-              </button>
-            )
-          })}
-
-          {/* Divider */}
           <div style={{ width: '1px', height: '28px', background: 'var(--border-subtle)', flexShrink: 0, margin: '0 2px' }} />
 
           {/* Avançar → */}
@@ -2125,6 +2085,161 @@ export default function WorkspaceClient({ user, project, initialSections }: Prop
 
         </div>
       )}
+
+      {/* ── Floating Tools Button (lamparina) ─────────────────────────────── */}
+      {!focusMode && (() => {
+        const toolsPhase  = navPhases.find(p => p.id === 'ferramentas')
+        const toolsColor  = toolsPhase?.color ?? '#B45309'
+        const isInTools   = activePhase?.id === 'ferramentas'
+
+        const TOOL_GROUPS: Array<{ label: string; items: Array<{ label: string; slug: string }> }> = [
+          {
+            label: 'Escritura',
+            items: [
+              { label: 'Introdução ao AT',      slug: 'ferramentas_introducao_at' },
+              { label: 'Introdução ao NT',      slug: 'ferramentas_introducao_nt' },
+              { label: 'Referências Cruzadas',  slug: 'ferramentas_refs_cruzadas' },
+            ],
+          },
+          {
+            label: 'Teologia',
+            items: [
+              { label: 'Teologia Sistemática',  slug: 'ferramentas_sistematica' },
+              { label: 'Teologia Bíblica',      slug: 'ferramentas_biblica' },
+            ],
+          },
+          {
+            label: 'Confessionalidade',
+            items: [
+              { label: 'Catecismos & Confissões', slug: 'ferramentas_confissoes_catecismos' },
+            ],
+          },
+          {
+            label: 'Pesquisa',
+            items: [
+              { label: 'Dicionário Lampas',  slug: 'ferramentas_dicionario' },
+              { label: 'Biblioteca',         slug: 'ferramentas_livros' },
+              { label: 'Colagens',           slug: 'colagens' },
+            ],
+          },
+        ]
+
+        return (
+          <>
+            {/* Overlay — fecha o painel ao clicar fora */}
+            {toolsOpen && (
+              <div
+                onClick={() => setToolsOpen(false)}
+                style={{ position: 'fixed', inset: 0, zIndex: 299 }}
+              />
+            )}
+
+            <div style={{ position: 'fixed', bottom: '70px', right: '16px', zIndex: 300 }}>
+
+              {/* Painel de ferramentas */}
+              {toolsOpen && (
+                <div style={{
+                  position: 'absolute', bottom: '48px', right: 0,
+                  width: '210px',
+                  background: 'var(--surface)',
+                  border: '1px solid var(--border)',
+                  borderRadius: '12px',
+                  boxShadow: '0 8px 32px rgba(0,0,0,0.14)',
+                  overflow: 'hidden',
+                }}>
+                  <div style={{
+                    padding: '0.6rem 0.9rem 0.38rem',
+                    borderBottom: '1px solid var(--border-subtle)',
+                    fontSize: '0.6rem', fontWeight: 800, letterSpacing: '0.09em',
+                    textTransform: 'uppercase', color: 'var(--text-muted)',
+                  }}>
+                    Ferramentas Pastorais
+                  </div>
+
+                  {TOOL_GROUPS.map(group => (
+                    <div key={group.label}>
+                      <div style={{
+                        padding: '0.45rem 0.9rem 0.1rem',
+                        fontSize: '0.56rem', fontWeight: 700, letterSpacing: '0.07em',
+                        textTransform: 'uppercase', color: 'var(--text-muted)',
+                      }}>
+                        {group.label}
+                      </div>
+                      {group.items.map(item => {
+                        const isActive = activeSlug === item.slug
+                        return (
+                          <button
+                            key={item.slug}
+                            onClick={() => { navigate(item.slug); setToolsOpen(false) }}
+                            style={{
+                              width: '100%', textAlign: 'left',
+                              padding: '0.36rem 0.9rem',
+                              background: isActive ? `${toolsColor}0C` : 'transparent',
+                              border: 'none', cursor: 'pointer',
+                              fontFamily: 'inherit', fontSize: '0.8rem',
+                              color: isActive ? toolsColor : 'var(--text-secondary)',
+                              fontWeight: isActive ? 600 : 400,
+                              transition: 'background 0.1s, color 0.1s',
+                            }}
+                            onMouseEnter={e => {
+                              if (!isActive) {
+                                e.currentTarget.style.background = 'var(--surface-2)'
+                                e.currentTarget.style.color = 'var(--text-primary)'
+                              }
+                            }}
+                            onMouseLeave={e => {
+                              if (!isActive) {
+                                e.currentTarget.style.background = 'transparent'
+                                e.currentTarget.style.color = 'var(--text-secondary)'
+                              }
+                            }}
+                          >
+                            {item.label}
+                          </button>
+                        )
+                      })}
+                    </div>
+                  ))}
+                  <div style={{ height: '0.4rem' }} />
+                </div>
+              )}
+
+              {/* Botão lamparina */}
+              <button
+                onClick={() => setToolsOpen(o => !o)}
+                title="Ferramentas pastorais"
+                style={{
+                  width: '40px', height: '40px', borderRadius: '50%',
+                  background: (toolsOpen || isInTools) ? toolsColor : 'var(--surface)',
+                  border: `1.5px solid ${(toolsOpen || isInTools) ? toolsColor : 'var(--border)'}`,
+                  cursor: 'pointer',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  boxShadow: '0 2px 12px rgba(0,0,0,0.13)',
+                  transition: 'all 0.15s',
+                  color: (toolsOpen || isInTools) ? '#fff' : 'var(--text-secondary)',
+                }}
+                onMouseEnter={e => {
+                  if (!toolsOpen && !isInTools) {
+                    e.currentTarget.style.borderColor = toolsColor
+                    e.currentTarget.style.color = toolsColor
+                    e.currentTarget.style.background = `${toolsColor}0C`
+                  }
+                }}
+                onMouseLeave={e => {
+                  if (!toolsOpen && !isInTools) {
+                    e.currentTarget.style.borderColor = 'var(--border)'
+                    e.currentTarget.style.color = 'var(--text-secondary)'
+                    e.currentTarget.style.background = 'var(--surface)'
+                  }
+                }}
+              >
+                <Lightbulb size={16} strokeWidth={1.75} />
+              </button>
+            </div>
+          </>
+        )
+      })()}
+
     </div>
   )
 }
