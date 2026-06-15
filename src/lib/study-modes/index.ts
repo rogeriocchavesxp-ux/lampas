@@ -546,8 +546,7 @@ const ESTUDO_TEMATICO: StudyModeConfig = {
         id: 'et_definir_mode', label: 'Definição', subtitle: 'O tema e a questão',
         color: '#065F46', bgActive: 'rgba(6,95,70,0.08)',
         groups: [
-          { id: 'et_definicao_grp',     label: 'Definição do Tema' },
-          { id: 'preparar_visao_geral', label: 'Visão Geral' },
+          { id: 'et_definicao_grp', label: 'Definição do Tema' },
         ],
       }],
     },
@@ -559,7 +558,6 @@ const ESTUDO_TEMATICO: StudyModeConfig = {
         id: 'et_investigar_mode', label: 'Investigação', subtitle: 'Rastreio canônico do tema',
         color: 'var(--accent)', bgActive: 'rgba(30,77,140,0.08)',
         groups: [
-          { id: 'investigar_visao_geral',    label: 'Visão Geral' },
           { id: 'et_ocorrencias_grp',        label: 'Ocorrências Bíblicas' },
           { id: 'et_desenvolvimento_grp',    label: 'Desenvolvimento Progressivo' },
           { id: 'et_teologia_biblica_grp',   label: 'Teologia Bíblica do Tema' },
@@ -577,8 +575,7 @@ const ESTUDO_TEMATICO: StudyModeConfig = {
         id: 'et_formular_mode', label: 'Formulação', subtitle: 'Sistema e produções',
         color: 'var(--ai)', bgActive: 'rgba(139,92,246,0.08)',
         groups: [
-          { id: 'pregar_visao_geral',  label: 'Visão Geral' },
-          { id: 'et_sistematica_grp',  label: 'Teologia Sistemática' },
+          { id: 'et_sistematica_grp', label: 'Teologia Sistemática' },
         ],
       }],
     },
@@ -621,7 +618,6 @@ const ESTUDO_TERMOS: StudyModeConfig = {
         id: 'termos_investigar_mode', label: 'Investigação', subtitle: 'Léxico, cânone e teologia',
         color: '#163A6B', bgActive: 'rgba(30,77,140,0.08)',
         groups: [
-          { id: 'investigar_visao_geral',       label: 'Visão Geral' },
           { id: 'termos_ocorrencias_grp',       label: 'Ocorrências' },
           { id: 'termos_lexico_grp',            label: 'Léxico' },
           { id: 'termos_campo_semantico_grp',   label: 'Campo Semântico' },
@@ -641,7 +637,6 @@ const ESTUDO_TERMOS: StudyModeConfig = {
         id: 'termos_sintese_mode', label: 'Síntese', subtitle: 'Teologia e uso pastoral',
         color: '#7C3AED', bgActive: 'rgba(124,58,237,0.08)',
         groups: [
-          { id: 'pregar_visao_geral',    label: 'Visão Geral' },
           { id: 'termos_sintetizar_grp', label: 'Sintetizar' },
         ],
       }],
