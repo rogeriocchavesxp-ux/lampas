@@ -675,6 +675,9 @@ export default function DashboardClient({ user, projects: initialProjects, profi
   const [estudarQuery,   setEstudarQuery]  = useState('')
   const [detectedRef,    setDetectedRef]   = useState<{ book: string; testament: 'AT' | 'NT'; passage: string; studyMode: StudyModeId } | null>(null)
 
+  // View state
+  const [dashView, setDashView] = useState<'lista' | 'livro'>('lista')
+
   // Delete state
   const [deleteTarget,     setDeleteTarget]     = useState<Project | null>(null)
   const [deleteConfirming, setDeleteConfirming] = useState(false)
@@ -707,6 +710,40 @@ export default function DashboardClient({ user, projects: initialProjects, profi
   const totalCount       = dashboardProjects.length
   // Invariant: totalCount === activeCount + completedCount (every project has status)
   const studiedBooks     = useMemo(() => new Set(dashboardProjects.map(p => p.book).filter((b): b is string => !!b && b !== '—')), [dashboardProjects])
+
+  const ALL_BOOKS = useMemo(() => [...BOOKS_AT, ...BOOKS_NT], [])
+
+  const projectsByBook = useMemo(() => {
+    const map = new Map<string, Project[]>()
+    for (const p of dashboardProjects) {
+      const key = (p.book && p.book !== '—') ? p.book : '__sem_livro__'
+      map.set(key, [...(map.get(key) ?? []), p])
+    }
+    return map
+  }, [dashboardProjects])
+
+  const booksSorted = useMemo(() => {
+    const withBook = [...projectsByBook.keys()].filter(k => k !== '__sem_livro__')
+    withBook.sort((a, b) => {
+      const ai = ALL_BOOKS.indexOf(a)
+      const bi = ALL_BOOKS.indexOf(b)
+      if (ai === -1 && bi === -1) return a.localeCompare(b, 'pt-BR')
+      if (ai === -1) return 1
+      if (bi === -1) return -1
+      return ai - bi
+    })
+    return withBook
+  }, [projectsByBook, ALL_BOOKS])
+
+  const [expandedBooks, setExpandedBooks] = useState<Set<string>>(new Set())
+
+  function toggleBook(book: string) {
+    setExpandedBooks(prev => {
+      const next = new Set(prev)
+      if (next.has(book)) next.delete(book); else next.add(book)
+      return next
+    })
+  }
 
   const publishedProjects = useMemo(
     () => dashboardProjects.filter(project => project.published),
@@ -1034,18 +1071,186 @@ export default function DashboardClient({ user, projects: initialProjects, profi
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '2.5rem' }}>
 
-            {/* ── Continuar Estudando ── */}
+            {/* ── Estudos ── */}
             <section>
-              <DashLabel>Continuar Estudando</DashLabel>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(270px, 1fr))', gap: '0.85rem', marginTop: '0.85rem' }}>
-                {recentActiveProjects4.map(p => (
-                  <StudyCard
-                    key={p.id} project={p}
-                    onClick={() => router.push(`/workspace/${p.id}`)}
-                    onDelete={() => setDeleteTarget(p)}
-                  />
-                ))}
+              {/* Header com toggle de visualização */}
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.85rem' }}>
+                <DashLabel>
+                  {dashView === 'lista' ? 'Continuar Estudando' : 'Estudos por Livro'}
+                </DashLabel>
+                <div style={{
+                  display: 'flex', background: 'var(--surface-2)',
+                  border: '1px solid var(--border-subtle)', borderRadius: '7px',
+                  padding: '2px', gap: '2px',
+                }}>
+                  {([
+                    { id: 'lista', label: 'Lista' },
+                    { id: 'livro', label: 'Por Livro' },
+                  ] as const).map(v => (
+                    <button
+                      key={v.id}
+                      onClick={() => setDashView(v.id)}
+                      style={{
+                        background: dashView === v.id ? 'var(--surface)' : 'transparent',
+                        border: dashView === v.id ? '1px solid var(--border-subtle)' : '1px solid transparent',
+                        borderRadius: '5px',
+                        padding: '0.22rem 0.7rem',
+                        fontSize: '0.72rem', fontWeight: dashView === v.id ? 700 : 500,
+                        color: dashView === v.id ? 'var(--text-primary)' : 'var(--text-muted)',
+                        cursor: 'pointer', fontFamily: 'inherit',
+                        transition: 'all 0.12s',
+                        boxShadow: dashView === v.id ? '0 1px 3px rgba(0,0,0,0.08)' : 'none',
+                      }}
+                    >
+                      {v.label}
+                    </button>
+                  ))}
+                </div>
               </div>
+
+              {dashView === 'lista' ? (
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(270px, 1fr))', gap: '0.85rem' }}>
+                  {recentActiveProjects4.map(p => (
+                    <StudyCard
+                      key={p.id} project={p}
+                      onClick={() => router.push(`/workspace/${p.id}`)}
+                      onDelete={() => setDeleteTarget(p)}
+                    />
+                  ))}
+                </div>
+              ) : (
+                /* ── Vista Por Livro ── */
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                  {booksSorted.map(book => {
+                    const bookProjects = projectsByBook.get(book) ?? []
+                    const open = expandedBooks.has(book)
+                    const testament = BOOKS_AT.includes(book) ? 'AT' : 'NT'
+                    return (
+                      <div key={book} style={{
+                        border: '1px solid var(--border-subtle)',
+                        borderRadius: '10px',
+                        overflow: 'hidden',
+                        background: 'var(--surface)',
+                      }}>
+                        <button
+                          onClick={() => toggleBook(book)}
+                          style={{
+                            width: '100%', border: 'none', background: 'transparent',
+                            display: 'flex', alignItems: 'center', gap: '0.7rem',
+                            padding: '0.75rem 1rem', cursor: 'pointer', fontFamily: 'inherit',
+                            textAlign: 'left',
+                          }}
+                        >
+                          <span style={{
+                            fontSize: '0.58rem', fontWeight: 700, letterSpacing: '0.06em',
+                            color: testament === 'AT' ? '#B45309' : '#1E4D8C',
+                            background: testament === 'AT' ? 'rgba(180,83,9,0.08)' : 'rgba(30,77,140,0.08)',
+                            border: `1px solid ${testament === 'AT' ? 'rgba(180,83,9,0.25)' : 'rgba(30,77,140,0.2)'}`,
+                            borderRadius: '4px', padding: '0.06rem 0.38rem',
+                            flexShrink: 0,
+                          }}>
+                            {testament}
+                          </span>
+                          <span style={{ flex: 1, fontSize: '0.88rem', fontWeight: 700, color: 'var(--text-primary)' }}>
+                            {book}
+                          </span>
+                          <span style={{
+                            fontSize: '0.68rem', color: 'var(--text-muted)',
+                            border: '1px solid var(--border-subtle)', borderRadius: '99px',
+                            padding: '0.05rem 0.42rem', flexShrink: 0,
+                          }}>
+                            {bookProjects.length}
+                          </span>
+                          <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)', flexShrink: 0 }}>
+                            {open ? '▲' : '▼'}
+                          </span>
+                        </button>
+                        {open && (
+                          <div style={{
+                            borderTop: '1px solid var(--border-subtle)',
+                            padding: '0.7rem',
+                            display: 'grid',
+                            gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))',
+                            gap: '0.65rem',
+                          }}>
+                            {bookProjects.map(p => (
+                              <StudyCard
+                                key={p.id} project={p}
+                                onClick={() => router.push(`/workspace/${p.id}`)}
+                                onDelete={() => setDeleteTarget(p)}
+                              />
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    )
+                  })}
+                  {/* Sem livro (temático, termos, etc.) */}
+                  {(projectsByBook.get('__sem_livro__') ?? []).length > 0 && (() => {
+                    const semLivroProjects = projectsByBook.get('__sem_livro__') ?? []
+                    const open = expandedBooks.has('__sem_livro__')
+                    return (
+                      <div style={{
+                        border: '1px solid var(--border-subtle)',
+                        borderRadius: '10px',
+                        overflow: 'hidden',
+                        background: 'var(--surface)',
+                      }}>
+                        <button
+                          onClick={() => toggleBook('__sem_livro__')}
+                          style={{
+                            width: '100%', border: 'none', background: 'transparent',
+                            display: 'flex', alignItems: 'center', gap: '0.7rem',
+                            padding: '0.75rem 1rem', cursor: 'pointer', fontFamily: 'inherit',
+                            textAlign: 'left',
+                          }}
+                        >
+                          <span style={{
+                            fontSize: '0.58rem', fontWeight: 700, letterSpacing: '0.06em',
+                            color: '#6D28D9',
+                            background: 'rgba(109,40,217,0.07)',
+                            border: '1px solid rgba(109,40,217,0.2)',
+                            borderRadius: '4px', padding: '0.06rem 0.38rem',
+                            flexShrink: 0,
+                          }}>
+                            Temático
+                          </span>
+                          <span style={{ flex: 1, fontSize: '0.88rem', fontWeight: 700, color: 'var(--text-primary)' }}>
+                            Temas e Termos
+                          </span>
+                          <span style={{
+                            fontSize: '0.68rem', color: 'var(--text-muted)',
+                            border: '1px solid var(--border-subtle)', borderRadius: '99px',
+                            padding: '0.05rem 0.42rem', flexShrink: 0,
+                          }}>
+                            {semLivroProjects.length}
+                          </span>
+                          <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)', flexShrink: 0 }}>
+                            {open ? '▲' : '▼'}
+                          </span>
+                        </button>
+                        {open && (
+                          <div style={{
+                            borderTop: '1px solid var(--border-subtle)',
+                            padding: '0.7rem',
+                            display: 'grid',
+                            gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))',
+                            gap: '0.65rem',
+                          }}>
+                            {semLivroProjects.map(p => (
+                              <StudyCard
+                                key={p.id} project={p}
+                                onClick={() => router.push(`/workspace/${p.id}`)}
+                                onDelete={() => setDeleteTarget(p)}
+                              />
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    )
+                  })()}
+                </div>
+              )}
             </section>
 
             {/* ── Próximos Eventos ── */}

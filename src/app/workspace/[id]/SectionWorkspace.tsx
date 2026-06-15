@@ -433,13 +433,17 @@ export default function SectionWorkspace({
     <div style={{ maxWidth: '820px', margin: '0 auto', padding: '2.5rem clamp(1.5rem, 4vw, 2.5rem) 6rem', fontFamily: 'var(--font-sans)' }}>
 
       {/* Breadcrumb */}
+      {(() => {
+        const isThematicLexical = sectionDef.group.startsWith('termos_') || sectionDef.group.startsWith('et_')
+        const showPhaseBadge = !isThematicLexical && (sectionDef.phase === 'comunicar' || sectionDef.phase === 'preparar')
+        return (
       <div style={{
         display: 'flex', alignItems: 'center', gap: '0.4rem',
         fontSize: '0.68rem', color: 'var(--text-muted)',
         textTransform: 'uppercase', letterSpacing: '0.07em',
         marginBottom: '1.25rem',
       }}>
-        {(sectionDef.phase === 'comunicar' || sectionDef.phase === 'preparar') && (
+        {showPhaseBadge && (
           <>
             <span style={{
               color: theme.color,
@@ -454,10 +458,14 @@ export default function SectionWorkspace({
             <span style={{ color: 'var(--border)' }}>·</span>
           </>
         )}
-        <span style={{ color: moduleColor, fontWeight: '600' }}>
-          {sectionDef.module.charAt(0).toUpperCase() + sectionDef.module.slice(1)}
-        </span>
-        <span style={{ color: 'var(--border)' }}>·</span>
+        {!isThematicLexical && (
+          <>
+            <span style={{ color: moduleColor, fontWeight: '600' }}>
+              {sectionDef.module.charAt(0).toUpperCase() + sectionDef.module.slice(1)}
+            </span>
+            <span style={{ color: 'var(--border)' }}>·</span>
+          </>
+        )}
         <span>{sectionDef.groupLabel}</span>
         <span style={{
           marginLeft: 'auto',
@@ -468,6 +476,8 @@ export default function SectionWorkspace({
           {savedLabel || '·'}
         </span>
       </div>
+        )
+      })()}
 
       {/* Section title + orientation button */}
       <div style={{ display: 'flex', alignItems: 'flex-start', gap: '0.65rem', marginBottom: '0.5rem' }}>
