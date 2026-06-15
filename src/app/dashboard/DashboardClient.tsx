@@ -294,6 +294,233 @@ const DETECTED_LABEL: Partial<Record<StudyModeId, string>> = {
   exegese_biblica:            'Texto Bíblico',
 }
 
+// ── Detecção automática de referências bíblicas ──────────────────────────
+
+type BibleBookEntry = { testament: 'AT' | 'NT'; canonical: string }
+
+const BIBLE_BOOK_MAP: Record<string, BibleBookEntry> = {
+  // Pentateuco
+  'genesis':     { testament: 'AT', canonical: 'Gênesis' },
+  'gn':          { testament: 'AT', canonical: 'Gênesis' },
+  'gen':         { testament: 'AT', canonical: 'Gênesis' },
+  'exodo':       { testament: 'AT', canonical: 'Êxodo' },
+  'ex':          { testament: 'AT', canonical: 'Êxodo' },
+  'levitico':    { testament: 'AT', canonical: 'Levítico' },
+  'lv':          { testament: 'AT', canonical: 'Levítico' },
+  'lev':         { testament: 'AT', canonical: 'Levítico' },
+  'numeros':     { testament: 'AT', canonical: 'Números' },
+  'nm':          { testament: 'AT', canonical: 'Números' },
+  'num':         { testament: 'AT', canonical: 'Números' },
+  'deuteronomio':{ testament: 'AT', canonical: 'Deuteronômio' },
+  'dt':          { testament: 'AT', canonical: 'Deuteronômio' },
+  'deut':        { testament: 'AT', canonical: 'Deuteronômio' },
+  // Históricos
+  'josue':       { testament: 'AT', canonical: 'Josué' },
+  'js':          { testament: 'AT', canonical: 'Josué' },
+  'jos':         { testament: 'AT', canonical: 'Josué' },
+  'juizes':      { testament: 'AT', canonical: 'Juízes' },
+  'jz':          { testament: 'AT', canonical: 'Juízes' },
+  'jui':         { testament: 'AT', canonical: 'Juízes' },
+  'rute':        { testament: 'AT', canonical: 'Rute' },
+  'rt':          { testament: 'AT', canonical: 'Rute' },
+  '1 samuel':    { testament: 'AT', canonical: '1 Samuel' },
+  '1samuel':     { testament: 'AT', canonical: '1 Samuel' },
+  '1sm':         { testament: 'AT', canonical: '1 Samuel' },
+  '2 samuel':    { testament: 'AT', canonical: '2 Samuel' },
+  '2samuel':     { testament: 'AT', canonical: '2 Samuel' },
+  '2sm':         { testament: 'AT', canonical: '2 Samuel' },
+  '1 reis':      { testament: 'AT', canonical: '1 Reis' },
+  '1reis':       { testament: 'AT', canonical: '1 Reis' },
+  '1rs':         { testament: 'AT', canonical: '1 Reis' },
+  '2 reis':      { testament: 'AT', canonical: '2 Reis' },
+  '2reis':       { testament: 'AT', canonical: '2 Reis' },
+  '2rs':         { testament: 'AT', canonical: '2 Reis' },
+  '1 cronicas':  { testament: 'AT', canonical: '1 Crônicas' },
+  '1cronicas':   { testament: 'AT', canonical: '1 Crônicas' },
+  '1cr':         { testament: 'AT', canonical: '1 Crônicas' },
+  '2 cronicas':  { testament: 'AT', canonical: '2 Crônicas' },
+  '2cronicas':   { testament: 'AT', canonical: '2 Crônicas' },
+  '2cr':         { testament: 'AT', canonical: '2 Crônicas' },
+  'esdras':      { testament: 'AT', canonical: 'Esdras' },
+  'esd':         { testament: 'AT', canonical: 'Esdras' },
+  'neemias':     { testament: 'AT', canonical: 'Neemias' },
+  'ne':          { testament: 'AT', canonical: 'Neemias' },
+  'ester':       { testament: 'AT', canonical: 'Ester' },
+  'est':         { testament: 'AT', canonical: 'Ester' },
+  // Poéticos
+  'job':         { testament: 'AT', canonical: 'Jó' },
+  'salmos':      { testament: 'AT', canonical: 'Salmos' },
+  'sal':         { testament: 'AT', canonical: 'Salmos' },
+  'sl':          { testament: 'AT', canonical: 'Salmos' },
+  'ps':          { testament: 'AT', canonical: 'Salmos' },
+  'proverbios':  { testament: 'AT', canonical: 'Provérbios' },
+  'pv':          { testament: 'AT', canonical: 'Provérbios' },
+  'prov':        { testament: 'AT', canonical: 'Provérbios' },
+  'eclesiastes': { testament: 'AT', canonical: 'Eclesiastes' },
+  'ec':          { testament: 'AT', canonical: 'Eclesiastes' },
+  'ecl':         { testament: 'AT', canonical: 'Eclesiastes' },
+  'cantico dos canticos': { testament: 'AT', canonical: 'Cântico dos Cânticos' },
+  'cantico':     { testament: 'AT', canonical: 'Cântico dos Cânticos' },
+  'ct':          { testament: 'AT', canonical: 'Cântico dos Cânticos' },
+  // Profecias Maiores
+  'isaias':      { testament: 'AT', canonical: 'Isaías' },
+  'is':          { testament: 'AT', canonical: 'Isaías' },
+  'isa':         { testament: 'AT', canonical: 'Isaías' },
+  'jeremias':    { testament: 'AT', canonical: 'Jeremias' },
+  'jr':          { testament: 'AT', canonical: 'Jeremias' },
+  'jer':         { testament: 'AT', canonical: 'Jeremias' },
+  'lamentacoes': { testament: 'AT', canonical: 'Lamentações' },
+  'lm':          { testament: 'AT', canonical: 'Lamentações' },
+  'lam':         { testament: 'AT', canonical: 'Lamentações' },
+  'ezequiel':    { testament: 'AT', canonical: 'Ezequiel' },
+  'ez':          { testament: 'AT', canonical: 'Ezequiel' },
+  'ezeq':        { testament: 'AT', canonical: 'Ezequiel' },
+  'daniel':      { testament: 'AT', canonical: 'Daniel' },
+  'dn':          { testament: 'AT', canonical: 'Daniel' },
+  'dan':         { testament: 'AT', canonical: 'Daniel' },
+  // Profecias Menores
+  'oseias':      { testament: 'AT', canonical: 'Oséias' },
+  'os':          { testament: 'AT', canonical: 'Oséias' },
+  'joel':        { testament: 'AT', canonical: 'Joel' },
+  'jl':          { testament: 'AT', canonical: 'Joel' },
+  'amos':        { testament: 'AT', canonical: 'Amós' },
+  'am':          { testament: 'AT', canonical: 'Amós' },
+  'obadias':     { testament: 'AT', canonical: 'Obadias' },
+  'ob':          { testament: 'AT', canonical: 'Obadias' },
+  'abd':         { testament: 'AT', canonical: 'Obadias' },
+  'jonas':       { testament: 'AT', canonical: 'Jonas' },
+  'jon':         { testament: 'AT', canonical: 'Jonas' },
+  'miqueias':    { testament: 'AT', canonical: 'Miquéias' },
+  'mq':          { testament: 'AT', canonical: 'Miquéias' },
+  'mi':          { testament: 'AT', canonical: 'Miquéias' },
+  'naum':        { testament: 'AT', canonical: 'Naum' },
+  'na':          { testament: 'AT', canonical: 'Naum' },
+  'habacuque':   { testament: 'AT', canonical: 'Habacuque' },
+  'hc':          { testament: 'AT', canonical: 'Habacuque' },
+  'hab':         { testament: 'AT', canonical: 'Habacuque' },
+  'sofonias':    { testament: 'AT', canonical: 'Sofonias' },
+  'sf':          { testament: 'AT', canonical: 'Sofonias' },
+  'sof':         { testament: 'AT', canonical: 'Sofonias' },
+  'ageu':        { testament: 'AT', canonical: 'Ageu' },
+  'ag':          { testament: 'AT', canonical: 'Ageu' },
+  'zacarias':    { testament: 'AT', canonical: 'Zacarias' },
+  'zc':          { testament: 'AT', canonical: 'Zacarias' },
+  'zac':         { testament: 'AT', canonical: 'Zacarias' },
+  'malaquias':   { testament: 'AT', canonical: 'Malaquias' },
+  'ml':          { testament: 'AT', canonical: 'Malaquias' },
+  'mal':         { testament: 'AT', canonical: 'Malaquias' },
+  // Evangelhos
+  'mateus':      { testament: 'NT', canonical: 'Mateus' },
+  'mt':          { testament: 'NT', canonical: 'Mateus' },
+  'mat':         { testament: 'NT', canonical: 'Mateus' },
+  'marcos':      { testament: 'NT', canonical: 'Marcos' },
+  'mc':          { testament: 'NT', canonical: 'Marcos' },
+  'mar':         { testament: 'NT', canonical: 'Marcos' },
+  'lucas':       { testament: 'NT', canonical: 'Lucas' },
+  'lc':          { testament: 'NT', canonical: 'Lucas' },
+  'luc':         { testament: 'NT', canonical: 'Lucas' },
+  'joao':        { testament: 'NT', canonical: 'João' },
+  'jo':          { testament: 'NT', canonical: 'João' },
+  'jn':          { testament: 'NT', canonical: 'João' },
+  'atos':        { testament: 'NT', canonical: 'Atos' },
+  'at':          { testament: 'NT', canonical: 'Atos' },
+  'atos dos apostolos': { testament: 'NT', canonical: 'Atos' },
+  // Cartas Paulinas
+  'romanos':     { testament: 'NT', canonical: 'Romanos' },
+  'rm':          { testament: 'NT', canonical: 'Romanos' },
+  'rom':         { testament: 'NT', canonical: 'Romanos' },
+  '1 corintios': { testament: 'NT', canonical: '1 Coríntios' },
+  '1corintios':  { testament: 'NT', canonical: '1 Coríntios' },
+  '1co':         { testament: 'NT', canonical: '1 Coríntios' },
+  '2 corintios': { testament: 'NT', canonical: '2 Coríntios' },
+  '2corintios':  { testament: 'NT', canonical: '2 Coríntios' },
+  '2co':         { testament: 'NT', canonical: '2 Coríntios' },
+  'galatas':     { testament: 'NT', canonical: 'Gálatas' },
+  'gl':          { testament: 'NT', canonical: 'Gálatas' },
+  'gal':         { testament: 'NT', canonical: 'Gálatas' },
+  'efesios':     { testament: 'NT', canonical: 'Efésios' },
+  'ef':          { testament: 'NT', canonical: 'Efésios' },
+  'efe':         { testament: 'NT', canonical: 'Efésios' },
+  'filipenses':  { testament: 'NT', canonical: 'Filipenses' },
+  'fp':          { testament: 'NT', canonical: 'Filipenses' },
+  'fil':         { testament: 'NT', canonical: 'Filipenses' },
+  'php':         { testament: 'NT', canonical: 'Filipenses' },
+  'colossenses': { testament: 'NT', canonical: 'Colossenses' },
+  'cl':          { testament: 'NT', canonical: 'Colossenses' },
+  'col':         { testament: 'NT', canonical: 'Colossenses' },
+  '1 tessalonicenses': { testament: 'NT', canonical: '1 Tessalonicenses' },
+  '1tessalonicenses':  { testament: 'NT', canonical: '1 Tessalonicenses' },
+  '1ts':         { testament: 'NT', canonical: '1 Tessalonicenses' },
+  '2 tessalonicenses': { testament: 'NT', canonical: '2 Tessalonicenses' },
+  '2tessalonicenses':  { testament: 'NT', canonical: '2 Tessalonicenses' },
+  '2ts':         { testament: 'NT', canonical: '2 Tessalonicenses' },
+  '1 timoteo':   { testament: 'NT', canonical: '1 Timóteo' },
+  '1timoteo':    { testament: 'NT', canonical: '1 Timóteo' },
+  '1tm':         { testament: 'NT', canonical: '1 Timóteo' },
+  '2 timoteo':   { testament: 'NT', canonical: '2 Timóteo' },
+  '2timoteo':    { testament: 'NT', canonical: '2 Timóteo' },
+  '2tm':         { testament: 'NT', canonical: '2 Timóteo' },
+  'tito':        { testament: 'NT', canonical: 'Tito' },
+  'tt':          { testament: 'NT', canonical: 'Tito' },
+  'ti':          { testament: 'NT', canonical: 'Tito' },
+  'filemom':     { testament: 'NT', canonical: 'Filemom' },
+  'fm':          { testament: 'NT', canonical: 'Filemom' },
+  'flm':         { testament: 'NT', canonical: 'Filemom' },
+  // Cartas Gerais + Apocalipse
+  'hebreus':     { testament: 'NT', canonical: 'Hebreus' },
+  'hb':          { testament: 'NT', canonical: 'Hebreus' },
+  'heb':         { testament: 'NT', canonical: 'Hebreus' },
+  'tiago':       { testament: 'NT', canonical: 'Tiago' },
+  'tg':          { testament: 'NT', canonical: 'Tiago' },
+  'tia':         { testament: 'NT', canonical: 'Tiago' },
+  '1 pedro':     { testament: 'NT', canonical: '1 Pedro' },
+  '1pedro':      { testament: 'NT', canonical: '1 Pedro' },
+  '1pe':         { testament: 'NT', canonical: '1 Pedro' },
+  '2 pedro':     { testament: 'NT', canonical: '2 Pedro' },
+  '2pedro':      { testament: 'NT', canonical: '2 Pedro' },
+  '2pe':         { testament: 'NT', canonical: '2 Pedro' },
+  '1 joao':      { testament: 'NT', canonical: '1 João' },
+  '1joao':       { testament: 'NT', canonical: '1 João' },
+  '1jo':         { testament: 'NT', canonical: '1 João' },
+  '2 joao':      { testament: 'NT', canonical: '2 João' },
+  '2joao':       { testament: 'NT', canonical: '2 João' },
+  '2jo':         { testament: 'NT', canonical: '2 João' },
+  '3 joao':      { testament: 'NT', canonical: '3 João' },
+  '3joao':       { testament: 'NT', canonical: '3 João' },
+  '3jo':         { testament: 'NT', canonical: '3 João' },
+  'judas':       { testament: 'NT', canonical: 'Judas' },
+  'jd':          { testament: 'NT', canonical: 'Judas' },
+  'jud':         { testament: 'NT', canonical: 'Judas' },
+  'apocalipse':  { testament: 'NT', canonical: 'Apocalipse' },
+  'ap':          { testament: 'NT', canonical: 'Apocalipse' },
+  'apo':         { testament: 'NT', canonical: 'Apocalipse' },
+  'rv':          { testament: 'NT', canonical: 'Apocalipse' },
+  'rev':         { testament: 'NT', canonical: 'Apocalipse' },
+}
+
+const BIBLE_BOOK_KEYS_BY_LENGTH = Object.keys(BIBLE_BOOK_MAP).sort((a, b) => b.length - a.length)
+
+function normalizeBible(s: string): string {
+  return s.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '')
+}
+
+function parseBiblicalRef(query: string): {
+  book: string; testament: 'AT' | 'NT'; passage: string; studyMode: StudyModeId
+} | null {
+  const norm = normalizeBible(query.trim())
+  if (!norm) return null
+  for (const key of BIBLE_BOOK_KEYS_BY_LENGTH) {
+    if (!norm.startsWith(key)) continue
+    const rest = norm.slice(key.length)
+    if (rest !== '' && !/^\s+\d/.test(rest)) continue
+    const passage = rest.trim()
+    if (!passage) return null  // livro sem capítulo = incompleto
+    const { canonical, testament } = BIBLE_BOOK_MAP[key]
+    return { book: canonical, testament, passage, studyMode: detectStudyMode(canonical) }
+  }
+  return null
+}
+
 // ── Helpers ───────────────────────────────────────────────────────────────
 
 function formatDate(dateStr: string): string {
@@ -446,6 +673,7 @@ export default function DashboardClient({ user, projects: initialProjects, profi
   const [form,           setForm]          = useState<ProjectForm>(createInitialForm())
   const [estudarType,    setEstudarType]   = useState<'texto' | 'tema' | 'doutrina' | 'termo' | null>(null)
   const [estudarQuery,   setEstudarQuery]  = useState('')
+  const [detectedRef,    setDetectedRef]   = useState<{ book: string; testament: 'AT' | 'NT'; passage: string; studyMode: StudyModeId } | null>(null)
 
   // Delete state
   const [deleteTarget,     setDeleteTarget]     = useState<Project | null>(null)
@@ -538,6 +766,7 @@ export default function DashboardClient({ user, projects: initialProjects, profi
     setForm(createInitialForm())
     setEstudarType(null)
     setEstudarQuery('')
+    setDetectedRef(null)
     setShowNew(true)
   }
 
@@ -576,11 +805,89 @@ export default function DashboardClient({ user, projects: initialProjects, profi
     }
   }
 
+  // Detecção automática de referência bíblica ao digitar no campo Estudar
+  useEffect(() => {
+    const q = estudarQuery.trim()
+    if (!q) { setDetectedRef(null); return }
+    const ref = parseBiblicalRef(q)
+    if (ref) {
+      setDetectedRef(ref)
+      setEstudarType('texto')
+      setSelectedUiMode('exegetico')
+      setSelectedMode(ref.studyMode)
+    } else {
+      setDetectedRef(null)
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [estudarQuery])
+
   // Detecção automática de gênero ao escolher o livro no modo exegético
   useEffect(() => {
     if (selectedUiMode !== 'exegetico' || !form.book) return
     setSelectedMode(detectStudyMode(form.book))
   }, [selectedUiMode, form.book])
+
+  async function createStudyDirect() {
+    if (!detectedRef) return
+    setCreateError(null)
+    setCreating(true)
+    const title = buildReferenceTitle(detectedRef.book, detectedRef.passage)
+    const payload = {
+      user_id:           user.id,
+      title,
+      book:              detectedRef.book,
+      passage_ref:       detectedRef.passage,
+      testament:         detectedRef.testament,
+      original_language: detectedRef.testament === 'AT' ? 'hebraico' : 'grego',
+      bible_version:     'ACF',
+      status:            'draft',
+      study_mode:        detectedRef.studyMode,
+      project_type:      LEGACY_TYPE[detectedRef.studyMode] ?? 'exegese',
+      meta:              { creation_ui_mode: 'exegetico' },
+      published:         false,
+    }
+    try {
+      const { data, error } = await supabase.from('projects').insert(payload).select().single()
+      if (error) { setCreateError(`Erro: ${error.message}`); return }
+      if (data) { setProjects(prev => [data as Project, ...prev]); router.push(`/workspace/${data.id}`) }
+    } catch {
+      setCreateError('Não foi possível criar o projeto. Tente novamente.')
+    } finally {
+      setCreating(false)
+    }
+  }
+
+  async function createTopicDirect(uiModeId: 'tematico' | 'doutrinario' | 'termos', topic: string) {
+    const modeMap: Record<string, StudyModeId> = {
+      tematico: 'estudo_tematico', doutrinario: 'estudo_doutrinario', termos: 'estudo_termos',
+    }
+    const studyMode = modeMap[uiModeId] as StudyModeId
+    setCreateError(null)
+    setCreating(true)
+    const payload = {
+      user_id:           user.id,
+      title:             topic,
+      book:              '—',
+      passage_ref:       topic,
+      testament:         'AT' as const,
+      original_language: 'hebraico',
+      bible_version:     'ACF',
+      status:            'draft',
+      study_mode:        studyMode,
+      project_type:      LEGACY_TYPE[studyMode] ?? 'estudo_doutrinario',
+      meta:              { topic, creation_ui_mode: uiModeId },
+      published:         false,
+    }
+    try {
+      const { data, error } = await supabase.from('projects').insert(payload).select().single()
+      if (error) { setCreateError(`Erro: ${error.message}`); return }
+      if (data) { setProjects(prev => [data as Project, ...prev]); router.push(`/workspace/${data.id}`) }
+    } catch {
+      setCreateError('Não foi possível criar o projeto. Tente novamente.')
+    } finally {
+      setCreating(false)
+    }
+  }
 
   function updatePassageForm(patch: Partial<typeof form>) {
     setForm(current => {
@@ -909,7 +1216,7 @@ export default function DashboardClient({ user, projects: initialProjects, profi
                       ← Voltar
                     </button>
 
-                    <div style={{ marginBottom: '1rem' }}>
+                    <div style={{ marginBottom: detectedRef ? '0.6rem' : '1rem' }}>
                       <input
                         value={estudarQuery}
                         onChange={e => setEstudarQuery(e.target.value)}
@@ -926,6 +1233,21 @@ export default function DashboardClient({ user, projects: initialProjects, profi
                         onBlur={e => { e.currentTarget.style.borderColor = 'var(--border)' }}
                       />
                     </div>
+
+                    {detectedRef && (
+                      <div style={{
+                        display: 'flex', alignItems: 'center', gap: '0.45rem',
+                        background: '#0F766E0A', border: '1px solid #0F766E30',
+                        borderRadius: '7px', padding: '0.4rem 0.75rem',
+                        marginBottom: '0.75rem', fontSize: '0.78rem',
+                      }}>
+                        <span style={{ color: '#0F766E', fontWeight: 700 }}>✓</span>
+                        <span style={{ color: '#0F766E', fontWeight: 600 }}>{detectedRef.book} {detectedRef.passage}</span>
+                        <span style={{ color: 'var(--text-muted)' }}>·</span>
+                        <span style={{ color: 'var(--text-muted)' }}>{detectedRef.testament === 'NT' ? 'Novo Testamento' : 'Antigo Testamento'}</span>
+                        <span style={{ marginLeft: 'auto', color: 'var(--text-muted)', fontSize: '0.68rem' }}>detectado automaticamente</span>
+                      </div>
+                    )}
 
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '0.45rem', marginBottom: '1.5rem' }}>
                       {([
@@ -1028,30 +1350,43 @@ export default function DashboardClient({ user, projects: initialProjects, profi
                   {selectedCreationGroup !== 'armazenar' && (
                     <button
                       onClick={() => {
+                        if (creating) return
+                        if (detectedRef) { createStudyDirect(); return }
+                        if (estudarType && estudarType !== 'texto' && estudarQuery.trim()) {
+                          createTopicDirect(
+                            estudarType === 'tema' ? 'tematico' : estudarType === 'doutrina' ? 'doutrinario' : 'termos',
+                            estudarQuery.trim()
+                          )
+                          return
+                        }
                         if (!estudarType || !selectedUiMode) return
                         if (estudarQuery.trim() && estudarType !== 'texto') {
                           updateTopic(estudarQuery.trim())
                         }
                         setModalStep('form')
                       }}
-                      disabled={!selectedCreationGroup || !estudarType}
+                      disabled={!selectedCreationGroup || (!estudarType && !detectedRef) || creating}
                       style={{
                         flex: 2, padding: '0.6rem',
-                        background: (selectedCreationGroup && estudarType)
+                        background: (selectedCreationGroup && (estudarType || detectedRef) && !creating)
                           ? '#0F766E'
                           : 'var(--surface-3)',
-                        color: (selectedCreationGroup && estudarType) ? '#FFF' : 'var(--text-muted)',
+                        color: (selectedCreationGroup && (estudarType || detectedRef) && !creating) ? '#FFF' : 'var(--text-muted)',
                         border: 'none', borderRadius: '8px',
                         fontWeight: '600',
-                        cursor: (selectedCreationGroup && estudarType) ? 'pointer' : 'not-allowed',
+                        cursor: (selectedCreationGroup && (estudarType || detectedRef) && !creating) ? 'pointer' : 'not-allowed',
                         fontFamily: 'inherit', fontSize: '0.88rem', transition: 'background 0.15s',
                       }}
                     >
-                      {!selectedCreationGroup
-                        ? 'Escolha estudar ou armazenar'
-                        : !estudarType
-                          ? 'Escolha o tipo de estudo'
-                          : `Continuar com ${({ texto: 'Texto Bíblico', tema: 'Tema', doutrina: 'Doutrina', termo: 'Termo' } as const)[estudarType]} →`}
+                      {creating
+                        ? 'Criando…'
+                        : detectedRef
+                          ? `Criar — ${detectedRef.book} ${detectedRef.passage} →`
+                          : !estudarType
+                            ? 'Escolha o tipo de estudo'
+                            : estudarType !== 'texto' && estudarQuery.trim()
+                              ? 'Criar →'
+                              : `Continuar →`}
                     </button>
                   )}
                 </div>
