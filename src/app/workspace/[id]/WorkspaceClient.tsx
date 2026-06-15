@@ -145,6 +145,15 @@ const GROUP_ACCENT_COLORS: Record<string, string> = {
   ec_ocasiao_grp:        '#B45309',
   ec_estrutura_grp:      '#163A6B',
   ec_argumento_grp:      '#7C3AED',
+  // Temático
+  et_definicao_grp:        '#1E40AF',
+  et_ocorrencias_grp:      '#B45309',
+  et_desenvolvimento_grp:  '#0F766E',
+  et_teologia_biblica_grp: '#163A6B',
+  et_relacao_cristo_grp:   '#7C3AED',
+  et_implicacoes_grp:      '#BE185D',
+  et_aplicacoes_grp:       '#1E40AF',
+  et_sistematica_grp:      '#163A6B',
   // Doutrinário
   doutr_conceito_grp:           '#1E40AF',
   doutr_fundbiblica_grp:        '#B45309',
@@ -193,6 +202,15 @@ const GROUP_ICONS: Record<string, LucideIcon> = {
   sermao_pronuntiatio:       Megaphone,
   // Produzir — Comentário
   comentario_expositivo:     MessageSquareText,
+  // Temático
+  et_definicao_grp:        Lightbulb,
+  et_ocorrencias_grp:      BookOpen,
+  et_desenvolvimento_grp:  TrendingUp,
+  et_teologia_biblica_grp: GitBranch,
+  et_relacao_cristo_grp:   Heart,
+  et_implicacoes_grp:      Layers,
+  et_aplicacoes_grp:       GraduationCap,
+  et_sistematica_grp:      Network,
   // Doutrinário
   doutr_conceito_grp:           Lightbulb,
   doutr_fundbiblica_grp:        BookOpen,
