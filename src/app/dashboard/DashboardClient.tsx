@@ -253,11 +253,9 @@ const CREATION_GROUPS: Array<{
   id: CreationGroupId; emoji: string; label: string; description: string; color: string
 }> = [
   { id: 'estudar', emoji: '📖', label: 'Estudar', color: '#0F766E',
-    description: 'Investigue a Escritura, temas e doutrinas antes da produção.' },
-  { id: 'produzir', emoji: '✍️', label: 'Produzir', color: '#7C3AED',
-    description: 'Transforme seus estudos em conteúdo para ensinar, publicar e comunicar.' },
-  { id: 'armazenar', emoji: '🧠', label: 'Armazenar', color: '#B45309',
-    description: 'Preserve conhecimento para reutilização futura. Seu segundo cérebro teológico e ministerial.' },
+    description: 'Investigue um texto bíblico, tema, doutrina ou termo.' },
+  { id: 'armazenar', emoji: '🧠', label: 'Biblioteca', color: '#B45309',
+    description: 'Armazene e organize conhecimento para consulta e reutilização futura.' },
 ]
 
 // Detecção automática de gênero literário pelo livro
@@ -446,6 +444,8 @@ export default function DashboardClient({ user, projects: initialProjects, profi
   const [createError,    setCreateError]   = useState<string | null>(null)
   const [titleEdited,    setTitleEdited]   = useState(false)
   const [form,           setForm]          = useState<ProjectForm>(createInitialForm())
+  const [estudarType,    setEstudarType]   = useState<'texto' | 'tema' | 'doutrina' | 'termo' | null>(null)
+  const [estudarQuery,   setEstudarQuery]  = useState('')
 
   // Delete state
   const [deleteTarget,     setDeleteTarget]     = useState<Project | null>(null)
@@ -536,6 +536,8 @@ export default function DashboardClient({ user, projects: initialProjects, profi
     setCreateError(null)
     setTitleEdited(false)
     setForm(createInitialForm())
+    setEstudarType(null)
+    setEstudarQuery('')
     setShowNew(true)
   }
 
@@ -843,7 +845,7 @@ export default function DashboardClient({ user, projects: initialProjects, profi
           <div style={{
             background: 'var(--surface)', borderRadius: '14px', border: '1px solid var(--border)',
             width: '100%',
-            maxWidth: modalStep === 'mode' ? '760px' : '480px',
+            maxWidth: modalStep === 'mode' ? '520px' : '480px',
             animation: 'fadeIn 0.15s ease-out',
             transition: 'max-width 0.2s ease',
           }}>
@@ -854,26 +856,31 @@ export default function DashboardClient({ user, projects: initialProjects, profi
                 <div style={{ marginBottom: '1.5rem' }}>
                   <h2 style={{ marginBottom: '0.3rem', fontSize: '1.15rem' }}>Novo Projeto</h2>
                   <p style={{ color: 'var(--text-muted)', fontSize: '0.84rem' }}>
-                    Escolha o fluxo natural do Lampas: estudar, produzir ou armazenar.
+                    {!selectedCreationGroup
+                      ? 'Estudar a Escritura ou armazenar conhecimento?'
+                      : selectedCreationGroup === 'estudar'
+                        ? 'O que você deseja estudar?'
+                        : 'O que deseja armazenar?'}
                   </p>
                 </div>
 
                 {!selectedCreationGroup ? (
-                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gap: '0.85rem', marginBottom: '1.5rem' }}>
+                  /* ── Escolha principal: Estudar / Biblioteca ── */
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: '0.85rem', marginBottom: '1.5rem' }}>
                     {CREATION_GROUPS.map(group => (
                       <button
                         key={group.id}
                         onClick={() => {
                           setSelectedCreationGroup(group.id)
                           setSelectedUiMode(null)
-                          if (group.id === 'armazenar') selectUiMode('conhecimento')
+                          setEstudarType(null)
                         }}
                         style={{
-                          textAlign: 'left', padding: '1.15rem',
+                          textAlign: 'left', padding: '1.4rem 1.25rem',
                           background: 'var(--surface-2)',
                           border: '1.5px solid var(--border-subtle)',
                           borderRadius: '12px', cursor: 'pointer', fontFamily: 'inherit',
-                          minHeight: '156px',
+                          minHeight: '140px',
                         }}
                         onMouseEnter={e => {
                           e.currentTarget.style.borderColor = `${group.color}55`
@@ -884,66 +891,127 @@ export default function DashboardClient({ user, projects: initialProjects, profi
                           e.currentTarget.style.background  = 'var(--surface-2)'
                         }}
                       >
-                        <div style={{ fontSize: '1.55rem', marginBottom: '0.65rem' }}>{group.emoji}</div>
-                        <div style={{ fontSize: '1rem', fontWeight: 800, color: group.color, marginBottom: '0.45rem' }}>{group.label}</div>
-                        <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', lineHeight: 1.55, margin: 0 }}>
+                        <div style={{ fontSize: '1.65rem', marginBottom: '0.7rem' }}>{group.emoji}</div>
+                        <div style={{ fontSize: '1.05rem', fontWeight: 800, color: group.color, marginBottom: '0.5rem' }}>{group.label}</div>
+                        <p style={{ fontSize: '0.76rem', color: 'var(--text-muted)', lineHeight: 1.55, margin: 0 }}>
                           {group.description}
                         </p>
                       </button>
                     ))}
                   </div>
-                ) : (
+                ) : selectedCreationGroup === 'estudar' ? (
+                  /* ── Estudar: campo de busca + tipo ── */
                   <>
                     <button
-                      onClick={() => { setSelectedCreationGroup(null); setSelectedUiMode(null); setCreateError(null) }}
-                      style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)', padding: 0, marginBottom: '0.85rem', fontSize: '0.8rem', fontFamily: 'inherit' }}
+                      onClick={() => { setSelectedCreationGroup(null); setSelectedUiMode(null); setEstudarType(null); setEstudarQuery(''); setCreateError(null) }}
+                      style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)', padding: 0, marginBottom: '1rem', fontSize: '0.8rem', fontFamily: 'inherit' }}
                     >
-                      ← Voltar às categorias
+                      ← Voltar
                     </button>
-                    <div style={{ display: 'grid', gridTemplateColumns: selectedCreationGroup === 'produzir' ? '1fr 1fr' : '1fr', gap: '0.7rem', marginBottom: '1.5rem' }}>
-                      {UI_MODES.filter(uiMode => uiMode.group === selectedCreationGroup).map(uiMode => {
-                        const active = selectedUiMode === uiMode.id
+
+                    <div style={{ marginBottom: '1rem' }}>
+                      <input
+                        value={estudarQuery}
+                        onChange={e => setEstudarQuery(e.target.value)}
+                        placeholder="Ex: João 4 · Romanos 8 · Comunhão · Justificação · Família"
+                        autoFocus
+                        style={{
+                          width: '100%', padding: '0.65rem 0.9rem',
+                          background: 'var(--surface-2)', border: '1px solid var(--border)',
+                          borderRadius: '8px', color: 'var(--text-primary)',
+                          fontSize: '0.92rem', outline: 'none', fontFamily: 'inherit',
+                          boxSizing: 'border-box' as const,
+                        }}
+                        onFocus={e => { e.currentTarget.style.borderColor = 'var(--accent)' }}
+                        onBlur={e => { e.currentTarget.style.borderColor = 'var(--border)' }}
+                      />
+                    </div>
+
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.45rem', marginBottom: '1.5rem' }}>
+                      {([
+                        { id: 'texto'    as const, label: 'Texto Bíblico', desc: 'Análise de uma passagem específica da Escritura', uiMode: 'exegetico'   as UiModeId },
+                        { id: 'tema'     as const, label: 'Tema',          desc: 'Rastreie um tema ao longo de toda a Escritura',    uiMode: 'tematico'    as UiModeId },
+                        { id: 'doutrina' as const, label: 'Doutrina',      desc: 'Investigue sistematicamente uma doutrina bíblica', uiMode: 'doutrinario' as UiModeId },
+                        { id: 'termo'    as const, label: 'Termo',         desc: 'Estude palavras bíblicas em profundidade',          uiMode: 'termos'      as UiModeId },
+                      ] as const).map(option => {
+                        const sel = estudarType === option.id
+                        const color = '#0F766E'
                         return (
                           <button
-                            key={uiMode.id}
-                            onClick={() => selectUiMode(uiMode.id)}
+                            key={option.id}
+                            onClick={() => { setEstudarType(option.id); selectUiMode(option.uiMode) }}
                             style={{
-                              textAlign: 'left', padding: '0.95rem 1rem',
-                              background: active ? `${uiMode.color}0A` : 'var(--surface-2)',
-                              border: `1.5px solid ${active ? uiMode.color : 'var(--border-subtle)'}`,
-                              borderRadius: '12px', cursor: 'pointer', fontFamily: 'inherit',
+                              display: 'flex', alignItems: 'center', gap: '0.85rem',
+                              textAlign: 'left', padding: '0.7rem 0.9rem',
+                              background: sel ? `${color}0A` : 'var(--surface-2)',
+                              border: `1.5px solid ${sel ? color : 'var(--border-subtle)'}`,
+                              borderRadius: '9px', cursor: 'pointer', fontFamily: 'inherit',
                               transition: 'all 0.13s',
                             }}
-                            onMouseEnter={e => {
-                              if (!active) {
-                                e.currentTarget.style.borderColor = `${uiMode.color}50`
-                                e.currentTarget.style.background  = `${uiMode.color}05`
-                              }
-                            }}
-                            onMouseLeave={e => {
-                              if (!active) {
-                                e.currentTarget.style.borderColor = 'var(--border-subtle)'
-                                e.currentTarget.style.background  = 'var(--surface-2)'
-                              }
-                            }}
                           >
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.45rem' }}>
-                              <span style={{ fontSize: '1.15rem', lineHeight: 1, flexShrink: 0 }}>{uiMode.emoji}</span>
-                              <span style={{
-                                fontSize: '0.9rem', fontWeight: 750,
-                                color: active ? uiMode.color : 'var(--text-primary)',
-                                transition: 'color 0.13s', lineHeight: 1.2,
-                              }}>
-                                {uiMode.label}
-                              </span>
-                              {active && <span style={{ marginLeft: 'auto', color: uiMode.color, fontSize: '0.8rem', flexShrink: 0 }}>✓</span>}
+                            <div style={{
+                              width: '16px', height: '16px', borderRadius: '50%', flexShrink: 0,
+                              border: `2px solid ${sel ? color : 'var(--border)'}`,
+                              background: sel ? color : 'transparent',
+                              display: 'flex', alignItems: 'center', justifyContent: 'center',
+                            }}>
+                              {sel && <div style={{ width: '5px', height: '5px', background: '#fff', borderRadius: '50%' }} />}
                             </div>
-                            <p style={{ fontSize: '0.72rem', color: 'var(--text-muted)', lineHeight: 1.5, margin: 0 }}>
-                              {uiMode.description}
-                            </p>
+                            <div>
+                              <div style={{ fontSize: '0.88rem', fontWeight: sel ? 700 : 500, color: sel ? color : 'var(--text-primary)' }}>
+                                {option.label}
+                              </div>
+                              <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)', marginTop: '0.08rem' }}>
+                                {option.desc}
+                              </div>
+                            </div>
                           </button>
                         )
                       })}
+                    </div>
+                  </>
+                ) : (
+                  /* ── Biblioteca: grid de tipos de conteúdo ── */
+                  <>
+                    <button
+                      onClick={() => { setSelectedCreationGroup(null); setSelectedUiMode(null); setCreateError(null) }}
+                      style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)', padding: 0, marginBottom: '1rem', fontSize: '0.8rem', fontFamily: 'inherit' }}
+                    >
+                      ← Voltar
+                    </button>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '0.45rem', marginBottom: '1.5rem' }}>
+                      {([
+                        { emoji: '🎓', label: 'Curso',          act: () => { selectUiMode('curso');           setModalStep('form') } },
+                        { emoji: '🏫', label: 'Aula',           act: () => { selectUiMode('aula');            setModalStep('form') } },
+                        { emoji: '🎤', label: 'Palestra',       act: () => { selectUiMode('palestra');        setModalStep('form') } },
+                        { emoji: '📕', label: 'Livro',          act: () => { selectUiMode('livro');           setModalStep('form') } },
+                        { emoji: '📙', label: 'E-book',         act: () => { selectUiMode('ebook');           setModalStep('form') } },
+                        { emoji: '📝', label: 'Artigo',         act: () => { selectUiMode('artigo');          setModalStep('form') } },
+                        { emoji: '🧩', label: 'Série',          act: () => { selectUiMode('serie_mensagens'); setModalStep('form') } },
+                        { emoji: '🧠', label: 'Conhecimento',   act: () => { closeModal(); router.push('/knowledge') } },
+                        { emoji: '📄', label: 'Documento',      act: () => { closeModal(); router.push('/knowledge') } },
+                        { emoji: '📋', label: 'PDF',            act: () => { closeModal(); router.push('/knowledge') } },
+                        { emoji: '📓', label: 'Notas',          act: () => { closeModal(); router.push('/knowledge') } },
+                        { emoji: '🎫', label: 'Conferência',    act: () => { selectUiMode('palestra');        setModalStep('form') } },
+                      ] as const).map((item, idx) => (
+                        <button
+                          key={idx}
+                          onClick={item.act}
+                          style={{
+                            display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+                            padding: '0.85rem 0.5rem', gap: '0.35rem',
+                            background: 'var(--surface-2)',
+                            border: '1.5px solid var(--border-subtle)',
+                            borderRadius: '9px', cursor: 'pointer', fontFamily: 'inherit',
+                            transition: 'all 0.13s',
+                          }}
+                          onMouseEnter={e => { e.currentTarget.style.borderColor = '#B4530950'; e.currentTarget.style.background = '#B453090A' }}
+                          onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border-subtle)'; e.currentTarget.style.background = 'var(--surface-2)' }}
+                        >
+                          <span style={{ fontSize: '1.3rem' }}>{item.emoji}</span>
+                          <span style={{ fontSize: '0.72rem', color: 'var(--text-secondary)', fontWeight: 500, textAlign: 'center', lineHeight: 1.2 }}>{item.label}</span>
+                        </button>
+                      ))}
                     </div>
                   </>
                 )}
@@ -957,28 +1025,35 @@ export default function DashboardClient({ user, projects: initialProjects, profi
                   }}>
                     Cancelar
                   </button>
-                  <button
-                    onClick={() => {
-                      if (!selectedUiMode) return
-                      if (selectedUiMode === 'conhecimento') { closeModal(); router.push('/knowledge') }
-                      else setModalStep('form')
-                    }}
-                    disabled={!selectedUiMode}
-                    style={{
-                      flex: 2, padding: '0.6rem',
-                      background: selectedUiMode
-                        ? (UI_MODES.find(m => m.id === selectedUiMode)?.color ?? 'var(--accent)')
-                        : 'var(--surface-3)',
-                      color: selectedUiMode ? '#FFF' : 'var(--text-muted)',
-                      border: 'none', borderRadius: '8px',
-                      fontWeight: '600', cursor: selectedUiMode ? 'pointer' : 'not-allowed',
-                      fontFamily: 'inherit', fontSize: '0.88rem', transition: 'background 0.15s',
-                    }}
-                  >
-                    {selectedUiMode
-                      ? `Continuar com ${UI_MODES.find(m => m.id === selectedUiMode)?.label} →`
-                      : selectedCreationGroup ? 'Escolha uma opção' : 'Escolha estudar, produzir ou armazenar'}
-                  </button>
+                  {selectedCreationGroup !== 'armazenar' && (
+                    <button
+                      onClick={() => {
+                        if (!estudarType || !selectedUiMode) return
+                        if (estudarQuery.trim() && estudarType !== 'texto') {
+                          updateTopic(estudarQuery.trim())
+                        }
+                        setModalStep('form')
+                      }}
+                      disabled={!selectedCreationGroup || !estudarType}
+                      style={{
+                        flex: 2, padding: '0.6rem',
+                        background: (selectedCreationGroup && estudarType)
+                          ? '#0F766E'
+                          : 'var(--surface-3)',
+                        color: (selectedCreationGroup && estudarType) ? '#FFF' : 'var(--text-muted)',
+                        border: 'none', borderRadius: '8px',
+                        fontWeight: '600',
+                        cursor: (selectedCreationGroup && estudarType) ? 'pointer' : 'not-allowed',
+                        fontFamily: 'inherit', fontSize: '0.88rem', transition: 'background 0.15s',
+                      }}
+                    >
+                      {!selectedCreationGroup
+                        ? 'Escolha estudar ou armazenar'
+                        : !estudarType
+                          ? 'Escolha o tipo de estudo'
+                          : `Continuar com ${({ texto: 'Texto Bíblico', tema: 'Tema', doutrina: 'Doutrina', termo: 'Termo' } as const)[estudarType]} →`}
+                    </button>
+                  )}
                 </div>
               </div>
             )}
