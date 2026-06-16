@@ -258,63 +258,46 @@ export const WORKSPACE_SECTIONS_NAV: SectionNav[] = [
   },
   {
     "slug": "contexto_historico",
-    "title": "1.1 Contexto Histórico-Cultural",
-    "shortTitle": "Histórico-Cultural",
+    "title": "1.1 Contexto Histórico",
+    "shortTitle": "Contexto Histórico",
     "module": "inventio",
     "group": "contextual",
     "groupLabel": "Estudo Contextual",
     "order": 1,
     "cards": [
       {
-        "id": "periodo_data",
-        "title": "Período e data"
-      },
-      {
-        "id": "contexto_politico",
-        "title": "Contexto político"
-      },
-      {
-        "id": "contexto_religioso",
-        "title": "Contexto religioso"
-      },
-      {
-        "id": "cultura_costumes",
-        "title": "Cultura e costumes"
-      },
-      {
-        "id": "geografia",
-        "title": "Geografia"
-      },
-      {
-        "id": "estrutura_social",
-        "title": "Estrutura social"
+        "id": "contexto_historico_geral",
+        "title": "Contexto Histórico"
       }
     ]
   },
   {
     "slug": "autor_destinatarios",
-    "title": "1.2 Autor e Destinatários",
-    "shortTitle": "Autor e Destinatários",
+    "title": "1.2 Contexto Literário",
+    "shortTitle": "Contexto Literário",
     "module": "inventio",
     "group": "contextual",
     "groupLabel": "Estudo Contextual",
     "order": 2,
     "cards": [
       {
-        "id": "autor",
-        "title": "Autor"
-      },
+        "id": "contexto_literario_geral",
+        "title": "Contexto Literário"
+      }
+    ]
+  },
+  {
+    "slug": "estrutura_livro",
+    "title": "1.3 Contexto Canônico",
+    "shortTitle": "Contexto Canônico",
+    "module": "inventio",
+    "group": "contextual",
+    "groupLabel": "Estudo Contextual",
+    "order": 3,
+    "cards": [
       {
-        "id": "questoes_autoria",
-        "title": "Questões de autoria"
-      },
-      {
-        "id": "destinatarios",
-        "title": "Destinatários"
-      },
-      {
-        "id": "situacao_destinatarios",
-        "title": "Situação dos destinatários"
+        "id": "contexto_canonico_geral",
+        "title": "Contexto Canônico"
       }
     ]
   },
@@ -323,7 +306,7 @@ export const WORKSPACE_SECTIONS_NAV: SectionNav[] = [
     "title": "1.3 Ocasião e Propósito",
     "shortTitle": "Ocasião e Propósito",
     "module": "inventio",
-    "group": "contextual",
+    "group": "contextual_legado",
     "groupLabel": "Estudo Contextual",
     "order": 3,
     "cards": [
@@ -346,7 +329,7 @@ export const WORKSPACE_SECTIONS_NAV: SectionNav[] = [
     "title": "1.4 Gênero Literário",
     "shortTitle": "Gênero Literário",
     "module": "inventio",
-    "group": "contextual",
+    "group": "contextual_legado",
     "groupLabel": "Estudo Contextual",
     "order": 4,
     "cards": [
@@ -365,29 +348,6 @@ export const WORKSPACE_SECTIONS_NAV: SectionNav[] = [
     ]
   },
   {
-    "slug": "estrutura_livro",
-    "title": "1.5 Estrutura do Livro",
-    "shortTitle": "Estrutura do Livro",
-    "module": "inventio",
-    "group": "contextual",
-    "groupLabel": "Estudo Contextual",
-    "order": 5,
-    "cards": [
-      {
-        "id": "divisoes_principais",
-        "title": "Divisões principais"
-      },
-      {
-        "id": "localizacao_pericope",
-        "title": "Localização da perícope"
-      },
-      {
-        "id": "argumento_livro",
-        "title": "Argumento do livro"
-      }
-    ]
-  },
-  {
     "slug": "texto_original",
     "title": "2.1 Texto Original",
     "shortTitle": "Texto Original",
@@ -398,16 +358,16 @@ export const WORKSPACE_SECTIONS_NAV: SectionNav[] = [
   },
   {
     "slug": "defesa_pericope",
-    "title": "2.2 Defesa da Perícope e Divisões",
-    "shortTitle": "Defesa da Perícope",
+    "title": "2.3 Observações Exegéticas",
+    "shortTitle": "Observações Exegéticas",
     "module": "inventio",
     "group": "textual",
     "groupLabel": "Estudo Textual",
-    "order": 6,
+    "order": 7,
     "cards": [
       {
         "id": "defesa_pericope",
-        "title": "Defesa da Perícope e Divisões"
+        "title": "Observações Exegéticas"
       }
     ]
   },
@@ -416,7 +376,7 @@ export const WORKSPACE_SECTIONS_NAV: SectionNav[] = [
     "title": "2.3 Tradução Própria",
     "shortTitle": "Tradução Própria",
     "module": "inventio",
-    "group": "textual",
+    "group": "textual_legado",
     "groupLabel": "Estudo Textual",
     "order": 7,
     "cards": [
@@ -431,7 +391,7 @@ export const WORKSPACE_SECTIONS_NAV: SectionNav[] = [
     "title": "2.4 Observações Gramaticais e Sintáticas",
     "shortTitle": "Gram. e Sintaxe",
     "module": "inventio",
-    "group": "textual",
+    "group": "textual_legado",
     "groupLabel": "Estudo Textual",
     "order": 8,
     "cards": [
@@ -443,16 +403,16 @@ export const WORKSPACE_SECTIONS_NAV: SectionNav[] = [
   },
   {
     "slug": "esboco_mecanico",
-    "title": "2.5 Esboço Mecânico",
-    "shortTitle": "Esboço Mecânico",
+    "title": "2.2 Estrutura do Texto",
+    "shortTitle": "Estrutura do Texto",
     "module": "inventio",
     "group": "textual",
     "groupLabel": "Estudo Textual",
-    "order": 8.5,
+    "order": 6,
     "cards": [
       {
         "id": "esboco_mecanico",
-        "title": "Esboço Mecânico"
+        "title": "Estrutura do Texto"
       }
     ]
   },
@@ -461,7 +421,7 @@ export const WORKSPACE_SECTIONS_NAV: SectionNav[] = [
     "title": "2.6 Definição de Gênero e Subgênero Literário",
     "shortTitle": "Gênero e Subgênero",
     "module": "inventio",
-    "group": "textual",
+    "group": "textual_legado",
     "groupLabel": "Estudo Textual",
     "order": 9,
     "cards": [
@@ -473,12 +433,12 @@ export const WORKSPACE_SECTIONS_NAV: SectionNav[] = [
   },
   {
     "slug": "comentario_exegetico",
-    "title": "2.7 Comentário Exegético",
+    "title": "2.4 Comentário Exegético",
     "shortTitle": "Comentário Exegético",
     "module": "inventio",
     "group": "textual",
     "groupLabel": "Estudo Textual",
-    "order": 9.5,
+    "order": 8,
     "cards": [
       {
         "id": "comentario_exegetico",
@@ -488,12 +448,12 @@ export const WORKSPACE_SECTIONS_NAV: SectionNav[] = [
   },
   {
     "slug": "mensagem_epoca_escrita",
-    "title": "2.8 Mensagem para a Época da Escrita",
-    "shortTitle": "Mensagem Original",
+    "title": "2.5 Mensagem para os Primeiros Ouvintes",
+    "shortTitle": "Mensagem aos Primeiros Ouvintes",
     "module": "inventio",
     "group": "textual",
     "groupLabel": "Estudo Textual",
-    "order": 10,
+    "order": 9,
     "cards": [
       {
         "id": "mensagem_epoca",
@@ -728,8 +688,8 @@ export const WORKSPACE_SECTIONS_NAV: SectionNav[] = [
   },
   {
     "slug": "teologia_biblica",
-    "title": "3.1 Implicações para a Teologia Bíblica",
-    "shortTitle": "Teologia Bíblica",
+    "title": "3.1 Relação com a História da Redenção",
+    "shortTitle": "História da Redenção",
     "module": "inventio",
     "group": "teologico",
     "groupLabel": "Estudo Teológico",
@@ -737,14 +697,14 @@ export const WORKSPACE_SECTIONS_NAV: SectionNav[] = [
     "cards": [
       {
         "id": "implicacoes_tb",
-        "title": "Implicações para a Teologia Bíblica"
+        "title": "Relação com a História da Redenção"
       }
     ]
   },
   {
     "slug": "teologia_sistematica",
-    "title": "3.2 Implicações para a Teologia Sistemática",
-    "shortTitle": "Teologia Sistemática",
+    "title": "3.2 Doutrinas Ensinadas",
+    "shortTitle": "Doutrinas Ensinadas",
     "module": "inventio",
     "group": "teologico",
     "groupLabel": "Estudo Teológico",
@@ -752,14 +712,14 @@ export const WORKSPACE_SECTIONS_NAV: SectionNav[] = [
     "cards": [
       {
         "id": "implicacoes_ts",
-        "title": "Implicações para a Teologia Sistemática"
+        "title": "Doutrinas Ensinadas"
       }
     ]
   },
   {
     "slug": "teologia_pratica",
-    "title": "3.3 Implicações para a Teologia Prática",
-    "shortTitle": "Teologia Prática",
+    "title": "3.3 Implicações para a Vida",
+    "shortTitle": "Implicações para a Vida",
     "module": "inventio",
     "group": "teologico",
     "groupLabel": "Estudo Teológico",
@@ -767,7 +727,7 @@ export const WORKSPACE_SECTIONS_NAV: SectionNav[] = [
     "cards": [
       {
         "id": "implicacoes_tp",
-        "title": "Implicações para a Teologia Prática"
+        "title": "Implicações para a Vida"
       }
     ]
   },
@@ -832,15 +792,11 @@ export const WORKSPACE_SECTIONS_NAV: SectionNav[] = [
       },
       {
         "id": "mensagem_texto",
-        "title": "Mensagem do texto"
-      },
-      {
-        "id": "conceito_ensina",
-        "title": "Conceito que o texto ensina"
+        "title": "Verdades Centrais"
       },
       {
         "id": "conceitos_confronta",
-        "title": "Conceitos que o texto confronta"
+        "title": "Aplicações Principais"
       }
     ]
   },
