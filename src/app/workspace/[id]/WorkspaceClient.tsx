@@ -376,14 +376,16 @@ function getPhaseOverviewSlug(slug: string): string | null {
   return null  // ferramentas or unknown — outside main flow
 }
 
+// Slugs that render via VisaoGeralWorkspace (overview recolhível com herança entre fases)
+const VG_SLUGS = ['preparar_visao_geral', 'investigar_visao_geral', 'ferramentas_visao_geral', 'nr_preparar_visao_geral', 'nr_ivg_ideia']
+
 // Returns the canonical navigation target for a phase (visão geral if present, else first section)
 function getPhaseNavSlug(phase: NavPhase, studyModeId?: string): string {
   const groups = phase.modes.flatMap(m => m.groups)
-  const vgGroup = groups.find(g => g.id.endsWith('_visao_geral') || g.id === 'pregar_visao_geral')
-  if (vgGroup) return vgGroup.id
-  const firstGroupId = groups[0]?.id ?? ''
-  const secs = getSectionsByGroupNav(firstGroupId, studyModeId)
-  return secs[0]?.slug ?? firstGroupId
+  const vgGroup = groups.find(g => g.id.includes('visao_geral') || g.id === 'pregar_visao_geral' || g.id === 'nr_ivg_grp')
+  const targetGroupId = vgGroup ? vgGroup.id : (groups[0]?.id ?? '')
+  const secs = getSectionsByGroupNav(targetGroupId, studyModeId)
+  return secs[0]?.slug ?? targetGroupId
 }
 
 function statusDot(status: 'empty' | 'draft' | 'reviewed' | undefined): string {
@@ -1934,14 +1936,14 @@ export default function WorkspaceClient({ user, project, initialSections }: Prop
                 onUpdate={handleSectionUpdate}
                 onAskAI={handleAskAI}
               />
-            ) : (activeSlug === 'preparar_visao_geral' || activeSlug === 'investigar_visao_geral' || activeSlug === 'ferramentas_visao_geral') && activeDef ? (
+            ) : VG_SLUGS.includes(activeSlug) && activeDef ? (
               <VisaoGeralWorkspace
                 key={activeSlug}
                 sectionDef={activeDef}
                 project={project}
                 userId={user.id}
                 existingSection={activeSection}
-                allVGSections={sections.filter(s => ['preparar_visao_geral', 'investigar_visao_geral', 'ferramentas_visao_geral'].includes(s.slug))}
+                allVGSections={sections.filter(s => VG_SLUGS.includes(s.slug))}
                 allSections={sections}
                 onUpdate={handleSectionUpdate}
                 onAskAI={handleAskAI}

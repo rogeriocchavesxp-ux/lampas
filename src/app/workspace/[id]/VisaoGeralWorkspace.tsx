@@ -409,6 +409,15 @@ const PREPARAR_PHASE_NODES: NodeDef[] = [
   { key: 'phase_obs_pessoais',          label: 'Observações Pessoais',  icon: '📝', angle: 198,  color: '#0F766E', bg: '#F0FDFA', kind: 'phase', phaseGroup: 'preparar_impressoes' },
 ]
 
+// Equivalente ao PREPARAR_PHASE_NODES para o modo Narrativas Bíblicas (groups nr_*)
+const NR_PREPARAR_PHASE_NODES: NodeDef[] = [
+  { key: 'phase_preparacao_espiritual', label: 'Preparação Espiritual', icon: '🙏', angle: -90,  color: '#D97706', bg: '#FFFBEB', kind: 'phase', sectionSlug: 'preparacao_espiritual' },
+  { key: 'phase_leia_assimile',         label: 'Leia e Assimile',       icon: '📖', angle: -18,  color: '#059669', bg: '#F0FDF4', kind: 'phase', sectionSlug: 'preparar_leia_assimile' },
+  { key: 'phase_primeiras_impressoes',  label: 'Primeiras Impressões',  icon: '💬', angle: 54,   color: '#4F46E5', bg: '#EEF2FF', kind: 'phase', phaseGroup: 'preparar_impressoes' },
+  { key: 'phase_visao_geral_prep',      label: 'Visão Geral',           icon: '⊞',  angle: 126,  color: '#163A6B', bg: '#EEF3FA', kind: 'phase', sectionSlug: 'nr_preparar_visao_geral' },
+  { key: 'phase_obs_pessoais',          label: 'Observações Pessoais',  icon: '📝', angle: 198,  color: '#0F766E', bg: '#F0FDFA', kind: 'phase', phaseGroup: 'preparar_impressoes' },
+]
+
 const SINTESE_CARD_HINTS: Record<string, string> = {
   grande_ideia: 'Formule a Grande Ideia do texto em uma sentença completa (sujeito + complemento). O sujeito responde "de que trata o texto?"; o complemento responde "o que o texto afirma sobre isso?".',
   mensagem_texto: 'O que Deus comunica através desta passagem? Sintetize a mensagem principal do texto para os destinatários originais e para a igreja de todos os tempos.',
@@ -421,6 +430,14 @@ const INVESTIGAR_PHASE_NODES: NodeDef[] = [
   { key: 'phase_estudo_contextual', label: 'Estudo Contextual',   icon: '📅', angle: 0,   color: '#B45309', bg: '#FEF3C7', kind: 'phase', sectionSlug: 'contexto_historico', phaseGroup: 'contextual' },
   { key: 'phase_estudo_teologico',  label: 'Estudo Teológico',    icon: '✚',  angle: 90,  color: '#7C3AED', bg: '#F5F3FF', kind: 'phase', sectionSlug: 'contexto_canonico', phaseGroup: 'teologico' },
   { key: 'phase_visao_geral_inv',   label: 'Visão Geral',         icon: '⊞',  angle: 180, color: '#0F766E', bg: '#F0FDFA', kind: 'phase', sectionSlug: 'investigar_visao_geral' },
+]
+
+// Equivalente ao INVESTIGAR_PHASE_NODES para o modo Narrativas Bíblicas (groups nr_*)
+const NR_INVESTIGAR_PHASE_NODES: NodeDef[] = [
+  { key: 'phase_nr_textual',         label: 'Estudo Textual',    icon: '🔑', angle: -90, color: '#163A6B', bg: '#EEF3FA', kind: 'phase', sectionSlug: 'nr_txt_original',  phaseGroup: 'nr_textual_grp' },
+  { key: 'phase_nr_contextual',      label: 'Estudo Contextual', icon: '📅', angle: 0,   color: '#B45309', bg: '#FEF3C7', kind: 'phase', sectionSlug: 'nr_ctx_historico', phaseGroup: 'nr_contextual_grp' },
+  { key: 'phase_nr_teologico',       label: 'Estudo Teológico',  icon: '✚',  angle: 90,  color: '#7C3AED', bg: '#F5F3FF', kind: 'phase', sectionSlug: 'nr_teo_redentor',  phaseGroup: 'nr_teologico_grp' },
+  { key: 'phase_nr_visao_geral_inv', label: 'Visão Geral',       icon: '⊞',  angle: 180, color: '#0F766E', bg: '#F0FDFA', kind: 'phase', sectionSlug: 'nr_ivg_ideia',     phaseGroup: 'nr_ivg_grp' },
 ]
 
 const FERRAMENTAS_PHASE_NODES: NodeDef[] = [
@@ -512,7 +529,9 @@ Diretriz: use a base interpretativa da carta antes de formular implicações hom
 
 function getOverviewNodes(project: Project, sectionSlug: string): NodeDef[] {
   if (sectionSlug === 'preparar_visao_geral')     return PREPARAR_PHASE_NODES
+  if (sectionSlug === 'nr_preparar_visao_geral')  return NR_PREPARAR_PHASE_NODES
   if (sectionSlug === 'investigar_visao_geral')   return INVESTIGAR_PHASE_NODES
+  if (sectionSlug === 'nr_ivg_ideia')             return NR_INVESTIGAR_PHASE_NODES
   if (sectionSlug === 'ferramentas_visao_geral')  return FERRAMENTAS_PHASE_NODES
   if (isEpistolarySermon(project)) return SERMAO_EPISTOLAR_NODES
   return MODE_NODES_MAP[project.study_mode ?? ''] ?? MODE_NODES_MAP.exegese_biblica
@@ -588,11 +607,12 @@ export default function VisaoGeralWorkspace({
   const centerSub     = isPassageMode ? project.passage_ref : project.passage_ref
 
   // Fase da visão geral (derivada do slug)
-  const phase = sectionDef.slug === 'preparar_visao_geral'    ? 'preparar'
-    : sectionDef.slug === 'investigar_visao_geral'  ? 'investigar'
+  const phase = sectionDef.slug === 'preparar_visao_geral' || sectionDef.slug === 'nr_preparar_visao_geral' ? 'preparar'
+    : sectionDef.slug === 'investigar_visao_geral' || sectionDef.slug === 'nr_ivg_ideia' ? 'investigar'
     : sectionDef.slug === 'ferramentas_visao_geral' ? 'ferramentas'
     : 'pregar'
-  const prevSlug = phase === 'investigar' ? 'preparar_visao_geral'
+  const isNarrativas = project.study_mode === 'estudo_narrativas'
+  const prevSlug = phase === 'investigar' ? (isNarrativas ? 'nr_preparar_visao_geral' : 'preparar_visao_geral')
     : phase === 'pregar' ? 'investigar_visao_geral'
     : null
   const PHASE_LABEL: Record<string, string> = {
@@ -905,7 +925,7 @@ export default function VisaoGeralWorkspace({
       }))
     }
     if (node.phaseGroup) {
-      return getSectionsByGroupNav(node.phaseGroup).map(s => {
+      return getSectionsByGroupNav(node.phaseGroup, project.study_mode).map(s => {
         const secData    = allSections.find(sec => sec.slug === s.slug)
         const sCards     = (secData?.content as { cards?: Record<string, string> } | null)?.cards ?? {}
         const filled     = Object.values(sCards).filter(v => v?.trim()).length
@@ -982,7 +1002,7 @@ export default function VisaoGeralWorkspace({
   // ── Popup de leitura consolidada de ramo ─────────────────────────────────
   function buildConsolidatedSections(node: NodeDef): ConsolidatedSection[] {
     if (node.phaseGroup) {
-      return getSectionsByGroupNav(node.phaseGroup)
+      return getSectionsByGroupNav(node.phaseGroup, project.study_mode)
         .map(s => {
           const secData    = allSections.find(sec => sec.slug === s.slug)
           const savedCards = (secData?.content as { cards?: Record<string, string> } | null)?.cards ?? {}
@@ -1054,7 +1074,9 @@ export default function VisaoGeralWorkspace({
     try {
       // Prioriza allVGSections passado pelo WorkspaceClient (evita fetch extra)
       const local = allVGSections ?? []
-      const slugsNeeded = ['preparar_visao_geral', 'investigar_visao_geral', 'pregar_visao_geral']
+      const slugsNeeded = isNarrativas
+        ? ['nr_preparar_visao_geral', 'nr_ivg_ideia', 'pregar_visao_geral']
+        : ['preparar_visao_geral', 'investigar_visao_geral', 'pregar_visao_geral']
       const hasFull = slugsNeeded.every(s => local.some(sec => sec.slug === s))
 
       let rows = local
@@ -1068,8 +1090,8 @@ export default function VisaoGeralWorkspace({
 
       const result: NonNullable<typeof evolutionData> = {}
       for (const s of rows) {
-        const ph = s.slug === 'preparar_visao_geral' ? 'preparar'
-          : s.slug === 'investigar_visao_geral' ? 'investigar' : 'pregar'
+        const ph = (s.slug === 'preparar_visao_geral' || s.slug === 'nr_preparar_visao_geral') ? 'preparar'
+          : (s.slug === 'investigar_visao_geral' || s.slug === 'nr_ivg_ideia') ? 'investigar' : 'pregar'
         result[ph as 'preparar' | 'investigar' | 'pregar'] =
           (s.content as { cards?: Record<string, string> })?.cards ?? {}
       }
@@ -1078,7 +1100,7 @@ export default function VisaoGeralWorkspace({
     } finally {
       setEvolutionLoading(false)
     }
-  }, [allVGSections, project.id, supabase, evolutionData])
+  }, [allVGSections, project.id, supabase, evolutionData, isNarrativas])
 
   // ── Save card ──────────────────────────────────────────────────────────────
   const saveCard = useCallback(async (cardId: string, value: string) => {
