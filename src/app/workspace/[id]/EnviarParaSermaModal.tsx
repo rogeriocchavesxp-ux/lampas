@@ -74,36 +74,43 @@ export default function EnviarParaSermaModal({ project, sections, userId, onClos
     targetProjectId: string,
     slugsToSkip: Set<string>,
   ) => {
-    // Se "replace", deletar conflitantes primeiro
-    if (slugsToSkip.size > 0 && conflictStrategy === 'replace') {
-      const toDelete = conflicts
-        .filter(c => !slugsToSkip.has(c.slug))
-        .map(c => c.slug)
-      if (toDelete.length) {
-        await supabase.from('sections').delete()
-          .eq('project_id', targetProjectId)
-          .in('slug', toDelete)
-      }
-    }
+    // Determinar seções a deletar
+    const conflictSlugs = conflictStrategy === 'replace'
+      ? conflicts
+          .filter(c => !slugsToSkip.has(c.slug))
+          .map(c => c.slug)
+      : []
 
-    const toInsert = sectionsToCopy
+    const sectionsToSend = sectionsToCopy
       .filter(s => !slugsToSkip.has(s.slug))
       .map(s => ({
         project_id: targetProjectId,
-        user_id:    userId,
-        slug:       s.slug,
-        module:     s.module as 'inventio',
-        title:      s.title,
-        status:     (s.status ?? 'draft') as 'draft',
-        content:    s.content ?? null,
-        ai_output:  s.ai_output ?? null,
+        user_id: userId,
+        slug: s.slug,
+        module: s.module as 'inventio',
+        title: s.title,
+        status: (s.status ?? 'draft') as 'draft',
+        content: s.content ?? null,
+        ai_output: s.ai_output ?? null,
       }))
 
-    if (toInsert.length > 0) {
-      const { error } = await supabase.from('sections').insert(toInsert)
-      if (error) throw error
+    // Chamar API route em vez de fazer delete/insert direto no cliente
+    const response = await fetch('/api/workspace/send-to-sermon', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        targetProjectId,
+        sections: sectionsToSend,
+        conflictSlugs,
+        conflictStrategy,
+      }),
+    })
+
+    if (!response.ok) {
+      const data = await response.json() as { error?: string }
+      throw new Error(data.error ?? `Erro HTTP ${response.status}`)
     }
-  }, [sectionsToCopy, userId, supabase, conflicts, conflictStrategy])
+  }, [sectionsToCopy, userId, conflicts, conflictStrategy])
 
   async function handleConfirm() {
     setError(null)

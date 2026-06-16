@@ -189,6 +189,7 @@ export default function BibleTextBlock({ book, passageRef, testament, projectId,
   // Annotations
   const [clsList, setClsList] = useState<Classification[]>([])
   const [hlList,  setHlList]  = useState<HighlightMark[]>([])
+  const [clsLoading, setClsLoading] = useState(true)
   const [savedTo, setSavedTo] = useState<string | null>(null)
 
   // Panel
@@ -230,14 +231,18 @@ export default function BibleTextBlock({ book, passageRef, testament, projectId,
     setClsList(local)
     setHlList(rhl(projectId))
     // Depois sincroniza com o banco (fonte de verdade)
-    loadClassificationsFromDB(projectId).then(fromDB => {
-      if (fromDB.length === 0) return
-      const dbIds = new Set(fromDB.map(c => c.id))
-      const onlyLocal = local.filter(c => !dbIds.has(c.id))
-      const merged = [...fromDB, ...onlyLocal] as Classification[]
-      setClsList(merged)
-      wcl(projectId, merged)
-    })
+    setClsLoading(true)
+    loadClassificationsFromDB(projectId)
+      .then(fromDB => {
+        if (fromDB.length === 0) return
+        const dbIds = new Set(fromDB.map(c => c.id))
+        const onlyLocal = local.filter(c => !dbIds.has(c.id))
+        const merged = [...fromDB, ...onlyLocal] as Classification[]
+        setClsList(merged)
+        wcl(projectId, merged)
+      })
+      .catch(e => console.error('Erro ao carregar classificações:', e))
+      .finally(() => setClsLoading(false))
   }, [projectId])
 
   // ── Fetch text ────────────────────────────────────────────────────────────

@@ -124,6 +124,44 @@ a:hover { color: var(--accent-hover); }
   margin-left: 1px;
 }
 
+/* ── Mobile Responsiveness ── */
+@media (max-width: 768px) {
+  html, body { font-size: 14px; }
+
+  /* Floating action buttons and fixed panels */
+  .lp-fixed-fab {
+    bottom: 20px !important;
+    right: 8px !important;
+    width: 48px !important;
+    height: 48px !important;
+  }
+
+  .lp-fixed-panel {
+    max-width: calc(100vw - 16px);
+    max-height: calc(100vh - 80px);
+    border-radius: 8px;
+  }
+
+  .lp-fixed-bottom-panel {
+    height: 100%;
+    max-height: calc(100vh - 100px);
+    overflow-y: auto;
+  }
+
+  /* Menubar responsiveness */
+  .lp-menubar {
+    max-width: 100%;
+    overflow-x: auto;
+  }
+
+  /* Fixed overlays on mobile should span full viewport */
+  .lp-fixed-overlay {
+    position: fixed !important;
+    inset: 0 !important;
+    z-index: 299 !important;
+  }
+}
+
 /* Rich content display (read mode) */
 .rich-content-display p          { margin: 0 0 0.25em; }
 .rich-content-display p:last-child { margin-bottom: 0; }

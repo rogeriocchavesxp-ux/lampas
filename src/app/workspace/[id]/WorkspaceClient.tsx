@@ -2274,7 +2274,7 @@ export default function WorkspaceClient({ user, project, initialSections }: Prop
               />
             )}
 
-            <div style={{ position: 'fixed', bottom: '70px', right: '16px', zIndex: 300 }}>
+            <div className="lp-fixed-fab" style={{ position: 'fixed', bottom: '70px', right: '16px', zIndex: 300 }}>
 
               {/* Painel de ferramentas */}
               {toolsOpen && (

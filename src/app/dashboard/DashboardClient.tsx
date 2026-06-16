@@ -1347,6 +1347,7 @@ export default function DashboardClient({ user, projects: initialProjects, profi
       {/* ── New project modal ── */}
       {showNew && (
         <div
+          className="lp-fixed-overlay"
           onClick={e => { if (e.target === e.currentTarget) closeModal() }}
           style={{
             position: 'fixed', inset: 0, background: 'rgba(15,23,42,0.45)',
@@ -1786,6 +1787,7 @@ export default function DashboardClient({ user, projects: initialProjects, profi
       {/* ── Delete confirmation modal ── */}
       {deleteTarget && (
         <div
+          className="lp-fixed-overlay"
           onClick={e => { if (e.target === e.currentTarget && !deleteConfirming) setDeleteTarget(null) }}
           style={{
             position: 'fixed', inset: 0, background: 'rgba(15,23,42,0.5)',
