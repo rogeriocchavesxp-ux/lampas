@@ -47,7 +47,7 @@ if (!WORKSPACE_SECTIONS?.length) {
   process.exit(1)
 }
 
-const NAV_FIELDS = ['slug', 'title', 'shortTitle', 'phase', 'communicationMode', 'module', 'group', 'groupLabel', 'order']
+const NAV_FIELDS = ['slug', 'title', 'shortTitle', 'phase', 'communicationMode', 'module', 'group', 'groupLabel', 'order', 'studyModes']
 
 // cards incluídos com apenas id+title — necessários para LiveReferencePanel
 const navSections = WORKSPACE_SECTIONS.map(s => {
@@ -68,13 +68,14 @@ const lines = [
   '  slug: string',
   "  title: string",
   "  shortTitle: string",
-  "  phase?: 'preparar' | 'interpretar' | 'comunicar'",
+  "  phase?: 'preparar' | 'interpretar' | 'comunicar' | 'ferramentas'",
   "  communicationMode?: 'sermao' | 'estudo_biblico' | 'devocional'",
   "  module: 'inventio' | 'dispositio' | 'elocutio' | 'memoria' | 'pronuntiatio'",
   '  group: string',
   '  groupLabel: string',
   '  order: number',
   '  cards?: CardNav[]',
+  '  studyModes?: string[]',
   '}',
   '',
   `export const WORKSPACE_SECTIONS_NAV: SectionNav[] = ${JSON.stringify(navSections, null, 2)}`,
@@ -83,8 +84,14 @@ const lines = [
   '  return WORKSPACE_SECTIONS_NAV.find(s => s.slug === slug)',
   '}',
   '',
-  'export function getSectionsByGroupNav(group: string): SectionNav[] {',
-  '  return WORKSPACE_SECTIONS_NAV.filter(s => s.group === group)',
+  '// Para grupos com variante por modo (studyModes), retorna a variante do modo se existir,',
+  '// senão a(s) seção(ões) genérica(s) do grupo (sem studyModes definido).',
+  'export function getSectionsByGroupNav(group: string, studyModeId?: string): SectionNav[] {',
+  '  const all = WORKSPACE_SECTIONS_NAV.filter(s => s.group === group)',
+  '  if (!studyModeId) return all',
+  '  const modeSpecific = all.filter(s => s.studyModes?.includes(studyModeId))',
+  '  if (modeSpecific.length > 0) return modeSpecific',
+  '  return all.filter(s => !s.studyModes)',
   '}',
 ]
 

@@ -377,12 +377,12 @@ function getPhaseOverviewSlug(slug: string): string | null {
 }
 
 // Returns the canonical navigation target for a phase (visão geral if present, else first section)
-function getPhaseNavSlug(phase: NavPhase): string {
+function getPhaseNavSlug(phase: NavPhase, studyModeId?: string): string {
   const groups = phase.modes.flatMap(m => m.groups)
   const vgGroup = groups.find(g => g.id.endsWith('_visao_geral') || g.id === 'pregar_visao_geral')
   if (vgGroup) return vgGroup.id
   const firstGroupId = groups[0]?.id ?? ''
-  const secs = getSectionsByGroupNav(firstGroupId)
+  const secs = getSectionsByGroupNav(firstGroupId, studyModeId)
   return secs[0]?.slug ?? firstGroupId
 }
 
@@ -779,7 +779,7 @@ export default function WorkspaceClient({ user, project, initialSections }: Prop
 
   function progressGroupRatio(groupId: string): number {
     if (isToolSlug(groupId) || groupId === 'colagens' || groupId === 'comentario_expositivo') return 0
-    const groupSections = getSectionsByGroupNav(groupId)
+    const groupSections = getSectionsByGroupNav(groupId, project.study_mode)
     const synthesis = SYNTHESIS_DEFS[groupId]
     const slugs = [
       ...groupSections.map(section => section.slug),
@@ -820,7 +820,7 @@ export default function WorkspaceClient({ user, project, initialSections }: Prop
             slugs.push(tool?.slug ?? gr.id)
             continue
           }
-          const secs = getSectionsByGroupNav(gr.id)
+          const secs = getSectionsByGroupNav(gr.id, project.study_mode)
           if (secs.length === 0) continue
           const isSingleSection = secs.length === 1 && !SYNTHESIS_DEFS[gr.id]
           if (isSingleSection) {
@@ -834,7 +834,7 @@ export default function WorkspaceClient({ user, project, initialSections }: Prop
       }
     }
     return slugs
-  }, [navPhases])
+  }, [navPhases, project.study_mode])
 
   const currentNavIdx = orderedSlugs.indexOf(activeSlug)
   const prevSlug = currentNavIdx > 0 ? orderedSlugs[currentNavIdx - 1] : null
@@ -844,9 +844,9 @@ export default function WorkspaceClient({ user, project, initialSections }: Prop
   // Phase-level navigation — derived dynamically from mode's phases, not hardcoded slugs
   const mainPhases       = navPhases.filter(p => p.id !== 'ferramentas')
   const phaseNavIdx      = activePhase ? mainPhases.findIndex(p => p.id === activePhase.id) : -1
-  const prevPhaseNavSlug = phaseNavIdx > 0 ? getPhaseNavSlug(mainPhases[phaseNavIdx - 1]) : null
+  const prevPhaseNavSlug = phaseNavIdx > 0 ? getPhaseNavSlug(mainPhases[phaseNavIdx - 1], project.study_mode) : null
   const nextPhaseNavSlug = phaseNavIdx >= 0 && phaseNavIdx < mainPhases.length - 1
-    ? getPhaseNavSlug(mainPhases[phaseNavIdx + 1]) : null
+    ? getPhaseNavSlug(mainPhases[phaseNavIdx + 1], project.study_mode) : null
 
   const activeGroupId = getGroupFor(activeSlug)
   const activeGroupLabel = activeGroupId
@@ -936,7 +936,7 @@ export default function WorkspaceClient({ user, project, initialSections }: Prop
       const t = toolProgress(groupId)
       return { ...t, pct: t.total > 0 ? Math.round(t.done / t.total * 100) : 0 }
     }
-    const gs = getSectionsByGroupNav(groupId)
+    const gs = getSectionsByGroupNav(groupId, project.study_mode)
     const done = gs.filter(sd => {
       const s = sections.find(sec => sec.slug === sd.slug)
       return s?.status === 'draft' || s?.status === 'reviewed'
@@ -1398,7 +1398,7 @@ export default function WorkspaceClient({ user, project, initialSections }: Prop
                                   {mode.groups.map((group, groupIdx) => {
                                     const groupOpen      = expandedGroups.has(group.id)
                                     const isUtilityGroup = isToolSlug(group.id) || group.id === 'colagens' || group.id === 'comentario_expositivo'
-                                    const secs           = isUtilityGroup ? [] : getSectionsByGroupNav(group.id)
+                                    const secs           = isUtilityGroup ? [] : getSectionsByGroupNav(group.id, project.study_mode)
                                     if (secs.length === 0 && !isUtilityGroup) return null
                                     const isSingleSection = !isUtilityGroup && secs.length === 1 && !SYNTHESIS_DEFS[group.id]
                                     const isDirect        = isUtilityGroup || isSingleSection
@@ -2017,6 +2017,7 @@ export default function WorkspaceClient({ user, project, initialSections }: Prop
                 userId={user.id}
                 onClose={() => setBibleOpen(false)}
                 sidebarMode={true}
+                studyMode={project.study_mode}
               />
             </aside>
           )}
@@ -2132,7 +2133,7 @@ export default function WorkspaceClient({ user, project, initialSections }: Prop
               const btn = (
                 <button
                   key={phase.id}
-                  onClick={() => navigate(getPhaseNavSlug(phase))}
+                  onClick={() => navigate(getPhaseNavSlug(phase, project.study_mode))}
                   style={{
                     position: 'relative', overflow: 'hidden',
                     flex: 1, minWidth: 0, height: '44px',

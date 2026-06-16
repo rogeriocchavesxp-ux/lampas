@@ -28,6 +28,7 @@ export interface SectionDef {
   group: string
   groupLabel: string
   order: number
+  studyModes?: string[]
   objective: string
   keyQuestions: string[]
   relevantAuthors: string[]

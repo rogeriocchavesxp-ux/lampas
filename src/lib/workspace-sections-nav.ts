@@ -14,6 +14,7 @@ export interface SectionNav {
   groupLabel: string
   order: number
   cards?: CardNav[]
+  studyModes?: string[]
 }
 
 export const WORKSPACE_SECTIONS_NAV: SectionNav[] = [
@@ -102,22 +103,6 @@ export const WORKSPACE_SECTIONS_NAV: SectionNav[] = [
     ]
   },
   {
-    "slug": "nr_preparar_visao_geral",
-    "title": "Visão Geral da Narrativa",
-    "shortTitle": "Visão Geral",
-    "phase": "preparar",
-    "module": "inventio",
-    "group": "nr_visao_geral_grp",
-    "groupLabel": "Mapa inicial da narrativa",
-    "order": -37,
-    "cards": [
-      { "id": "nr_vg_tema",         "title": "Tema provável" },
-      { "id": "nr_vg_estrutura",    "title": "Estrutura percebida" },
-      { "id": "nr_vg_personagens",  "title": "Personagens" },
-      { "id": "nr_vg_movimento",    "title": "Movimento do texto" }
-    ]
-  },
-  {
     "slug": "preparar_visao_geral",
     "title": "4. Visão Geral da Passagem",
     "shortTitle": "Visão Geral",
@@ -140,8 +125,60 @@ export const WORKSPACE_SECTIONS_NAV: SectionNav[] = [
         "title": "Estrutura percebida"
       },
       {
+        "id": "preparar_vg_impressoes",
+        "title": "Primeiras impressões"
+      },
+      {
+        "id": "preparar_vg_perguntas",
+        "title": "Perguntas iniciais"
+      },
+      {
+        "id": "preparar_vg_dificuldades",
+        "title": "Dificuldades percebidas"
+      },
+      {
+        "id": "preparar_vg_observacoes",
+        "title": "Observações pessoais"
+      }
+    ]
+  },
+  {
+    "slug": "investigar_visao_geral",
+    "title": "Visão Geral Investigativa",
+    "shortTitle": "Visão Geral",
+    "phase": "interpretar",
+    "module": "inventio",
+    "group": "investigar_visao_geral",
+    "groupLabel": "Descoberta exegética",
+    "order": -20,
+    "cards": [
+      {
+        "id": "preparar_tema_provavel",
+        "title": "Tema refinado"
+      },
+      {
+        "id": "preparar_grande_ideia_inicial",
+        "title": "Grande ideia refinada"
+      },
+      {
+        "id": "preparar_estrutura_percebida",
+        "title": "Estrutura refinada"
+      },
+      {
         "id": "preparar_personagens",
         "title": "Personagens"
+      },
+      {
+        "id": "investigar_vg_lugares",
+        "title": "Lugares"
+      },
+      {
+        "id": "investigar_vg_termos_chave",
+        "title": "Termos-chave"
+      },
+      {
+        "id": "investigar_vg_estrutura_lit",
+        "title": "Estrutura literária"
       },
       {
         "id": "preparar_movimento_narrativo",
@@ -156,20 +193,14 @@ export const WORKSPACE_SECTIONS_NAV: SectionNav[] = [
         "title": "Clímax"
       },
       {
-        "id": "preparar_palavras_repetidas",
-        "title": "Palavras repetidas"
+        "id": "investigar_vg_temas_teol",
+        "title": "Temas teológicos"
+      },
+      {
+        "id": "investigar_vg_conexoes",
+        "title": "Conexões canônicas"
       }
     ]
-  },
-  {
-    "slug": "investigar_visao_geral",
-    "title": "Visão Geral Investigativa",
-    "shortTitle": "Visão Geral",
-    "phase": "interpretar",
-    "module": "inventio",
-    "group": "investigar_visao_geral",
-    "groupLabel": "Compreensão refinada após investigação",
-    "order": -20
   },
   {
     "slug": "ferramentas_visao_geral",
@@ -3173,10 +3204,22 @@ export const WORKSPACE_SECTIONS_NAV: SectionNav[] = [
     "groupLabel": "Conceito",
     "order": 200,
     "cards": [
-      { "id": "nome_doutrina",       "title": "Nome da Doutrina" },
-      { "id": "definicao_preliminar","title": "Definição Preliminar" },
-      { "id": "importancia",         "title": "Importância da Doutrina" },
-      { "id": "pergunta_orientadora","title": "Pergunta Orientadora" }
+      {
+        "id": "nome_doutrina",
+        "title": "Nome da Doutrina"
+      },
+      {
+        "id": "definicao_preliminar",
+        "title": "Definição Preliminar"
+      },
+      {
+        "id": "importancia",
+        "title": "Importância da Doutrina"
+      },
+      {
+        "id": "pergunta_orientadora",
+        "title": "Pergunta Orientadora"
+      }
     ]
   },
   {
@@ -3189,11 +3232,26 @@ export const WORKSPACE_SECTIONS_NAV: SectionNav[] = [
     "groupLabel": "Fundamentação Bíblica",
     "order": 201,
     "cards": [
-      { "id": "principais_textos",  "title": "Principais Textos" },
-      { "id": "antigo_testamento",  "title": "Antigo Testamento" },
-      { "id": "novo_testamento",    "title": "Novo Testamento" },
-      { "id": "ensino_cristo",      "title": "Ensino de Cristo" },
-      { "id": "ensino_apostolico",  "title": "Ensino Apostólico" }
+      {
+        "id": "principais_textos",
+        "title": "Principais Textos"
+      },
+      {
+        "id": "antigo_testamento",
+        "title": "Antigo Testamento"
+      },
+      {
+        "id": "novo_testamento",
+        "title": "Novo Testamento"
+      },
+      {
+        "id": "ensino_cristo",
+        "title": "Ensino de Cristo"
+      },
+      {
+        "id": "ensino_apostolico",
+        "title": "Ensino Apostólico"
+      }
     ]
   },
   {
@@ -3206,10 +3264,22 @@ export const WORKSPACE_SECTIONS_NAV: SectionNav[] = [
     "groupLabel": "Desenvolvimento Redentivo",
     "order": 202,
     "cards": [
-      { "id": "promessa",          "title": "Promessa" },
-      { "id": "desenvolvimento",   "title": "Desenvolvimento" },
-      { "id": "cumprimento_cristo","title": "Cumprimento em Cristo" },
-      { "id": "aplicacao_igreja",  "title": "Aplicação à Igreja" }
+      {
+        "id": "promessa",
+        "title": "Promessa"
+      },
+      {
+        "id": "desenvolvimento",
+        "title": "Desenvolvimento"
+      },
+      {
+        "id": "cumprimento_cristo",
+        "title": "Cumprimento em Cristo"
+      },
+      {
+        "id": "aplicacao_igreja",
+        "title": "Aplicação à Igreja"
+      }
     ]
   },
   {
@@ -3222,9 +3292,18 @@ export const WORKSPACE_SECTIONS_NAV: SectionNav[] = [
     "groupLabel": "Relações Doutrinárias",
     "order": 203,
     "cards": [
-      { "id": "doutrinas_relacionadas",  "title": "Doutrinas Relacionadas" },
-      { "id": "dependencias_teologicas", "title": "Dependências Teológicas" },
-      { "id": "conexoes_doutrinas",      "title": "Conexões Doutrinárias" }
+      {
+        "id": "doutrinas_relacionadas",
+        "title": "Doutrinas Relacionadas"
+      },
+      {
+        "id": "dependencias_teologicas",
+        "title": "Dependências Teológicas"
+      },
+      {
+        "id": "conexoes_doutrinas",
+        "title": "Conexões Doutrinárias"
+      }
     ]
   },
   {
@@ -3237,11 +3316,26 @@ export const WORKSPACE_SECTIONS_NAV: SectionNav[] = [
     "groupLabel": "História da Doutrina",
     "order": 204,
     "cards": [
-      { "id": "igreja_antiga",         "title": "Igreja Antiga" },
-      { "id": "idade_media",           "title": "Idade Média" },
-      { "id": "reforma",               "title": "Reforma" },
-      { "id": "pos_reforma",           "title": "Pós-Reforma" },
-      { "id": "debates_contemporaneos","title": "Debates Contemporâneos" }
+      {
+        "id": "igreja_antiga",
+        "title": "Igreja Antiga"
+      },
+      {
+        "id": "idade_media",
+        "title": "Idade Média"
+      },
+      {
+        "id": "reforma",
+        "title": "Reforma"
+      },
+      {
+        "id": "pos_reforma",
+        "title": "Pós-Reforma"
+      },
+      {
+        "id": "debates_contemporaneos",
+        "title": "Debates Contemporâneos"
+      }
     ]
   },
   {
@@ -3254,10 +3348,22 @@ export const WORKSPACE_SECTIONS_NAV: SectionNav[] = [
     "groupLabel": "Controvérsias e Erros",
     "order": 205,
     "cards": [
-      { "id": "heresias_historicas",       "title": "Heresias Históricas" },
-      { "id": "interpretacoes_equivocadas","title": "Interpretações Equivocadas" },
-      { "id": "debates_atuais",            "title": "Debates Atuais" },
-      { "id": "avaliacao_biblica",         "title": "Avaliação Bíblica" }
+      {
+        "id": "heresias_historicas",
+        "title": "Heresias Históricas"
+      },
+      {
+        "id": "interpretacoes_equivocadas",
+        "title": "Interpretações Equivocadas"
+      },
+      {
+        "id": "debates_atuais",
+        "title": "Debates Atuais"
+      },
+      {
+        "id": "avaliacao_biblica",
+        "title": "Avaliação Bíblica"
+      }
     ]
   },
   {
@@ -3270,11 +3376,26 @@ export const WORKSPACE_SECTIONS_NAV: SectionNav[] = [
     "groupLabel": "Síntese Doutrinária",
     "order": 206,
     "cards": [
-      { "id": "definicao_final",    "title": "Definição Final" },
-      { "id": "grande_afirmacao",   "title": "Grande Afirmação Doutrinária" },
-      { "id": "pontos_essenciais",  "title": "Pontos Essenciais" },
-      { "id": "pontos_secundarios", "title": "Pontos Secundários" },
-      { "id": "resumo_executivo",   "title": "Resumo Executivo" }
+      {
+        "id": "definicao_final",
+        "title": "Definição Final"
+      },
+      {
+        "id": "grande_afirmacao",
+        "title": "Grande Afirmação Doutrinária"
+      },
+      {
+        "id": "pontos_essenciais",
+        "title": "Pontos Essenciais"
+      },
+      {
+        "id": "pontos_secundarios",
+        "title": "Pontos Secundários"
+      },
+      {
+        "id": "resumo_executivo",
+        "title": "Resumo Executivo"
+      }
     ]
   },
   {
@@ -3287,11 +3408,26 @@ export const WORKSPACE_SECTIONS_NAV: SectionNav[] = [
     "groupLabel": "Implicações",
     "order": 207,
     "cards": [
-      { "id": "impl_teologicas",    "title": "Implicações Teológicas" },
-      { "id": "impl_eclesiasticas", "title": "Implicações Eclesiásticas" },
-      { "id": "impl_pastorais",     "title": "Implicações Pastorais" },
-      { "id": "impl_devocionais",   "title": "Implicações Devocionais" },
-      { "id": "impl_missionais",    "title": "Implicações Missionais" }
+      {
+        "id": "impl_teologicas",
+        "title": "Implicações Teológicas"
+      },
+      {
+        "id": "impl_eclesiasticas",
+        "title": "Implicações Eclesiásticas"
+      },
+      {
+        "id": "impl_pastorais",
+        "title": "Implicações Pastorais"
+      },
+      {
+        "id": "impl_devocionais",
+        "title": "Implicações Devocionais"
+      },
+      {
+        "id": "impl_missionais",
+        "title": "Implicações Missionais"
+      }
     ]
   },
   {
@@ -3437,10 +3573,22 @@ export const WORKSPACE_SECTIONS_NAV: SectionNav[] = [
     "groupLabel": "Ocorrências Bíblicas",
     "order": 506,
     "cards": [
-      { "id": "ocorrencias_at",      "title": "Ocorrências no AT" },
-      { "id": "ocorrencias_nt",      "title": "Ocorrências no NT" },
-      { "id": "passagens_centrais",  "title": "Passagens centrais" },
-      { "id": "frequencia",          "title": "Frequência e distribuição" }
+      {
+        "id": "ocorrencias_at",
+        "title": "Ocorrências no AT"
+      },
+      {
+        "id": "ocorrencias_nt",
+        "title": "Ocorrências no NT"
+      },
+      {
+        "id": "passagens_centrais",
+        "title": "Passagens centrais"
+      },
+      {
+        "id": "frequencia",
+        "title": "Frequência e distribuição"
+      }
     ]
   },
   {
@@ -3452,12 +3600,30 @@ export const WORKSPACE_SECTIONS_NAV: SectionNav[] = [
     "groupLabel": "Desenvolvimento Progressivo",
     "order": 507,
     "cards": [
-      { "id": "pentateuco",           "title": "Pentateuco e fundação" },
-      { "id": "historicos_profetas",  "title": "Históricos e Profetas" },
-      { "id": "sabedoria",            "title": "Sabedoria e poesia" },
-      { "id": "evangelhos",           "title": "Evangelhos" },
-      { "id": "epistolas",            "title": "Epístolas apostólicas" },
-      { "id": "cumprimento",          "title": "Cumprimento escatológico" }
+      {
+        "id": "pentateuco",
+        "title": "Pentateuco e fundação"
+      },
+      {
+        "id": "historicos_profetas",
+        "title": "Históricos e Profetas"
+      },
+      {
+        "id": "sabedoria",
+        "title": "Sabedoria e poesia"
+      },
+      {
+        "id": "evangelhos",
+        "title": "Evangelhos"
+      },
+      {
+        "id": "epistolas",
+        "title": "Epístolas apostólicas"
+      },
+      {
+        "id": "cumprimento",
+        "title": "Cumprimento escatológico"
+      }
     ]
   },
   {
@@ -3469,10 +3635,22 @@ export const WORKSPACE_SECTIONS_NAV: SectionNav[] = [
     "groupLabel": "Teologia Bíblica do Tema",
     "order": 508,
     "cards": [
-      { "id": "fio_condutor",           "title": "Fio condutor canônico" },
-      { "id": "progressao_revelacao",   "title": "Progressão da revelação" },
-      { "id": "centro_cristologico",    "title": "Centro cristológico" },
-      { "id": "unidade_testamentos",    "title": "Unidade dos Testamentos" }
+      {
+        "id": "fio_condutor",
+        "title": "Fio condutor canônico"
+      },
+      {
+        "id": "progressao_revelacao",
+        "title": "Progressão da revelação"
+      },
+      {
+        "id": "centro_cristologico",
+        "title": "Centro cristológico"
+      },
+      {
+        "id": "unidade_testamentos",
+        "title": "Unidade dos Testamentos"
+      }
     ]
   },
   {
@@ -3484,9 +3662,18 @@ export const WORKSPACE_SECTIONS_NAV: SectionNav[] = [
     "groupLabel": "Relação com Cristo",
     "order": 509,
     "cards": [
-      { "id": "tipologia",              "title": "Tipologia e prefigurações" },
-      { "id": "cumprimento_cristologico","title": "Cumprimento em Cristo" },
-      { "id": "aplicacao_redentor",     "title": "Aplicação redentor-histórica" }
+      {
+        "id": "tipologia",
+        "title": "Tipologia e prefigurações"
+      },
+      {
+        "id": "cumprimento_cristologico",
+        "title": "Cumprimento em Cristo"
+      },
+      {
+        "id": "aplicacao_redentor",
+        "title": "Aplicação redentor-histórica"
+      }
     ]
   },
   {
@@ -3498,9 +3685,18 @@ export const WORKSPACE_SECTIONS_NAV: SectionNav[] = [
     "groupLabel": "Implicações Teológicas",
     "order": 510,
     "cards": [
-      { "id": "doutrina_relacionada",  "title": "Doutrina relacionada" },
-      { "id": "etica_crista",          "title": "Ética cristã" },
-      { "id": "missao",                "title": "Missão e evangelismo" }
+      {
+        "id": "doutrina_relacionada",
+        "title": "Doutrina relacionada"
+      },
+      {
+        "id": "etica_crista",
+        "title": "Ética cristã"
+      },
+      {
+        "id": "missao",
+        "title": "Missão e evangelismo"
+      }
     ]
   },
   {
@@ -3513,11 +3709,26 @@ export const WORKSPACE_SECTIONS_NAV: SectionNav[] = [
     "groupLabel": "Definição",
     "order": 1225,
     "cards": [
-      { "id": "forma_original",      "title": "Forma Original" },
-      { "id": "campo_semantico",     "title": "Campo Semântico" },
-      { "id": "definicao_biblica",   "title": "Definição Bíblica" },
-      { "id": "definicao_teologica", "title": "Definição Teológica" },
-      { "id": "definicao_inicial",   "title": "Definição Inicial" }
+      {
+        "id": "forma_original",
+        "title": "Forma Original"
+      },
+      {
+        "id": "campo_semantico",
+        "title": "Campo Semântico"
+      },
+      {
+        "id": "definicao_biblica",
+        "title": "Definição Bíblica"
+      },
+      {
+        "id": "definicao_teologica",
+        "title": "Definição Teológica"
+      },
+      {
+        "id": "definicao_inicial",
+        "title": "Definição Inicial"
+      }
     ]
   },
   {
@@ -3530,10 +3741,22 @@ export const WORKSPACE_SECTIONS_NAV: SectionNav[] = [
     "groupLabel": "Comparação",
     "order": 1226,
     "cards": [
-      { "id": "sinonimos_biblicos",     "title": "Sinônimos Bíblicos" },
-      { "id": "antonimos_biblicos",     "title": "Antônimos Bíblicos" },
-      { "id": "conceitos_relacionados", "title": "Conceitos Relacionados" },
-      { "id": "distincoes",             "title": "Distinções Importantes" }
+      {
+        "id": "sinonimos_biblicos",
+        "title": "Sinônimos Bíblicos"
+      },
+      {
+        "id": "antonimos_biblicos",
+        "title": "Antônimos Bíblicos"
+      },
+      {
+        "id": "conceitos_relacionados",
+        "title": "Conceitos Relacionados"
+      },
+      {
+        "id": "distincoes",
+        "title": "Distinções Importantes"
+      }
     ]
   },
   {
@@ -3546,13 +3769,34 @@ export const WORKSPACE_SECTIONS_NAV: SectionNav[] = [
     "groupLabel": "Relação",
     "order": 1227,
     "cards": [
-      { "id": "relacao_deus",      "title": "Relação com Deus" },
-      { "id": "relacao_cristo",    "title": "Relação com Cristo" },
-      { "id": "relacao_espirito",  "title": "Relação com o Espírito Santo" },
-      { "id": "relacao_igreja",    "title": "Relação com a Igreja" },
-      { "id": "relacao_salvacao",  "title": "Relação com a Salvação" },
-      { "id": "relacao_reino",     "title": "Relação com o Reino de Deus" },
-      { "id": "relacao_doutrinas", "title": "Relação com Doutrinas Associadas" }
+      {
+        "id": "relacao_deus",
+        "title": "Relação com Deus"
+      },
+      {
+        "id": "relacao_cristo",
+        "title": "Relação com Cristo"
+      },
+      {
+        "id": "relacao_espirito",
+        "title": "Relação com o Espírito Santo"
+      },
+      {
+        "id": "relacao_igreja",
+        "title": "Relação com a Igreja"
+      },
+      {
+        "id": "relacao_salvacao",
+        "title": "Relação com a Salvação"
+      },
+      {
+        "id": "relacao_reino",
+        "title": "Relação com o Reino de Deus"
+      },
+      {
+        "id": "relacao_doutrinas",
+        "title": "Relação com Doutrinas Associadas"
+      }
     ]
   },
   {
@@ -3565,10 +3809,66 @@ export const WORKSPACE_SECTIONS_NAV: SectionNav[] = [
     "groupLabel": "Circunstância",
     "order": 1228,
     "cards": [
-      { "id": "contexto_historico",     "title": "Contexto Histórico" },
-      { "id": "contexto_cultural",      "title": "Contexto Cultural" },
-      { "id": "contexto_literario",     "title": "Contexto Literário" },
-      { "id": "principais_ocorrencias", "title": "Principais Ocorrências" }
+      {
+        "id": "contexto_historico",
+        "title": "Contexto Histórico"
+      },
+      {
+        "id": "contexto_cultural",
+        "title": "Contexto Cultural"
+      },
+      {
+        "id": "contexto_literario",
+        "title": "Contexto Literário"
+      },
+      {
+        "id": "principais_ocorrencias",
+        "title": "Principais Ocorrências"
+      }
+    ]
+  },
+  {
+    "slug": "termos_canonico",
+    "title": "Desenvolvimento Canônico",
+    "shortTitle": "Desenv. Canônico",
+    "phase": "interpretar",
+    "module": "inventio",
+    "group": "termos_canonico_grp",
+    "groupLabel": "Desenvolvimento Canônico",
+    "order": 1229,
+    "cards": [
+      {
+        "id": "canon_pentateuco",
+        "title": "Pentateuco"
+      },
+      {
+        "id": "canon_historicos",
+        "title": "Livros Históricos"
+      },
+      {
+        "id": "canon_sapienciais",
+        "title": "Livros Sapienciais"
+      },
+      {
+        "id": "canon_profetas",
+        "title": "Profetas"
+      },
+      {
+        "id": "canon_evangelhos",
+        "title": "Evangelhos"
+      },
+      {
+        "id": "canon_atos",
+        "title": "Atos"
+      },
+      {
+        "id": "canon_epistolas",
+        "title": "Epístolas"
+      },
+      {
+        "id": "canon_apocalipse",
+        "title": "Apocalipse"
+      }
     ]
   },
   {
@@ -3581,12 +3881,30 @@ export const WORKSPACE_SECTIONS_NAV: SectionNav[] = [
     "groupLabel": "Testemunho",
     "order": 1230,
     "cards": [
-      { "id": "principais_textos",     "title": "Principais Textos" },
-      { "id": "testemunho_at",         "title": "Testemunho do Antigo Testamento" },
-      { "id": "testemunho_nt",         "title": "Testemunho do Novo Testamento" },
-      { "id": "testemunho_cristo",     "title": "Testemunho de Cristo" },
-      { "id": "testemunho_apostolico", "title": "Testemunho Apostólico" },
-      { "id": "sintese_biblica",       "title": "Síntese Bíblica" }
+      {
+        "id": "principais_textos",
+        "title": "Principais Textos"
+      },
+      {
+        "id": "testemunho_at",
+        "title": "Testemunho do Antigo Testamento"
+      },
+      {
+        "id": "testemunho_nt",
+        "title": "Testemunho do Novo Testamento"
+      },
+      {
+        "id": "testemunho_cristo",
+        "title": "Testemunho de Cristo"
+      },
+      {
+        "id": "testemunho_apostolico",
+        "title": "Testemunho Apostólico"
+      },
+      {
+        "id": "sintese_biblica",
+        "title": "Síntese Bíblica"
+      }
     ]
   },
   {
@@ -3599,9 +3917,18 @@ export const WORKSPACE_SECTIONS_NAV: SectionNav[] = [
     "groupLabel": "Síntese Inicial",
     "order": 1231,
     "cards": [
-      { "id": "sintese_conceitual",  "title": "Síntese Conceitual" },
-      { "id": "questao_central",     "title": "Questão Central" },
-      { "id": "hipotese_inicial",    "title": "Hipótese Inicial" }
+      {
+        "id": "sintese_conceitual",
+        "title": "Síntese Conceitual"
+      },
+      {
+        "id": "questao_central",
+        "title": "Questão Central"
+      },
+      {
+        "id": "hipotese_inicial",
+        "title": "Hipótese Inicial"
+      }
     ]
   },
   {
@@ -3614,30 +3941,22 @@ export const WORKSPACE_SECTIONS_NAV: SectionNav[] = [
     "groupLabel": "Uso Bíblico",
     "order": 1232,
     "cards": [
-      { "id": "ocorrencias_totais",    "title": "Ocorrências Totais" },
-      { "id": "uso_predominante",      "title": "Uso Predominante" },
-      { "id": "texto_central_biblico", "title": "Texto Central" },
-      { "id": "distribuicao_canonica", "title": "Distribuição Canônica" }
-    ]
-  },
-  {
-    "slug": "termos_canonico",
-    "title": "Desenvolvimento Canônico",
-    "shortTitle": "Desenv. Canônico",
-    "phase": "interpretar",
-    "module": "inventio",
-    "group": "termos_canonico_grp",
-    "groupLabel": "Desenvolvimento Canônico",
-    "order": 1233,
-    "cards": [
-      { "id": "canon_pentateuco",  "title": "Pentateuco" },
-      { "id": "canon_historicos",  "title": "Livros Históricos" },
-      { "id": "canon_sapienciais", "title": "Livros Sapienciais" },
-      { "id": "canon_profetas",    "title": "Profetas" },
-      { "id": "canon_evangelhos",  "title": "Evangelhos" },
-      { "id": "canon_atos",        "title": "Atos" },
-      { "id": "canon_epistolas",   "title": "Epístolas" },
-      { "id": "canon_apocalipse",  "title": "Apocalipse" }
+      {
+        "id": "ocorrencias_totais",
+        "title": "Ocorrências Totais"
+      },
+      {
+        "id": "uso_predominante",
+        "title": "Uso Predominante"
+      },
+      {
+        "id": "texto_central_biblico",
+        "title": "Texto Central"
+      },
+      {
+        "id": "distribuicao_canonica",
+        "title": "Distribuição Canônica"
+      }
     ]
   },
   {
@@ -3650,10 +3969,22 @@ export const WORKSPACE_SECTIONS_NAV: SectionNav[] = [
     "groupLabel": "Uso no Livro / Perícope",
     "order": 1234,
     "cards": [
-      { "id": "uso_no_livro",          "title": "Uso no Livro" },
-      { "id": "uso_na_pericope",       "title": "Uso na Perícope" },
-      { "id": "funcao_no_argumento",   "title": "Função no Argumento" },
-      { "id": "contribuicao_tematica", "title": "Contribuição Temática" }
+      {
+        "id": "uso_no_livro",
+        "title": "Uso no Livro"
+      },
+      {
+        "id": "uso_na_pericope",
+        "title": "Uso na Perícope"
+      },
+      {
+        "id": "funcao_no_argumento",
+        "title": "Função no Argumento"
+      },
+      {
+        "id": "contribuicao_tematica",
+        "title": "Contribuição Temática"
+      }
     ]
   },
   {
@@ -3666,10 +3997,22 @@ export const WORKSPACE_SECTIONS_NAV: SectionNav[] = [
     "groupLabel": "Campo Semântico",
     "order": 1235,
     "cards": [
-      { "id": "nucleo_semantico",   "title": "Núcleo Semântico" },
-      { "id": "periferia_sem",      "title": "Periferia Semântica" },
-      { "id": "evolucao_semantica", "title": "Evolução do Significado" },
-      { "id": "uso_metaforico",     "title": "Uso Metafórico" }
+      {
+        "id": "nucleo_semantico",
+        "title": "Núcleo Semântico"
+      },
+      {
+        "id": "periferia_sem",
+        "title": "Periferia Semântica"
+      },
+      {
+        "id": "evolucao_semantica",
+        "title": "Evolução do Significado"
+      },
+      {
+        "id": "uso_metaforico",
+        "title": "Uso Metafórico"
+      }
     ]
   },
   {
@@ -3682,11 +4025,26 @@ export const WORKSPACE_SECTIONS_NAV: SectionNav[] = [
     "groupLabel": "Relações Teológicas",
     "order": 1236,
     "cards": [
-      { "id": "rel_alianca",       "title": "Aliança" },
-      { "id": "rel_soteriologia",  "title": "Soteriologia" },
-      { "id": "rel_cristologia",   "title": "Cristologia" },
-      { "id": "rel_escatologia",   "title": "Escatologia" },
-      { "id": "rel_ecclesiologia", "title": "Eclesiologia" }
+      {
+        "id": "rel_alianca",
+        "title": "Aliança"
+      },
+      {
+        "id": "rel_soteriologia",
+        "title": "Soteriologia"
+      },
+      {
+        "id": "rel_cristologia",
+        "title": "Cristologia"
+      },
+      {
+        "id": "rel_escatologia",
+        "title": "Escatologia"
+      },
+      {
+        "id": "rel_ecclesiologia",
+        "title": "Eclesiologia"
+      }
     ]
   },
   {
@@ -3699,10 +4057,22 @@ export const WORKSPACE_SECTIONS_NAV: SectionNav[] = [
     "groupLabel": "Conceitos Associados",
     "order": 1237,
     "cards": [
-      { "id": "sinonimos_tematicos",  "title": "Sinônimos Temáticos" },
-      { "id": "antonimos_tematicos",  "title": "Antônimos Temáticos" },
-      { "id": "clusters_tematicos",   "title": "Clusters Temáticos" },
-      { "id": "constelacao_lexical",  "title": "Constelação Lexical" }
+      {
+        "id": "sinonimos_tematicos",
+        "title": "Sinônimos Temáticos"
+      },
+      {
+        "id": "antonimos_tematicos",
+        "title": "Antônimos Temáticos"
+      },
+      {
+        "id": "clusters_tematicos",
+        "title": "Clusters Temáticos"
+      },
+      {
+        "id": "constelacao_lexical",
+        "title": "Constelação Lexical"
+      }
     ]
   },
   {
@@ -3715,9 +4085,18 @@ export const WORKSPACE_SECTIONS_NAV: SectionNav[] = [
     "groupLabel": "Síntese Investigativa",
     "order": 1238,
     "cards": [
-      { "id": "achados_principais",  "title": "Achados Principais" },
-      { "id": "tese_biblica",        "title": "Tese Bíblica" },
-      { "id": "padrao_global",       "title": "Padrão Global" }
+      {
+        "id": "achados_principais",
+        "title": "Achados Principais"
+      },
+      {
+        "id": "tese_biblica",
+        "title": "Tese Bíblica"
+      },
+      {
+        "id": "padrao_global",
+        "title": "Padrão Global"
+      }
     ]
   },
   {
@@ -3730,11 +4109,26 @@ export const WORKSPACE_SECTIONS_NAV: SectionNav[] = [
     "groupLabel": "Definição Final",
     "order": 1239,
     "cards": [
-      { "id": "definicao_final",           "title": "Definição Final" },
-      { "id": "grande_ideia",              "title": "Grande Ideia" },
-      { "id": "implicacoes_teologicas",    "title": "Implicações Teológicas" },
-      { "id": "implicacoes_eclesiasticas", "title": "Implicações Eclesiásticas" },
-      { "id": "implicacoes_pastorais",     "title": "Implicações Pastorais" }
+      {
+        "id": "definicao_final",
+        "title": "Definição Final"
+      },
+      {
+        "id": "grande_ideia",
+        "title": "Grande Ideia"
+      },
+      {
+        "id": "implicacoes_teologicas",
+        "title": "Implicações Teológicas"
+      },
+      {
+        "id": "implicacoes_eclesiasticas",
+        "title": "Implicações Eclesiásticas"
+      },
+      {
+        "id": "implicacoes_pastorais",
+        "title": "Implicações Pastorais"
+      }
     ]
   },
   {
@@ -3747,10 +4141,22 @@ export const WORKSPACE_SECTIONS_NAV: SectionNav[] = [
     "groupLabel": "Aplicações",
     "order": 1240,
     "cards": [
-      { "id": "aplicacao_vida_crista",  "title": "Vida Cristã" },
-      { "id": "aplicacao_pregacao",     "title": "Pregação e Ensino" },
-      { "id": "aplicacao_pastoral",     "title": "Cuidado Pastoral" },
-      { "id": "aplicacao_missao",       "title": "Missão" }
+      {
+        "id": "aplicacao_vida_crista",
+        "title": "Vida Cristã"
+      },
+      {
+        "id": "aplicacao_pregacao",
+        "title": "Pregação e Ensino"
+      },
+      {
+        "id": "aplicacao_pastoral",
+        "title": "Cuidado Pastoral"
+      },
+      {
+        "id": "aplicacao_missao",
+        "title": "Missão"
+      }
     ]
   },
   {
@@ -3763,8 +4169,14 @@ export const WORKSPACE_SECTIONS_NAV: SectionNav[] = [
     "groupLabel": "Síntese Final",
     "order": 1241,
     "cards": [
-      { "id": "sintese_completa",  "title": "Síntese Completa" },
-      { "id": "produto_final",     "title": "Produto Final" }
+      {
+        "id": "sintese_completa",
+        "title": "Síntese Completa"
+      },
+      {
+        "id": "produto_final",
+        "title": "Produto Final"
+      }
     ]
   },
   {
@@ -4190,6 +4602,229 @@ export const WORKSPACE_SECTIONS_NAV: SectionNav[] = [
     ]
   },
   {
+    "slug": "nr_preparar_visao_geral",
+    "title": "Visão Geral da Narrativa",
+    "shortTitle": "Visão Geral",
+    "phase": "preparar",
+    "module": "inventio",
+    "group": "nr_visao_geral_grp",
+    "groupLabel": "Mapa inicial da narrativa",
+    "order": -37,
+    "cards": [
+      {
+        "id": "nr_vg_tema",
+        "title": "Tema provável"
+      },
+      {
+        "id": "nr_vg_estrutura",
+        "title": "Estrutura percebida"
+      },
+      {
+        "id": "nr_vg_personagens",
+        "title": "Personagens"
+      },
+      {
+        "id": "nr_vg_movimento",
+        "title": "Movimento do texto"
+      }
+    ]
+  },
+  {
+    "slug": "nr_ctx_historico",
+    "title": "Contexto Histórico",
+    "shortTitle": "Contexto Histórico",
+    "module": "inventio",
+    "group": "nr_contextual_grp",
+    "groupLabel": "Estudo Contextual",
+    "order": 710,
+    "cards": [
+      {
+        "id": "nr_ctx_hist_main",
+        "title": "Contexto Histórico"
+      }
+    ]
+  },
+  {
+    "slug": "nr_ctx_literario",
+    "title": "Contexto Literário",
+    "shortTitle": "Contexto Literário",
+    "module": "inventio",
+    "group": "nr_contextual_grp",
+    "groupLabel": "Estudo Contextual",
+    "order": 711,
+    "cards": [
+      {
+        "id": "nr_ctx_lit_main",
+        "title": "Contexto Literário"
+      }
+    ]
+  },
+  {
+    "slug": "nr_ctx_canonico",
+    "title": "Contexto Canônico",
+    "shortTitle": "Contexto Canônico",
+    "module": "inventio",
+    "group": "nr_contextual_grp",
+    "groupLabel": "Estudo Contextual",
+    "order": 712,
+    "cards": [
+      {
+        "id": "nr_ctx_can_main",
+        "title": "Contexto Canônico"
+      }
+    ]
+  },
+  {
+    "slug": "nr_txt_original",
+    "title": "Texto Original",
+    "shortTitle": "Texto Original",
+    "module": "inventio",
+    "group": "nr_textual_grp",
+    "groupLabel": "Estudo Textual",
+    "order": 720,
+    "cards": [
+      {
+        "id": "nr_txt_orig_main",
+        "title": "Texto Original"
+      }
+    ]
+  },
+  {
+    "slug": "nr_txt_estrutura",
+    "title": "Estrutura do Texto",
+    "shortTitle": "Estrutura do Texto",
+    "module": "inventio",
+    "group": "nr_textual_grp",
+    "groupLabel": "Estudo Textual",
+    "order": 721,
+    "cards": [
+      {
+        "id": "nr_txt_struct_main",
+        "title": "Estrutura do Texto"
+      }
+    ]
+  },
+  {
+    "slug": "nr_txt_exegese",
+    "title": "Observações Exegéticas",
+    "shortTitle": "Exegese",
+    "module": "inventio",
+    "group": "nr_textual_grp",
+    "groupLabel": "Estudo Textual",
+    "order": 722,
+    "cards": [
+      {
+        "id": "nr_txt_exeg_main",
+        "title": "Observações Exegéticas"
+      }
+    ]
+  },
+  {
+    "slug": "nr_txt_mensagem",
+    "title": "Mensagem para os Primeiros Ouvintes",
+    "shortTitle": "Mensagem Original",
+    "module": "inventio",
+    "group": "nr_textual_grp",
+    "groupLabel": "Estudo Textual",
+    "order": 723,
+    "cards": [
+      {
+        "id": "nr_txt_msg_main",
+        "title": "Mensagem para os Primeiros Ouvintes"
+      }
+    ]
+  },
+  {
+    "slug": "nr_teo_redentor",
+    "title": "Relação com a História da Redenção",
+    "shortTitle": "História da Redenção",
+    "module": "inventio",
+    "group": "nr_teologico_grp",
+    "groupLabel": "Estudo Teológico",
+    "order": 730,
+    "cards": [
+      {
+        "id": "nr_teo_redentor_main",
+        "title": "Relação com a História da Redenção"
+      }
+    ]
+  },
+  {
+    "slug": "nr_teo_doutrinas",
+    "title": "Doutrinas Ensinadas",
+    "shortTitle": "Doutrinas",
+    "module": "inventio",
+    "group": "nr_teologico_grp",
+    "groupLabel": "Estudo Teológico",
+    "order": 731,
+    "cards": [
+      {
+        "id": "nr_teo_doc_main",
+        "title": "Doutrinas Ensinadas"
+      }
+    ]
+  },
+  {
+    "slug": "nr_teo_implicacoes",
+    "title": "Implicações para a Vida",
+    "shortTitle": "Implicações",
+    "module": "inventio",
+    "group": "nr_teologico_grp",
+    "groupLabel": "Estudo Teológico",
+    "order": 732,
+    "cards": [
+      {
+        "id": "nr_teo_impl_main",
+        "title": "Implicações para a Vida"
+      }
+    ]
+  },
+  {
+    "slug": "nr_ivg_ideia",
+    "title": "Grande Ideia",
+    "shortTitle": "Grande Ideia",
+    "module": "inventio",
+    "group": "nr_ivg_grp",
+    "groupLabel": "Visão Geral da Investigação",
+    "order": 740,
+    "cards": [
+      {
+        "id": "nr_ivg_ideia_main",
+        "title": "Grande Ideia"
+      }
+    ]
+  },
+  {
+    "slug": "nr_ivg_verdades",
+    "title": "Verdades Centrais",
+    "shortTitle": "Verdades",
+    "module": "inventio",
+    "group": "nr_ivg_grp",
+    "groupLabel": "Visão Geral da Investigação",
+    "order": 741,
+    "cards": [
+      {
+        "id": "nr_ivg_verd_main",
+        "title": "Verdades Centrais"
+      }
+    ]
+  },
+  {
+    "slug": "nr_ivg_aplic",
+    "title": "Aplicações Principais",
+    "shortTitle": "Aplicações",
+    "module": "inventio",
+    "group": "nr_ivg_grp",
+    "groupLabel": "Visão Geral da Investigação",
+    "order": 742,
+    "cards": [
+      {
+        "id": "nr_ivg_aplic_main",
+        "title": "Aplicações Principais"
+      }
+    ]
+  },
+  {
     "slug": "nr_teologia",
     "title": "Teologia Narrativa",
     "shortTitle": "Teologia",
@@ -4212,164 +4847,33 @@ export const WORKSPACE_SECTIONS_NAV: SectionNav[] = [
       }
     ]
   },
-
   {
-    "slug": "nr_ctx_historico",
-    "title": "Contexto Histórico",
-    "shortTitle": "Contexto Histórico",
+    "slug": "nr_preparar_primeiras_impressoes",
+    "title": "3. Primeiras Impressões",
+    "shortTitle": "Primeiras Impressões",
+    "phase": "preparar",
     "module": "inventio",
-    "group": "nr_contextual_grp",
-    "groupLabel": "Estudo Contextual",
-    "order": 710,
+    "group": "preparar_impressoes",
+    "groupLabel": "Notas rápidas e perguntas",
+    "order": -38,
+    "studyModes": [
+      "estudo_narrativas"
+    ],
     "cards": [
-      { "id": "nr_ctx_hist_main", "title": "Contexto Histórico-Cultural" }
+      {
+        "id": "preparar_observacoes_livres",
+        "title": "Observações livres"
+      },
+      {
+        "id": "preparar_perguntas_dificuldades",
+        "title": "Perguntas e dificuldades"
+      },
+      {
+        "id": "preparar_conexoes_iniciais",
+        "title": "Conexões iniciais"
+      }
     ]
   },
-  {
-    "slug": "nr_ctx_literario",
-    "title": "Contexto Literário",
-    "shortTitle": "Contexto Literário",
-    "module": "inventio",
-    "group": "nr_contextual_grp",
-    "groupLabel": "Estudo Contextual",
-    "order": 711,
-    "cards": [
-      { "id": "nr_ctx_lit_main", "title": "Contexto Literário" }
-    ]
-  },
-  {
-    "slug": "nr_ctx_canonico",
-    "title": "Contexto Canônico",
-    "shortTitle": "Contexto Canônico",
-    "module": "inventio",
-    "group": "nr_contextual_grp",
-    "groupLabel": "Estudo Contextual",
-    "order": 712,
-    "cards": [
-      { "id": "nr_ctx_can_main", "title": "Contexto Canônico" }
-    ]
-  },
-  {
-    "slug": "nr_txt_original",
-    "title": "Texto Original",
-    "shortTitle": "Texto Original",
-    "module": "inventio",
-    "group": "nr_textual_grp",
-    "groupLabel": "Estudo Textual",
-    "order": 720,
-    "cards": [
-      { "id": "nr_txt_orig_main", "title": "Texto Original e Delimitação" }
-    ]
-  },
-  {
-    "slug": "nr_txt_estrutura",
-    "title": "Estrutura do Texto",
-    "shortTitle": "Estrutura do Texto",
-    "module": "inventio",
-    "group": "nr_textual_grp",
-    "groupLabel": "Estudo Textual",
-    "order": 721,
-    "cards": [
-      { "id": "nr_txt_struct_main", "title": "Estrutura e Movimento Narrativo" }
-    ]
-  },
-  {
-    "slug": "nr_txt_exegese",
-    "title": "Observações Exegéticas",
-    "shortTitle": "Exegese",
-    "module": "inventio",
-    "group": "nr_textual_grp",
-    "groupLabel": "Estudo Textual",
-    "order": 722,
-    "cards": [
-      { "id": "nr_txt_exeg_main", "title": "Observações Exegéticas" }
-    ]
-  },
-  {
-    "slug": "nr_txt_mensagem",
-    "title": "Mensagem para os Primeiros Ouvintes",
-    "shortTitle": "Mensagem Original",
-    "module": "inventio",
-    "group": "nr_textual_grp",
-    "groupLabel": "Estudo Textual",
-    "order": 723,
-    "cards": [
-      { "id": "nr_txt_msg_main", "title": "Mensagem para os Primeiros Ouvintes" }
-    ]
-  },
-  {
-    "slug": "nr_teo_redentor",
-    "title": "Relação com a História da Redenção",
-    "shortTitle": "História da Redenção",
-    "module": "inventio",
-    "group": "nr_teologico_grp",
-    "groupLabel": "Estudo Teológico",
-    "order": 730,
-    "cards": [
-      { "id": "nr_teo_redentor_main", "title": "Relação com a História da Redenção" }
-    ]
-  },
-  {
-    "slug": "nr_teo_doutrinas",
-    "title": "Doutrinas Ensinadas",
-    "shortTitle": "Doutrinas",
-    "module": "inventio",
-    "group": "nr_teologico_grp",
-    "groupLabel": "Estudo Teológico",
-    "order": 731,
-    "cards": [
-      { "id": "nr_teo_doc_main", "title": "Doutrinas Ensinadas" }
-    ]
-  },
-  {
-    "slug": "nr_teo_implicacoes",
-    "title": "Implicações para a Vida",
-    "shortTitle": "Implicações",
-    "module": "inventio",
-    "group": "nr_teologico_grp",
-    "groupLabel": "Estudo Teológico",
-    "order": 732,
-    "cards": [
-      { "id": "nr_teo_impl_main", "title": "Implicações para a Vida" }
-    ]
-  },
-  {
-    "slug": "nr_ivg_ideia",
-    "title": "Grande Ideia",
-    "shortTitle": "Grande Ideia",
-    "module": "inventio",
-    "group": "nr_ivg_grp",
-    "groupLabel": "Visão Geral da Investigação",
-    "order": 740,
-    "cards": [
-      { "id": "nr_ivg_ideia_main", "title": "Grande Ideia" }
-    ]
-  },
-  {
-    "slug": "nr_ivg_verdades",
-    "title": "Verdades Centrais",
-    "shortTitle": "Verdades",
-    "module": "inventio",
-    "group": "nr_ivg_grp",
-    "groupLabel": "Visão Geral da Investigação",
-    "order": 741,
-    "cards": [
-      { "id": "nr_ivg_verd_main", "title": "Verdades Centrais" }
-    ]
-  },
-  {
-    "slug": "nr_ivg_aplic",
-    "title": "Aplicações Principais",
-    "shortTitle": "Aplicações",
-    "module": "inventio",
-    "group": "nr_ivg_grp",
-    "groupLabel": "Visão Geral da Investigação",
-    "order": 742,
-    "cards": [
-      { "id": "nr_ivg_aplic_main", "title": "Aplicações Principais" }
-    ]
-  },
-
   {
     "slug": "pt_tema",
     "title": "I. Tema e Problema",
@@ -4600,6 +5104,12 @@ export function getSectionNavBySlug(slug: string): SectionNav | undefined {
   return WORKSPACE_SECTIONS_NAV.find(s => s.slug === slug)
 }
 
-export function getSectionsByGroupNav(group: string): SectionNav[] {
-  return WORKSPACE_SECTIONS_NAV.filter(s => s.group === group)
+// Para grupos com variante por modo (studyModes), retorna a variante do modo se existir,
+// senão a(s) seção(ões) genérica(s) do grupo (sem studyModes definido).
+export function getSectionsByGroupNav(group: string, studyModeId?: string): SectionNav[] {
+  const all = WORKSPACE_SECTIONS_NAV.filter(s => s.group === group)
+  if (!studyModeId) return all
+  const modeSpecific = all.filter(s => s.studyModes?.includes(studyModeId))
+  if (modeSpecific.length > 0) return modeSpecific
+  return all.filter(s => !s.studyModes)
 }

@@ -161,11 +161,21 @@ interface Props {
   book: string; passageRef: string; testament: string
   projectId: string; userId: string; onClose: () => void
   sidebarMode?: boolean
+  studyMode?: string
+}
+
+// Seções compartilhadas com variante por modo de estudo: resolve o slug correto
+// antes de salvar uma classificação (ex: 'observacao' no modo Narrativas).
+function resolveClassDef(def: ClassDef, studyMode?: string): ClassDef {
+  if (studyMode === 'estudo_narrativas' && def.sectionSlug === 'preparar_primeiras_impressoes') {
+    return { ...def, sectionSlug: 'nr_preparar_primeiras_impressoes' }
+  }
+  return def
 }
 
 // ── Component ─────────────────────────────────────────────────────────────────
 
-export default function BibleFloatingWindow({ book, passageRef, testament, projectId, userId, onClose, sidebarMode = false }: Props) {
+export default function BibleFloatingWindow({ book, passageRef, testament, projectId, userId, onClose, sidebarMode = false, studyMode }: Props) {
   const textRef  = useRef<HTMLDivElement>(null)
   const menuRef  = useRef<HTMLDivElement>(null)
   const supabase = useMemo(() => createClient(), [])
@@ -388,7 +398,7 @@ export default function BibleFloatingWindow({ book, passageRef, testament, proje
   // ── Apply classification ──────────────────────────────────────────────────
   async function applyClass(type: ClassType) {
     if (!menuCtx) return
-    const def = CLASS_DEF[type]; setSaving(true)
+    const def = resolveClassDef(CLASS_DEF[type], studyMode); setSaving(true)
     if (menuCtx.kind === 'new') {
       const p   = menuCtx.pending
       const cls: Classification = { id: crypto.randomUUID(), type, selectedText: p.text, startVerse: p.startVerse, endVerse: p.endVerse, startOffset: p.startOffset, endOffset: p.endOffset, note: noteVal, createdAt: new Date().toISOString() }

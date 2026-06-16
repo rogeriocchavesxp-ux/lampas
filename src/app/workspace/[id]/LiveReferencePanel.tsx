@@ -19,7 +19,7 @@ interface ReferenceBlock {
 }
 
 const REFERENCE_SOURCES = [
-  { id: 'preparar', label: 'Preparar', slugs: ['preparacao_espiritual', 'preparar_leia_assimile', 'preparar_primeiras_impressoes', 'preparar_visao_geral'] },
+  { id: 'preparar', label: 'Preparar', slugs: ['preparacao_espiritual', 'preparar_leia_assimile', 'preparar_primeiras_impressoes', 'nr_preparar_primeiras_impressoes', 'preparar_visao_geral'] },
   { id: 'contextual', label: 'Síntese contextual', slugs: ['contexto_historico', 'autor_destinatarios', 'ocasiao_proposito', 'genero_literario', 'estrutura_livro'] },
   { id: 'textual', label: 'Estrutura literária', slugs: ['texto_original', 'delimitacao_pericope', 'traducao_textual', 'analise_morfossintatica', 'termos_chave', 'estrutura_literaria'] },
   { id: 'teologico', label: 'Síntese teológica', slugs: ['contexto_canonico', 'progressao_revelacional', 'sintese'] },
