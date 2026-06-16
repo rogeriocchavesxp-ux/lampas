@@ -124,6 +124,7 @@ const GROUP_SUBTITLES: Record<string, string> = {
   preparar_assimilacao: 'Contato direto com o texto',
   preparar_impressoes:  'Notas rápidas e perguntas',
   preparar_visao_geral:     'Tema, estrutura e clímax',
+  nr_visao_geral_grp:       'Mapa inicial da narrativa',
   investigar_visao_geral:   'Compreensão refinada após investigação',
   // Narrativas — Investigar
   nr_contextual_grp: 'Histórico, literário e canônico',
@@ -190,6 +191,8 @@ const GROUP_ACCENT_COLORS: Record<string, string> = {
   et_implicacoes_grp:      '#BE185D',
   et_aplicacoes_grp:       '#1E40AF',
   et_sistematica_grp:      '#163A6B',
+  // Narrativas — Preparar
+  nr_visao_geral_grp: '#D97706',
   // Narrativas — Investigar
   nr_contextual_grp:  '#B45309',
   nr_textual_grp:     '#92400E',
@@ -230,6 +233,8 @@ const GROUP_ICONS: Record<string, LucideIcon> = {
   contextual:                Landmark,
   textual:                   Languages,
   teologico:                 GraduationCap,
+  // Narrativas — Preparar
+  nr_visao_geral_grp:        Crosshair,
   // Investigar — Narrativas
   nr_contextual_grp:         Landmark,
   nr_textual_grp:            Languages,

@@ -76,6 +76,8 @@ export const PREPARE_SECTIONS: SectionDef[] = [
       card('preparar_observacoes_livres', 'Observações livres', 'Anote impressões, detalhes, surpresas, dúvidas e percepções iniciais sem censurar ou organizar demais.', 'Ajude-me a transformar minhas primeiras observações em perguntas úteis para a próxima etapa de estudo.'),
       card('preparar_perguntas_dificuldades', 'Perguntas e dificuldades', 'Liste perguntas abertas, dificuldades interpretativas, termos obscuros e pontos que exigirão pesquisa posterior.', 'Organize minhas dúvidas iniciais em categorias: texto, contexto, teologia, aplicação e comunicação.'),
       card('preparar_conexoes_iniciais', 'Conexões iniciais', 'Registre conexões com outros textos bíblicos, temas teológicos, experiências pastorais ou necessidades da igreja.', 'Sugira conexões iniciais e cuidadosas entre esta passagem, temas bíblicos e necessidades pastorais.'),
+      card('preparar_marcacoes', 'Marcações e destaques', 'Registre palavras, frases, movimentos ou imagens que você destacaria no texto durante a imersão.', 'Ajude-me a identificar marcações iniciais no texto: repetições, contrastes, imagens, mudanças de cena e ênfases.'),
+      card('preparar_modo_imersao', 'Modo Imersão', 'Use este espaço como tela limpa: copie o texto bíblico, escreva notas rápidas, destaques e marcações sem comentários acadêmicos.', 'Conduza um modo imersão nesta passagem: apenas observação, contemplação, perguntas e marcações iniciais.'),
     ],
   },
   {

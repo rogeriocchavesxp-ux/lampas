@@ -91,6 +91,14 @@ export const WORKSPACE_SECTIONS_NAV: SectionNav[] = [
         "id": "preparar_conexoes_iniciais",
         "title": "Conexões iniciais"
       },
+      {
+        "id": "preparar_marcacoes",
+        "title": "Marcações e destaques"
+      },
+      {
+        "id": "preparar_modo_imersao",
+        "title": "Modo Imersão"
+      }
     ]
   },
   {
