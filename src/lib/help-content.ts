@@ -1,4 +1,5 @@
 import { COMMUNICATION_SECTIONS } from './communication-sections'
+import { PRODUCTION_HELP_CONTENT } from './production-help-content'
 
 export interface HelpEntry {
   id: string
@@ -305,3 +306,5 @@ COMMUNICATION_SECTIONS.forEach(section => {
     HELP_CONTENT[cardSeed.id] = createCommunicationHelpEntry(section.title, section.communicationMode, section.module, cardSeed)
   })
 })
+
+Object.assign(HELP_CONTENT, PRODUCTION_HELP_CONTENT)
