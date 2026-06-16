@@ -414,6 +414,11 @@ export default function KnowledgeClient({ userId, initialItems, initialDashboard
       if (saved.parent_id) {
         setExpandedContainers(prev => new Set([...prev, saved.parent_id!]))
       }
+      void supabase.rpc('log_activity', {
+        p_event_type:  selected ? 'knowledge_item_updated' : 'knowledge_item_created',
+        p_entity_type: 'knowledge_item',
+        p_entity_id:   saved.id,
+      })
       setToast('Item salvo na Base de Conhecimento')
       setTimeout(() => setToast(''), 2500)
     }
@@ -422,6 +427,7 @@ export default function KnowledgeClient({ userId, initialItems, initialDashboard
 
   async function deleteItem(item: KnowledgeItem) {
     await supabase.from('knowledge_items').delete().eq('id', item.id)
+    void supabase.rpc('log_activity', { p_event_type: 'knowledge_item_deleted', p_entity_type: 'knowledge_item', p_entity_id: item.id })
     setItems(prev => prev.filter(i => i.id !== item.id))
     setSelectedId(prev => prev === item.id ? '' : prev)
     setEditing(false)

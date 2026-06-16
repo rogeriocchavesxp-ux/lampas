@@ -102,6 +102,14 @@ export async function saveChannelPublications(
     if (error) throw new Error(error.message)
   }
 
+  await db.rpc('log_activity', {
+    p_event_type:  'content_published',
+    p_entity_type: contentType,
+    p_entity_id:   contentId,
+    p_metadata:    { published_channel_ids: publishedIds },
+    p_user_id:     user.id,
+  }).then(() => {})
+
   revalidatePath('/admin/boletim')
 }
 

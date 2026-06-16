@@ -101,6 +101,7 @@ export async function POST(req: Request) {
           model:         'lampas-kb',
           source:        kbResult.source,
           cost_usd:      0,
+          response_ms:   Date.now() - t0,
         }).then(() => {})
 
         return makeKnowledgeBaseStream(kbResult)
@@ -208,6 +209,7 @@ export async function POST(req: Request) {
       model:         'claude-sonnet-4-6',
       source:        'ai',
       cost_usd:      costUsd,
+      response_ms:  Date.now() - t0,
     }).then(() => {})
 
     // Auto-save na biblioteca quando é uma consulta ao dicionário

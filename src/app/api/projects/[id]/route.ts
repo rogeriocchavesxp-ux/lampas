@@ -18,5 +18,7 @@ export async function DELETE(
 
   if (error) return Response.json({ error: error.message }, { status: 500 })
 
+  await supabase.rpc('log_activity', { p_event_type: 'project_deleted', p_entity_type: 'project', p_entity_id: id }).then(() => {})
+
   return Response.json({ ok: true })
 }

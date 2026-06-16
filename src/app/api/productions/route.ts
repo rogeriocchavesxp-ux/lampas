@@ -46,5 +46,8 @@ export async function POST(req: Request) {
     .single()
 
   if (error) return Response.json({ error: error.message }, { status: 500 })
+
+  await supabase.rpc('log_activity', { p_event_type: 'production_created', p_entity_type: 'production', p_entity_id: data.id }).then(() => {})
+
   return Response.json(data, { status: 201 })
 }

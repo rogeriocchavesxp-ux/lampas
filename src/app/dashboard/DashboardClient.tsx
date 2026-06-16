@@ -886,7 +886,11 @@ export default function DashboardClient({ user, projects: initialProjects, profi
     try {
       const { data, error } = await supabase.from('projects').insert(payload).select().single()
       if (error) { setCreateError(`Erro: ${error.message}`); return }
-      if (data) { setProjects(prev => [data as Project, ...prev]); router.push(`/workspace/${data.id}`) }
+      if (data) {
+        setProjects(prev => [data as Project, ...prev])
+        void supabase.rpc('log_activity', { p_event_type: 'project_created', p_entity_type: 'project', p_entity_id: data.id })
+        router.push(`/workspace/${data.id}`)
+      }
     } catch {
       setCreateError('Não foi possível criar o projeto. Tente novamente.')
     } finally {
@@ -918,7 +922,11 @@ export default function DashboardClient({ user, projects: initialProjects, profi
     try {
       const { data, error } = await supabase.from('projects').insert(payload).select().single()
       if (error) { setCreateError(`Erro: ${error.message}`); return }
-      if (data) { setProjects(prev => [data as Project, ...prev]); router.push(`/workspace/${data.id}`) }
+      if (data) {
+        setProjects(prev => [data as Project, ...prev])
+        void supabase.rpc('log_activity', { p_event_type: 'project_created', p_entity_type: 'project', p_entity_id: data.id })
+        router.push(`/workspace/${data.id}`)
+      }
     } catch {
       setCreateError('Não foi possível criar o projeto. Tente novamente.')
     } finally {
@@ -1000,6 +1008,7 @@ export default function DashboardClient({ user, projects: initialProjects, profi
       }
       if (data) {
         setProjects(prev => [data as Project, ...prev])
+        void supabase.rpc('log_activity', { p_event_type: 'project_created', p_entity_type: 'project', p_entity_id: data.id })
         router.push(`/workspace/${data.id}`)
       }
     } catch {

@@ -6,6 +6,7 @@ import { checkRateLimit, rateLimitHeaders } from '@/lib/rate-limit'
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY! })
 
 export async function POST(req: Request) {
+  const t0 = Date.now()
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return Response.json({ error: 'Não autorizado' }, { status: 401 })
@@ -51,6 +52,7 @@ export async function POST(req: Request) {
       model: 'claude-sonnet-4-6',
       source: 'ai',
       cost_usd: costUsd,
+      response_ms: Date.now() - t0,
     }).then(() => {})
   }).catch(() => {})
 

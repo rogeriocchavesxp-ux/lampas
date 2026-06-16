@@ -15,6 +15,7 @@ export async function GET(request: NextRequest) {
   if (code) {
     const { error } = await supabase.auth.exchangeCodeForSession(code)
     if (!error) {
+      await supabase.rpc('log_activity', { p_event_type: 'login' }).then(() => {})
       return NextResponse.redirect(`${origin}${next}`)
     }
   }
@@ -23,6 +24,7 @@ export async function GET(request: NextRequest) {
   if (tokenHash && type) {
     const { error } = await supabase.auth.verifyOtp({ token_hash: tokenHash, type })
     if (!error) {
+      await supabase.rpc('log_activity', { p_event_type: 'login', p_metadata: { otp_type: type } }).then(() => {})
       return NextResponse.redirect(`${origin}${next}`)
     }
   }
