@@ -300,7 +300,7 @@ export default function TopNav() {
                 </div>
                 <DropDivider />
                 <DropItem label="Planos" onClick={() => { setOpenDrop(null); router.push('/billing') }} />
-                {isAdmin && <DropItem label="Admin" onClick={() => { setOpenDrop(null); router.push('/admin/billing') }} />}
+                {isAdmin && <DropItem label="Admin" onClick={() => { setOpenDrop(null); router.push('/admin') }} />}
                 <DropDivider />
                 <DropItem label="Sair" onClick={signOut} danger />
               </Dropdown>
@@ -334,7 +334,7 @@ export default function TopNav() {
             ))}
             <div style={{ borderTop: '1px solid var(--border-subtle)', margin: '0.5rem 0' }} />
             <MobileLink label="Planos" onClick={() => { setMobileOpen(false); router.push('/billing') }} />
-            {isAdmin && <MobileLink label="Admin" onClick={() => { setMobileOpen(false); router.push('/admin/billing') }} />}
+            {isAdmin && <MobileLink label="Admin" onClick={() => { setMobileOpen(false); router.push('/admin') }} />}
             <MobileLink label="Sair" onClick={signOut} danger />
           </div>
         </div>

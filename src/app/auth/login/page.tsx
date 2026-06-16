@@ -17,13 +17,15 @@ function LoginContent() {
   const [otpCode,  setOtpCode]  = useState('')
   const [otpType,  setOtpType]  = useState<'signup' | 'email'>('signup')
   const [loading,  setLoading]  = useState(false)
-  const [error,    setError]    = useState('')
   const [success,  setSuccess]  = useState('')
 
   const router       = useRouter()
   const searchParams = useSearchParams()
   const next         = searchParams.get('next') ?? '/dashboard'
   const fromBilling  = next.includes('billing')
+  const blocked      = searchParams.get('blocked') === '1'
+
+  const [error, setError] = useState(blocked ? 'Sua conta foi bloqueada. Contate o suporte para mais informações.' : '')
 
   function switchMode(m: Mode) {
     setMode(m); setError(''); setSuccess(''); setStep('credentials')

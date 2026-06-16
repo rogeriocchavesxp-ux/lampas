@@ -19,6 +19,9 @@ export interface Profile {
   stripe_customer_id: string | null
   stripe_subscription_id: string | null
   subscription_status: string | null
+  is_hub_editor?: boolean
+  is_blocked?: boolean
+  last_active_at?: string | null
   created_at: string
 }
 

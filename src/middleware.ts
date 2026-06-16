@@ -34,6 +34,21 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(loginUrl)
   }
 
+  if (isProtected && user) {
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('is_blocked')
+      .eq('id', user.id)
+      .maybeSingle()
+
+    if (profile?.is_blocked) {
+      await supabase.auth.signOut()
+      const blockedUrl = new URL('/auth/login', request.url)
+      blockedUrl.searchParams.set('blocked', '1')
+      return NextResponse.redirect(blockedUrl)
+    }
+  }
+
   return supabaseResponse
 }
 
