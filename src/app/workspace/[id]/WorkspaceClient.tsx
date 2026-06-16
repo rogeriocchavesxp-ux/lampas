@@ -31,6 +31,7 @@ import ComentarioExegeticoWorkspace from './ComentarioExegeticoWorkspace'
 import ProduzirWorkspace from './ProduzirWorkspace'
 import ProductionsLibrary from './ProductionsLibrary'
 import WorkspaceMenuBar from './WorkspaceMenuBar'
+import WorkspaceContextBadge from './WorkspaceContextBadge'
 import FloatingBrowser from './FloatingBrowser'
 import ImprovementChecklistPanel from './ImprovementChecklistPanel'
 import LiveReferencePanel from './LiveReferencePanel'
@@ -54,6 +55,7 @@ import {
   STUDY_MODE_REGISTRY,
   type NavPhase,
 } from '@/lib/study-modes'
+import { WorkspaceProvider } from './WorkspaceContext'
 
 interface Props {
   user: User
@@ -969,7 +971,13 @@ export default function WorkspaceClient({ user, project, initialSections }: Prop
   }
 
   return (
-    <div style={{ height: 'calc(100vh - 52px)', display: 'flex', flexDirection: 'column', background: 'var(--background)', paddingBottom: focusMode ? 0 : '60px', boxSizing: 'border-box' }}>
+    <WorkspaceProvider
+      user={user}
+      project={project}
+      activeSlug={activeSlug}
+      activeSection={activeSection}
+    >
+      <div style={{ height: 'calc(100vh - 52px)', display: 'flex', flexDirection: 'column', background: 'var(--background)', paddingBottom: focusMode ? 0 : '60px', boxSizing: 'border-box' }}>
 
       {/* ── Menu bar ──────────────────────────────────────────────────────── */}
       <WorkspaceMenuBar
@@ -1001,6 +1009,7 @@ export default function WorkspaceClient({ user, project, initialSections }: Prop
         <span style={{ fontWeight: 700, color: 'var(--text-primary)', whiteSpace: 'nowrap' }}>
           {titleValue}
         </span>
+        <WorkspaceContextBadge />
         <span style={{
           fontSize: '0.62rem', color: 'var(--text-muted)',
           background: 'var(--surface)', border: '1px solid var(--border-subtle)',
@@ -2445,5 +2454,6 @@ export default function WorkspaceClient({ user, project, initialSections }: Prop
       </div>
 
     </div>
+    </WorkspaceProvider>
   )
 }
