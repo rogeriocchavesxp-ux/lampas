@@ -3,7 +3,8 @@
 import { useState, useRef, useCallback, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import type { Project, Section } from '@/types/database'
-import RichEditor, { type AIContext } from '@/components/RichEditor'
+import RichEditor from '@/components/RichEditorLazy'
+import type { AIContext } from '@/components/RichEditor'
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 

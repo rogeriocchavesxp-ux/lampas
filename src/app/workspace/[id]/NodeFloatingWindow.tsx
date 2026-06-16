@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect, useCallback } from 'react'
 import { Minus, Square, X, Minimize2, Maximize2, Sparkles, ChevronDown } from 'lucide-react'
-import RichEditor from '@/components/RichEditor'
+import RichEditor from '@/components/RichEditorLazy'
 import type { InsertMenuItem } from '@/components/RichEditor'
 
 // ── Types ─────────────────────────────────────────────────────────────────────

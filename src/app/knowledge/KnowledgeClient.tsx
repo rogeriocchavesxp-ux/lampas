@@ -5,7 +5,8 @@ import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { CHILD_CONTENT, CONTAINER_TYPES, KNOWLEDGE_STATUSES, KNOWLEDGE_TYPES, type KnowledgeItemType, type KnowledgeStatus } from '@/lib/knowledge-base'
 import { ArrowLeft, Brain, Check, ChevronDown, ChevronLeft, ChevronRight, Link2, Plus, Search, Sparkles, Trash2, X } from 'lucide-react'
-import RichEditor, { type InsertMenuItem } from '@/components/RichEditor'
+import RichEditor from '@/components/RichEditorLazy'
+import type { InsertMenuItem } from '@/components/RichEditor'
 
 type JsonRecord = Record<string, string>
 
