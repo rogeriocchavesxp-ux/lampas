@@ -208,7 +208,7 @@ export const ESTUDO_NARRATIVAS_SECTIONS: SectionDef[] = [
 
   {
     slug: 'nr_ctx_historico',
-    title: 'Contexto Histórico-Cultural',
+    title: 'Contexto Histórico',
     shortTitle: 'Contexto Histórico',
     module: 'inventio',
     group: 'nr_contextual_grp',
@@ -224,7 +224,7 @@ export const ESTUDO_NARRATIVAS_SECTIONS: SectionDef[] = [
     ],
     relevantAuthors: ['John Walton', 'Victor Matthews', 'Bruce Waltke', 'K.A. Kitchen'],
     cards: [
-      card('nr_ctx_hist_main', 'Contexto Histórico-Cultural',
+      card('nr_ctx_hist_main', 'Contexto Histórico',
         'Descreva o contexto histórico-cultural da narrativa.\n\nOrientações:\n→ Que período? Data aproximada dos eventos?\n→ Qual o cenário geopolítico — que nações, reis, conflitos são relevantes?\n→ Que costumes, valores ou instituições são refletidos no texto?\n→ Que tensões históricas moldam a situação dos personagens?\n→ Como esse contexto ilumina escolhas, reações ou conflitos na narrativa?',
         'Descreva o contexto histórico-cultural desta narrativa: período, cenário geopolítico, costumes relevantes e como esse ambiente molda os personagens e eventos.'),
     ],
@@ -282,7 +282,7 @@ export const ESTUDO_NARRATIVAS_SECTIONS: SectionDef[] = [
 
   {
     slug: 'nr_txt_original',
-    title: 'Texto Original e Delimitação',
+    title: 'Texto Original',
     shortTitle: 'Texto Original',
     module: 'inventio',
     group: 'nr_textual_grp',
@@ -297,7 +297,7 @@ export const ESTUDO_NARRATIVAS_SECTIONS: SectionDef[] = [
     ],
     relevantAuthors: ['Emanuel Tov', 'Bruce Metzger', 'Gordon Fee', 'Douglas Stuart'],
     cards: [
-      card('nr_txt_orig_main', 'Texto Original e Delimitação',
+      card('nr_txt_orig_main', 'Texto Original',
         'Cole o texto em hebraico ou grego e sua tradução, e delimite a perícope.\n\nOrientações:\n→ Onde começa e termina a unidade literária? Justifique os limites.\n→ Que divisão textual você utiliza (BHS, NA28, LXX)?\n→ Há variantes textuais relevantes?\n→ Que tradução(ões) você usará como base para o trabalho?',
         'Delimite a perícope justificando os limites, apresente o texto original e a tradução de trabalho, e note variantes textuais relevantes.'),
     ],
@@ -305,8 +305,8 @@ export const ESTUDO_NARRATIVAS_SECTIONS: SectionDef[] = [
 
   {
     slug: 'nr_txt_estrutura',
-    title: 'Estrutura e Movimento Narrativo',
-    shortTitle: 'Estrutura',
+    title: 'Estrutura do Texto',
+    shortTitle: 'Estrutura do Texto',
     module: 'inventio',
     group: 'nr_textual_grp',
     groupLabel: 'Estudo Textual',
@@ -321,7 +321,7 @@ export const ESTUDO_NARRATIVAS_SECTIONS: SectionDef[] = [
     ],
     relevantAuthors: ['Robert Alter', 'Shimon Bar-Efrat', 'Jan Fokkelman', 'Meir Sternberg'],
     cards: [
-      card('nr_txt_struct_main', 'Estrutura e Movimento Narrativo',
+      card('nr_txt_struct_main', 'Estrutura do Texto',
         'Esboce a estrutura da narrativa e descreva seu movimento interno.\n\nOrientações:\n→ Quais são as cenas ou episódios identificáveis?\n→ Há padrões literários — inclusio, quiasmo, paralelismo, repetição?\n→ Como o texto se move: exposição → complicação → clímax → resolução?\n→ Onde está o ponto de maior tensão ou virada?\n→ O movimento estrutural apoia o significado teológico?',
         'Esboce a estrutura da narrativa, identifique as cenas, descreva o movimento da tensão e note padrões literários como inclusio, quiasmo ou repetição.'),
     ],

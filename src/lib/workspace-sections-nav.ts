@@ -4207,7 +4207,7 @@ export const WORKSPACE_SECTIONS_NAV: SectionNav[] = [
 
   {
     "slug": "nr_ctx_historico",
-    "title": "Contexto Histórico-Cultural",
+    "title": "Contexto Histórico",
     "shortTitle": "Contexto Histórico",
     "module": "inventio",
     "group": "nr_contextual_grp",
@@ -4243,7 +4243,7 @@ export const WORKSPACE_SECTIONS_NAV: SectionNav[] = [
   },
   {
     "slug": "nr_txt_original",
-    "title": "Texto Original e Delimitação",
+    "title": "Texto Original",
     "shortTitle": "Texto Original",
     "module": "inventio",
     "group": "nr_textual_grp",
@@ -4255,8 +4255,8 @@ export const WORKSPACE_SECTIONS_NAV: SectionNav[] = [
   },
   {
     "slug": "nr_txt_estrutura",
-    "title": "Estrutura e Movimento Narrativo",
-    "shortTitle": "Estrutura",
+    "title": "Estrutura do Texto",
+    "shortTitle": "Estrutura do Texto",
     "module": "inventio",
     "group": "nr_textual_grp",
     "groupLabel": "Estudo Textual",

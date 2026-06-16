@@ -127,9 +127,9 @@ const GROUP_SUBTITLES: Record<string, string> = {
   investigar_visao_geral:   'Compreensão refinada após investigação',
   // Narrativas — Investigar
   nr_contextual_grp: 'Histórico, literário e canônico',
-  nr_textual_grp:    'Texto, estrutura, exegese e mensagem original',
-  nr_teologico_grp:  'Redenção, doutrina e implicações para a vida',
-  nr_ivg_grp:        'Grande ideia, verdades centrais e aplicações',
+  nr_textual_grp:    'Texto original e estrutura',
+  nr_teologico_grp:  'Mensagem e implicações',
+  nr_ivg_grp:        'Grande ideia, verdades e aplicações',
   pregar_visao_geral:       'Síntese final para comunicação',
   ferramentas_visao_geral:  'Mapa das ferramentas disponíveis',
   // Comunicar — Sermão

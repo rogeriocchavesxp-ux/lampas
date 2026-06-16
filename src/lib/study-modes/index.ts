@@ -1252,9 +1252,9 @@ const ESTUDO_NARRATIVAS: StudyModeConfig = {
         id: 'nr_investigar_mode', label: 'A Narrativa', subtitle: 'Contexto, texto e teologia',
         color: '#92400E', bgActive: 'rgba(146,64,14,0.08)',
         groups: [
-          { id: 'nr_contextual_grp', label: 'Contexto' },
-          { id: 'nr_textual_grp',    label: 'Textual' },
-          { id: 'nr_teologico_grp',  label: 'Teológico' },
+          { id: 'nr_contextual_grp', label: 'Estudo Contextual' },
+          { id: 'nr_textual_grp',    label: 'Estudo Textual' },
+          { id: 'nr_teologico_grp',  label: 'Estudo Teológico' },
           { id: 'nr_ivg_grp',        label: 'Visão Geral' },
         ],
       }],
