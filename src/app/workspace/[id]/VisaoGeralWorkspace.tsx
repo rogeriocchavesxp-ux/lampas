@@ -926,12 +926,18 @@ export default function VisaoGeralWorkspace({
     }
     if (node.phaseGroup) {
       return getSectionsByGroupNav(node.phaseGroup, project.study_mode).map(s => {
-        const secData    = allSections.find(sec => sec.slug === s.slug)
-        const sCards     = (secData?.content as { cards?: Record<string, string> } | null)?.cards ?? {}
-        const filled     = Object.values(sCards).filter(v => v?.trim()).length
-        const total      = s.cards?.length ?? 0
+        const secData = allSections.find(sec => sec.slug === s.slug)
+        const sCards  = (secData?.content as { cards?: Record<string, string> } | null)?.cards ?? {}
+        const label   = (s as { shortTitle?: string; title: string }).shortTitle ?? s.title
+        // Seção com 1 único card: vira folha direta (evita repetir o mesmo nome em dois níveis)
+        if (s.cards?.length === 1) {
+          const onlyCard = s.cards[0]
+          return { id: onlyCard.id, label, sectionSlug: s.slug, type: 'card' as const, status: cardTextStatus(sCards[onlyCard.id] ?? '') }
+        }
+        const filled = Object.values(sCards).filter(v => v?.trim()).length
+        const total  = s.cards?.length ?? 0
         const status: DrillItem['status'] = filled === 0 ? 'empty' : (filled >= total && total > 0 ? 'reviewed' : 'draft')
-        return { id: s.slug, label: (s as { shortTitle?: string; title: string }).shortTitle ?? s.title, sectionSlug: s.slug, type: 'section' as const, status }
+        return { id: s.slug, label, sectionSlug: s.slug, type: 'section' as const, status }
       })
     }
     // VG de Investigar: prefixa os 4 cards da seção 'sintese' (dados preservados no slug original)
