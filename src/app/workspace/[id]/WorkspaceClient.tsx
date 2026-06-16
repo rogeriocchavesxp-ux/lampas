@@ -40,6 +40,7 @@ import BibleFloatingWindow from './BibleFloatingWindow'
 import VisaoGeralWorkspace from './VisaoGeralWorkspace'
 import EnviarParaSermaModal from './EnviarParaSermaModal'
 import DicionarioWorkspace from './DicionarioWorkspace'
+import DicionarioFlutuante from './DicionarioFlutuante'
 import IntroducaoWorkspace from './IntroducaoWorkspace'
 import BibliotecaWorkspace from './BibliotecaWorkspace'
 import {
@@ -1963,6 +1964,13 @@ export default function WorkspaceClient({ user, project, initialSections }: Prop
           <Home size={16} strokeWidth={1.75} />
         </button>
       </div>
+
+      {/* ── Dicionário Flutuante — acesso permanente, canto inferior esquerdo ── */}
+      <DicionarioFlutuante
+        project={project}
+        userId={user.id}
+        focusMode={focusMode}
+      />
 
       {/* ── Botão Bíblia — acesso permanente ao texto bíblico ─────── */}
       <div style={{ position: 'fixed', top: '108px', right: '16px', zIndex: 300 }}>
