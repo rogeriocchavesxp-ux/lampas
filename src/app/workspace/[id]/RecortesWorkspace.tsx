@@ -1,6 +1,6 @@
 'use client'
 
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import type { Project, Section } from '@/types/database'
 import {
@@ -15,8 +15,8 @@ import { Copy, CopyPlus, Edit2, Plus, Search, Trash2 } from 'lucide-react'
 interface Props {
   project: Project
   userId: string
-  existingSection: Section | undefined
-  onUpdate: (section: Section) => void
+  existingSection?: Section | undefined
+  onUpdate?: (section: Section) => void
   onAskAI: (prompt: string) => void
 }
 
@@ -63,7 +63,9 @@ function emptyDraft(): Omit<RecorteItem, 'id' | 'createdAt'> {
 }
 
 export default function RecortesWorkspace({ project, userId, existingSection, onUpdate, onAskAI }: Props) {
-  const supabase = useMemo(() => createClient(), [])
+  const supabase    = useMemo(() => createClient(), [])
+  const sectionIdRef = useRef<string | undefined>(existingSection?.id)
+
   const [items,     setItems]     = useState<RecorteItem[]>(() => loadItems(existingSection))
   const [creating,  setCreating]  = useState(false)
   const [draft,     setDraft]     = useState(emptyDraft)
@@ -74,6 +76,24 @@ export default function RecortesWorkspace({ project, userId, existingSection, on
   const [sortBy,    setSortBy]    = useState<SortBy>('recentes')
   const [saving,    setSaving]    = useState(false)
   const [savedAt,   setSavedAt]   = useState<Date | null>(null)
+
+  // Auto-fetch quando usado sem section pré-carregada (ex: aba lateral)
+  useEffect(() => {
+    if (existingSection !== undefined) return
+    void (async () => {
+      const { data } = await supabase
+        .from('sections')
+        .select()
+        .eq('project_id', project.id)
+        .eq('slug', 'colagens')
+        .maybeSingle()
+      if (data) {
+        sectionIdRef.current = data.id as string
+        setItems(loadItems(data as Section))
+      }
+    })()
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   async function persist(next: RecorteItem[]) {
     setSaving(true)
@@ -86,12 +106,13 @@ export default function RecortesWorkspace({ project, userId, existingSection, on
       content: { type: 'recortes_workspace', items: next },
       status: (next.length > 0 ? 'draft' : 'empty') as 'empty' | 'draft' | 'reviewed',
     }
-    if (existingSection?.id) {
-      const { data } = await supabase.from('sections').update(payload).eq('id', existingSection.id).select().single()
-      if (data) onUpdate(data as Section)
+    const id = sectionIdRef.current
+    if (id) {
+      const { data } = await supabase.from('sections').update(payload).eq('id', id).select().single()
+      if (data) { sectionIdRef.current = (data as Section).id; onUpdate?.(data as Section) }
     } else {
       const { data } = await supabase.from('sections').insert(payload).select().single()
-      if (data) onUpdate(data as Section)
+      if (data) { sectionIdRef.current = (data as Section).id; onUpdate?.(data as Section) }
     }
     setSaving(false)
     setSavedAt(new Date())
