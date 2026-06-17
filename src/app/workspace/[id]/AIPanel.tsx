@@ -31,10 +31,10 @@ function getGlobalActions(sectionTitle: string, ref: string): Action[] {
   ]
 }
 
-function getPhaseActions(sectionDef: SectionDef | null | undefined, ref: string): Action[] {
+function getPhaseActions(sectionDef: SectionDef | null | undefined, ref: string, studyMode: string): Action[] {
   if (sectionDef?.phase !== 'comunicar') return []
-  const mode = sectionDef.communicationMode
-  if (mode === 'sermao') {
+
+  if (studyMode === 'sermao') {
     return [
       { label: 'Introdução', prompt: `Escreva uma introdução homilética impactante para ${ref}.` },
       { label: 'Transição', prompt: `Crie transições que conectam organicamente os pontos do sermão de ${ref}.` },
@@ -45,7 +45,7 @@ function getPhaseActions(sectionDef: SectionDef | null | undefined, ref: string)
       { label: 'Sermão completo', prompt: `Produza um sermão expositivo completo e detalhado sobre ${ref}.` },
     ]
   }
-  if (mode === 'estudo_biblico') {
+  if (studyMode === 'estudo_biblico') {
     return [
       { label: 'Introdução ao estudo', prompt: `Escreva uma introdução envolvente para o estudo de ${ref}.` },
       { label: 'Perguntas de discussão', prompt: `Crie perguntas de discussão para o estudo de ${ref}.` },
@@ -53,20 +53,35 @@ function getPhaseActions(sectionDef: SectionDef | null | undefined, ref: string)
       { label: 'Material de apoio', prompt: `Que material de apoio pode enriquecer o estudo de ${ref}?` },
     ]
   }
-  if (mode === 'devocional') {
+  if (studyMode === 'devocional') {
     return [
       { label: 'Reflexão devocional', prompt: `Escreva uma reflexão devocional sobre ${ref}.` },
       { label: 'Aplicação pessoal', prompt: `Como ${ref} nutre a vida devocional do crente hoje?` },
       { label: 'Oração', prompt: `Escreva uma oração que responde à mensagem de ${ref}.` },
     ]
   }
+  if (studyMode === 'comentario_exegetico') {
+    return [
+      { label: 'Síntese exegética', prompt: `Sintetize as principais descobertas exegéticas de ${ref} para o comentário.` },
+      { label: 'Comentário versículo a versículo', prompt: `Desenvolva um comentário expositivo versículo a versículo de ${ref}.` },
+      { label: 'Implicações doutrinárias', prompt: `Quais as implicações doutrinárias a destacar no comentário de ${ref}?` },
+    ]
+  }
+  if (studyMode === 'estudo_de_carta') {
+    return [
+      { label: 'Síntese epistolar', prompt: `Sintetize o argumento epistolar de ${ref} para comunicação.` },
+      { label: 'Implicações para a comunidade', prompt: `Quais as implicações de ${ref} para a comunidade cristã hoje?` },
+    ]
+  }
+  // Todos os outros modos (exegese, narrativas, termos, doutrinário, temático, profecias, salmos):
+  // síntese teológica genérica, nunca ações homiléticas
   return [
-    { label: 'Desenvolver conteúdo', prompt: `Ajude a desenvolver o conteúdo desta seção sobre ${ref}.` },
-    { label: 'Aplicação', prompt: `Como aplicar as verdades de ${ref} neste contexto?` },
+    { label: 'Sintetizar descobertas', prompt: `Sintetize as principais descobertas desta análise de ${ref}.` },
+    { label: 'Implicações teológicas', prompt: `Quais as implicações teológicas centrais de ${ref}?` },
   ]
 }
 
-function getSectionActions(slug: string, ref: string, sectionDef?: SectionDef | null): Action[] {
+function getSectionActions(slug: string, ref: string, sectionDef?: SectionDef | null, studyMode = ''): Action[] {
   const toolArea = getToolAreaBySlug(slug)
   if (toolArea) {
     return toolArea.actions.slice(0, 5).map(a => ({ label: a.label ?? a.prompt.slice(0, 35), prompt: a.prompt }))
@@ -482,30 +497,45 @@ function getSectionActions(slug: string, ref: string, sectionDef?: SectionDef | 
       { label: 'Ideia central', prompt: `Qual a ideia central e irredutível de ${ref}?` },
       { label: 'Implicações', prompt: `Quais as implicações teológicas e práticas de ${ref}?` },
     ],
-    grande_ideia_homiletica: [
+    grande_ideia_homiletica: studyMode === 'sermao' ? [
       { label: 'Grande ideia', prompt: `Formule a grande ideia homilética de ${ref}.` },
       { label: 'Proposição', prompt: `Escreva a proposição central do sermão de ${ref}.` },
       { label: 'Ponto de contato', prompt: `Como conectar a grande ideia de ${ref} com a audiência contemporânea?` },
+    ] : [
+      { label: 'Ideia central', prompt: `Qual a ideia central e irredutível de ${ref}?` },
+      { label: 'Síntese', prompt: `Sintetize as principais descobertas de ${ref}.` },
     ],
-    sermao_inventio: [
+    sermao_inventio: studyMode === 'sermao' ? [
       { label: 'Grande ideia', prompt: `Formule a grande ideia homilética de ${ref}.` },
       { label: 'Proposição central', prompt: `Escreva a proposição central do sermão de ${ref}.` },
       { label: 'Aplicações', prompt: `Identifique aplicações pastorais de ${ref}.` },
+    ] : [
+      { label: 'Ideia central', prompt: `Qual a ideia central de ${ref}?` },
+      { label: 'Aplicações', prompt: `Que aplicações emergem de ${ref}?` },
     ],
-    sermao_dispositio: [
+    sermao_dispositio: studyMode === 'sermao' ? [
       { label: 'Divisões homiléticas', prompt: `Sugira divisões homiléticas para ${ref} a partir da exegese.` },
       { label: 'Estrutura do sermão', prompt: `Avalie se a estrutura do sermão progride organicamente da exegese.` },
       { label: 'Transições', prompt: `Crie transições que conectam os pontos do sermão de ${ref}.` },
       { label: 'Esboço completo', prompt: `Produza um esboço completo e estruturado do sermão sobre ${ref}.` },
+    ] : [
+      { label: 'Estrutura do conteúdo', prompt: `Avalie a estrutura e progressão do conteúdo de ${ref}.` },
+      { label: 'Pontos centrais', prompt: `Quais os pontos centrais de ${ref}?` },
     ],
-    sermao_elocutio: [
+    sermao_elocutio: studyMode === 'sermao' ? [
       { label: 'Linguagem e estilo', prompt: `Como usar linguagem clara e impactante no sermão de ${ref}?` },
       { label: 'Ilustrações', prompt: `Sugira ilustrações eficazes para ${ref}.` },
       { label: 'Aplicações', prompt: `Escreva aplicações pastorais concretas para ${ref}.` },
+    ] : [
+      { label: 'Clareza da linguagem', prompt: `Como tornar a exposição de ${ref} mais clara e precisa?` },
+      { label: 'Aplicações', prompt: `Escreva aplicações concretas para ${ref}.` },
     ],
-    sermao_avaliacao: [
+    sermao_avaliacao: studyMode === 'sermao' ? [
       { label: 'Avaliar sermão', prompt: `Avalie a qualidade e fidelidade exegética do sermão de ${ref}.` },
       { label: 'Pontos de melhoria', prompt: `Que melhorias o sermão de ${ref} precisa?` },
+    ] : [
+      { label: 'Avaliar análise', prompt: `Avalie a qualidade e fidelidade exegética desta análise de ${ref}.` },
+      { label: 'Pontos de melhoria', prompt: `Que melhorias esta análise de ${ref} precisa?` },
     ],
     preparacao_espiritual: [
       { label: 'Preparação espiritual', prompt: `Como me preparar espiritualmente para estudar ${ref}?` },
@@ -588,9 +618,10 @@ export default function AIPanel({ project, activeSlug, activeTitle, context, onC
   }, [messages, loading])
 
   const ref = `${project.book} ${project.passage_ref}`
+  const studyMode = project.study_mode ?? ''
   const globalActions = getGlobalActions(activeTitle, ref)
-  const phaseActions = getPhaseActions(sectionDef, ref)
-  const sectionActions = getSectionActions(activeSlug, ref, sectionDef)
+  const phaseActions = getPhaseActions(sectionDef, ref, studyMode)
+  const sectionActions = getSectionActions(activeSlug, ref, sectionDef, studyMode)
 
   async function send(text?: string) {
     const userText = (text ?? input).trim()
