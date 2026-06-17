@@ -24,7 +24,7 @@ import OriginalTextWorkspace from './OriginalTextWorkspace'
 import TermosChaveWorkspace from './TermosChaveWorkspace'
 import EstruturaLiterariaWorkspace from './EstruturaLiterariaWorkspace'
 import ToolsWorkspace from './ToolsWorkspace'
-import CollagesWorkspace from './CollagesWorkspace'
+import RecortesWorkspace from './RecortesWorkspace'
 import SermonBuilderWorkspace from './SermonBuilderWorkspace'
 import CommentaryWorkspace from './CommentaryWorkspace'
 import ComentarioExegeticoWorkspace from './ComentarioExegeticoWorkspace'
@@ -1380,7 +1380,7 @@ export default function WorkspaceClient({ user, project, initialSections }: Prop
             </div>
 
             {activeSlug === 'colagens' ? (
-              <CollagesWorkspace
+              <RecortesWorkspace
                 key={activeSlug}
                 project={project}
                 userId={user.id}
@@ -1593,7 +1593,7 @@ export default function WorkspaceClient({ user, project, initialSections }: Prop
               <AIPanel
                 project={project}
                 activeSlug={activeSlug}
-                activeTitle={activeSlug === 'colagens' ? 'Colagens' : activeSlug === 'comentario_expositivo' ? 'Comentário Expositivo' : activeSlug === 'ferramentas_dicionario' ? 'Dicionário Lampas' : activeTool?.title ?? activeDef?.title ?? titleValue}
+                activeTitle={activeSlug === 'colagens' ? 'Recortes' : activeSlug === 'comentario_expositivo' ? 'Comentário Expositivo' : activeSlug === 'ferramentas_dicionario' ? 'Dicionário Lampas' : activeTool?.title ?? activeDef?.title ?? titleValue}
                 context={aiPrompt}
                 onClearContext={handleClearContext}
                 sectionDef={activeDef}

@@ -93,7 +93,7 @@ function toolPhase(): NavPhase {
       groups: [
         { id: 'ferramentas_visao_geral', label: 'Visão Geral' },
         ...TOOL_AREAS.map(area => ({ id: area.slug, label: area.shortTitle })),
-        { id: 'colagens', label: 'Colagens' },
+        { id: 'colagens', label: 'Recortes' },
       ],
     }],
   }

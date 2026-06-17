@@ -97,3 +97,45 @@ export function parseTags(value: string): string[] {
     .map(tag => tag.trim().replace(/^#/, ''))
     .filter(Boolean)
 }
+
+// ── Recortes ──────────────────────────────────────────────────────────────────
+
+export const RECORTE_CATEGORIAS = [
+  'Citação', 'Comentário', 'Estrutura', 'Ilustração', 'Aplicação',
+  'Definição', 'Contexto Histórico', 'Contexto Cultural',
+  'Teologia Bíblica', 'Teologia Sistemática', 'Referência Cruzada',
+  'Observação Pessoal', 'Outro',
+] as const
+
+export type RecorteCategoria = typeof RECORTE_CATEGORIAS[number]
+
+export interface RecorteItem {
+  id: string
+  title: string
+  fonte: string
+  categoria: RecorteCategoria
+  conteudo: string
+  createdAt: number
+}
+
+const CAT_MAP: Record<string, RecorteCategoria> = {
+  'Teologia Bíblica':    'Teologia Bíblica',
+  'Teologia Sistemática':'Teologia Sistemática',
+  'Aplicação':           'Aplicação',
+  'Ilustração':          'Ilustração',
+  'Citação':             'Citação',
+  'Comentário':          'Comentário',
+  'Definição':           'Definição',
+  'Estrutura':           'Estrutura',
+}
+
+export function migrateCollageItems(items: CollageItem[]): RecorteItem[] {
+  return items.map((item, i) => ({
+    id: item.id,
+    title: item.title,
+    fonte: [item.author, item.work, item.page && `p. ${item.page}`].filter(Boolean).join(', '),
+    categoria: CAT_MAP[item.category] ?? 'Outro',
+    conteudo: item.content,
+    createdAt: Date.now() - i * 1000,
+  }))
+}
