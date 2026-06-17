@@ -1211,14 +1211,35 @@ export function DetailView({ item, children, parent, allItems, onEdit, onDelete,
           </button>
         )}
         <div style={{ display: 'flex', justifyContent: 'space-between', gap: '1rem', alignItems: 'flex-start', marginBottom: '1.2rem' }}>
-          <div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem', marginBottom: '0.4rem', flexWrap: 'wrap' }}>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', marginBottom: '0.3rem', flexWrap: 'wrap' }}>
               <Badge color={cfg.color} bg={cfg.bg}>{cfg.icon} {cfg.label}</Badge>
               <Badge color={status.color} bg={status.bg}>{status.label}</Badge>
               {item.rating ? <Badge>{'★'.repeat(item.rating)}</Badge> : null}
+              {(item.category || item.subcategory) && (
+                <span style={{ fontSize: '0.7rem', color: '#94A3B8' }}>
+                  {[item.category, item.subcategory].filter(Boolean).join(' › ')}
+                </span>
+              )}
             </div>
             <h1 style={{ margin: 0, color: '#0F172A', fontSize: '1.55rem', letterSpacing: '-0.03em', lineHeight: 1.1 }}>{item.title}</h1>
-            {item.subtitle && <div style={{ marginTop: '0.35rem', color: '#64748B', fontSize: '0.9rem' }}>{item.subtitle}</div>}
+            {item.subtitle && <div style={{ marginTop: '0.28rem', color: '#64748B', fontSize: '0.88rem' }}>{item.subtitle}</div>}
+            {item.authors.length > 0 && (
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', marginTop: '0.45rem', alignItems: 'center' }}>
+                {item.authors.map(author => (
+                  <span key={author} style={{ display: 'inline-flex', alignItems: 'center', gap: '0.22rem', fontSize: '0.78rem', color: '#334155', fontWeight: 700 }}>
+                    <span style={{ color: '#94A3B8', fontSize: '0.7rem' }}>✍</span> {author}
+                  </span>
+                ))}
+              </div>
+            )}
+            {(item.bible_references.length > 0 || item.doctrines.length > 0 || item.tags.length > 0) && (
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.25rem', marginTop: '0.42rem' }}>
+                {item.bible_references.slice(0, 4).map(ref => <Badge key={ref} color="#163A6B" bg="#EEF3FA">{ref}</Badge>)}
+                {item.doctrines.slice(0, 3).map(doc => <Badge key={doc} color="#B45309" bg="#FEF3C7">{doc}</Badge>)}
+                {item.tags.slice(0, 3).map(tag => <Badge key={tag}>{tag}</Badge>)}
+              </div>
+            )}
           </div>
           <div style={{ display: 'flex', gap: '0.45rem', flexShrink: 0 }}>
             <button onClick={onEdit} style={{ ...smallButtonStyle, borderColor: '#CBD5E1', color: '#334155' }}>Editar</button>
@@ -1448,6 +1469,177 @@ function TagGroup({ label, values }: { label: string; values: string[] }) {
       <div style={{ fontSize: '0.6rem', color: '#94A3B8', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '0.3rem' }}>{label}</div>
       <div style={{ display: 'flex', gap: '0.25rem', flexWrap: 'wrap' }}>
         {values.map(value => <Badge key={value}>{value}</Badge>)}
+      </div>
+    </div>
+  )
+}
+
+// ── Library Home ─────────────────────────────────────────────────────────────
+
+export function LibraryHome({
+  items,
+  counts,
+  totalChildren,
+  topAuthors,
+  onSelectType,
+  onSelectItem,
+}: {
+  items: KnowledgeItem[]
+  counts: Record<KnowledgeItemType, number>
+  totalChildren: number
+  topAuthors: Array<{ name: string; count: number }>
+  onSelectType: (type: KnowledgeItemType) => void
+  onSelectItem: (item: KnowledgeItem) => void
+}) {
+  const roots = items.filter(i => !i.parent_id)
+  const recentItems = [...roots]
+    .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+    .slice(0, 6)
+  const mostQueried = [...roots]
+    .filter(i => i.query_count > 0)
+    .sort((a, b) => b.query_count - a.query_count)
+    .slice(0, 4)
+  const totalItems = roots.length
+
+  const sectionLabel: React.CSSProperties = {
+    fontSize: '0.6rem', fontWeight: 900, color: '#94A3B8',
+    textTransform: 'uppercase', letterSpacing: '0.09em', marginBottom: '0.65rem',
+  }
+
+  return (
+    <div style={{ flex: 1, overflowY: 'auto', padding: '1.75rem 2rem 4rem', background: '#F8FAFF' }}>
+      {/* Header */}
+      <div style={{ marginBottom: '1.5rem' }}>
+        <div style={{ fontSize: '0.62rem', fontWeight: 900, color: '#B45309', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '0.15rem' }}>
+          Base de Conhecimento
+        </div>
+        <h1 style={{ margin: '0 0 0.15rem', fontSize: '1.5rem', fontWeight: 850, color: '#0F172A', letterSpacing: '-0.025em' }}>
+          Biblioteca Inteligente
+        </h1>
+        <p style={{ margin: 0, fontSize: '0.83rem', color: '#64748B' }}>
+          Segundo cérebro teológico e ministerial
+        </p>
+      </div>
+
+      {/* Stats */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '0.6rem', marginBottom: '1.75rem' }}>
+        {([
+          { label: 'Entidades', value: totalItems, icon: '📦' },
+          { label: 'Conteúdos', value: totalChildren, icon: '📄' },
+          { label: 'Autores', value: topAuthors.length, icon: '✍' },
+          { label: 'Consultados', value: mostQueried.length, icon: '🔥' },
+        ] as const).map(({ label, value, icon }) => (
+          <div key={label} style={{ border: '1px solid #E2E8F0', background: '#FFFFFF', borderRadius: '8px', padding: '0.7rem 0.85rem' }}>
+            <div style={{ fontSize: '1rem', lineHeight: 1, marginBottom: '0.35rem' }}>{icon}</div>
+            <div style={{ fontSize: '1.2rem', fontWeight: 900, color: '#0F172A', lineHeight: 1 }}>{value}</div>
+            <div style={{ fontSize: '0.62rem', color: '#64748B', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', marginTop: '0.2rem' }}>{label}</div>
+          </div>
+        ))}
+      </div>
+
+      {/* Type cards */}
+      <div style={{ marginBottom: '1.75rem' }}>
+        <div style={sectionLabel}>Navegar por tipo</div>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '0.65rem' }}>
+          {TYPE_ORDER.map(type => {
+            const cfg = KNOWLEDGE_TYPES[type]
+            const count = counts[type] ?? 0
+            return (
+              <button
+                key={type}
+                onClick={() => { if (count > 0) onSelectType(type) }}
+                style={{
+                  display: 'flex', flexDirection: 'column', gap: '0.5rem',
+                  border: `1.5px solid ${cfg.color}22`, background: cfg.bg,
+                  borderRadius: '10px', padding: '0.9rem 0.85rem',
+                  cursor: count > 0 ? 'pointer' : 'default', fontFamily: 'inherit',
+                  textAlign: 'left', transition: 'all 0.14s', opacity: count === 0 ? 0.4 : 1,
+                }}
+                onMouseEnter={e => { if (count > 0) { e.currentTarget.style.borderColor = cfg.color + '60'; e.currentTarget.style.boxShadow = `0 2px 10px ${cfg.color}1A` } }}
+                onMouseLeave={e => { e.currentTarget.style.borderColor = cfg.color + '22'; e.currentTarget.style.boxShadow = 'none' }}
+              >
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <span style={{ fontSize: '1.25rem', lineHeight: 1 }}>{cfg.icon}</span>
+                  <span style={{ fontSize: '1.15rem', fontWeight: 900, color: cfg.color, lineHeight: 1 }}>{count}</span>
+                </div>
+                <div style={{ fontSize: '0.82rem', fontWeight: 800, color: cfg.color }}>{cfg.label}</div>
+                <div style={{ fontSize: '0.67rem', color: '#64748B', lineHeight: 1.4, overflow: 'hidden', maxHeight: '2.8em' }}>{TYPE_DESCRIPTIONS[type]}</div>
+              </button>
+            )
+          })}
+        </div>
+      </div>
+
+      {/* Bottom grid: Recent + Most queried */}
+      <div style={{ display: 'grid', gridTemplateColumns: mostQueried.length > 0 ? '1.6fr 1fr' : '1fr', gap: '1.5rem', alignItems: 'start' }}>
+        {/* Recent */}
+        <div>
+          <div style={sectionLabel}>Adicionados recentemente</div>
+          {recentItems.length === 0 ? (
+            <div style={{ color: '#94A3B8', fontSize: '0.82rem' }}>Nenhum item ainda.</div>
+          ) : (
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '0.6rem' }}>
+              {recentItems.map(item => {
+                const cfg = KNOWLEDGE_TYPES[item.item_type]
+                const contextual = getItemContextualSubtitle(item)
+                return (
+                  <button
+                    key={item.id}
+                    onClick={() => onSelectItem(item)}
+                    style={{
+                      display: 'flex', flexDirection: 'column', gap: '0.38rem',
+                      border: '1px solid #E2E8F0', background: '#FFFFFF',
+                      borderRadius: '8px', padding: '0.75rem 0.85rem',
+                      cursor: 'pointer', fontFamily: 'inherit', textAlign: 'left',
+                      transition: 'border-color 0.12s, background 0.12s',
+                    }}
+                    onMouseEnter={e => { e.currentTarget.style.borderColor = cfg.color + '55'; e.currentTarget.style.background = cfg.bg }}
+                    onMouseLeave={e => { e.currentTarget.style.borderColor = '#E2E8F0'; e.currentTarget.style.background = '#FFFFFF' }}
+                  >
+                    <Badge color={cfg.color} bg={cfg.bg}>{cfg.icon} {cfg.label}</Badge>
+                    <div style={{ fontSize: '0.83rem', fontWeight: 750, color: '#0F172A', lineHeight: 1.35, overflow: 'hidden', maxHeight: '2.7em' }}>{item.title}</div>
+                    {contextual && <div style={{ fontSize: '0.7rem', color: '#64748B', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{contextual}</div>}
+                  </button>
+                )
+              })}
+            </div>
+          )}
+        </div>
+
+        {/* Most queried */}
+        {mostQueried.length > 0 && (
+          <div>
+            <div style={sectionLabel}>Mais consultados</div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.32rem' }}>
+              {mostQueried.map((item, idx) => {
+                const cfg = KNOWLEDGE_TYPES[item.item_type]
+                return (
+                  <button
+                    key={item.id}
+                    onClick={() => onSelectItem(item)}
+                    style={{
+                      display: 'flex', alignItems: 'center', gap: '0.5rem',
+                      border: '1px solid #E2E8F0', background: '#FFFFFF',
+                      borderRadius: '7px', padding: '0.55rem 0.75rem',
+                      cursor: 'pointer', fontFamily: 'inherit', textAlign: 'left',
+                      transition: 'border-color 0.12s',
+                    }}
+                    onMouseEnter={e => { e.currentTarget.style.borderColor = cfg.color + '55' }}
+                    onMouseLeave={e => { e.currentTarget.style.borderColor = '#E2E8F0' }}
+                  >
+                    <span style={{ fontSize: '0.62rem', fontWeight: 900, color: '#CBD5E1', minWidth: '1rem', textAlign: 'center', flexShrink: 0 }}>{idx + 1}</span>
+                    <span style={{ fontSize: '0.88rem', flexShrink: 0 }}>{cfg.icon}</span>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ fontSize: '0.8rem', fontWeight: 750, color: '#0F172A', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{item.title}</div>
+                      {item.authors[0] && <div style={{ fontSize: '0.68rem', color: '#64748B' }}>{item.authors[0]}</div>}
+                    </div>
+                    <span style={{ fontSize: '0.62rem', color: '#94A3B8', fontWeight: 700, flexShrink: 0 }}>{item.query_count}×</span>
+                  </button>
+                )
+              })}
+            </div>
+          </div>
+        )}
       </div>
     </div>
   )

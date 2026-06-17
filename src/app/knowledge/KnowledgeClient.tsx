@@ -9,14 +9,14 @@ import RichEditor from '@/components/RichEditorLazy'
 import type { InsertMenuItem } from '@/components/RichEditor'
 
 import type { KnowledgeItem, Props } from './knowledge-internals'
-import { getItemContextualSubtitle, Badge, TYPE_ORDER, TYPE_DESCRIPTIONS, KB_INSERT_MENU, TYPE_SECTION_LABELS, EMPTY_ITEM, filterChip, Field, ListField, SectionTitle, CourseModulesEditor, CourseContentEditor, DetailView, labelStyle, inputStyle, COURSE_GENERAL_BLOCKS } from './knowledge-internals'
+import { getItemContextualSubtitle, Badge, TYPE_ORDER, TYPE_DESCRIPTIONS, KB_INSERT_MENU, TYPE_SECTION_LABELS, EMPTY_ITEM, filterChip, Field, ListField, SectionTitle, CourseModulesEditor, CourseContentEditor, DetailView, LibraryHome, labelStyle, inputStyle, COURSE_GENERAL_BLOCKS } from './knowledge-internals'
 
 export default function KnowledgeClient({ userId, initialItems, initialDashboard }: Props) {
   const supabase = useMemo(() => createClient(), [])
   const router = useRouter()
 
   const [items, setItems] = useState<KnowledgeItem[]>(initialItems)
-  const [selectedId, setSelectedId] = useState(initialItems[0]?.id ?? '')
+  const [selectedId, setSelectedId] = useState('')
   const [typeFilter, setTypeFilter] = useState<KnowledgeItemType | 'all'>('all')
   const [query, setQuery] = useState('')
   const [editing, setEditing] = useState(false)
@@ -34,7 +34,7 @@ export default function KnowledgeClient({ userId, initialItems, initialDashboard
     if (typeof window === 'undefined') return false
     return !localStorage.getItem('lampas_kb_help_seen')
   })
-  const [groupBy,            setGroupBy]            = useState<'none' | 'type' | 'author' | 'category' | 'status'>('none')
+  const [groupBy,            setGroupBy]            = useState<'none' | 'type' | 'author' | 'category' | 'status'>('type')
   const [collapsedGroups,    setCollapsedGroups]    = useState<Set<string>>(new Set())
 
   const selected = items.find(item => item.id === selectedId) ?? null
@@ -98,6 +98,11 @@ export default function KnowledgeClient({ userId, initialItems, initialDashboard
       arr.push(item)
       groups.set(key, arr)
     })
+    if (groupBy === 'type') {
+      return TYPE_ORDER
+        .map(t => [KNOWLEDGE_TYPES[t].label, groups.get(KNOWLEDGE_TYPES[t].label) ?? []] as [string, KnowledgeItem[]])
+        .filter(([, grpItems]) => grpItems.length > 0)
+    }
     return [...groups.entries()].sort((a, b) => b[1].length - a[1].length)
   }, [filtered, groupBy])
 
@@ -258,40 +263,38 @@ export default function KnowledgeClient({ userId, initialItems, initialDashboard
   }
 
   function renderSidebarItem(item: KnowledgeItem) {
-    const cfg      = KNOWLEDGE_TYPES[item.item_type]
-    const active   = selectedId === item.id && !editing
+    const cfg         = KNOWLEDGE_TYPES[item.item_type]
+    const active      = selectedId === item.id && !editing
     const isContainer = CONTAINER_TYPES.has(item.item_type)
     const children    = isContainer ? childrenOf(item.id) : []
     const expanded    = expandedContainers.has(item.id)
     const childLabel  = CHILD_CONTENT[item.item_type]
-    const status      = KNOWLEDGE_STATUSES[item.status]
+    const contextual  = getItemContextualSubtitle(item)
 
     return (
-      <div key={item.id} style={{ marginBottom: '0.12rem' }}>
-        <div style={{ display: 'flex', alignItems: 'stretch', borderRadius: '7px', border: `1px solid ${active ? cfg.color + '55' : 'transparent'}`, background: active ? cfg.bg : 'transparent' }}>
+      <div key={item.id} style={{ marginBottom: '0.06rem' }}>
+        <div style={{ display: 'flex', alignItems: 'stretch', borderRadius: '6px', border: `1px solid ${active ? cfg.color + '55' : 'transparent'}`, background: active ? cfg.bg : 'transparent' }}>
           <button
             onClick={() => { setSelectedId(item.id); setEditing(false); void supabase.rpc('increment_knowledge_item_query_count', { p_id: item.id }) }}
-            style={{ flex: 1, textAlign: 'left', border: 'none', background: 'transparent', padding: '0.42rem 0.55rem', cursor: 'pointer', fontFamily: 'inherit', minWidth: 0 }}
+            style={{ flex: 1, textAlign: 'left', border: 'none', background: 'transparent', padding: '0.3rem 0.45rem', cursor: 'pointer', fontFamily: 'inherit', minWidth: 0 }}
           >
-            {/* Line 1: icon + title */}
-            <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.3rem' }}>
-              <span style={{ fontSize: '0.78rem', lineHeight: 1, flexShrink: 0 }}>{cfg.icon}</span>
-              <div style={{ fontSize: '0.8rem', fontWeight: 750, color: '#0F172A', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', flex: 1 }}>{item.title}</div>
-            </div>
-            {/* Line 2: type · contextual subtitle */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.3rem', marginTop: '0.1rem', overflow: 'hidden' }}>
-              <span style={{ fontSize: '0.62rem', color: '#94A3B8', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', flex: '0 1 auto', minWidth: 0 }}>
-                {(() => { const sub = getItemContextualSubtitle(item); return sub ? `${cfg.label} · ${sub}` : cfg.label })()}
-              </span>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.28rem' }}>
+              <span style={{ fontSize: '0.75rem', lineHeight: 1, flexShrink: 0 }}>{cfg.icon}</span>
+              <div style={{ fontSize: '0.78rem', fontWeight: active ? 750 : 600, color: active ? cfg.color : '#0F172A', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', flex: 1 }}>{item.title}</div>
               {isContainer && children.length > 0 && (
-                <Badge color={cfg.color} bg={cfg.bg}>{children.length} {children.length === 1 ? childLabel?.singular : childLabel?.plural}</Badge>
+                <span style={{ fontSize: '0.58rem', fontWeight: 800, color: cfg.color, background: cfg.bg, padding: '0.06rem 0.32rem', borderRadius: '999px', flexShrink: 0 }}>{children.length}</span>
               )}
             </div>
+            {contextual && (
+              <div style={{ fontSize: '0.62rem', color: '#94A3B8', marginTop: '0.04rem', marginLeft: '1.1rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                {contextual}
+              </div>
+            )}
           </button>
           {isContainer && children.length > 0 && (
             <button
               onClick={() => setExpandedContainers(prev => { const n = new Set(prev); n.has(item.id) ? n.delete(item.id) : n.add(item.id); return n })}
-              style={{ border: 'none', background: 'transparent', padding: '0 0.45rem', cursor: 'pointer', color: '#CBD5E1', fontSize: '0.6rem', flexShrink: 0 }}
+              style={{ border: 'none', background: 'transparent', padding: '0 0.38rem', cursor: 'pointer', color: '#CBD5E1', fontSize: '0.58rem', flexShrink: 0 }}
               title={expanded ? 'Recolher' : 'Expandir'}
             >
               {expanded ? '▴' : '▾'}
@@ -299,18 +302,17 @@ export default function KnowledgeClient({ userId, initialItems, initialDashboard
           )}
         </div>
         {isContainer && expanded && children.length > 0 && (
-          <div style={{ marginLeft: '0.9rem', marginTop: '0.08rem', borderLeft: `2px solid ${cfg.color}30`, paddingLeft: '0.45rem' }}>
+          <div style={{ marginLeft: '0.75rem', marginTop: '0.04rem', borderLeft: `2px solid ${cfg.color}28`, paddingLeft: '0.38rem' }}>
             {children.map(child => {
               const childActive = selectedId === child.id && !editing
               return (
                 <button
                   key={child.id}
                   onClick={() => { setSelectedId(child.id); setEditing(false); void supabase.rpc('increment_knowledge_item_query_count', { p_id: child.id }) }}
-                  style={{ width: '100%', textAlign: 'left', border: `1px solid ${childActive ? cfg.color + '40' : 'transparent'}`, background: childActive ? cfg.bg : 'transparent', borderRadius: '5px', padding: '0.28rem 0.45rem', cursor: 'pointer', fontFamily: 'inherit', marginBottom: '0.08rem', display: 'flex', alignItems: 'center', gap: '0.3rem' }}
+                  style={{ width: '100%', textAlign: 'left', border: `1px solid ${childActive ? cfg.color + '40' : 'transparent'}`, background: childActive ? cfg.bg : 'transparent', borderRadius: '5px', padding: '0.22rem 0.38rem', cursor: 'pointer', fontFamily: 'inherit', marginBottom: '0.05rem', display: 'flex', alignItems: 'center', gap: '0.28rem' }}
                 >
-                  <span style={{ fontSize: '0.7rem', color: '#94A3B8', flexShrink: 0 }}>{childLabel?.icon}</span>
-                  <div style={{ fontSize: '0.74rem', fontWeight: 700, color: '#334155', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', flex: 1 }}>{child.title}</div>
-                  <Badge color={KNOWLEDGE_STATUSES[child.status].color} bg={KNOWLEDGE_STATUSES[child.status].bg}>{KNOWLEDGE_STATUSES[child.status].label}</Badge>
+                  <span style={{ fontSize: '0.68rem', color: '#94A3B8', flexShrink: 0 }}>{childLabel?.icon}</span>
+                  <div style={{ fontSize: '0.72rem', fontWeight: childActive ? 700 : 600, color: childActive ? cfg.color : '#334155', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', flex: 1 }}>{child.title}</div>
                 </button>
               )
             })}
@@ -723,13 +725,18 @@ export default function KnowledgeClient({ userId, initialItems, initialDashboard
       onBackToParent={selected.parent_id ? () => setSelectedId(selected.parent_id!) : undefined}
     />
   ) : (
-    <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '2rem', color: '#64748B', textAlign: 'center' }}>
-      <div>
-        <Brain size={38} strokeWidth={1.2} style={{ margin: '0 auto 0.75rem', color: '#94A3B8' }} />
-        <div style={{ fontSize: '1rem', fontWeight: 750, color: '#334155' }}>Selecione ou capture conhecimento</div>
-        <div style={{ marginTop: '0.35rem', fontSize: '0.82rem' }}>Livros, cursos, palestras e ideias passam a alimentar seus estudos.</div>
-      </div>
-    </div>
+    <LibraryHome
+      items={items}
+      counts={dashboard.counts}
+      totalChildren={dashboard.totalChildren}
+      topAuthors={dashboard.authors}
+      onSelectType={type => {
+        setTypeFilter(type)
+        const first = items.find(i => !i.parent_id && i.item_type === type)
+        if (first) { setSelectedId(first.id); setEditing(false) }
+      }}
+      onSelectItem={item => { setSelectedId(item.id); setEditing(false); void supabase.rpc('increment_knowledge_item_query_count', { p_id: item.id }) }}
+    />
   )
 
   return (
@@ -818,33 +825,38 @@ export default function KnowledgeClient({ userId, initialItems, initialDashboard
                     )
                   })}
                 </div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', marginTop: '0.32rem' }}>
-                  <span style={{ fontSize: '0.57rem', color: '#94A3B8', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', flexShrink: 0 }}>Agrupar</span>
-                  <div style={{ display: 'flex', gap: '0.18rem', overflowX: 'auto', scrollbarWidth: 'none' }}>
-                    {(['none', 'type', 'author', 'category', 'status'] as const).map(g => (
-                      <button key={g} onClick={() => setGroupBy(g)} style={filterChip(groupBy === g)}>
-                        {g === 'none' ? 'Livre' : g === 'type' ? 'Tipo' : g === 'author' ? 'Autor' : g === 'category' ? 'Categ.' : 'Status'}
-                      </button>
-                    ))}
-                  </div>
-                </div>
               </div>
 
               <div style={{ flex: 1, overflowY: 'auto', padding: '0.3rem' }}>
                 {groupBy !== 'none' && groupedFiltered ? (
                   groupedFiltered.map(([groupKey, groupItems]) => {
+                    const typeCfg = TYPE_ORDER.map(t => KNOWLEDGE_TYPES[t]).find(c => c.label === groupKey) ?? null
                     const isGroupCollapsed = collapsedGroups.has(groupKey)
+                    const groupColor = typeCfg?.color ?? '#64748B'
+                    const groupBg    = typeCfg?.bg    ?? '#F1F5F9'
                     return (
-                      <div key={groupKey}>
+                      <div key={groupKey} style={{ marginBottom: '0.08rem' }}>
                         <button
                           onClick={() => setCollapsedGroups(prev => { const n = new Set(prev); n.has(groupKey) ? n.delete(groupKey) : n.add(groupKey); return n })}
-                          style={{ width: '100%', display: 'flex', alignItems: 'center', gap: '0.35rem', padding: '0.32rem 0.5rem', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'inherit' }}
+                          style={{
+                            width: '100%', display: 'flex', alignItems: 'center', gap: '0.35rem',
+                            padding: '0.28rem 0.45rem 0.28rem 0.5rem', background: isGroupCollapsed ? 'transparent' : groupBg + 'CC',
+                            border: 'none', borderLeft: `3px solid ${isGroupCollapsed ? 'transparent' : groupColor}`,
+                            cursor: 'pointer', fontFamily: 'inherit', transition: 'all 0.14s',
+                          }}
+                          onMouseEnter={e => { if (isGroupCollapsed) { e.currentTarget.style.borderLeftColor = groupColor + '50'; e.currentTarget.style.background = groupBg + '70' } }}
+                          onMouseLeave={e => { if (isGroupCollapsed) { e.currentTarget.style.borderLeftColor = 'transparent'; e.currentTarget.style.background = 'transparent' } }}
                         >
-                          <span style={{ fontSize: '0.58rem', color: '#94A3B8', lineHeight: 1 }}>{isGroupCollapsed ? '▶' : '▼'}</span>
-                          <span style={{ fontSize: '0.68rem', fontWeight: 700, color: '#334155', flex: 1, textAlign: 'left' }}>{groupKey}</span>
-                          <span style={{ fontSize: '0.6rem', color: '#94A3B8', background: '#F1F5F9', padding: '0.1rem 0.38rem', borderRadius: '999px' }}>{groupItems.length}</span>
+                          {typeCfg && <span style={{ fontSize: '0.82rem', lineHeight: 1, flexShrink: 0 }}>{typeCfg.icon}</span>}
+                          <span style={{ fontSize: '0.7rem', fontWeight: 800, color: isGroupCollapsed ? '#64748B' : groupColor, flex: 1, textAlign: 'left', letterSpacing: '-0.01em' }}>{groupKey}</span>
+                          <span style={{ fontSize: '0.58rem', fontWeight: 800, color: groupColor, background: isGroupCollapsed ? '#F1F5F9' : groupBg, padding: '0.07rem 0.38rem', borderRadius: '999px', flexShrink: 0, border: `1px solid ${groupColor}30` }}>{groupItems.length}</span>
+                          <span style={{ color: '#CBD5E1', fontSize: '0.5rem', flexShrink: 0 }}>{isGroupCollapsed ? '▶' : '▼'}</span>
                         </button>
-                        {!isGroupCollapsed && groupItems.map(item => renderSidebarItem(item))}
+                        {!isGroupCollapsed && (
+                          <div style={{ paddingLeft: '0.1rem' }}>
+                            {groupItems.map(item => renderSidebarItem(item))}
+                          </div>
+                        )}
                       </div>
                     )
                   })
