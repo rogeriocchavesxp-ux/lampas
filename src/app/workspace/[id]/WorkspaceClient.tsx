@@ -43,12 +43,13 @@ import DicionarioWorkspace from './DicionarioWorkspace'
 import DicionarioFlutuante from './DicionarioFlutuante'
 import IntroducaoWorkspace from './IntroducaoWorkspace'
 import BibliotecaWorkspace from './BibliotecaWorkspace'
+import WorkspaceLateralTabs from './WorkspaceLateralTabs'
 import {
   Heart, BookOpen, FileText, Crosshair, Landmark, Languages, GraduationCap,
   Sparkles, BookMarked, Flame, MessageSquareText, Layers, Book, Library,
   BookCopy, Link2, Paperclip, ChevronDown, ChevronRight, ChevronLeft, ChevronUp,
   MapPin, Network, TrendingUp, LayoutTemplate, Mic, Brain, Megaphone,
-  AlignJustify, GitBranch, Palette, Tag, X, Lightbulb, Home,
+  AlignJustify, GitBranch, Palette, Tag, X,
   type LucideIcon,
 } from 'lucide-react'
 import {
@@ -156,7 +157,6 @@ export default function WorkspaceClient({ user, project, initialSections }: Prop
   const enviarDropdownRef = useRef<HTMLDivElement>(null)
   const [pilgrimOpen, setPilgrimOpen]       = useState(false)
   const [checklistOpen, setChecklistOpen]   = useState(false)
-  const [toolsOpen, setToolsOpen]           = useState(false)
 
   const sidebarWidthRef  = useRef(264)
   const referenceWidthRef = useRef(280)
@@ -1781,230 +1781,19 @@ export default function WorkspaceClient({ user, project, initialSections }: Prop
         </div>
       )}
 
-      {/* ── Floating Tools Button (lamparina) ─────────────────────────────── */}
-      {!focusMode && (() => {
-        const toolsPhase  = navPhases.find(p => p.id === 'ferramentas')
-        const toolsColor  = toolsPhase?.color ?? '#B45309'
-        const isInTools   = activePhase?.id === 'ferramentas'
+      {/* ── Abas Laterais — Dicionário, Referências, Recortes | Bíblia, Introduções, Teologias ── */}
+      <WorkspaceLateralTabs
+        project={project}
+        userId={user.id}
+        onAskAI={handleAskAI}
+      />
 
-        const TOOL_GROUPS: Array<{ label: string; items: Array<{ label: string; slug: string }> }> = [
-          {
-            label: 'Escritura',
-            items: [
-              { label: 'Introdução ao AT',      slug: 'ferramentas_introducao_at' },
-              { label: 'Introdução ao NT',      slug: 'ferramentas_introducao_nt' },
-              { label: 'Referências Cruzadas',  slug: 'ferramentas_refs_cruzadas' },
-            ],
-          },
-          {
-            label: 'Teologia',
-            items: [
-              { label: 'Teologia Sistemática',  slug: 'ferramentas_sistematica' },
-              { label: 'Teologia Bíblica',      slug: 'ferramentas_biblica' },
-            ],
-          },
-          {
-            label: 'Confessionalidade',
-            items: [
-              { label: 'Catecismos & Confissões', slug: 'ferramentas_confissoes_catecismos' },
-            ],
-          },
-          {
-            label: 'Pesquisa',
-            items: [
-              { label: 'Dicionário Lampas',  slug: 'ferramentas_dicionario' },
-              { label: 'Biblioteca',         slug: 'ferramentas_livros' },
-              { label: 'Colagens',           slug: 'colagens' },
-            ],
-          },
-        ]
-
-        return (
-          <>
-            {/* Overlay — fecha o painel ao clicar fora */}
-            {toolsOpen && (
-              <div
-                onClick={() => setToolsOpen(false)}
-                style={{ position: 'fixed', inset: 0, zIndex: 299 }}
-              />
-            )}
-
-            <div className="lp-fixed-fab" style={{ position: 'fixed', bottom: '70px', right: '16px', zIndex: 300 }}>
-
-              {/* Painel de ferramentas */}
-              {toolsOpen && (
-                <div style={{
-                  position: 'absolute', bottom: '48px', right: 0,
-                  width: '210px',
-                  background: 'var(--surface)',
-                  border: '1px solid var(--border)',
-                  borderRadius: '12px',
-                  boxShadow: '0 8px 32px rgba(0,0,0,0.14)',
-                  overflow: 'hidden',
-                }}>
-                  <div style={{
-                    padding: '0.6rem 0.9rem 0.38rem',
-                    borderBottom: '1px solid var(--border-subtle)',
-                    fontSize: '0.6rem', fontWeight: 800, letterSpacing: '0.09em',
-                    textTransform: 'uppercase', color: 'var(--text-muted)',
-                  }}>
-                    Ferramentas Pastorais
-                  </div>
-
-                  {TOOL_GROUPS.map(group => (
-                    <div key={group.label}>
-                      <div style={{
-                        padding: '0.45rem 0.9rem 0.1rem',
-                        fontSize: '0.56rem', fontWeight: 700, letterSpacing: '0.07em',
-                        textTransform: 'uppercase', color: 'var(--text-muted)',
-                      }}>
-                        {group.label}
-                      </div>
-                      {group.items.map(item => {
-                        const isActive = activeSlug === item.slug
-                        return (
-                          <button
-                            key={item.slug}
-                            onClick={() => { navigate(item.slug); setToolsOpen(false) }}
-                            style={{
-                              width: '100%', textAlign: 'left',
-                              padding: '0.36rem 0.9rem',
-                              background: isActive ? `${toolsColor}0C` : 'transparent',
-                              border: 'none', cursor: 'pointer',
-                              fontFamily: 'inherit', fontSize: '0.8rem',
-                              color: isActive ? toolsColor : 'var(--text-secondary)',
-                              fontWeight: isActive ? 600 : 400,
-                              transition: 'background 0.1s, color 0.1s',
-                            }}
-                            onMouseEnter={e => {
-                              if (!isActive) {
-                                e.currentTarget.style.background = 'var(--surface-2)'
-                                e.currentTarget.style.color = 'var(--text-primary)'
-                              }
-                            }}
-                            onMouseLeave={e => {
-                              if (!isActive) {
-                                e.currentTarget.style.background = 'transparent'
-                                e.currentTarget.style.color = 'var(--text-secondary)'
-                              }
-                            }}
-                          >
-                            {item.label}
-                          </button>
-                        )
-                      })}
-                    </div>
-                  ))}
-                  <div style={{ height: '0.4rem' }} />
-                </div>
-              )}
-
-              {/* Botão lamparina */}
-              <button
-                onClick={() => setToolsOpen(o => !o)}
-                title="Ferramentas pastorais"
-                style={{
-                  width: '40px', height: '40px', borderRadius: '50%',
-                  background: (toolsOpen || isInTools) ? toolsColor : 'var(--surface)',
-                  border: `1.5px solid ${(toolsOpen || isInTools) ? toolsColor : 'var(--border)'}`,
-                  cursor: 'pointer',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  boxShadow: '0 2px 12px rgba(0,0,0,0.13)',
-                  transition: 'all 0.15s',
-                  color: (toolsOpen || isInTools) ? '#fff' : 'var(--text-secondary)',
-                }}
-                onMouseEnter={e => {
-                  if (!toolsOpen && !isInTools) {
-                    e.currentTarget.style.borderColor = toolsColor
-                    e.currentTarget.style.color = toolsColor
-                    e.currentTarget.style.background = `${toolsColor}0C`
-                  }
-                }}
-                onMouseLeave={e => {
-                  if (!toolsOpen && !isInTools) {
-                    e.currentTarget.style.borderColor = 'var(--border)'
-                    e.currentTarget.style.color = 'var(--text-secondary)'
-                    e.currentTarget.style.background = 'var(--surface)'
-                  }
-                }}
-              >
-                <Lightbulb size={16} strokeWidth={1.75} />
-              </button>
-            </div>
-          </>
-        )
-      })()}
-
-      {/* ── Botão Painel — acesso permanente ao Dashboard ────────── */}
-      <div style={{ position: 'fixed', top: '108px', left: '8px', zIndex: 300 }}>
-        <button
-          onClick={() => router.push('/dashboard')}
-          title="Ir para o Painel"
-          style={{
-            width: '40px', height: '40px', borderRadius: '50%',
-            background: 'var(--surface)',
-            border: '1.5px solid var(--border)',
-            cursor: 'pointer',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            boxShadow: '0 2px 12px rgba(0,0,0,0.13)',
-            transition: 'all 0.15s',
-            color: 'var(--text-secondary)',
-          }}
-          onMouseEnter={e => {
-            e.currentTarget.style.borderColor = 'var(--accent)'
-            e.currentTarget.style.color = 'var(--accent)'
-            e.currentTarget.style.background = 'rgba(var(--accent-rgb, 30,64,175),0.08)'
-          }}
-          onMouseLeave={e => {
-            e.currentTarget.style.borderColor = 'var(--border)'
-            e.currentTarget.style.color = 'var(--text-secondary)'
-            e.currentTarget.style.background = 'var(--surface)'
-          }}
-        >
-          <Home size={16} strokeWidth={1.75} />
-        </button>
-      </div>
-
-      {/* ── Dicionário Flutuante — acesso permanente, canto inferior esquerdo ── */}
+      {/* ── Dicionário Flutuante — contextual ao texto selecionado ── */}
       <DicionarioFlutuante
         project={project}
         userId={user.id}
         focusMode={focusMode}
       />
-
-      {/* ── Botão Bíblia — acesso permanente ao texto bíblico ─────── */}
-      <div style={{ position: 'fixed', top: '108px', right: '16px', zIndex: 300 }}>
-        <button
-          onClick={() => setBibleOpen(o => !o)}
-          title={bibleOpen ? 'Fechar texto bíblico' : 'Abrir texto bíblico'}
-          style={{
-            width: '40px', height: '40px', borderRadius: '50%',
-            background: bibleOpen ? '#1E40AF' : 'var(--surface)',
-            border: `1.5px solid ${bibleOpen ? '#1E40AF' : 'var(--border)'}`,
-            cursor: 'pointer',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            boxShadow: '0 2px 12px rgba(0,0,0,0.13)',
-            transition: 'all 0.15s',
-            color: bibleOpen ? '#fff' : 'var(--text-secondary)',
-          }}
-          onMouseEnter={e => {
-            if (!bibleOpen) {
-              e.currentTarget.style.borderColor = '#1E40AF'
-              e.currentTarget.style.color = '#1E40AF'
-              e.currentTarget.style.background = 'rgba(30,64,175,0.08)'
-            }
-          }}
-          onMouseLeave={e => {
-            if (!bibleOpen) {
-              e.currentTarget.style.borderColor = 'var(--border)'
-              e.currentTarget.style.color = 'var(--text-secondary)'
-              e.currentTarget.style.background = 'var(--surface)'
-            }
-          }}
-        >
-          <BookOpen size={16} strokeWidth={1.75} />
-        </button>
-      </div>
 
     </div>
     </WorkspaceProvider>
