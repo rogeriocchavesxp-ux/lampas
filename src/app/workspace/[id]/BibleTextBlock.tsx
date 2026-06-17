@@ -66,7 +66,7 @@ const CLASS_DEF: Record<ClassType, ClassDef> = {
   objetivo:    { emoji: '🎯', label: 'Objetivo',      color: '#10B981' },
   comentario:      { emoji: '📝', label: 'Comentário',    color: '#64748B' },
   insight:         { emoji: '💡', label: 'Insight',        color: '#F59E0B' },
-  observacao:      { emoji: '📌', label: 'Observação',    color: '#D97706', sectionSlug: 'preparar_primeiras_impressoes', cardId: 'preparar_observacoes_livres', sectionTitle: '3. Primeiras Impressões' },
+  observacao:      { emoji: '📌', label: 'Observação',    color: '#D97706', sectionSlug: 'preparar_leia_assimile', cardId: 'preparar_leitura_lenta', sectionTitle: '2. Leia e Assimile' },
   conectivo:       { emoji: '→',  label: 'Conectivo',      color: '#0891B2' },
   verbo_principal: { emoji: '⚡', label: 'Verbo Principal',color: '#7C3AED' },
   promessa:        { emoji: '🌟', label: 'Promessa',       color: '#16A34A' },
@@ -100,7 +100,7 @@ const SEND_TARGETS: SendTarget[] = [
   { key: 'visao_geral',  label: 'Visão Geral',      sectionSlug: 'preparar_visao_geral',          cardId: 'preparar_grande_ideia_inicial', sectionTitle: '4. Visão Geral da Passagem' },
   { key: 'termos_chave', label: 'Termos-Chave',     sectionSlug: 'termos_chave',                   cardId: undefined,                       sectionTitle: '2.4 Termos-Chave' },
   { key: 'teologico',    label: 'Estudo Teológico', sectionSlug: 'contexto_canonico',              cardId: undefined,                       sectionTitle: '3.1 Contexto Canônico' },
-  { key: 'comentario',   label: 'Comentário',       sectionSlug: 'preparar_primeiras_impressoes',  cardId: 'preparar_observacoes_livres',   sectionTitle: '3. Primeiras Impressões' },
+  { key: 'comentario',   label: 'Comentário',       sectionSlug: 'preparar_leia_assimile',          cardId: 'preparar_tensoes_repeticoes',   sectionTitle: '2. Leia e Assimile' },
 ]
 
 // ── Storage ───────────────────────────────────────────────────────────────────

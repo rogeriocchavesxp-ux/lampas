@@ -1655,33 +1655,6 @@ export const NAV_SPECIALIZED: SectionNav[] = [
     ]
   },
   {
-    "slug": "nr_preparar_primeiras_impressoes",
-    "title": "3. Primeiras Impressões",
-    "shortTitle": "Primeiras Impressões",
-    "phase": "preparar",
-    "module": "inventio",
-    "group": "preparar_impressoes",
-    "groupLabel": "Notas rápidas e perguntas",
-    "order": -38,
-    "studyModes": [
-      "estudo_narrativas"
-    ],
-    "cards": [
-      {
-        "id": "preparar_observacoes_livres",
-        "title": "Observações livres"
-      },
-      {
-        "id": "preparar_perguntas_dificuldades",
-        "title": "Perguntas e dificuldades"
-      },
-      {
-        "id": "preparar_conexoes_iniciais",
-        "title": "Conexões iniciais"
-      }
-    ]
-  },
-  {
     "slug": "pt_tema",
     "title": "I. Tema e Problema",
     "shortTitle": "Tema e Problema",

@@ -304,7 +304,6 @@ export default function WorkspaceClient({ user, project, initialSections }: Prop
     const weights: Record<string, number> = {
       preparar_espiritual: 1,
       preparar_assimilacao: 1,
-      preparar_impressoes: 1,
       preparar_visao_geral: 1,
       investigar_visao_geral: 1,
       contextual: 2,

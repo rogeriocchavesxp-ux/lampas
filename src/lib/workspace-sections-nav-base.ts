@@ -54,38 +54,6 @@ export const NAV_BASE: SectionNav[] = [
     ]
   },
   {
-    "slug": "preparar_primeiras_impressoes",
-    "title": "3. Primeiras Impressões",
-    "shortTitle": "Primeiras Impressões",
-    "phase": "preparar",
-    "module": "inventio",
-    "group": "preparar_impressoes",
-    "groupLabel": "Notas rápidas e perguntas",
-    "order": -38,
-    "cards": [
-      {
-        "id": "preparar_observacoes_livres",
-        "title": "Observações livres"
-      },
-      {
-        "id": "preparar_perguntas_dificuldades",
-        "title": "Perguntas e dificuldades"
-      },
-      {
-        "id": "preparar_conexoes_iniciais",
-        "title": "Conexões iniciais"
-      },
-      {
-        "id": "preparar_marcacoes",
-        "title": "Marcações e destaques"
-      },
-      {
-        "id": "preparar_modo_imersao",
-        "title": "Modo Imersão"
-      }
-    ]
-  },
-  {
     "slug": "preparar_visao_geral",
     "title": "4. Visão Geral da Passagem",
     "shortTitle": "Visão Geral",
@@ -108,20 +76,12 @@ export const NAV_BASE: SectionNav[] = [
         "title": "Estrutura percebida"
       },
       {
-        "id": "preparar_vg_impressoes",
-        "title": "Primeiras impressões"
-      },
-      {
         "id": "preparar_vg_perguntas",
         "title": "Perguntas iniciais"
       },
       {
         "id": "preparar_vg_dificuldades",
         "title": "Dificuldades percebidas"
-      },
-      {
-        "id": "preparar_vg_observacoes",
-        "title": "Observações pessoais"
       }
     ]
   },

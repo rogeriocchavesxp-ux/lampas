@@ -551,32 +551,4 @@ export const ESTUDO_NARRATIVAS_SECTIONS: SectionDef[] = [
         'Como esta narrativa se encaixa na grande narrativa bíblica? Que tipologias ela contém? Como aponta para Cristo ou encontra seu cumprimento nele? Use Goldsworthy ou Greidanus.'),
     ],
   },
-
-  // ── Primeiras Impressões (variante Narrativas) ───────────────────────────
-  // Versão reduzida da seção compartilhada 'preparar_primeiras_impressoes':
-  // remove Marcações e destaques + Modo Imersão, mantém 3 campos.
-  {
-    slug: 'nr_preparar_primeiras_impressoes',
-    title: '3. Primeiras Impressões',
-    shortTitle: 'Primeiras Impressões',
-    phase: 'preparar',
-    module: 'inventio',
-    group: 'preparar_impressoes',
-    groupLabel: 'Notas rápidas e perguntas',
-    order: -38,
-    studyModes: ['estudo_narrativas'],
-    objective:
-      'Criar um espaço livre para registrar observações, perguntas, dificuldades e conexões antes da investigação narrativa.',
-    keyQuestions: [
-      'Que perguntas você ainda não consegue responder?',
-      'Que conexão inicial parece importante, mas precisa ser testada?',
-      'Que dificuldade textual, pastoral ou espiritual apareceu?',
-    ],
-    relevantAuthors: ['Haddon Robinson', 'John Stott', 'Bryan Chapell'],
-    cards: [
-      card('preparar_observacoes_livres', 'Observações livres', 'Anote impressões, detalhes, surpresas, dúvidas e percepções iniciais sem censurar ou organizar demais.', 'Ajude-me a transformar minhas primeiras observações em perguntas úteis para a próxima etapa de estudo.'),
-      card('preparar_perguntas_dificuldades', 'Perguntas e dificuldades', 'Liste perguntas abertas, dificuldades interpretativas, termos obscuros e pontos que exigirão pesquisa posterior.', 'Organize minhas dúvidas iniciais em categorias: texto, contexto, teologia, aplicação e comunicação.'),
-      card('preparar_conexoes_iniciais', 'Conexões iniciais', 'Registre conexões com outros textos bíblicos, temas teológicos, experiências pastorais ou necessidades da igreja.', 'Sugira conexões iniciais e cuidadosas entre esta passagem, temas bíblicos e necessidades pastorais.'),
-    ],
-  },
 ]

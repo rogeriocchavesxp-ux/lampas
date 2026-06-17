@@ -194,7 +194,6 @@ const EXEGESE_BIBLICA: StudyModeConfig = {
         groups: [
           { id: 'preparar_espiritual',  label: 'Preparação Espiritual' },
           { id: 'preparar_assimilacao', label: 'Leia e Assimile' },
-          { id: 'preparar_impressoes',  label: 'Primeiras Impressões' },
           { id: 'preparar_visao_geral', label: 'Visão Geral' },
         ],
       }],
@@ -288,7 +287,6 @@ const SERMAO: StudyModeConfig = {
         groups: [
           { id: 'preparar_espiritual',  label: 'Preparação Espiritual' },
           { id: 'preparar_assimilacao', label: 'Leia e Assimile' },
-          { id: 'preparar_impressoes',  label: 'Primeiras Impressões' },
           { id: 'preparar_visao_geral', label: 'Visão Geral' },
         ],
       }],
@@ -355,7 +353,6 @@ const DEVOCIONAL: StudyModeConfig = {
         groups: [
           { id: 'preparar_espiritual',  label: 'Oração e Entrega' },
           { id: 'preparar_assimilacao', label: 'Leia Devagar' },
-          { id: 'preparar_impressoes',  label: 'Primeiras Impressões' },
           { id: 'preparar_visao_geral', label: 'Visão Geral' },
         ],
       }],
@@ -1029,7 +1026,6 @@ const ESTUDO_DE_CARTA: StudyModeConfig = {
         groups: [
           { id: 'preparar_espiritual',  label: 'Oração' },
           { id: 'preparar_assimilacao', label: 'Carta Completa' },
-          { id: 'preparar_impressoes',  label: 'Primeiras Impressões' },
           { id: 'preparar_visao_geral', label: 'Visão Geral' },
         ],
       }],
@@ -1159,7 +1155,6 @@ const ESTUDO_DE_SALMOS_SABEDORIA: StudyModeConfig = {
         groups: [
           { id: 'preparar_espiritual',  label: 'Preparação Espiritual' },
           { id: 'preparar_assimilacao', label: 'Leia e Assimile' },
-          { id: 'preparar_impressoes',  label: 'Primeiras Impressões' },
           { id: 'preparar_visao_geral', label: 'Visão Geral' },
         ],
       }],
@@ -1239,7 +1234,6 @@ const ESTUDO_NARRATIVAS: StudyModeConfig = {
         groups: [
           { id: 'preparar_espiritual',   label: 'Preparação Espiritual' },
           { id: 'preparar_assimilacao',  label: 'Leia e Assimile' },
-          { id: 'preparar_impressoes',   label: 'Primeiras Impressões' },
           { id: 'nr_visao_geral_grp',    label: 'Visão Geral' },
         ],
       }],
@@ -1306,7 +1300,6 @@ const ESTUDO_DE_PROFECIAS: StudyModeConfig = {
         groups: [
           { id: 'preparar_espiritual',  label: 'Preparação Espiritual' },
           { id: 'preparar_assimilacao', label: 'Leia e Assimile' },
-          { id: 'preparar_impressoes',  label: 'Primeiras Impressões' },
           { id: 'preparar_visao_geral', label: 'Visão Geral' },
         ],
       }],

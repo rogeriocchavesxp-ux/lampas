@@ -35,17 +35,6 @@ const DEMO_SECTIONS = [
     content: {
       cards: {
         preparar_leitura_lenta: '"Porque Deus amou o mundo de tal maneira que deu o seu Filho unigênito, para que todo aquele que nele crê não pereça, mas tenha a vida eterna."\n\n— João 3.16 (ACF)\n\nLeia três vezes, em voz alta. Na última leitura, pause em cada vírgula e deixe cada palavra pousar.',
-      },
-    },
-  },
-  {
-    slug:    'preparar_impressoes',
-    module:  'inventio' as const,
-    title:   'Primeiras Impressões',
-    status:  'draft' as const,
-    content: {
-      cards: {
-        preparar_observacoes_livres: '• "porque" — há algo anterior que motiva este amor. Jesus estava explicando o novo nascimento a Nicodemos.\n• "de tal maneira" — intensidade que o texto declara, mas não mede\n• "deu" — o amor de Deus se prova pela entrega, não pelo sentimento\n• "todo aquele que nele crê" — convite universal, mas resposta pessoal\n• Contraste: perecer × vida eterna',
         preparar_tensoes_repeticoes: '"Filho unigênito" aparece em João 1.14 e 1.18 — é um título carregado de significado no evangelho de João.',
       },
     },

@@ -5,7 +5,7 @@ import { getSectionsByGroupNav, getSectionNavBySlug } from '@/lib/workspace-sect
 import { isSynthesisSlug, getSynthesisBySlug } from '@/lib/workspace-sections'
 import { getToolAreaBySlug, isToolSlug } from '@/lib/tools-content'
 import {
-  Heart, BookOpen, FileText, Crosshair, Landmark, Languages, GraduationCap,
+  Heart, BookOpen, Crosshair, Landmark, Languages, GraduationCap,
   Sparkles, BookMarked, Flame, MessageSquareText, Layers, Book, Library,
   BookCopy, Link2, Paperclip, MapPin, Network, TrendingUp, LayoutTemplate, Mic, Brain, Megaphone,
   AlignJustify, GitBranch, Palette, Tag, Lightbulb,
@@ -74,7 +74,6 @@ export const GROUP_SUBTITLES: Record<string, string> = {
   // Preparar
   preparar_espiritual:  'Oração e dependência',
   preparar_assimilacao: 'Contato direto com o texto',
-  preparar_impressoes:  'Notas rápidas e perguntas',
   preparar_visao_geral:     'Tema, estrutura e clímax',
   nr_visao_geral_grp:       'Mapa inicial da narrativa',
   investigar_visao_geral:   'Compreensão refinada após investigação',
@@ -172,7 +171,6 @@ export const GROUP_ICONS: Record<string, LucideIcon> = {
   // Preparar
   preparar_espiritual:       Heart,
   preparar_assimilacao:      BookOpen,
-  preparar_impressoes:       FileText,
   preparar_visao_geral:      Crosshair,
   investigar_visao_geral:    Crosshair,
   pregar_visao_geral:        Crosshair,
@@ -363,7 +361,6 @@ export function toolProgress(groupId: string): { done: number; total: number } {
 const DEMO_STEPS: { slug: string; label: string; explanation: string }[] = [
   { slug: 'preparar_espiritual',    label: 'Oração e Entrega',     explanation: 'Antes de analisar, aproxime-se de Deus. Você não chega ao texto como especialista — chega como filho.' },
   { slug: 'preparar_assimilacao',   label: 'Leia Devagar',         explanation: 'O primeiro contato deve ser lento. João 3.16 é o versículo mais conhecido — e por isso o mais difícil de ouvir de novo.' },
-  { slug: 'preparar_impressoes',    label: 'Primeiras Impressões', explanation: 'Anote o que chama atenção, surpreende ou incomoda. Perguntas são bem-vindas. Não filtre — o que o texto provoca agora é dado valioso.' },
   { slug: 'preparar_visao_geral',   label: 'Visão Geral',          explanation: 'Uma frase para mapear o texto inteiro antes de ir fundo. Você vai revisitar esta ideia mais tarde — e será fascinante ver como amadurece.' },
   { slug: 'contextual',             label: 'Contexto',             explanation: 'João 3.16 está no meio de uma conversa entre Jesus e Nicodemos, à noite. O contexto histórico transforma o peso das palavras.' },
   { slug: 'teologico',              label: 'Mensagem',             explanation: 'O que Deus está dizendo neste texto? Aqui meditação e teologia se encontram. Qual a grande verdade revelada?' },

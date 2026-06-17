@@ -55,32 +55,6 @@ export const PREPARE_SECTIONS: SectionDef[] = [
     ],
   },
   {
-    slug: 'preparar_primeiras_impressoes',
-    title: '3. Primeiras Impressões',
-    shortTitle: 'Primeiras Impressões',
-    phase: 'preparar',
-    module: 'inventio',
-    group: 'preparar_impressoes',
-    groupLabel: 'Notas rápidas e perguntas',
-    order: -38,
-    objective:
-      'Criar um espaço livre para registrar observações, perguntas, dificuldades, conexões e marcações antes da pesquisa acadêmica.',
-    keyQuestions: [
-      'Que perguntas você ainda não consegue responder?',
-      'Que conexão inicial parece importante, mas precisa ser testada?',
-      'Que dificuldade textual, pastoral ou espiritual apareceu?',
-      'Que marcações ou destaques merecem voltar depois?',
-    ],
-    relevantAuthors: ['Haddon Robinson', 'John Stott', 'Bryan Chapell'],
-    cards: [
-      card('preparar_observacoes_livres', 'Observações livres', 'Anote impressões, detalhes, surpresas, dúvidas e percepções iniciais sem censurar ou organizar demais.', 'Ajude-me a transformar minhas primeiras observações em perguntas úteis para a próxima etapa de estudo.'),
-      card('preparar_perguntas_dificuldades', 'Perguntas e dificuldades', 'Liste perguntas abertas, dificuldades interpretativas, termos obscuros e pontos que exigirão pesquisa posterior.', 'Organize minhas dúvidas iniciais em categorias: texto, contexto, teologia, aplicação e comunicação.'),
-      card('preparar_conexoes_iniciais', 'Conexões iniciais', 'Registre conexões com outros textos bíblicos, temas teológicos, experiências pastorais ou necessidades da igreja.', 'Sugira conexões iniciais e cuidadosas entre esta passagem, temas bíblicos e necessidades pastorais.'),
-      card('preparar_marcacoes', 'Marcações e destaques', 'Registre palavras, frases, movimentos ou imagens que você destacaria no texto durante a imersão.', 'Ajude-me a identificar marcações iniciais no texto: repetições, contrastes, imagens, mudanças de cena e ênfases.'),
-      card('preparar_modo_imersao', 'Modo Imersão', 'Use este espaço como tela limpa: copie o texto bíblico, escreva notas rápidas, destaques e marcações sem comentários acadêmicos.', 'Conduza um modo imersão nesta passagem: apenas observação, contemplação, perguntas e marcações iniciais.'),
-    ],
-  },
-  {
     slug: 'preparar_visao_geral',
     title: '4. Visão Geral da Passagem',
     shortTitle: 'Visão Geral',
@@ -102,10 +76,8 @@ export const PREPARE_SECTIONS: SectionDef[] = [
       card('preparar_tema_provavel', 'Tema provável', 'Nomeie o tema provável da passagem em uma frase simples e provisória.', 'Ajude-me a formular um tema provável para esta passagem, mantendo caráter provisório e observacional.'),
       card('preparar_grande_ideia_inicial', 'Grande ideia inicial', 'Escreva uma primeira hipótese da grande ideia do texto, antes da exegese formal.', 'Ajude-me a formular uma grande ideia inicial da passagem, deixando claro o que ainda precisa ser confirmado.'),
       card('preparar_estrutura_percebida', 'Estrutura percebida', 'Esboce as partes da passagem como você as percebe neste momento inicial, sem análise técnica.', 'Ajude-me a perceber uma estrutura inicial da passagem com base em movimentos visíveis do texto.'),
-      card('preparar_vg_impressoes', 'Primeiras impressões', 'Registre livremente o que mais chamou atenção, surpreendeu ou incomodou no primeiro contato com o texto.', 'Ajude-me a articular minhas primeiras impressões sobre esta passagem — sem filtro técnico, apenas observação honesta.'),
       card('preparar_vg_perguntas', 'Perguntas iniciais', 'Liste as perguntas que surgiram no primeiro contato. O que você ainda não entende? O que precisa de investigação?', 'Ajude-me a formular perguntas produtivas a partir do primeiro contato com esta passagem — perguntas que vão guiar a investigação.'),
       card('preparar_vg_dificuldades', 'Dificuldades percebidas', 'Registre termos obscuros, tensões não resolvidas, passagens difíceis e pontos que exigirão atenção especial.', 'Identifique as principais dificuldades interpretativas desta passagem que precisarão ser investigadas na próxima etapa.'),
-      card('preparar_vg_observacoes', 'Observações pessoais', 'Espaço livre: anote marcações, percepções, conexões espontâneas e qualquer observação que queira preservar.', 'Ajude-me a organizar minhas observações pessoais iniciais sobre esta passagem de forma clara e útil para as próximas etapas.'),
     ],
   },
   {
