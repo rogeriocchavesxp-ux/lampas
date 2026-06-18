@@ -44,6 +44,7 @@ import DicionarioFlutuante from './DicionarioFlutuante'
 import IntroducaoWorkspace from './IntroducaoWorkspace'
 import BibliotecaWorkspace from './BibliotecaWorkspace'
 import WorkspaceLateralTabs from './WorkspaceLateralTabs'
+import FreeModeEditor from './FreeModeEditor'
 import {
   Heart, BookOpen, FileText, Crosshair, Landmark, Languages, GraduationCap,
   Sparkles, BookMarked, Flame, MessageSquareText, Layers, Book, Library,
@@ -140,6 +141,22 @@ export default function WorkspaceClient({ user, project, initialSections }: Prop
   })
   const [aiOpen, setAiOpen] = useState(false)
   const [aiPrompt, setAiPrompt] = useState('')
+
+  // Work mode (guided / free) per phase — persisted per project
+  const [workModeMap, setWorkModeMap] = useState<Partial<Record<string, 'guided' | 'free'>>>(() => {
+    try {
+      const saved = localStorage.getItem(`lampas_workmode_${project.id}`)
+      return saved ? JSON.parse(saved) as Partial<Record<string, 'guided' | 'free'>> : {}
+    } catch { return {} }
+  })
+
+  function setWorkMode(phaseId: string, mode: 'guided' | 'free') {
+    setWorkModeMap(prev => {
+      const next = { ...prev, [phaseId]: mode }
+      try { localStorage.setItem(`lampas_workmode_${project.id}`, JSON.stringify(next)) } catch {}
+      return next
+    })
+  }
 
   // Panel layout
   const [sidebarWidth, setSidebarWidth] = useState(264)
@@ -1348,7 +1365,7 @@ export default function WorkspaceClient({ user, project, initialSections }: Prop
           {/* Reading area */}
           <main style={{ flex: 1, minWidth: 0, overflowY: 'auto', background: 'var(--background)' }}>
 
-            {/* ← Voltar — fixo no topo de toda tela interna */}
+            {/* ← Voltar + Mode toggle — fixo no topo de toda tela interna */}
             <div style={{
               position: 'sticky', top: 0, zIndex: 9,
               display: 'flex', alignItems: 'center',
@@ -1376,9 +1393,52 @@ export default function WorkspaceClient({ user, project, initialSections }: Prop
                 <ChevronLeft size={12} strokeWidth={2.2} />
                 Voltar
               </button>
+
+              {/* Work mode toggle — only for preparar / investigar */}
+              {(activePhase?.id === 'preparar' || activePhase?.id === 'investigar') && activePhase && (
+                <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: '3px' }}>
+                  {(['guided', 'free'] as const).map(mode => {
+                    const isActive = (workModeMap[activePhase.id] ?? 'guided') === mode
+                    return (
+                      <button
+                        key={mode}
+                        onClick={() => setWorkMode(activePhase.id, mode)}
+                        style={{
+                          height: '22px', padding: '0 10px',
+                          border: `1px solid ${isActive ? activePhase.color : 'var(--border-subtle)'}`,
+                          borderRadius: '5px',
+                          background: isActive ? `${activePhase.color}12` : 'transparent',
+                          color: isActive ? activePhase.color : 'var(--text-muted)',
+                          fontSize: '0.65rem', fontWeight: isActive ? 700 : 400,
+                          cursor: 'pointer', fontFamily: 'inherit',
+                          transition: 'all 0.15s',
+                          letterSpacing: '0.01em',
+                        }}
+                        onMouseEnter={e => { if (!isActive) e.currentTarget.style.borderColor = 'var(--border)' }}
+                        onMouseLeave={e => { if (!isActive) e.currentTarget.style.borderColor = 'var(--border-subtle)' }}
+                      >
+                        {mode === 'guided' ? 'Guiado' : 'Livre'}
+                      </button>
+                    )
+                  })}
+                </div>
+              )}
             </div>
 
-            {activeSlug === 'colagens' ? (
+            {/* ── Free mode — renders all phase sections as a continuous document ── */}
+            {activePhase && (activePhase.id === 'preparar' || activePhase.id === 'investigar') &&
+              (workModeMap[activePhase.id] ?? 'guided') === 'free' ? (
+              <FreeModeEditor
+                key={`free-${activePhase.id}`}
+                phase={activePhase}
+                project={project}
+                userId={user.id}
+                studyMode={project.study_mode ?? project.project_type ?? ''}
+                savedSections={sections}
+                onUpdate={handleSectionUpdate}
+                onAskAI={handleAskAI}
+              />
+            ) : activeSlug === 'colagens' ? (
               <RecortesWorkspace
                 key={activeSlug}
                 project={project}
