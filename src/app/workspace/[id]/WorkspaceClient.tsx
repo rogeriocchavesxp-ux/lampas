@@ -40,7 +40,6 @@ import BibleFloatingWindow from './BibleFloatingWindow'
 import VisaoGeralWorkspace from './VisaoGeralWorkspace'
 import EnviarParaSermaModal from './EnviarParaSermaModal'
 import DicionarioWorkspace from './DicionarioWorkspace'
-import DicionarioFlutuante from './DicionarioFlutuante'
 import IntroducaoWorkspace from './IntroducaoWorkspace'
 import BibliotecaWorkspace from './BibliotecaWorkspace'
 import WorkspaceLateralTabs from './WorkspaceLateralTabs'
@@ -624,7 +623,7 @@ export default function WorkspaceClient({ user, project, initialSections }: Prop
       {project.is_demo && <GuidedStrip activeSlug={activeSlug} onNavigate={navigate} modeColor={modeConfig.color} />}
 
       {/* ── Body ──────────────────────────────────────────────────────────── */}
-      <div style={{ flex: 1, display: 'flex', overflow: 'hidden' }}>
+      <div style={{ flex: 1, display: 'flex', overflow: 'hidden', paddingLeft: '38px', paddingRight: '38px' }}>
 
         {/* ── Sidebar ───────────────────────────────────────────────────── */}
         <nav style={{ width: 0, overflow: 'hidden', flexShrink: 0 }}>
@@ -1847,12 +1846,6 @@ export default function WorkspaceClient({ user, project, initialSections }: Prop
         onAskAI={handleAskAI}
       />
 
-      {/* ── Dicionário Flutuante — contextual ao texto selecionado ── */}
-      <DicionarioFlutuante
-        project={project}
-        userId={user.id}
-        focusMode={focusMode}
-      />
 
     </div>
     </WorkspaceProvider>
