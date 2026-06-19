@@ -5,6 +5,7 @@ import { createClient } from '@/lib/supabase/client'
 import type { Project, Section } from '@/types/database'
 import RichEditor from '@/components/RichEditorLazy'
 import type { AIContext } from '@/components/RichEditor'
+import HelpIcon from '@/components/help/HelpIcon'
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -364,7 +365,10 @@ export default function ComentarioExegeticoWorkspace({ project, userId, existing
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.75rem', gap: '0.75rem', flexWrap: 'wrap' }}>
         {!inline && (
           <div>
-            <div style={{ fontSize: '0.87rem', fontWeight: 700, color: 'var(--text-primary,#1e293b)' }}>2.7 Comentário Exegético</div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <span style={{ fontSize: '0.87rem', fontWeight: 700, color: 'var(--text-primary,#1e293b)' }}>2.7 Comentário Exegético</span>
+              <HelpIcon cardId="comentario_exegetico" onAskAI={onAskAI} />
+            </div>
             <div style={{ fontSize: '0.72rem', color: 'var(--text-secondary,#64748b)', marginTop: '0.15rem' }}>
               {blocks.length} {blocks.length === 1 ? 'bloco' : 'blocos'}
               {saving ? ' · Salvando…' : savedAt ? ` · Salvo às ${savedAt.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}` : ''}

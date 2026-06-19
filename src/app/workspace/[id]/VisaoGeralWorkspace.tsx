@@ -11,6 +11,8 @@ import { loadClassificationsFromDB, saveClassificationToDB, deleteClassification
 import MarkdownRenderer from '@/components/MarkdownRenderer'
 import RichEditor from '@/components/RichEditorLazy'
 import ReadingPopup from '@/components/ReadingPopup'
+import HelpIcon from '@/components/help/HelpIcon'
+import { HELP_CONTENT } from '@/lib/help-content'
 import { getSectionNavBySlug, getSectionsByGroupNav } from '@/lib/workspace-sections-nav'
 import ComentarioExegeticoWorkspace from './ComentarioExegeticoWorkspace'
 import {
@@ -2183,6 +2185,9 @@ export default function VisaoGeralWorkspace({
                         <span style={{ fontSize: '0.8rem', fontWeight: 700, color: activeNode.color }}>
                           {activeNode.label}
                         </span>
+                        {activeNode.cardIds?.length === 1 && HELP_CONTENT[activeNode.cardIds[0]] && (
+                          <HelpIcon cardId={activeNode.cardIds[0]} onAskAI={onAskAI} />
+                        )}
                         {getCount(activeNode) > 0 && (
                           <span style={{ fontSize: '0.63rem', fontWeight: 700, color: activeNode.color, background: activeNode.color + '20', borderRadius: '10px', padding: '1px 7px' }}>
                             {getCount(activeNode)}
