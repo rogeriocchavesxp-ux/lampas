@@ -1318,8 +1318,7 @@ export default function VisaoGeralWorkspace({
                       return (
                         <div key={item.id}>
                           {/* Level-2 row */}
-                          <div style={{ display: 'flex', alignItems: 'center' }}>
-                          <button
+                          <div
                             onClick={() => {
                               if (item.type === 'section') {
                                 setExpandedOutlineSections(prev => {
@@ -1341,10 +1340,10 @@ export default function VisaoGeralWorkspace({
                             }}
                             style={{
                               display: 'flex', alignItems: 'center', gap: '0.5rem',
-                              flex: 1,
+                              width: '100%',
                               background: (isEditing || isSectionExpanded) ? `${node.color}10` : 'transparent',
-                              border: 'none', padding: '0.28rem 1rem 0.28rem 0',
-                              cursor: 'pointer', fontFamily: 'inherit', textAlign: 'left',
+                              padding: '0.28rem 1rem 0.28rem 0',
+                              cursor: 'pointer', userSelect: 'none',
                               borderRadius: '4px',
                               borderLeft: isSectionExpanded ? `2px solid ${node.color}55` : '2px solid transparent',
                             }}
@@ -1359,11 +1358,10 @@ export default function VisaoGeralWorkspace({
                                 {nodeNum}.{itemIdx + 1}
                               </span>
                             )}
-                            <span style={{ fontSize: '0.75rem', color: isSectionExpanded ? node.color : 'var(--text-primary)', fontWeight: item.type === 'section' ? 600 : 400, flex: 1, lineHeight: 1.4 }}>{item.label}</span>
-                          </button>
-                          {item.type === 'card' && HELP_CONTENT[item.id] && (
-                            <HelpIcon cardId={item.id} onAskAI={onAskAI} />
-                          )}
+                            <span style={{ fontSize: '0.75rem', color: isSectionExpanded ? node.color : 'var(--text-primary)', fontWeight: item.type === 'section' ? 600 : 400, lineHeight: 1.4 }}>{item.label}</span>
+                            {item.type === 'card' && HELP_CONTENT[item.id] && (
+                              <HelpIcon cardId={item.id} onAskAI={onAskAI} />
+                            )}
                           </div>
 
                           {/* Level-3: cards inside expanded section */}
