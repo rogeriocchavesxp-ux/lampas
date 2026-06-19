@@ -1318,6 +1318,7 @@ export default function VisaoGeralWorkspace({
                       return (
                         <div key={item.id}>
                           {/* Level-2 row */}
+                          <div style={{ display: 'flex', alignItems: 'center' }}>
                           <button
                             onClick={() => {
                               if (item.type === 'section') {
@@ -1340,7 +1341,7 @@ export default function VisaoGeralWorkspace({
                             }}
                             style={{
                               display: 'flex', alignItems: 'center', gap: '0.5rem',
-                              width: '100%',
+                              flex: 1,
                               background: (isEditing || isSectionExpanded) ? `${node.color}10` : 'transparent',
                               border: 'none', padding: '0.28rem 1rem 0.28rem 0',
                               cursor: 'pointer', fontFamily: 'inherit', textAlign: 'left',
@@ -1360,6 +1361,10 @@ export default function VisaoGeralWorkspace({
                             )}
                             <span style={{ fontSize: '0.75rem', color: isSectionExpanded ? node.color : 'var(--text-primary)', fontWeight: item.type === 'section' ? 600 : 400, flex: 1, lineHeight: 1.4 }}>{item.label}</span>
                           </button>
+                          {item.type === 'card' && HELP_CONTENT[item.id] && (
+                            <HelpIcon cardId={item.id} onAskAI={onAskAI} />
+                          )}
+                          </div>
 
                           {/* Level-3: cards inside expanded section */}
                           {isSectionExpanded && (
