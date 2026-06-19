@@ -626,7 +626,7 @@ export default function DicionarioWorkspace({ project, userId, onAskAI }: Props)
       )}
 
       {/* ══ LEFT — Search + List ══ */}
-      <div style={{ width: '280px', flexShrink: 0, borderRight: '1px solid #E2E8F0', display: 'flex', flexDirection: 'column', background: '#FFFFFF' }}>
+      <div style={{ width: '260px', flexShrink: 0, borderRight: '1px solid #E2E8F0', display: 'flex', flexDirection: 'column', background: '#FFFFFF' }}>
 
         {/* Header */}
         <div style={{ padding: '16px 16px 12px', borderBottom: '1px solid #F1F5F9' }}>
@@ -750,45 +750,60 @@ export default function DicionarioWorkspace({ project, userId, onAskAI }: Props)
         </div>
       </div>
 
+      {/* ══ MIDDLE — Fluxo de Consulta (permanent) ══ */}
+      {(() => {
+        const activeFlowStep = panel === 'ai-result' ? 5 : 1
+        const FLOW_STEPS = [
+          { n: 1, label: 'Dicionário Lampas',   desc: 'Base de conhecimento local' },
+          { n: 2, label: 'Termos relacionados',  desc: 'Sinônimos e transliterações' },
+          { n: 3, label: 'Colagens do projeto',  desc: 'Notas e citações salvas' },
+          { n: 4, label: 'Conteúdo do projeto',  desc: 'Seções já escritas' },
+          { n: 5, label: 'IA externa',           desc: 'Última opção — consome créditos' },
+        ]
+        return (
+          <div style={{ width: '196px', flexShrink: 0, borderRight: '1px solid #F1F5F9', display: 'flex', flexDirection: 'column', background: '#FAFAFA' }}>
+            <div style={{ padding: '16px 14px 12px', borderBottom: '1px solid #F1F5F9' }}>
+              <div style={{ fontSize: '0.58rem', fontWeight: 800, color: '#94A3B8', textTransform: 'uppercase', letterSpacing: '0.09em' }}>
+                Fluxo de Consulta
+              </div>
+            </div>
+            <div style={{ padding: '16px 14px', flex: 1 }}>
+              {FLOW_STEPS.map((step, i) => {
+                const isActive = step.n === activeFlowStep
+                return (
+                  <div key={step.n} style={{ display: 'flex', gap: '10px', alignItems: 'flex-start', marginBottom: i < 4 ? '14px' : 0 }}>
+                    <div style={{
+                      width: '18px', height: '18px', borderRadius: '50%', flexShrink: 0,
+                      background: isActive ? '#9b7ec8' : '#F1F5F9',
+                      border: `1.5px solid ${isActive ? '#9b7ec8' : '#E2E8F0'}`,
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      marginTop: '1px',
+                    }}>
+                      <span style={{ fontSize: '0.55rem', fontWeight: 700, color: isActive ? '#FFF' : '#94A3B8' }}>{step.n}</span>
+                    </div>
+                    <div style={{ minWidth: 0 }}>
+                      <div style={{ fontSize: '0.73rem', fontWeight: isActive ? 600 : 400, color: isActive ? '#1E293B' : '#94A3B8', lineHeight: 1.3 }}>
+                        {step.label}
+                      </div>
+                      <div style={{ fontSize: '0.61rem', color: '#CBD5E1', lineHeight: 1.3, marginTop: '1px' }}>{step.desc}</div>
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+          </div>
+        )
+      })()}
+
       {/* ══ RIGHT — Detail / Create / AI Result ══ */}
-      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+      <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
 
         {/* ── LIST state (nothing selected) ── */}
         {panel === 'list' && (
-          <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', gap: '16px', color: '#94A3B8', padding: '32px' }}>
+          <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', gap: '12px', color: '#94A3B8' }}>
             <BookOpen size={32} strokeWidth={1} style={{ opacity: 0.25 }} />
-            <div style={{ fontSize: '0.88rem', fontWeight: 600, color: '#64748B', textAlign: 'center' }}>
+            <div style={{ fontSize: '0.88rem', fontWeight: 600, color: '#64748B', textAlign: 'center', whiteSpace: 'nowrap' }}>
               Selecione um verbete ou pesquise um termo
-            </div>
-            <div style={{ width: '100%', maxWidth: '340px', background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '12px', padding: '16px' }}>
-              <div style={{ fontSize: '0.6rem', fontWeight: 800, color: '#94A3B8', textTransform: 'uppercase', letterSpacing: '0.09em', marginBottom: '12px' }}>
-                Fluxo de consulta
-              </div>
-              {[
-                { n: '1', label: 'Dicionário Lampas', desc: 'Base de conhecimento local', active: true },
-                { n: '2', label: 'Termos relacionados', desc: 'Sinônimos e transliterações', active: false },
-                { n: '3', label: 'Colagens do projeto', desc: 'Notas e citações salvas', active: false },
-                { n: '4', label: 'Conteúdo do projeto', desc: 'Seções já escritas', active: false },
-                { n: '5', label: 'IA externa', desc: 'Última opção — consome créditos', active: false },
-              ].map((step, i) => (
-                <div key={i} style={{ display: 'flex', gap: '10px', alignItems: 'flex-start', marginBottom: i < 4 ? '8px' : 0 }}>
-                  <div style={{
-                    width: '18px', height: '18px', borderRadius: '50%', flexShrink: 0,
-                    background: step.active ? '#9b7ec8' : '#F1F5F9',
-                    border: `1.5px solid ${step.active ? '#9b7ec8' : '#E2E8F0'}`,
-                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    marginTop: '1px',
-                  }}>
-                    <span style={{ fontSize: '0.55rem', fontWeight: 700, color: step.active ? '#FFF' : '#94A3B8' }}>{step.n}</span>
-                  </div>
-                  <div>
-                    <div style={{ fontSize: '0.76rem', fontWeight: step.active ? 600 : 400, color: step.active ? '#1E293B' : '#94A3B8' }}>
-                      {step.label}
-                    </div>
-                    <div style={{ fontSize: '0.64rem', color: '#CBD5E1', lineHeight: 1.3 }}>{step.desc}</div>
-                  </div>
-                </div>
-              ))}
             </div>
           </div>
         )}
