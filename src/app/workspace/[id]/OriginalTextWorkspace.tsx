@@ -339,14 +339,14 @@ export default function OriginalTextWorkspace({ project, userId, existingSection
             autoFocus
             style={{
               ...TEXTAREA_BASE,
-              fontSize: '1.3rem', lineHeight: '2.1',
-              letterSpacing: isHebrew ? '0.02em' : '0.01em',
+              fontSize: '1.75rem', lineHeight: '2.2',
+              letterSpacing: isHebrew ? '0.03em' : '0.01em',
               color: 'var(--text-primary)',
               direction: dir,
               background: 'var(--surface)',
               border: '1px solid var(--accent)',
               borderRadius: '8px',
-              padding: '1.4rem 1.7rem',
+              padding: '1.75rem 2rem',
               caretColor: 'var(--accent)',
             }}
           />
@@ -359,8 +359,8 @@ export default function OriginalTextWorkspace({ project, userId, existingSection
             style={{
               background: 'var(--surface)',
               border: '1px solid var(--border-subtle)',
-              borderRadius: '8px',
-              padding: '1.75rem 2rem',
+              borderRadius: '10px',
+              padding: '2.25rem 2.5rem',
               cursor: 'text',
               position: 'relative',
             }}
@@ -368,11 +368,12 @@ export default function OriginalTextWorkspace({ project, userId, existingSection
             <p style={{
               margin: 0,
               color: 'var(--text-primary)',
-              fontSize: '1.4rem',
+              fontSize: '1.9rem',
               fontFamily: 'var(--font-serif)',
-              lineHeight: '2.15',
-              letterSpacing: isHebrew ? '0.04em' : '0.02em',
+              lineHeight: '2.2',
+              letterSpacing: isHebrew ? '0.05em' : '0.02em',
               direction: dir,
+              textAlign: isHebrew ? 'right' : 'left',
               whiteSpace: 'pre-wrap',
             }}>
               {passagem}

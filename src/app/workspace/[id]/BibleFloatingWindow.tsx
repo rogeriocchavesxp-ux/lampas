@@ -488,7 +488,7 @@ export default function BibleFloatingWindow({ book, passageRef, testament, proje
     return (
       <div key={ov.verse} style={{ marginBottom: '1.25rem', paddingBottom: '1rem', borderBottom: '1px solid var(--border-subtle)' }}>
         <span style={{ fontSize: '0.56rem', fontWeight: 700, color: accent, fontFamily: 'var(--font-sans)', display: 'block', marginBottom: '4px' }}>v.{ov.verse}</span>
-        <p data-verse={String(ov.verse)} style={{ fontFamily: "'SBL Hebrew', 'Ezra SIL', 'Times New Roman', serif", fontSize: isAT ? '1.3rem' : '1.15rem', lineHeight: 1.9, direction: isAT ? 'rtl' : 'ltr', color: 'var(--text-primary)', margin: '0 0 6px', letterSpacing: isAT ? '0.02em' : '0.01em' }}>
+        <p data-verse={String(ov.verse)} style={{ fontFamily: "'SBL Hebrew', 'Ezra SIL', 'Times New Roman', serif", fontSize: isAT ? '1.55rem' : '1.35rem', lineHeight: 2.0, direction: isAT ? 'rtl' : 'ltr', textAlign: isAT ? 'right' : 'left', color: 'var(--text-primary)', margin: '0 0 6px', letterSpacing: isAT ? '0.03em' : '0.01em' }}>
           {ov.original}
         </p>
         {ov.transliteration && (
@@ -526,7 +526,7 @@ export default function BibleFloatingWindow({ book, passageRef, testament, proje
               return (
                 <div key={ov.verse} style={{ marginBottom: '1rem', paddingBottom: '0.75rem', borderBottom: '1px solid var(--border-subtle)' }}>
                   <span style={{ fontSize: '0.56rem', fontWeight: 700, color: accent, fontFamily: 'var(--font-sans)', display: 'block', marginBottom: '3px' }}>v.{ov.verse}</span>
-                  <p data-verse={String(ov.verse)} style={{ fontFamily: "'SBL Hebrew', 'Ezra SIL', 'Times New Roman', serif", fontSize: isAT ? '1.1rem' : '1rem', direction: isAT ? 'rtl' : 'ltr', lineHeight: 1.8, color: 'var(--text-primary)', margin: '0 0 3px' }}>{ov.original}</p>
+                  <p data-verse={String(ov.verse)} style={{ fontFamily: "'SBL Hebrew', 'Ezra SIL', 'Times New Roman', serif", fontSize: isAT ? '1.25rem' : '1.1rem', direction: isAT ? 'rtl' : 'ltr', textAlign: isAT ? 'right' : 'left', lineHeight: 1.95, color: 'var(--text-primary)', margin: '0 0 3px', letterSpacing: isAT ? '0.02em' : '0.01em' }}>{ov.original}</p>
                   {ov.transliteration && <p style={{ fontSize: '0.7rem', color: '#64748B', fontStyle: 'italic', margin: '0 0 3px', lineHeight: 1.5 }}>{ov.transliteration}</p>}
                   {pt && <p style={{ fontSize: '0.78rem', color: 'var(--text-muted)', margin: 0, lineHeight: 1.6, fontFamily: "'EB Garamond', Georgia, serif", fontStyle: 'italic' }}>{pt.t}</p>}
                 </div>
