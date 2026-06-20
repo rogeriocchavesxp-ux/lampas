@@ -1,6 +1,6 @@
 'use client'
 
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { setUserBlocked, setUserPlan, resetAiUsage } from './actions'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -45,7 +45,7 @@ interface DetailResponse {
 }
 
 type DrawerTab = 'geral' | 'uso' | 'projetos'
-type StatusKey = 'ativo' | 'inativo' | 'novo' | 'bloqueado' | 'cancelado'
+type StatusKey = 'ativo' | 'inativo' | 'novo' | 'bloqueado' | 'cancelado' | 'nunca_ativou'
 type SortKey = 'name' | 'created_at' | 'last_active_at' | 'project_count' | 'ai_calls_30d' | 'plan' | 'health'
 type HealthFilter = 'all' | 'excelente' | 'saudavel' | 'pouco_ativo' | 'em_risco' | 'inativo'
 
@@ -107,6 +107,7 @@ function computeStatus(row: AdminUserRow): { key: StatusKey; label: string; colo
   if (row.subscription_status && ['cancelled', 'canceled'].includes(row.subscription_status)) {
     return { key: 'cancelado', label: 'Cancelado', color: '#F97316', bg: 'rgba(249,115,22,0.1)' }
   }
+  if (!row.last_active_at && daysSince(row.created_at) > 7) return { key: 'nunca_ativou', label: 'Nunca ativou', color: '#9333EA', bg: 'rgba(147,51,234,0.1)' }
   if (daysSince(row.created_at) <= 7) return { key: 'novo', label: 'Novo', color: '#3B82F6', bg: 'rgba(59,130,246,0.1)' }
   if (daysSince(row.last_active_at) <= 30) return { key: 'ativo', label: 'Ativo', color: '#10B981', bg: 'rgba(16,185,129,0.1)' }
   return { key: 'inativo', label: 'Inativo', color: '#6B7280', bg: 'rgba(107,114,128,0.1)' }
@@ -310,6 +311,20 @@ export default function UsuariosClient({ initialUsers }: { initialUsers: AdminUs
   const [detailLoading, setDetailLoading] = useState(false)
   const [drawerTab, setDrawerTab] = useState<DrawerTab>('geral')
   const [busyId, setBusyId] = useState<string | null>(null)
+  const [toast, setToast] = useState<{ msg: string; type: 'success' | 'error' } | null>(null)
+  const [detailError, setDetailError] = useState<string | null>(null)
+
+  function showToast(msg: string, type: 'success' | 'error' = 'success') {
+    setToast({ msg, type })
+    setTimeout(() => setToast(null), 3000)
+  }
+
+  useEffect(() => {
+    if (!selectedId) return
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') closeDrawer() }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [selectedId])
 
   const summary = useMemo(() => computeSummary(users), [users])
 
@@ -349,46 +364,69 @@ export default function UsuariosClient({ initialUsers }: { initialUsers: AdminUs
   async function openDetail(id: string) {
     setSelectedId(id)
     setDetail(null)
+    setDetailError(null)
     setDetailLoading(true)
     setDrawerTab('geral')
     try {
       const res = await fetch(`/api/admin/users/${id}`)
       if (res.ok) setDetail(await res.json())
+      else setDetailError('Erro ao carregar dados do usuário.')
+    } catch {
+      setDetailError('Falha de conexão ao carregar dados.')
     } finally {
       setDetailLoading(false)
     }
   }
 
-  function closeDrawer() { setSelectedId(null); setDetail(null) }
+  function closeDrawer() { setSelectedId(null); setDetail(null); setDetailError(null) }
 
   async function handleToggleBlock(row: AdminUserRow) {
     const next = !row.is_blocked
     if (!window.confirm(next ? `Bloquear ${row.full_name ?? row.email}?` : `Desbloquear ${row.full_name ?? row.email}?`)) return
     setBusyId(row.id)
-    const result = await setUserBlocked(row.id, next)
-    setBusyId(null)
-    if (result?.success) {
-      setUsers(prev => prev.map(u => u.id === row.id ? { ...u, is_blocked: next } : u))
-      if (detail?.profile.id === row.id) setDetail(prev => prev ? { ...prev, profile: { ...prev.profile, is_blocked: next } } : prev)
-    } else if (result?.error) window.alert(result.error)
+    try {
+      const result = await setUserBlocked(row.id, next)
+      if (result?.success) {
+        setUsers(prev => prev.map(u => u.id === row.id ? { ...u, is_blocked: next } : u))
+        if (detail?.profile.id === row.id) setDetail(prev => prev ? { ...prev, profile: { ...prev.profile, is_blocked: next } } : prev)
+        showToast(next ? 'Usuário bloqueado.' : 'Usuário desbloqueado.')
+      } else if (result?.error) showToast(result.error, 'error')
+    } catch {
+      showToast('Erro de conexão. Tente novamente.', 'error')
+    } finally {
+      setBusyId(null)
+    }
   }
 
   async function handlePlanChange(row: AdminUserRow, plan: string) {
+    if (!window.confirm(`Alterar plano de ${row.full_name ?? row.email} para ${PLAN_LABELS[plan] ?? plan}?`)) return
     setBusyId(row.id)
-    const result = await setUserPlan(row.id, plan)
-    setBusyId(null)
-    if (result?.success) {
-      setUsers(prev => prev.map(u => u.id === row.id ? { ...u, plan } : u))
-      if (detail?.profile.id === row.id) setDetail(prev => prev ? { ...prev, profile: { ...prev.profile, plan } } : prev)
-    } else if (result?.error) window.alert(result.error)
+    try {
+      const result = await setUserPlan(row.id, plan)
+      if (result?.success) {
+        setUsers(prev => prev.map(u => u.id === row.id ? { ...u, plan } : u))
+        if (detail?.profile.id === row.id) setDetail(prev => prev ? { ...prev, profile: { ...prev.profile, plan } } : prev)
+        showToast(`Plano alterado para ${PLAN_LABELS[plan] ?? plan}.`)
+      } else if (result?.error) showToast(result.error, 'error')
+    } catch {
+      showToast('Erro de conexão. Tente novamente.', 'error')
+    } finally {
+      setBusyId(null)
+    }
   }
 
   async function handleResetAi(row: AdminUserRow) {
-    if (!window.confirm(`Redefinir o uso de IA deste mês para ${row.full_name ?? row.email}?`)) return
+    if (!window.confirm(`Redefinir a quota de IA deste mês para ${row.full_name ?? row.email}?\n\nIsso zera o contador de uso do plano (não apaga o histórico de consultas).`)) return
     setBusyId(row.id)
-    const result = await resetAiUsage(row.id)
-    setBusyId(null)
-    if (result?.error) window.alert(result.error)
+    try {
+      const result = await resetAiUsage(row.id)
+      if (result?.error) showToast(result.error, 'error')
+      else showToast('Quota de IA redefinida para zero.')
+    } catch {
+      showToast('Erro de conexão. Tente novamente.', 'error')
+    } finally {
+      setBusyId(null)
+    }
   }
 
   function SortArrow({ col }: { col: SortKey }) {
@@ -505,6 +543,7 @@ export default function UsuariosClient({ initialUsers }: { initialUsers: AdminUs
           <option value="novo">Novo</option>
           <option value="bloqueado">Bloqueado</option>
           <option value="cancelado">Cancelado</option>
+          <option value="nunca_ativou">Nunca ativou</option>
         </select>
         <select
           value={healthFilter}
@@ -638,6 +677,20 @@ export default function UsuariosClient({ initialUsers }: { initialUsers: AdminUs
         </div>
       </div>
 
+      {/* ══════════ TOAST ══════════ */}
+      {toast && (
+        <div style={{
+          position: 'fixed', bottom: '1.5rem', right: '1.5rem', zIndex: 600,
+          padding: '0.65rem 1rem', borderRadius: 8,
+          background: toast.type === 'success' ? '#10B981' : '#EF4444',
+          color: '#fff', fontSize: '0.82rem', fontWeight: 500,
+          boxShadow: '0 4px 12px rgba(0,0,0,0.25)',
+          maxWidth: 320,
+        }}>
+          {toast.msg}
+        </div>
+      )}
+
       {/* ══════════ DRAWER 360° ══════════ */}
       {selectedId && (
         <>
@@ -696,7 +749,7 @@ export default function UsuariosClient({ initialUsers }: { initialUsers: AdminUs
                   onClick={() => handleResetAi(detail.profile)}
                   style={{ padding: '0.3rem 0.65rem', borderRadius: 6, border: '1px solid var(--border)', background: 'transparent', color: 'var(--text-secondary)', fontSize: '0.76rem', cursor: 'pointer', fontWeight: 500 }}
                 >
-                  Reset IA
+                  Reset Quota IA
                 </button>
                 <a
                   href={`mailto:${detail.profile.email}`}
@@ -735,6 +788,11 @@ export default function UsuariosClient({ initialUsers }: { initialUsers: AdminUs
             <div style={{ flex: 1, overflowY: 'auto', padding: '1.25rem' }}>
               {detailLoading && (
                 <p style={{ color: 'var(--text-muted)', fontSize: '0.84rem' }}>Carregando dados…</p>
+              )}
+              {detailError && !detailLoading && (
+                <div style={{ padding: '2rem', textAlign: 'center', color: '#EF4444', fontSize: '0.84rem' }}>
+                  {detailError}
+                </div>
               )}
 
               {/* ── Aba: Geral ── */}

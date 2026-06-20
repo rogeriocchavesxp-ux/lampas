@@ -43,18 +43,6 @@ export async function setUserPlan(userId: string, plan: string) {
   return { success: true }
 }
 
-export async function setUserFullName(userId: string, fullName: string) {
-  const supabase = await assertAdmin()
-  const { error } = await supabase
-    .from('profiles')
-    .update({ full_name: fullName })
-    .eq('id', userId)
-
-  if (error) return { error: error.message }
-  revalidatePath('/admin/usuarios')
-  return { success: true }
-}
-
 export async function resetAiUsage(userId: string) {
   const supabase = await assertAdmin()
   const month = new Date().toISOString().slice(0, 7) // 'YYYY-MM'
