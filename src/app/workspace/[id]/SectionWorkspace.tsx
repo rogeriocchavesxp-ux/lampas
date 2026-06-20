@@ -180,10 +180,13 @@ export default function SectionWorkspace({
   const [hoveredCard, setHoveredCard]     = useState<string | null>(null)
   const [openMenu, setOpenMenu]           = useState<string | null>(null)
   const [readingCard, setReadingCard]     = useState<string | null>(null)
+  const [isDirty, setIsDirty]             = useState(false)
+  const [previewMode, setPreviewMode]     = useState(false)
 
   const saveTimer    = useRef<ReturnType<typeof setTimeout> | null>(null)
   const latestContent = useRef(cardContent)
   const latestDynamicPointCards = useRef(dynamicPointCards)
+  const savedContent  = useRef<Record<string, string>>(cardContent)
 
   useEffect(() => { latestContent.current = cardContent }, [cardContent])
   useEffect(() => { latestDynamicPointCards.current = dynamicPointCards }, [dynamicPointCards])
@@ -217,6 +220,7 @@ export default function SectionWorkspace({
     setCardContent(next)
     latestContent.current = next
     setEditingCards(prev => new Set([...prev, cardId]))
+    setIsDirty(true)
     if (saveTimer.current) clearTimeout(saveTimer.current)
     saveTimer.current = setTimeout(() => performSave(next), 1500)
   }
@@ -243,6 +247,15 @@ export default function SectionWorkspace({
     }
     setSaving(false)
     setSavedAt(new Date())
+    savedContent.current = content
+    setIsDirty(false)
+  }
+
+  function cancelEdits() {
+    if (saveTimer.current) clearTimeout(saveTimer.current)
+    setCardContent(savedContent.current)
+    latestContent.current = savedContent.current
+    setIsDirty(false)
   }
 
   async function manualSave() {
@@ -1225,63 +1238,116 @@ export default function SectionWorkspace({
         )}
       </div>
 
-      {/* ── Footer CTA ────────────────────────────────────────────────────── */}
+      {/* ── Footer: AI generate + action bar ─────────────────────────────── */}
+      {generationError && (
+        <div style={{
+          marginTop: '2.5rem',
+          padding: '0.7rem 0.85rem',
+          border: '1px solid rgba(185, 28, 28, 0.22)',
+          borderRadius: '8px',
+          background: 'rgba(254, 242, 242, 0.9)',
+          color: '#B91C1C',
+          fontSize: '0.8rem',
+          lineHeight: 1.45,
+        }}>
+          {generationError}
+        </div>
+      )}
+
       <div style={{
-        marginTop: '3rem', paddingTop: '2rem',
+        marginTop: '2.5rem', paddingTop: '1.25rem',
         borderTop: '1px solid var(--border-subtle)',
         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-        gap: '1rem',
-        flexWrap: 'wrap',
+        gap: '0.75rem',
       }}>
-        {generationError && (
-          <div style={{
-            flexBasis: '100%',
-            padding: '0.7rem 0.85rem',
-            border: '1px solid rgba(185, 28, 28, 0.22)',
-            borderRadius: '8px',
-            background: 'rgba(254, 242, 242, 0.9)',
-            color: '#B91C1C',
-            fontSize: '0.8rem',
-            lineHeight: 1.45,
-          }}>
-            {generationError}
-          </div>
-        )}
+        {/* Left: AI generate */}
         <button
           onClick={generateAll}
           disabled={generatingAll}
           style={{
             background: generatingAll ? 'var(--surface-2)' : 'var(--accent)',
             color: generatingAll ? 'var(--text-muted)' : '#FFFFFF',
-            border: 'none', borderRadius: '10px',
-            padding: '0.7rem 1.75rem',
-            fontSize: '0.88rem', fontWeight: '600',
+            border: 'none', borderRadius: '8px',
+            padding: '0.55rem 1.25rem',
+            fontSize: '0.82rem', fontWeight: 600,
             cursor: generatingAll ? 'wait' : 'pointer',
             fontFamily: 'inherit', letterSpacing: '-0.01em',
-            transition: 'background 0.15s',
-            boxShadow: generatingAll ? 'none' : '0 1px 2px rgba(30,77,140,0.25), 0 2px 8px rgba(30,77,140,0.15)',
+            transition: 'background 0.15s', flexShrink: 0,
+            boxShadow: generatingAll ? 'none' : '0 1px 2px rgba(30,77,140,0.2)',
           }}
         >
-          {generatingAll ? 'Gerando seção completa…' : 'Gerar seção completa com IA'}
+          {generatingAll ? 'Gerando…' : 'Gerar com IA'}
         </button>
 
-        {hasAnyContent && (
+        {/* Right: action bar */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', flexShrink: 0 }}>
+          {/* Auto-save indicator */}
+          {(saving || savedAt) && (
+            <span style={{
+              fontSize: '0.71rem',
+              color: saving ? 'var(--ai)' : 'var(--text-muted)',
+              whiteSpace: 'nowrap',
+              paddingRight: '0.35rem',
+              transition: 'color 0.3s',
+            }}>
+              {saving ? 'Salvando…' : `✓ ${savedLabel}`}
+            </span>
+          )}
+
+          {/* Visualizar */}
           <button
-            onClick={manualSave}
-            disabled={saving}
+            onClick={() => setPreviewMode(true)}
             style={{
               background: 'transparent', border: '1px solid var(--border)',
-              color: 'var(--text-muted)', borderRadius: '8px',
-              padding: '0.6rem 1rem', fontSize: '0.8rem',
-              cursor: saving ? 'wait' : 'pointer',
-              fontFamily: 'inherit', transition: 'all 0.15s',
+              color: 'var(--text-muted)', borderRadius: '6px',
+              padding: '0.38rem 0.7rem', fontSize: '0.74rem',
+              cursor: 'pointer', fontFamily: 'inherit',
+              whiteSpace: 'nowrap', transition: 'all 0.15s',
             }}
             onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--text-muted)'; e.currentTarget.style.color = 'var(--text-secondary)' }}
             onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.color = 'var(--text-muted)' }}
           >
-            {saving ? 'Salvando…' : 'Salvar'}
+            Visualizar
           </button>
-        )}
+
+          {/* Cancelar — só quando há edições não salvas */}
+          {isDirty && (
+            <button
+              onClick={cancelEdits}
+              style={{
+                background: 'transparent', border: '1px solid var(--border)',
+                color: 'var(--text-muted)', borderRadius: '6px',
+                padding: '0.38rem 0.7rem', fontSize: '0.74rem',
+                cursor: 'pointer', fontFamily: 'inherit',
+                whiteSpace: 'nowrap', transition: 'all 0.15s',
+              }}
+              onMouseEnter={e => { e.currentTarget.style.borderColor = '#EF4444'; e.currentTarget.style.color = '#EF4444' }}
+              onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.color = 'var(--text-muted)' }}
+            >
+              Cancelar
+            </button>
+          )}
+
+          {/* Salvar */}
+          {hasAnyContent && (
+            <button
+              onClick={manualSave}
+              disabled={saving}
+              style={{
+                background: 'var(--accent)', color: '#fff',
+                border: 'none', borderRadius: '6px',
+                padding: '0.38rem 0.85rem', fontSize: '0.74rem',
+                fontWeight: 600, cursor: saving ? 'wait' : 'pointer',
+                fontFamily: 'inherit', whiteSpace: 'nowrap',
+                transition: 'all 0.15s', opacity: saving ? 0.7 : 1,
+              }}
+              onMouseEnter={e => { if (!saving) e.currentTarget.style.background = 'var(--accent-hover)' }}
+              onMouseLeave={e => { e.currentTarget.style.background = 'var(--accent)' }}
+            >
+              Salvar
+            </button>
+          )}
+        </div>
       </div>
 
       {/* ── Reading popup ─────────────────────────────────────────────────── */}
@@ -1303,6 +1369,82 @@ export default function SectionWorkspace({
           />
         )
       })()}
+
+      {/* ── Preview overlay ─────────────────────────────────────────────── */}
+      {previewMode && (
+        <div style={{
+          position: 'fixed', inset: 0, zIndex: 400,
+          background: 'var(--background)', overflowY: 'auto',
+        }}>
+          <div style={{
+            maxWidth: '820px', margin: '0 auto',
+            padding: '3rem clamp(1.5rem, 4vw, 2.5rem) 6rem',
+            fontFamily: 'var(--font-sans)',
+          }}>
+            {/* Header */}
+            <div style={{
+              display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between',
+              marginBottom: '2.5rem', paddingBottom: '1.25rem',
+              borderBottom: '1px solid var(--border-subtle)', gap: '1rem',
+            }}>
+              <div>
+                <div style={{
+                  fontSize: '0.68rem', color: 'var(--text-muted)',
+                  textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: '0.35rem',
+                }}>
+                  {sectionDef.groupLabel}
+                </div>
+                <h2 style={{ fontSize: '1.25rem', fontWeight: 700, color: 'var(--text-primary)', margin: 0 }}>
+                  {sectionDef.title}
+                </h2>
+              </div>
+              <button
+                onClick={() => setPreviewMode(false)}
+                style={{
+                  background: 'transparent', border: '1px solid var(--border)',
+                  color: 'var(--text-secondary)', borderRadius: '6px',
+                  padding: '0.4rem 0.9rem', fontSize: '0.78rem',
+                  cursor: 'pointer', fontFamily: 'inherit', flexShrink: 0,
+                  transition: 'all 0.15s',
+                }}
+                onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--text-muted)'; e.currentTarget.style.color = 'var(--text-primary)' }}
+                onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.color = 'var(--text-secondary)' }}
+              >
+                ← Voltar à edição
+              </button>
+            </div>
+
+            {/* Cards rendered */}
+            {activeCards.map(card => {
+              const content = cardContent[card.id] ?? ''
+              if (!content.trim()) return null
+              return (
+                <div key={card.id} style={{
+                  marginBottom: '2rem', paddingBottom: '2rem',
+                  borderBottom: '1px solid var(--border-subtle)',
+                }}>
+                  <h3 style={{
+                    fontSize: '0.78rem', fontWeight: 700,
+                    color: 'var(--text-muted)', textTransform: 'uppercase',
+                    letterSpacing: '0.06em', marginBottom: '0.75rem', marginTop: 0,
+                  }}>
+                    {card.title}
+                  </h3>
+                  <div style={{ fontSize: '0.9rem', lineHeight: 1.75, color: 'var(--text-primary)' }}>
+                    <MarkdownRenderer content={content} />
+                  </div>
+                </div>
+              )
+            })}
+
+            {!hasAnyContent && (
+              <div style={{ textAlign: 'center', color: 'var(--text-muted)', fontSize: '0.88rem', paddingTop: '4rem' }}>
+                Nenhum conteúdo ainda.
+              </div>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   )
 }
