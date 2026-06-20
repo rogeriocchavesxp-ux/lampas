@@ -450,6 +450,27 @@ export default function WorkspaceMenuBar({
           </button>
         )}
 
+        {/* Assistente IA */}
+        <button
+          onClick={onToggleAI}
+          title="Assistente IA (⌘I)"
+          style={{
+            display: 'flex', alignItems: 'center', gap: '0.28rem',
+            background: aiOpen ? 'var(--ai-subtle)' : 'none',
+            border: `1px solid ${aiOpen ? 'var(--ai)' : 'var(--border-subtle)'}`,
+            borderRadius: '6px', padding: '0.25rem 0.55rem',
+            cursor: 'pointer', fontFamily: 'inherit',
+            color: aiOpen ? 'var(--ai)' : 'var(--text-muted)',
+            fontSize: '0.76rem', fontWeight: aiOpen ? 650 : 500,
+            transition: 'all 0.13s', flexShrink: 0,
+          }}
+          onMouseEnter={e => { if (!aiOpen) { e.currentTarget.style.borderColor = 'var(--ai)'; e.currentTarget.style.color = 'var(--ai)' } }}
+          onMouseLeave={e => { if (!aiOpen) { e.currentTarget.style.borderColor = 'var(--border-subtle)'; e.currentTarget.style.color = 'var(--text-muted)' } }}
+        >
+          <span style={{ fontSize: '0.78rem', lineHeight: 1 }}>✦</span>
+          <span>IA</span>
+        </button>
+
         {/* Novo Projeto */}
         <button
           onClick={() => router.push('/dashboard?new=1')}
