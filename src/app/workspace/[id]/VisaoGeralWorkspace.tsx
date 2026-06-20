@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useMemo, useRef, useCallback } from 'react'
 import type { Project, Section } from '@/types/database'
-import type { SectionDef } from '@/lib/workspace-sections'
+import { getSectionBySlug, type SectionDef } from '@/lib/workspace-sections'
 import type { CollageItem } from '@/lib/collages-content'
 import { createClient } from '@/lib/supabase/client'
 import NodeFloatingWindow, { type FloatWin } from './NodeFloatingWindow'
@@ -598,11 +598,16 @@ export default function VisaoGeralWorkspace({
     try {
       const { data } = await supabase.from('sections').select()
         .eq('project_id', project.id).eq('slug', sectionDef.slug).maybeSingle()
-      const prev    = (data?.content as { cards?: Record<string, string> } | null)?.cards ?? {}
+      const prev     = (data?.content as { cards?: Record<string, string> } | null)?.cards ?? {}
+      const allCards = { ...prev, [cardId]: value }
+      const hasContent = Object.values(allCards).some(v => v.trim().length > 0)
+      const allFilled  = sectionDef.cards.length > 0 &&
+        sectionDef.cards.every(c => (allCards[c.id] ?? '').trim().length > 0)
       const payload = {
         project_id: project.id, user_id: userId, slug: sectionDef.slug,
         module: 'inventio' as const, title: sectionDef.title,
-        status: 'draft' as const, content: { cards: { ...prev, [cardId]: value } },
+        status: (allFilled ? 'reviewed' : hasContent ? 'draft' : 'empty') as 'empty' | 'draft' | 'reviewed',
+        content: { cards: allCards },
       }
       const op = data?.id
         ? supabase.from('sections').update(payload).eq('id', data.id).select().single()
@@ -620,11 +625,17 @@ export default function VisaoGeralWorkspace({
     try {
       const { data } = await supabase.from('sections').select()
         .eq('project_id', project.id).eq('slug', sectionSlug).maybeSingle()
-      const prev    = (data?.content as { cards?: Record<string, string> } | null)?.cards ?? {}
+      const prev     = (data?.content as { cards?: Record<string, string> } | null)?.cards ?? {}
+      const allCards = { ...prev, [cardId]: value }
+      const hasContent = Object.values(allCards).some(v => v.trim().length > 0)
+      const secDef     = getSectionBySlug(sectionSlug)
+      const allFilled  = !!secDef && secDef.cards.length > 0 &&
+        secDef.cards.every(c => (allCards[c.id] ?? '').trim().length > 0)
       const payload = {
         project_id: project.id, user_id: userId, slug: sectionSlug,
         module: 'inventio' as const, title: sectionSlug,
-        status: 'draft' as const, content: { cards: { ...prev, [cardId]: value } },
+        status: (allFilled ? 'reviewed' : hasContent ? 'draft' : 'empty') as 'empty' | 'draft' | 'reviewed',
+        content: { cards: allCards },
       }
       const op = data?.id
         ? supabase.from('sections').update(payload).eq('id', data.id).select().single()
