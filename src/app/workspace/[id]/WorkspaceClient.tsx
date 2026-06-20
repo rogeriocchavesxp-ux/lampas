@@ -1094,16 +1094,15 @@ export default function WorkspaceClient({ user, project, initialSections }: Prop
                                                   background: mode.color, flexShrink: 0,
                                                 }} />
                                               )}
-                                              {!isDirect && done > 0 && !isActive && !isEnhanced && (
+                                              {!isDirect && total > 0 && !highlight && (
                                                 <span style={{
-                                                  fontSize: '0.56rem', flexShrink: 0, fontWeight: 700,
-                                                  color: done === total ? 'var(--success)' : mode.color,
+                                                  fontSize: '0.6rem', flexShrink: 0, fontWeight: 700,
+                                                  color: done === total ? '#059669' : done > 0 ? (isEnhanced ? groupColor : mode.color) : 'var(--border)',
+                                                  transition: 'color 0.15s',
+                                                  letterSpacing: '-0.01em',
                                                 }}>
-                                                  {done === total ? '✓' : `${done}/${total}`}
+                                                  {done === total ? '☑' : done > 0 ? '◩' : '☐'}
                                                 </span>
-                                              )}
-                                              {!isDirect && isEnhanced && done === total && total > 0 && !highlight && (
-                                                <span style={{ fontSize: '0.58rem', flexShrink: 0, color: '#059669', fontWeight: 700 }}>✓</span>
                                               )}
                                               {!isDirect && (
                                                 groupOpen
@@ -1184,10 +1183,11 @@ export default function WorkspaceClient({ user, project, initialSections }: Prop
                                                       </span>
                                                       {cTotal > 0 && (
                                                         <span style={{
-                                                          fontSize: '0.56rem', flexShrink: 0, fontWeight: 700,
-                                                          color: cDone === cTotal ? 'var(--success)' : cDone > 0 ? groupColor : 'var(--border)',
+                                                          fontSize: '0.58rem', flexShrink: 0, fontWeight: 700,
+                                                          color: cDone === cTotal ? '#059669' : cDone > 0 ? groupColor : 'var(--border)',
+                                                          transition: 'color 0.15s',
                                                         }}>
-                                                          {cDone === cTotal ? '✓' : `${cDone}/${cTotal}`}
+                                                          {cDone === cTotal ? '☑' : cDone > 0 ? '◩' : '☐'}
                                                         </span>
                                                       )}
                                                     </button>
@@ -1242,9 +1242,10 @@ export default function WorkspaceClient({ user, project, initialSections }: Prop
                                                             <span style={{
                                                               fontSize: '0.58rem', flexShrink: 0, fontWeight: 700,
                                                               lineHeight: 1,
-                                                              color: cStatus === 'reviewed' ? 'var(--success)' : cStatus === 'draft' ? 'var(--accent)' : 'var(--border)',
+                                                              color: cStatus === 'reviewed' ? '#059669' : cStatus === 'draft' ? groupColor : 'var(--border)',
+                                                              transition: 'color 0.15s',
                                                             }}>
-                                                              {cStatus === 'reviewed' ? '✓' : cStatus === 'draft' ? '◐' : '○'}
+                                                              {cStatus === 'reviewed' ? '☑' : cStatus === 'draft' ? '◩' : '☐'}
                                                             </span>
                                                             <span style={{
                                                               fontSize: '0.63rem', color: 'var(--text-muted)', flex: 1,

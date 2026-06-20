@@ -107,6 +107,11 @@ export const GROUP_SUBTITLES: Record<string, string> = {
 
 // Cores de acento por grupo — usadas para identidade visual das seções de investigação
 export const GROUP_ACCENT_COLORS: Record<string, string> = {
+  // Preparar
+  preparar_espiritual:   '#D97706',  // âmbar
+  preparar_assimilacao:  '#2563EB',  // azul
+  preparar_visao_geral:  '#1E40AF',  // índigo
+  // Investigar
   textual:               '#163A6B',  // azul escuro
   contextual:            '#B45309',  // âmbar
   teologico:             '#7C3AED',  // roxo
