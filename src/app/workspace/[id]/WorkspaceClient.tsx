@@ -74,20 +74,23 @@ interface Props {
 
 // ── Progress ring for group headers ──────────────────────────────────────────
 
-function ProgressRing({ pct, color, size = 14 }: { pct: number; color: string; size?: number }) {
-  const sw = 1.5
-  const r  = (size - sw) / 2
-  const c  = 2 * Math.PI * r
+function ProgressRing({ pct, color, size = 15 }: { pct: number; color: string; size?: number }) {
+  const sw   = 1.8
+  const r    = (size - sw) / 2
+  const c    = 2 * Math.PI * r
   const done = pct >= 100
+  const arc  = Math.min(pct, 100) / 100 * c
   return (
     <svg width={size} height={size} style={{ flexShrink: 0, transform: 'rotate(-90deg)' }}>
-      <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke={done ? '#05966922' : `${color}22`} strokeWidth={sw} />
+      {/* Track — always visible */}
+      <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke="#CBD5E1" strokeWidth={sw} />
+      {/* Arc — shown when any progress */}
       {pct > 0 && (
         <circle
           cx={size / 2} cy={size / 2} r={r} fill="none"
           stroke={done ? '#059669' : color}
           strokeWidth={sw}
-          strokeDasharray={`${(pct / 100) * c} ${c}`}
+          strokeDasharray={`${arc} ${c}`}
           strokeLinecap="round"
         />
       )}
@@ -1211,11 +1214,11 @@ export default function WorkspaceClient({ user, project, initialSections }: Prop
                                                             flexShrink: 0, background: 'transparent', border: 'none',
                                                             cursor: 'pointer', padding: '0.18rem 0.1rem 0.18rem 0.42rem',
                                                             display: 'flex', alignItems: 'center',
-                                                            color: isReviewed ? '#059669' : isDraft ? groupColor : 'var(--border)',
+                                                            color: isReviewed ? '#059669' : isDraft ? groupColor : '#94A3B8',
                                                             fontSize: '0.72rem', lineHeight: 1, transition: 'color 0.12s',
                                                           }}
                                                           onMouseEnter={e => { e.currentTarget.style.color = isReviewed ? '#047857' : groupColor }}
-                                                          onMouseLeave={e => { e.currentTarget.style.color = isReviewed ? '#059669' : isDraft ? groupColor : 'var(--border)' }}
+                                                          onMouseLeave={e => { e.currentTarget.style.color = isReviewed ? '#059669' : isDraft ? groupColor : '#94A3B8' }}
                                                         >
                                                           {isReviewed ? '☑' : isDraft ? '◩' : '☐'}
                                                         </button>
