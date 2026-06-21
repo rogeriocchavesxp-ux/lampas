@@ -56,12 +56,29 @@ interface Props {
   onAskAI: (prompt: string) => void
   onOpenBible?: () => void
   onNavigate?: (slug: string) => void
+  onToggleSection?: (slug: string) => void
+}
+
+function VGProgressRing({ pct, color }: { pct: number; color: string }) {
+  const size = 15, sw = 1.8
+  const r = (size - sw) / 2, c = 2 * Math.PI * r
+  const done = pct >= 100
+  return (
+    <svg width={size} height={size} style={{ flexShrink: 0, transform: 'rotate(-90deg)' }}>
+      <circle cx={size/2} cy={size/2} r={r} fill="none" stroke="#CBD5E1" strokeWidth={sw} />
+      {pct > 0 && (
+        <circle cx={size/2} cy={size/2} r={r} fill="none"
+          stroke={done ? '#059669' : color} strokeWidth={sw}
+          strokeDasharray={`${Math.min(pct,100)/100*c} ${c}`} strokeLinecap="round" />
+      )}
+    </svg>
+  )
 }
 
 // ── Component ─────────────────────────────────────────────────────────────────
 
 export default function VisaoGeralWorkspace({
-  sectionDef, project, userId, existingSection, allVGSections, allSections = [], onUpdate, onAskAI, onOpenBible, onNavigate,
+  sectionDef, project, userId, existingSection, allVGSections, allSections = [], onUpdate, onAskAI, onOpenBible, onNavigate, onToggleSection,
 }: Props) {
   const supabase    = useMemo(() => createClient(), [])
   const wrapRef     = useRef<HTMLDivElement>(null)
@@ -411,17 +428,23 @@ export default function VisaoGeralWorkspace({
     if (node.phaseGroup) {
       return getSectionsByGroupNav(node.phaseGroup, project.study_mode).map(s => {
         const secData = allSections.find(sec => sec.slug === s.slug)
-        const sCards  = (secData?.content as { cards?: Record<string, string> } | null)?.cards ?? {}
         const label   = (s as { shortTitle?: string; title: string }).shortTitle ?? s.title
-        // Seção com 1 único card: vira folha direta (evita repetir o mesmo nome em dois níveis)
+        // Use saved section status as primary source (handles both card and doc modes)
+        if (secData?.status && secData.status !== 'empty') {
+          return { id: s.slug, label, sectionSlug: s.slug, type: 'section' as const, status: secData.status as DrillItem['status'] }
+        }
+        // Fallback: card-based calculation for sections without saved record
+        const sCards  = (secData?.content as { cards?: Record<string, string> } | null)?.cards ?? {}
         if (s.cards?.length === 1) {
           const onlyCard = s.cards[0]
-          return { id: onlyCard.id, label, sectionSlug: s.slug, type: 'card' as const, status: cardTextStatus(sCards[onlyCard.id] ?? '') }
+          const cardStatus = (secData?.status ?? cardTextStatus(sCards[onlyCard.id] ?? '')) as DrillItem['status']
+          return { id: s.slug, label, sectionSlug: s.slug, type: 'section' as const, status: cardStatus }
         }
         const filled = Object.values(sCards).filter(v => v?.trim()).length
         const total  = s.cards?.length ?? 0
-        const status: DrillItem['status'] = filled === 0 ? 'empty' : (filled >= total && total > 0 ? 'reviewed' : 'draft')
-        return { id: s.slug, label, sectionSlug: s.slug, type: 'section' as const, status }
+        const dbStatus = secData?.status as DrillItem['status'] | undefined
+        const calcStatus: DrillItem['status'] = filled === 0 ? 'empty' : (filled >= total && total > 0 ? 'reviewed' : 'draft')
+        return { id: s.slug, label, sectionSlug: s.slug, type: 'section' as const, status: dbStatus ?? calcStatus }
       })
     }
     // VG de Investigar: prefixa os 4 cards da seção 'sintese' (dados preservados no slug original)
@@ -1261,10 +1284,16 @@ export default function VisaoGeralWorkspace({
                     <span style={{ fontSize: '0.8rem', fontWeight: 600, color: isExpanded ? node.color : 'var(--text-primary)', flex: 1, minWidth: 0, lineHeight: 1.3 }}>
                       {node.label}
                     </span>
-                    {count > 0
-                      ? <span style={{ fontSize: '0.58rem', fontWeight: 700, color: '#fff', background: node.color, borderRadius: '999px', padding: '1px 6px', flexShrink: 0 }}>{count}</span>
-                      : <span style={{ fontSize: '0.6rem', color: '#CBD5E1' }}>vazio</span>
-                    }
+                    {(() => {
+                      if (!node.phaseGroup) return count > 0
+                        ? <span style={{ fontSize: '0.58rem', fontWeight: 700, color: '#fff', background: node.color, borderRadius: '999px', padding: '1px 6px', flexShrink: 0 }}>{count}</span>
+                        : <span style={{ fontSize: '0.6rem', color: '#CBD5E1' }}>vazio</span>
+                      const groupSecs = getSectionsByGroupNav(node.phaseGroup, project.study_mode)
+                      const done  = groupSecs.filter(s => allSections.find(sec => sec.slug === s.slug)?.status === 'reviewed').length
+                      const total = groupSecs.length
+                      const pct   = total > 0 ? Math.round(done / total * 100) : 0
+                      return <VGProgressRing pct={pct} color={node.color} />
+                    })()}
                   </button>
 
                   {/* Move up / down buttons */}
@@ -1361,9 +1390,27 @@ export default function VisaoGeralWorkspace({
                             onMouseEnter={e => { if (!isEditing && !isSectionExpanded) e.currentTarget.style.background = `${node.color}08` }}
                             onMouseLeave={e => { if (!isEditing && !isSectionExpanded) e.currentTarget.style.background = 'transparent' }}
                           >
-                            <span style={{ fontSize: '0.5rem', flexShrink: 0, color: item.type === 'section' ? (isSectionExpanded ? node.color : '#94A3B8') : (item.status === 'reviewed' ? '#059669' : item.status === 'draft' ? '#D97706' : '#CBD5E1') }}>
-                              {item.type === 'section' ? (isSectionExpanded ? '▼' : '▶') : (item.status === 'reviewed' ? '●' : item.status === 'draft' ? '◑' : '○')}
-                            </span>
+                            {item.type === 'section' ? (
+                              <button
+                                onClick={e => { e.stopPropagation(); onToggleSection?.(item.sectionSlug) }}
+                                title={item.status === 'reviewed' ? 'Marcar como não concluído' : 'Marcar como concluído'}
+                                style={{
+                                  flexShrink: 0, background: 'transparent', border: 'none',
+                                  cursor: 'pointer', padding: '0 2px', lineHeight: 1,
+                                  fontSize: '0.72rem',
+                                  color: item.status === 'reviewed' ? '#059669' : item.status === 'draft' ? node.color : '#94A3B8',
+                                  transition: 'color 0.12s',
+                                }}
+                                onMouseEnter={e => { e.currentTarget.style.color = item.status === 'reviewed' ? '#047857' : node.color }}
+                                onMouseLeave={e => { e.currentTarget.style.color = item.status === 'reviewed' ? '#059669' : item.status === 'draft' ? node.color : '#94A3B8' }}
+                              >
+                                {item.status === 'reviewed' ? '☑' : item.status === 'draft' ? '◩' : '☐'}
+                              </button>
+                            ) : (
+                              <span style={{ fontSize: '0.5rem', flexShrink: 0, color: item.status === 'reviewed' ? '#059669' : item.status === 'draft' ? '#D97706' : '#CBD5E1' }}>
+                                {item.status === 'reviewed' ? '●' : item.status === 'draft' ? '◑' : '○'}
+                              </span>
+                            )}
                             {nodeNum !== null && node.phaseGroup && item.type === 'section' && (
                               <span style={{ fontSize: '0.6rem', fontWeight: 700, color: isSectionExpanded ? node.color : '#94A3B8', flexShrink: 0, letterSpacing: '-0.01em' }}>
                                 {nodeNum}.{itemIdx + 1}

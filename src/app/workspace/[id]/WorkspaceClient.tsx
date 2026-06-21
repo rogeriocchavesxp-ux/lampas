@@ -1620,6 +1620,7 @@ export default function WorkspaceClient({ user, project, initialSections }: Prop
                 onAskAI={handleAskAI}
                 onOpenBible={() => setBibleOpen(true)}
                 onNavigate={navigate}
+                onToggleSection={slug => { void toggleSectionStatus(slug) }}
               />
             ) : activeDef ? (
               <SectionWorkspace
