@@ -72,6 +72,29 @@ interface Props {
   initialSections: Section[]
 }
 
+// ── Progress ring for group headers ──────────────────────────────────────────
+
+function ProgressRing({ pct, color, size = 14 }: { pct: number; color: string; size?: number }) {
+  const sw = 1.5
+  const r  = (size - sw) / 2
+  const c  = 2 * Math.PI * r
+  const done = pct >= 100
+  return (
+    <svg width={size} height={size} style={{ flexShrink: 0, transform: 'rotate(-90deg)' }}>
+      <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke={done ? '#05966922' : `${color}22`} strokeWidth={sw} />
+      {pct > 0 && (
+        <circle
+          cx={size / 2} cy={size / 2} r={r} fill="none"
+          stroke={done ? '#059669' : color}
+          strokeWidth={sw}
+          strokeDasharray={`${(pct / 100) * c} ${c}`}
+          strokeLinecap="round"
+        />
+      )}
+    </svg>
+  )
+}
+
 
 // ── Componente principal ────────────────────────────────────────────────────
 
@@ -432,6 +455,35 @@ export default function WorkspaceClient({ user, project, initialSections }: Prop
     })
   }, [])
 
+
+  const toggleSectionStatus = useCallback(async (slug: string) => {
+    const sec       = sections.find(s => s.slug === slug)
+    const isReviewed = sec?.status === 'reviewed'
+    const nextStatus = (isReviewed ? 'empty' : 'reviewed') as import('@/types/database').SectionStatus
+
+    if (sec) {
+      // Optimistic update
+      setSections(prev => prev.map(s => s.slug === slug ? { ...s, status: nextStatus } : s))
+      await supabase.from('sections').update({ status: nextStatus }).eq('id', sec.id)
+    } else {
+      // Section never opened — create it
+      const nav = getSectionNavBySlug(slug)
+      if (!nav) return
+      const tempId = `temp_${slug}`
+      const newSec = {
+        id: tempId, project_id: project.id, user_id: user.id,
+        slug, module: nav.module, title: nav.title,
+        content: null, ai_output: null, status: nextStatus,
+        created_at: new Date().toISOString(), updated_at: new Date().toISOString(),
+      } as import('@/types/database').Section
+      setSections(prev => [...prev, newSec])
+      const { data } = await supabase.from('sections').upsert(
+        { project_id: project.id, user_id: user.id, slug, module: nav.module, title: nav.title, content: {}, status: nextStatus },
+        { onConflict: 'project_id,slug' }
+      ).select().single()
+      if (data) setSections(prev => prev.map(s => s.id === tempId ? data as import('@/types/database').Section : s))
+    }
+  }, [sections, project, user, supabase])
 
   const handleAskAI = useCallback((prompt: string) => {
     setAiPrompt(prompt)
@@ -1088,21 +1140,14 @@ export default function WorkspaceClient({ user, project, initialSections }: Prop
                                                   {GROUP_EMOJI[group.id]}
                                                 </span>
                                               )}
-                                              {isActive && !isEnhanced && (
+                                              {total > 0 && !isUtilityGroup && (
+                                                <ProgressRing pct={gpPct} color={groupColor} />
+                                              )}
+                                              {isActive && !isEnhanced && isUtilityGroup && (
                                                 <span style={{
                                                   width: '6px', height: '6px', borderRadius: '50%',
                                                   background: mode.color, flexShrink: 0,
                                                 }} />
-                                              )}
-                                              {!isDirect && total > 0 && !highlight && (
-                                                <span style={{
-                                                  fontSize: '0.6rem', flexShrink: 0, fontWeight: 700,
-                                                  color: done === total ? '#059669' : done > 0 ? (isEnhanced ? groupColor : mode.color) : 'var(--border)',
-                                                  transition: 'color 0.15s',
-                                                  letterSpacing: '-0.01em',
-                                                }}>
-                                                  {done === total ? '☑' : done > 0 ? '◩' : '☐'}
-                                                </span>
                                               )}
                                               {!isDirect && (
                                                 groupOpen
@@ -1153,12 +1198,35 @@ export default function WorkspaceClient({ user, project, initialSections }: Prop
                                                 <div key={sd.slug}>
                                                   {/* Section row */}
                                                   <div style={{ display: 'flex', alignItems: 'center' }}>
+                                                    {/* Checkbox */}
+                                                    {(() => {
+                                                      const secStatus  = sec?.status ?? 'empty'
+                                                      const isReviewed = secStatus === 'reviewed'
+                                                      const isDraft    = secStatus === 'draft'
+                                                      return (
+                                                        <button
+                                                          onClick={e => { e.stopPropagation(); void toggleSectionStatus(sd.slug) }}
+                                                          title={isReviewed ? 'Marcar como não concluído' : 'Marcar como concluído'}
+                                                          style={{
+                                                            flexShrink: 0, background: 'transparent', border: 'none',
+                                                            cursor: 'pointer', padding: '0.18rem 0.1rem 0.18rem 0.42rem',
+                                                            display: 'flex', alignItems: 'center',
+                                                            color: isReviewed ? '#059669' : isDraft ? groupColor : 'var(--border)',
+                                                            fontSize: '0.72rem', lineHeight: 1, transition: 'color 0.12s',
+                                                          }}
+                                                          onMouseEnter={e => { e.currentTarget.style.color = isReviewed ? '#047857' : groupColor }}
+                                                          onMouseLeave={e => { e.currentTarget.style.color = isReviewed ? '#059669' : isDraft ? groupColor : 'var(--border)' }}
+                                                        >
+                                                          {isReviewed ? '☑' : isDraft ? '◩' : '☐'}
+                                                        </button>
+                                                      )
+                                                    })()}
                                                     <button
                                                       onClick={() => navigate(sd.slug)}
                                                       style={{
                                                         flex: 1, border: 'none', fontFamily: 'inherit',
                                                         background: isActive ? `${groupColor}10` : 'transparent',
-                                                        padding: '0.18rem 0.2rem 0.18rem 0.42rem',
+                                                        padding: '0.18rem 0.2rem 0.18rem 0.25rem',
                                                         display: 'flex', alignItems: 'center', gap: '0.35rem',
                                                         cursor: 'pointer', textAlign: 'left',
                                                         borderRadius: '5px',
@@ -1169,11 +1237,6 @@ export default function WorkspaceClient({ user, project, initialSections }: Prop
                                                       onMouseLeave={e => { if (!isActive) e.currentTarget.style.background = 'transparent' }}
                                                     >
                                                       <span style={{
-                                                        width: '3px', height: '3px', borderRadius: '50%',
-                                                        background: isActive ? groupColor : 'var(--border)',
-                                                        flexShrink: 0, transition: 'background 0.15s',
-                                                      }} />
-                                                      <span style={{
                                                         flex: 1, fontSize: '0.69rem', lineHeight: 1.22,
                                                         color: isActive ? groupColor : 'var(--text-secondary)',
                                                         fontWeight: isActive ? 600 : 400,
@@ -1181,15 +1244,6 @@ export default function WorkspaceClient({ user, project, initialSections }: Prop
                                                       }}>
                                                         {sd.shortTitle}
                                                       </span>
-                                                      {cTotal > 0 && (
-                                                        <span style={{
-                                                          fontSize: '0.58rem', flexShrink: 0, fontWeight: 700,
-                                                          color: cDone === cTotal ? '#059669' : cDone > 0 ? groupColor : 'var(--border)',
-                                                          transition: 'color 0.15s',
-                                                        }}>
-                                                          {cDone === cTotal ? '☑' : cDone > 0 ? '◩' : '☐'}
-                                                        </span>
-                                                      )}
                                                     </button>
                                                     {hasCards && (
                                                       <button
