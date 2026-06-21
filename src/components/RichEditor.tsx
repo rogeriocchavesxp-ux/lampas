@@ -231,6 +231,7 @@ export default function RichEditor({
     if (!isMountedRef.current) { isMountedRef.current = true; return }
     if (isInternalRef.current) { isInternalRef.current = false; return }
     // Genuine external update — setContent defaults to emitUpdate=false in TipTap v3.
+    if (editor.isDestroyed) return
     editor.commands.setContent(normalizedValue)
   }, [normalizedValue]) // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -276,9 +277,9 @@ export default function RichEditor({
         display: 'flex', alignItems: 'center', gap: '2px', flexWrap: 'wrap',
         padding: '0.3rem 0.45rem',
         background: sticky && isStuck ? 'var(--background)' : 'var(--surface)',
-        border: sticky && isStuck
-          ? 'none'
-          : `1px solid ${focused ? `${moduleColor}50` : 'var(--border)'}`,
+        borderTop:    sticky && isStuck ? 'none' : `1px solid ${focused ? `${moduleColor}50` : 'var(--border)'}`,
+        borderRight:  sticky && isStuck ? 'none' : `1px solid ${focused ? `${moduleColor}50` : 'var(--border)'}`,
+        borderLeft:   sticky && isStuck ? 'none' : `1px solid ${focused ? `${moduleColor}50` : 'var(--border)'}`,
         borderBottom: sticky && isStuck ? '1px solid rgba(0,0,0,0.08)' : 'none',
         borderRadius: sticky && isStuck ? 0 : '8px 8px 0 0',
         boxShadow: sticky && isStuck ? '0 2px 8px rgba(0,0,0,0.06)' : 'none',
