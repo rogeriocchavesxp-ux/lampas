@@ -1474,14 +1474,7 @@ export default function VisaoGeralWorkspace({
                                           autoFocus
                                           aiContext={{ project: aiProjectContext, phase, phaseLabel: AI_PHASE_LABEL[phase], section: card.sectionSlug, sectionLabel: node.label, field: card.id, fieldLabel: card.label, userId }}
                                         />
-                                        <div style={{ display: 'flex', gap: '0.35rem', marginTop: '5px' }}>
-                                          <button
-                                            disabled={cardSaving}
-                                            onClick={async () => { await saveDrillCard(card.sectionSlug, card.id, cardDraft); setEditingOutlineCard(null) }}
-                                            style={{ flex: 1, background: node.color, color: '#fff', border: 'none', borderRadius: '6px', padding: '5px 8px', fontSize: '0.65rem', fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit', opacity: cardSaving ? 0.6 : 1 }}
-                                          >
-                                            {cardSaving ? 'Salvando...' : 'Salvar'}
-                                          </button>
+                                        <div style={{ display: 'flex', gap: '0.35rem', marginTop: '5px', justifyContent: 'flex-end' }}>
                                           <button
                                             onClick={() => setReadingPopup({ title: card.label, html: cardDraft, color: node.color })}
                                             style={{ background: 'transparent', color: '#64748B', border: '1px solid var(--border)', borderRadius: '6px', padding: '5px 8px', fontSize: '0.65rem', cursor: 'pointer', fontFamily: 'inherit' }}
@@ -1493,6 +1486,13 @@ export default function VisaoGeralWorkspace({
                                             style={{ background: 'transparent', color: '#64748B', border: '1px solid var(--border)', borderRadius: '6px', padding: '5px 8px', fontSize: '0.65rem', cursor: 'pointer', fontFamily: 'inherit' }}
                                           >
                                             Cancelar
+                                          </button>
+                                          <button
+                                            disabled={cardSaving}
+                                            onClick={async () => { await saveDrillCard(card.sectionSlug, card.id, cardDraft); setEditingOutlineCard(null) }}
+                                            style={{ background: node.color, color: '#fff', border: 'none', borderRadius: '6px', padding: '5px 14px', fontSize: '0.65rem', fontWeight: 700, cursor: cardSaving ? 'wait' : 'pointer', fontFamily: 'inherit', opacity: cardSaving ? 0.6 : 1 }}
+                                          >
+                                            {cardSaving ? 'Salvando...' : 'Salvar'}
                                           </button>
                                         </div>
                                       </div>
@@ -1516,14 +1516,7 @@ export default function VisaoGeralWorkspace({
                                 autoFocus
                                 aiContext={{ project: aiProjectContext, phase, phaseLabel: AI_PHASE_LABEL[phase], section: item.sectionSlug, sectionLabel: node.label, field: item.id, fieldLabel: item.label, userId }}
                               />
-                              <div style={{ display: 'flex', gap: '0.35rem', marginTop: '5px' }}>
-                                <button
-                                  disabled={saving}
-                                  onClick={async () => { await saveDrillCard(item.sectionSlug, item.id, draft); setEditingOutlineCard(null) }}
-                                  style={{ flex: 1, background: node.color, color: '#fff', border: 'none', borderRadius: '6px', padding: '5px 8px', fontSize: '0.66rem', fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit', opacity: saving ? 0.6 : 1 }}
-                                >
-                                  {saving ? 'Salvando...' : 'Salvar'}
-                                </button>
+                              <div style={{ display: 'flex', gap: '0.35rem', marginTop: '5px', justifyContent: 'flex-end' }}>
                                 <button
                                   onClick={() => setReadingPopup({ title: item.label, html: draft, color: node.color })}
                                   style={{ background: 'transparent', color: '#64748B', border: '1px solid var(--border)', borderRadius: '6px', padding: '5px 8px', fontSize: '0.66rem', cursor: 'pointer', fontFamily: 'inherit' }}
@@ -1535,6 +1528,13 @@ export default function VisaoGeralWorkspace({
                                   style={{ background: 'transparent', color: '#64748B', border: '1px solid var(--border)', borderRadius: '6px', padding: '5px 8px', fontSize: '0.66rem', cursor: 'pointer', fontFamily: 'inherit' }}
                                 >
                                   Cancelar
+                                </button>
+                                <button
+                                  disabled={saving}
+                                  onClick={async () => { await saveDrillCard(item.sectionSlug, item.id, draft); setEditingOutlineCard(null) }}
+                                  style={{ background: node.color, color: '#fff', border: 'none', borderRadius: '6px', padding: '5px 14px', fontSize: '0.66rem', fontWeight: 700, cursor: saving ? 'wait' : 'pointer', fontFamily: 'inherit', opacity: saving ? 0.6 : 1 }}
+                                >
+                                  {saving ? 'Salvando...' : 'Salvar'}
                                 </button>
                               </div>
                             </div>
@@ -2115,17 +2115,7 @@ export default function VisaoGeralWorkspace({
                                     autoFocus
                                     aiContext={{ project: aiProjectContext, phase, phaseLabel: AI_PHASE_LABEL[phase], section: item.sectionSlug, sectionLabel: level.title, field: item.id, fieldLabel: item.label, userId }}
                                   />
-                                  <div style={{ display: 'flex', gap: '0.3rem', marginTop: '5px' }}>
-                                    <button
-                                      disabled={saving}
-                                      onClick={async () => {
-                                        await saveDrillCard(item.sectionSlug, item.id, draft)
-                                        setDrillStack(prev => prev.map((l, i) => i === idx ? { ...l, editingCardId: undefined } : l))
-                                      }}
-                                      style={{ flex: 1, background: level.color, color: '#fff', border: 'none', borderRadius: '6px', padding: '5px 8px', fontSize: '0.65rem', fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit', opacity: saving ? 0.6 : 1 }}
-                                    >
-                                      {saving ? 'Salvando...' : 'Salvar'}
-                                    </button>
+                                  <div style={{ display: 'flex', gap: '0.3rem', marginTop: '5px', justifyContent: 'flex-end' }}>
                                     <button
                                       onClick={() => setReadingPopup({ title: item.label, html: draft, color: level.color })}
                                       style={{ background: 'transparent', color: '#64748B', border: '1px solid var(--border)', borderRadius: '6px', padding: '5px 8px', fontSize: '0.65rem', cursor: 'pointer', fontFamily: 'inherit' }}
@@ -2137,6 +2127,16 @@ export default function VisaoGeralWorkspace({
                                       style={{ background: 'transparent', color: '#64748B', border: '1px solid var(--border)', borderRadius: '6px', padding: '5px 8px', fontSize: '0.65rem', cursor: 'pointer', fontFamily: 'inherit' }}
                                     >
                                       Cancelar
+                                    </button>
+                                    <button
+                                      disabled={saving}
+                                      onClick={async () => {
+                                        await saveDrillCard(item.sectionSlug, item.id, draft)
+                                        setDrillStack(prev => prev.map((l, i) => i === idx ? { ...l, editingCardId: undefined } : l))
+                                      }}
+                                      style={{ background: level.color, color: '#fff', border: 'none', borderRadius: '6px', padding: '5px 14px', fontSize: '0.65rem', fontWeight: 700, cursor: saving ? 'wait' : 'pointer', fontFamily: 'inherit', opacity: saving ? 0.6 : 1 }}
+                                    >
+                                      {saving ? 'Salvando...' : 'Salvar'}
                                     </button>
                                   </div>
                                 </div>
