@@ -626,7 +626,7 @@ export default function DicionarioWorkspace({ project, userId, onAskAI }: Props)
       )}
 
       {/* ══ LEFT — Search + List ══ */}
-      <div style={{ width: '260px', flexShrink: 0, borderRight: '1px solid #E2E8F0', display: 'flex', flexDirection: 'column', background: '#FFFFFF' }}>
+      <div style={{ width: '220px', flexShrink: 0, borderRight: '1px solid #E2E8F0', display: 'flex', flexDirection: 'column', background: '#FFFFFF' }}>
 
         {/* Header */}
         <div style={{ padding: '16px 16px 12px', borderBottom: '1px solid #F1F5F9' }}>
@@ -761,7 +761,7 @@ export default function DicionarioWorkspace({ project, userId, onAskAI }: Props)
           { n: 5, label: 'IA externa',           desc: 'Última opção — consome créditos' },
         ]
         return (
-          <div style={{ width: '196px', flexShrink: 0, borderRight: '1px solid #F1F5F9', display: 'flex', flexDirection: 'column', background: '#FAFAFA' }}>
+          <div style={{ width: '152px', flexShrink: 0, borderRight: '1px solid #F1F5F9', display: 'flex', flexDirection: 'column', background: '#FAFAFA' }}>
             <div style={{ padding: '16px 14px 12px', borderBottom: '1px solid #F1F5F9' }}>
               <div style={{ fontSize: '0.58rem', fontWeight: 800, color: '#94A3B8', textTransform: 'uppercase', letterSpacing: '0.09em' }}>
                 Fluxo de Consulta
@@ -796,7 +796,7 @@ export default function DicionarioWorkspace({ project, userId, onAskAI }: Props)
       })()}
 
       {/* ══ RIGHT — Detail / Create / AI Result ══ */}
-      <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+      <div style={{ flex: 1, minWidth: '220px', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
 
         {/* ── LIST state (nothing selected) ── */}
         {panel === 'list' && (
