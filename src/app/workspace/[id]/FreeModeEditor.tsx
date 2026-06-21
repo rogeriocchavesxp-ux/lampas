@@ -346,6 +346,7 @@ export default function FreeModeEditor({
                         placeholder={card.placeholder}
                         moduleColor={group.groupColor}
                         minHeight={90}
+                        sticky
                         aiContext={buildAIContext(block, card.id, card.title)}
                       />
                     </div>

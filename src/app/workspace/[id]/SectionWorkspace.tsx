@@ -694,6 +694,7 @@ export default function SectionWorkspace({
                       placeholder={card.placeholder}
                       moduleColor={moduleColor}
                       minHeight={200}
+                      sticky
                       aiContext={{
                         project: { id: project.id, book: project.book, passage_ref: project.passage_ref, testament: project.testament, original_language: project.original_language, study_mode: project.study_mode ?? undefined },
                         phase: sectionDef.phase,
@@ -1108,6 +1109,7 @@ export default function SectionWorkspace({
                       placeholder={card.placeholder}
                       moduleColor={moduleColor}
                       minHeight={200}
+                      sticky
                       aiContext={{
                         project: { id: project.id, book: project.book, passage_ref: project.passage_ref, testament: project.testament, original_language: project.original_language, study_mode: project.study_mode ?? undefined },
                         phase: sectionDef.phase,

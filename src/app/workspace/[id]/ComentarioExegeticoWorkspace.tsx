@@ -197,6 +197,7 @@ function BlockCard({
             placeholder="Escreva o comentário exegético deste bloco…"
             moduleColor={TYPE_COLOR[block.type]}
             minHeight={140}
+            sticky
             aiContext={{ ...aiContext, fieldLabel: block.title }}
           />
         </div>

@@ -1472,6 +1472,7 @@ export default function VisaoGeralWorkspace({
                                           minHeight={120}
                                           moduleColor={node.color}
                                           autoFocus
+                                          sticky
                                           aiContext={{ project: aiProjectContext, phase, phaseLabel: AI_PHASE_LABEL[phase], section: card.sectionSlug, sectionLabel: node.label, field: card.id, fieldLabel: card.label, userId }}
                                         />
                                         <div style={{ display: 'flex', gap: '0.35rem', marginTop: '5px', justifyContent: 'flex-end' }}>
@@ -1514,6 +1515,7 @@ export default function VisaoGeralWorkspace({
                                 minHeight={120}
                                 moduleColor={node.color}
                                 autoFocus
+                                sticky
                                 aiContext={{ project: aiProjectContext, phase, phaseLabel: AI_PHASE_LABEL[phase], section: item.sectionSlug, sectionLabel: node.label, field: item.id, fieldLabel: item.label, userId }}
                               />
                               <div style={{ display: 'flex', gap: '0.35rem', marginTop: '5px', justifyContent: 'flex-end' }}>
@@ -2113,6 +2115,7 @@ export default function VisaoGeralWorkspace({
                                     minHeight={120}
                                     moduleColor={level.color}
                                     autoFocus
+                                    sticky
                                     aiContext={{ project: aiProjectContext, phase, phaseLabel: AI_PHASE_LABEL[phase], section: item.sectionSlug, sectionLabel: level.title, field: item.id, fieldLabel: item.label, userId }}
                                   />
                                   <div style={{ display: 'flex', gap: '0.3rem', marginTop: '5px', justifyContent: 'flex-end' }}>
