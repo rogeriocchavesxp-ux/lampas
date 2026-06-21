@@ -78,6 +78,53 @@ function toDisplayText(value: string): string {
     .trim()
 }
 
+// ── Doc mode helpers ───────────────────────────────────────────────────────
+
+function buildPlaceholderLines(placeholder: string): string {
+  const parts: string[] = []
+  const lines = placeholder.split('\n')
+  let inList = false
+  for (const line of lines) {
+    const trimmed = line.trim()
+    if (!trimmed) { if (inList) { parts.push('</ul>'); inList = false } continue }
+    if (trimmed.startsWith('•') || trimmed.startsWith('-') || trimmed.startsWith('*')) {
+      if (!inList) { parts.push('<ul>'); inList = true }
+      parts.push(`<li>${trimmed.slice(1).trim()}</li>`)
+    } else {
+      if (inList) { parts.push('</ul>'); inList = false }
+      parts.push(`<p>${trimmed}</p>`)
+    }
+  }
+  if (inList) parts.push('</ul>')
+  return parts.join('')
+}
+
+function buildDocTemplate(def: SectionDef): string {
+  if (def.cards.length === 0) return ''
+  return def.cards
+    .map(card => `<h3>${card.title}</h3>${buildPlaceholderLines(card.placeholder)}`)
+    .join('')
+}
+
+function migrateCardsToDoc(def: SectionDef, cards: Record<string, string>): string {
+  return def.cards
+    .map(card => {
+      const existing = cards[card.id]
+      const body = (existing && existing.trim()) ? existing : buildPlaceholderLines(card.placeholder)
+      return `<h3>${card.title}</h3>${body}`
+    })
+    .join('')
+}
+
+function isOnlyTemplate(doc: string, def: SectionDef): boolean {
+  const norm = (s: string) => s.replace(/<[^>]+>/g, '').replace(/&\w+;/g, '').replace(/\s+/g, '').toLowerCase()
+  return norm(doc) === norm(buildDocTemplate(def)) || norm(doc) === ''
+}
+
+function stripHtmlText(html: string): string {
+  return html.replace(/<[^>]+>/g, ' ').replace(/&nbsp;/g, ' ').replace(/\s+/g, ' ').trim()
+}
+
 const MODULE_COLORS: Record<string, string> = {
   inventio:     'var(--accent)',
   dispositio:   'var(--ai)',
@@ -145,6 +192,7 @@ export default function SectionWorkspace({
 
   const isPalestraConstruir = sectionDef.slug === 'palestra_construir'
   const isTabLayout        = !isPalestraConstruir
+  const isDocMode          = !isPalestraConstruir
 
   const loadDynamicPointCards = useCallback((): DynamicPointCard[] => {
     if (!isPalestraConstruir) return []
@@ -165,6 +213,19 @@ export default function SectionWorkspace({
       .map(card => ({ id: card.id, title: card.title }))
   }, [existingSection, isPalestraConstruir, sectionDef.cards])
 
+  // ── Doc mode state ────────────────────────────────────────────────────────
+  const loadDoc = useCallback((): string => {
+    const stored = existingSection?.content as Record<string, unknown> | null
+    if (stored?.doc && typeof stored.doc === 'string') return stored.doc
+    if (stored?.cards) return migrateCardsToDoc(sectionDef, stored.cards as Record<string, string>)
+    return buildDocTemplate(sectionDef)
+  }, [existingSection, sectionDef])
+
+  const [docContent, setDocContent] = useState<string>(loadDoc)
+  const [docReading, setDocReading] = useState(false)
+  const latestDoc = useRef(docContent)
+
+  // ── Palestra-only state ───────────────────────────────────────────────────
   const [cardContent, setCardContent]   = useState<Record<string, string>>(loadCards)
   const [dynamicPointCards, setDynamicPointCards] = useState<DynamicPointCard[]>(loadDynamicPointCards)
   const [expandedCards, setExpandedCards] = useState<Set<string>>(() => new Set([sectionDef.cards[0]?.id]))
@@ -190,6 +251,7 @@ export default function SectionWorkspace({
 
   useEffect(() => { latestContent.current = cardContent }, [cardContent])
   useEffect(() => { latestDynamicPointCards.current = dynamicPointCards }, [dynamicPointCards])
+  useEffect(() => { latestDoc.current = docContent }, [docContent])
 
   const activeCards: WorkspaceCard[] = isPalestraConstruir
     ? sectionDef.cards.flatMap(card => {
@@ -257,6 +319,35 @@ export default function SectionWorkspace({
     latestContent.current = savedContent.current
     setEditingCards(new Set())
     setIsDirty(false)
+  }
+
+  // ── Doc mode save ──────────────────────────────────────────────────────────
+  async function performSaveDoc(doc: string) {
+    setSaving(true)
+    const text = stripHtmlText(doc)
+    const onlyTpl = isOnlyTemplate(doc, sectionDef)
+    const payload = {
+      project_id: project.id, user_id: userId,
+      slug: sectionDef.slug, module: sectionDef.module,
+      title: sectionDef.title, content: { doc },
+      status: (onlyTpl ? 'empty' : text.length > 400 ? 'reviewed' : 'draft') as 'empty' | 'draft' | 'reviewed',
+    }
+    if (existingSection?.id) {
+      const { data } = await supabase.from('sections').update(payload).eq('id', existingSection.id).select().single()
+      if (data) onUpdate(data as Section)
+    } else {
+      const { data } = await supabase.from('sections').insert(payload).select().single()
+      if (data) onUpdate(data as Section)
+    }
+    setSaving(false)
+    setSavedAt(new Date())
+  }
+
+  function scheduleAutosaveDoc(html: string) {
+    setDocContent(html)
+    latestDoc.current = html
+    if (saveTimer.current) clearTimeout(saveTimer.current)
+    saveTimer.current = setTimeout(() => performSaveDoc(html), 1500)
   }
 
   async function manualSave() {
@@ -600,254 +691,26 @@ export default function SectionWorkspace({
           : null
       })()}
 
-      {/* ── Cards ─────────────────────────────────────────────────────────── */}
+      {/* ── Content ────────────────────────────────────────────────────────── */}
       <div>
-        {isTabLayout ? (
-          <>
-            {/* Tab bar */}
-            <div style={{
-              display: 'flex', borderBottom: '1px solid var(--border-subtle)',
-              marginBottom: '1.5rem', overflowX: 'auto', scrollbarWidth: 'none',
-            }}>
-              {activeCards.map(card => {
-                const text   = toDisplayText(cardContent[card.id] ?? '')
-                const status = fieldStatus(text)
-                const isActive = activeTab === card.id
-                return (
-                  <button
-                    key={card.id}
-                    onClick={() => setActiveTab(card.id)}
-                    style={{
-                      background: 'none', border: 'none', cursor: 'pointer',
-                      fontFamily: 'inherit', padding: '0.55rem 0.9rem',
-                      fontSize: '0.83rem', fontWeight: isActive ? '600' : '400',
-                      color: isActive ? 'var(--text-primary)' : 'var(--text-muted)',
-                      borderBottom: isActive ? `2px solid ${moduleColor}` : '2px solid transparent',
-                      marginBottom: '-1px', transition: 'color 0.12s',
-                      display: 'flex', alignItems: 'center', gap: '0.35rem',
-                      whiteSpace: 'nowrap',
-                    }}
-                  >
-                    <span style={{
-                      fontSize: '0.65rem',
-                      color: status === 'reviewed' ? 'var(--success)' : status === 'draft' ? 'var(--accent)' : 'var(--border)',
-                    }}>
-                      {status === 'reviewed' ? '✓' : status === 'draft' ? '◐' : '○'}
-                    </span>
-                    {card.title}
-                  </button>
-                )
-              })}
-            </div>
-
-            {/* Active tab content */}
-            {activeCards.map(card => {
-              if (card.id !== activeTab) return null
-              const content        = cardContent[card.id] ?? ''
-              const displayContent = normalizeStoredHtml(content)
-              const displayText    = toDisplayText(content)
-              const hasContent     = displayText.trim().length > 0
-              const isEditing      = editingCards.has(card.id) || !hasContent
-              const state          = cardStates[card.id] ?? 'idle'
-              const isWorking      = state === 'generating' || state === 'saving'
-              const errorMessage   = cardErrors[card.id]
-              return (
-                <div key={card.id}>
-                  {/* Reading suggestions — Leitura tab only */}
-                  {card.id === 'preparar_leitura_lenta' && (
-                    <div style={{
-                      marginBottom: '1.25rem', padding: '0.75rem 1rem',
-                      background: 'var(--surface)', border: '1px solid var(--border-subtle)',
-                      borderRadius: '10px',
-                    }}>
-                      <p style={{
-                        fontSize: '0.69rem', fontWeight: 600, letterSpacing: '0.07em',
-                        textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: '0.5rem',
-                      }}>
-                        Sugestões para esta etapa
-                      </p>
-                      <ul style={{ margin: 0, padding: '0 0 0 1.1rem' }}>
-                        {LEIA_ASSIMILE_SUGGESTIONS.map((s, i) => (
-                          <li key={i} style={{ fontSize: '0.82rem', color: 'var(--text-muted)', lineHeight: '1.65' }}>
-                            {s}
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                  )}
-
-                  {errorMessage && (
-                    <div style={{
-                      marginBottom: '0.75rem', padding: '0.65rem 0.75rem',
-                      border: '1px solid rgba(185,28,28,0.22)', borderRadius: '8px',
-                      background: 'rgba(254,242,242,0.9)', color: '#B91C1C',
-                      fontSize: '0.78rem', lineHeight: 1.45,
-                    }}>
-                      {errorMessage}
-                    </div>
-                  )}
-
-                  {isEditing ? (
-                    <RichEditor
-                      value={content}
-                      onChange={html => scheduleAutosave(card.id, html)}
-                      placeholder={card.placeholder}
-                      moduleColor={moduleColor}
-                      minHeight={200}
-                      sticky
-                      aiContext={{
-                        project: { id: project.id, book: project.book, passage_ref: project.passage_ref, testament: project.testament, original_language: project.original_language, study_mode: project.study_mode ?? undefined },
-                        phase: sectionDef.phase,
-                        phaseLabel: ({ preparar: 'Preparar', investigar: 'Investigar', comunicar: 'Pregar', ferramentas: 'Ferramentas' } as Record<string, string>)[sectionDef.phase ?? ''] ?? sectionDef.phase,
-                        section: sectionDef.slug,
-                        sectionLabel: sectionDef.title,
-                        field: card.id,
-                        fieldLabel: card.title,
-                        userId,
-                      }}
-                    />
-                  ) : (
-                    <div style={{
-                      width: '100%', background: 'var(--surface)',
-                      border: '1px solid var(--border)', borderRadius: '8px',
-                      padding: '1rem 1.1rem', boxSizing: 'border-box', minHeight: '5rem',
-                    }}>
-                      {isHtmlContent(displayContent) ? (
-                        <div
-                          className="rich-content-display"
-                          dangerouslySetInnerHTML={{ __html: displayContent }}
-                          style={{ fontFamily: 'var(--font-serif), Georgia, serif', fontSize: '0.9rem', lineHeight: '1.78', color: 'var(--text-primary)' }}
-                        />
-                      ) : (
-                        <MarkdownRenderer content={displayContent} moduleColor={moduleColor} />
-                      )}
-                    </div>
-                  )}
-
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '0.5rem' }}>
-                    <div style={{ display: 'flex', gap: '0.6rem', alignItems: 'center' }}>
-                      {hasContent && (
-                        <button
-                          onClick={() => toggleEdit(card.id)}
-                          style={{
-                            background: 'transparent', border: 'none', cursor: 'pointer',
-                            fontFamily: 'inherit', fontSize: '0.71rem',
-                            color: 'var(--text-muted)', padding: 0, transition: 'color 0.12s',
-                          }}
-                          onMouseEnter={e => { e.currentTarget.style.color = 'var(--text-secondary)' }}
-                          onMouseLeave={e => { e.currentTarget.style.color = 'var(--text-muted)' }}
-                        >
-                          {isEditing ? '← Voltar' : 'Editar'}
-                        </button>
-                      )}
-                      {hasContent && (
-                        <button
-                          onClick={() => setReadingCard(card.id)}
-                          style={{
-                            background: 'transparent', border: 'none', cursor: 'pointer',
-                            fontFamily: 'inherit', fontSize: '0.71rem',
-                            color: 'var(--text-muted)', padding: 0, transition: 'color 0.12s',
-                          }}
-                          onMouseEnter={e => { e.currentTarget.style.color = 'var(--text-secondary)' }}
-                          onMouseLeave={e => { e.currentTarget.style.color = 'var(--text-muted)' }}
-                        >
-                          👁 Visualizar
-                        </button>
-                      )}
-                    </div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginLeft: 'auto' }}>
-                      {state !== 'idle' && (
-                        <span style={{
-                          fontSize: '0.7rem', fontStyle: 'italic',
-                          color: state === 'saved' ? 'var(--success)' : 'var(--text-muted)',
-                        }}>
-                          {state === 'generating' ? 'gerando…' : state === 'saving' ? 'salvando…' : 'salvo ✓'}
-                        </span>
-                      )}
-                      <button
-                        onClick={() => generateCard(card.id)}
-                        disabled={isWorking || generatingAll}
-                        style={{
-                          background: 'transparent', border: 'none',
-                          cursor: isWorking ? 'wait' : 'pointer',
-                          fontFamily: 'inherit', fontSize: '0.71rem',
-                          color: 'var(--text-muted)', padding: 0, transition: 'color 0.12s',
-                          opacity: isWorking ? 0.5 : 1,
-                        }}
-                        onMouseEnter={e => { if (!isWorking) e.currentTarget.style.color = 'var(--accent)' }}
-                        onMouseLeave={e => { e.currentTarget.style.color = 'var(--text-muted)' }}
-                      >
-                        Gerar com IA
-                      </button>
-                      <div style={{ position: 'relative' }} onClick={e => e.stopPropagation()}>
-                        <button
-                          onClick={() => setOpenMenu(openMenu === card.id ? null : card.id)}
-                          title="Mais opções"
-                          style={{
-                            background: openMenu === card.id ? 'var(--surface-2)' : 'transparent',
-                            border: 'none', cursor: 'pointer', color: 'var(--text-muted)',
-                            padding: '0.2rem 0.25rem', borderRadius: '5px',
-                            display: 'flex', alignItems: 'center', transition: 'background 0.12s',
-                          }}
-                          onMouseEnter={e => { e.currentTarget.style.background = 'var(--surface-2)' }}
-                          onMouseLeave={e => { if (openMenu !== card.id) e.currentTarget.style.background = 'transparent' }}
-                        >
-                          <MoreHorizontal size={14} strokeWidth={1.75} />
-                        </button>
-                        {openMenu === card.id && (
-                          <div
-                            style={{
-                              position: 'absolute', right: 0, bottom: 'calc(100% + 4px)',
-                              zIndex: 100, background: '#FFFFFF',
-                              border: '1px solid var(--border)', borderRadius: '12px',
-                              boxShadow: '0 4px 24px rgba(0,0,0,0.08), 0 1px 4px rgba(0,0,0,0.05)',
-                              padding: '0.3rem', minWidth: '186px',
-                            }}
-                            onClick={e => e.stopPropagation()}
-                          >
-                            {([
-                              { label: 'Melhorar resposta', action: () => { setOpenMenu(null); onAskAI(`Melhore e aprofunde esta análise de "${card.title}" para ${project.book} ${project.passage_ref}:\n\n${content.slice(0, 800)}`) }, disabled: !hasContent },
-                              { label: 'Expandir análise', action: () => { setOpenMenu(null); onAskAI(card.aiTrigger + ' — Expanda com mais profundidade, exemplos exegéticos e referências de peso.') }, disabled: false },
-                              { separator: true },
-                              { label: 'Adicionar observação', action: () => { setOpenMenu(null); setEditingCards(prev => new Set([...prev, card.id])) }, disabled: false },
-                              { label: 'Duplicar conteúdo', action: () => { setOpenMenu(null); navigator.clipboard.writeText(content).catch(() => {}) }, disabled: !hasContent },
-                              { separator: true },
-                              { label: 'Limpar conteúdo', action: () => { setOpenMenu(null); scheduleAutosave(card.id, '') }, disabled: !hasContent, danger: true },
-                            ] as Array<{ separator?: true; label?: string; action?: () => void; disabled?: boolean; danger?: boolean }>).map((item, i) => (
-                              'separator' in item ? (
-                                <div key={i} style={{ height: '1px', background: 'var(--border-subtle)', margin: '0.2rem 0' }} />
-                              ) : (
-                                <button
-                                  key={item.label}
-                                  onMouseDown={e => { e.preventDefault(); e.stopPropagation(); if (!item.disabled) item.action!() }}
-                                  disabled={item.disabled}
-                                  style={{
-                                    display: 'block', width: '100%', textAlign: 'left',
-                                    background: 'transparent', border: 'none',
-                                    cursor: item.disabled ? 'not-allowed' : 'pointer',
-                                    fontFamily: 'inherit', fontSize: '0.83rem',
-                                    color: item.danger ? 'var(--error)' : 'var(--text-secondary)',
-                                    padding: '0.42rem 0.65rem', borderRadius: '8px',
-                                    opacity: item.disabled ? 0.4 : 1, transition: 'background 0.1s',
-                                    letterSpacing: '-0.005em',
-                                  }}
-                                  onMouseEnter={e => { if (!item.disabled) e.currentTarget.style.background = 'var(--surface)' }}
-                                  onMouseLeave={e => { e.currentTarget.style.background = 'transparent' }}
-                                >
-                                  {item.label}
-                                </button>
-                              )
-                            ))}
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              )
-            })}
-          </>
+        {isDocMode ? (
+          <RichEditor
+            value={docContent}
+            onChange={scheduleAutosaveDoc}
+            moduleColor={moduleColor}
+            minHeight={560}
+            sticky
+            aiContext={{
+              project: { id: project.id, book: project.book, passage_ref: project.passage_ref, testament: project.testament, original_language: project.original_language, study_mode: project.study_mode ?? undefined },
+              phase: sectionDef.phase,
+              phaseLabel: ({ preparar: 'Preparar', investigar: 'Investigar', comunicar: 'Pregar', ferramentas: 'Ferramentas' } as Record<string, string>)[sectionDef.phase ?? ''] ?? sectionDef.phase,
+              section: sectionDef.slug,
+              sectionLabel: sectionDef.title,
+              userId,
+            }}
+          />
         ) : null}
+
         {!isTabLayout && activeCards.map((card, idx) => {
           const content   = cardContent[card.id] ?? ''
           const displayContent = normalizeStoredHtml(content)
@@ -1241,65 +1104,25 @@ export default function SectionWorkspace({
         )}
       </div>
 
-      {/* ── Footer: AI generate + action bar ─────────────────────────────── */}
-      {generationError && (
+      {/* ── Footer ───────────────────────────────────────────────────────── */}
+      {isDocMode ? (
+        /* Doc mode: autosave indicator + visualizar */
         <div style={{
-          marginTop: '2.5rem',
-          padding: '0.7rem 0.85rem',
-          border: '1px solid rgba(185, 28, 28, 0.22)',
-          borderRadius: '8px',
-          background: 'rgba(254, 242, 242, 0.9)',
-          color: '#B91C1C',
-          fontSize: '0.8rem',
-          lineHeight: 1.45,
+          marginTop: '1.5rem', paddingTop: '1rem',
+          borderTop: '1px solid var(--border-subtle)',
+          display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: '0.5rem',
         }}>
-          {generationError}
-        </div>
-      )}
-
-      <div style={{
-        marginTop: '2.5rem', paddingTop: '1.25rem',
-        borderTop: '1px solid var(--border-subtle)',
-        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-        gap: '0.75rem',
-      }}>
-        {/* Left: AI generate */}
-        <button
-          onClick={generateAll}
-          disabled={generatingAll}
-          style={{
-            background: generatingAll ? 'var(--surface-2)' : 'var(--accent)',
-            color: generatingAll ? 'var(--text-muted)' : '#FFFFFF',
-            border: 'none', borderRadius: '8px',
-            padding: '0.55rem 1.25rem',
-            fontSize: '0.82rem', fontWeight: 600,
-            cursor: generatingAll ? 'wait' : 'pointer',
-            fontFamily: 'inherit', letterSpacing: '-0.01em',
-            transition: 'background 0.15s', flexShrink: 0,
-            boxShadow: generatingAll ? 'none' : '0 1px 2px rgba(30,77,140,0.2)',
-          }}
-        >
-          {generatingAll ? 'Gerando…' : 'Gerar com IA'}
-        </button>
-
-        {/* Right: action bar */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', flexShrink: 0 }}>
-          {/* Auto-save indicator */}
           {(saving || savedAt) && (
             <span style={{
               fontSize: '0.71rem',
               color: saving ? 'var(--ai)' : 'var(--text-muted)',
-              whiteSpace: 'nowrap',
-              paddingRight: '0.35rem',
-              transition: 'color 0.3s',
+              whiteSpace: 'nowrap', transition: 'color 0.3s',
             }}>
               {saving ? 'Salvando…' : `✓ ${savedLabel}`}
             </span>
           )}
-
-          {/* Visualizar */}
           <button
-            onClick={() => setPreviewMode(true)}
+            onClick={() => setDocReading(true)}
             style={{
               background: 'transparent', border: '1px solid var(--border)',
               color: 'var(--text-muted)', borderRadius: '6px',
@@ -1310,51 +1133,71 @@ export default function SectionWorkspace({
             onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--text-muted)'; e.currentTarget.style.color = 'var(--text-secondary)' }}
             onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.color = 'var(--text-muted)' }}
           >
-            Visualizar
+            👁 Visualizar
           </button>
-
-          {/* Cancelar — só quando há edições não salvas */}
-          {isDirty && (
-            <button
-              onClick={cancelEdits}
-              style={{
-                background: 'transparent', border: '1px solid var(--border)',
-                color: 'var(--text-muted)', borderRadius: '6px',
-                padding: '0.38rem 0.7rem', fontSize: '0.74rem',
-                cursor: 'pointer', fontFamily: 'inherit',
-                whiteSpace: 'nowrap', transition: 'all 0.15s',
-              }}
-              onMouseEnter={e => { e.currentTarget.style.borderColor = '#EF4444'; e.currentTarget.style.color = '#EF4444' }}
-              onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.color = 'var(--text-muted)' }}
-            >
-              Cancelar
-            </button>
-          )}
-
-          {/* Salvar */}
-          {hasAnyContent && (
-            <button
-              onClick={manualSave}
-              disabled={saving}
-              style={{
-                background: 'var(--accent)', color: '#fff',
-                border: 'none', borderRadius: '6px',
-                padding: '0.38rem 0.85rem', fontSize: '0.74rem',
-                fontWeight: 600, cursor: saving ? 'wait' : 'pointer',
-                fontFamily: 'inherit', whiteSpace: 'nowrap',
-                transition: 'all 0.15s', opacity: saving ? 0.7 : 1,
-              }}
-              onMouseEnter={e => { if (!saving) e.currentTarget.style.background = 'var(--accent-hover)' }}
-              onMouseLeave={e => { e.currentTarget.style.background = 'var(--accent)' }}
-            >
-              Salvar
-            </button>
-          )}
         </div>
-      </div>
+      ) : (
+        /* Palestra mode: existing footer */
+        <>
+          {generationError && (
+            <div style={{
+              marginTop: '2.5rem', padding: '0.7rem 0.85rem',
+              border: '1px solid rgba(185,28,28,0.22)', borderRadius: '8px',
+              background: 'rgba(254,242,242,0.9)', color: '#B91C1C',
+              fontSize: '0.8rem', lineHeight: 1.45,
+            }}>
+              {generationError}
+            </div>
+          )}
+          <div style={{
+            marginTop: '2.5rem', paddingTop: '1.25rem',
+            borderTop: '1px solid var(--border-subtle)',
+            display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+            gap: '0.75rem',
+          }}>
+            <button
+              onClick={generateAll}
+              disabled={generatingAll}
+              style={{
+                background: generatingAll ? 'var(--surface-2)' : 'var(--accent)',
+                color: generatingAll ? 'var(--text-muted)' : '#FFFFFF',
+                border: 'none', borderRadius: '8px', padding: '0.55rem 1.25rem',
+                fontSize: '0.82rem', fontWeight: 600,
+                cursor: generatingAll ? 'wait' : 'pointer',
+                fontFamily: 'inherit', letterSpacing: '-0.01em',
+                transition: 'background 0.15s', flexShrink: 0,
+                boxShadow: generatingAll ? 'none' : '0 1px 2px rgba(30,77,140,0.2)',
+              }}
+            >
+              {generatingAll ? 'Gerando…' : 'Gerar com IA'}
+            </button>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', flexShrink: 0 }}>
+              {(saving || savedAt) && (
+                <span style={{ fontSize: '0.71rem', color: saving ? 'var(--ai)' : 'var(--text-muted)', whiteSpace: 'nowrap', paddingRight: '0.35rem', transition: 'color 0.3s' }}>
+                  {saving ? 'Salvando…' : `✓ ${savedLabel}`}
+                </span>
+              )}
+              <button onClick={() => setPreviewMode(true)} style={{ background: 'transparent', border: '1px solid var(--border)', color: 'var(--text-muted)', borderRadius: '6px', padding: '0.38rem 0.7rem', fontSize: '0.74rem', cursor: 'pointer', fontFamily: 'inherit', whiteSpace: 'nowrap', transition: 'all 0.15s' }} onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--text-muted)'; e.currentTarget.style.color = 'var(--text-secondary)' }} onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.color = 'var(--text-muted)' }}>Visualizar</button>
+              {isDirty && <button onClick={cancelEdits} style={{ background: 'transparent', border: '1px solid var(--border)', color: 'var(--text-muted)', borderRadius: '6px', padding: '0.38rem 0.7rem', fontSize: '0.74rem', cursor: 'pointer', fontFamily: 'inherit', whiteSpace: 'nowrap', transition: 'all 0.15s' }} onMouseEnter={e => { e.currentTarget.style.borderColor = '#EF4444'; e.currentTarget.style.color = '#EF4444' }} onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.color = 'var(--text-muted)' }}>Cancelar</button>}
+              {hasAnyContent && <button onClick={manualSave} disabled={saving} style={{ background: 'var(--accent)', color: '#fff', border: 'none', borderRadius: '6px', padding: '0.38rem 0.85rem', fontSize: '0.74rem', fontWeight: 600, cursor: saving ? 'wait' : 'pointer', fontFamily: 'inherit', whiteSpace: 'nowrap', transition: 'all 0.15s', opacity: saving ? 0.7 : 1 }} onMouseEnter={e => { if (!saving) e.currentTarget.style.background = 'var(--accent-hover)' }} onMouseLeave={e => { e.currentTarget.style.background = 'var(--accent)' }}>Salvar</button>}
+            </div>
+          </div>
+        </>
+      )}
 
-      {/* ── Reading popup ─────────────────────────────────────────────────── */}
-      {readingCard && (() => {
+      {/* ── Doc mode: reading popup ──────────────────────────────────────── */}
+      {isDocMode && docReading && (
+        <ReadingPopup
+          title={sectionDef.shortTitle}
+          html={docContent}
+          moduleColor={moduleColor}
+          onClose={() => setDocReading(false)}
+          onEdit={() => setDocReading(false)}
+        />
+      )}
+
+      {/* ── Palestra mode: reading popup + preview overlay ───────────────── */}
+      {!isDocMode && readingCard && (() => {
         const card = activeCards.find(c => c.id === readingCard)
         if (!card) return null
         const content = cardContent[readingCard] ?? ''
@@ -1373,78 +1216,27 @@ export default function SectionWorkspace({
         )
       })()}
 
-      {/* ── Preview overlay ─────────────────────────────────────────────── */}
-      {previewMode && (
-        <div style={{
-          position: 'fixed', inset: 0, zIndex: 400,
-          background: 'var(--background)', overflowY: 'auto',
-        }}>
-          <div style={{
-            maxWidth: '820px', margin: '0 auto',
-            padding: '3rem clamp(1.5rem, 4vw, 2.5rem) 6rem',
-            fontFamily: 'var(--font-sans)',
-          }}>
-            {/* Header */}
-            <div style={{
-              display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between',
-              marginBottom: '2.5rem', paddingBottom: '1.25rem',
-              borderBottom: '1px solid var(--border-subtle)', gap: '1rem',
-            }}>
+      {!isDocMode && previewMode && (
+        <div style={{ position: 'fixed', inset: 0, zIndex: 400, background: 'var(--background)', overflowY: 'auto' }}>
+          <div style={{ maxWidth: '820px', margin: '0 auto', padding: '3rem clamp(1.5rem,4vw,2.5rem) 6rem', fontFamily: 'var(--font-sans)' }}>
+            <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '2.5rem', paddingBottom: '1.25rem', borderBottom: '1px solid var(--border-subtle)', gap: '1rem' }}>
               <div>
-                <div style={{
-                  fontSize: '0.68rem', color: 'var(--text-muted)',
-                  textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: '0.35rem',
-                }}>
-                  {sectionDef.groupLabel}
-                </div>
-                <h2 style={{ fontSize: '1.25rem', fontWeight: 700, color: 'var(--text-primary)', margin: 0 }}>
-                  {sectionDef.title}
-                </h2>
+                <div style={{ fontSize: '0.68rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: '0.35rem' }}>{sectionDef.groupLabel}</div>
+                <h2 style={{ fontSize: '1.25rem', fontWeight: 700, color: 'var(--text-primary)', margin: 0 }}>{sectionDef.title}</h2>
               </div>
-              <button
-                onClick={() => setPreviewMode(false)}
-                style={{
-                  background: 'transparent', border: '1px solid var(--border)',
-                  color: 'var(--text-secondary)', borderRadius: '6px',
-                  padding: '0.4rem 0.9rem', fontSize: '0.78rem',
-                  cursor: 'pointer', fontFamily: 'inherit', flexShrink: 0,
-                  transition: 'all 0.15s',
-                }}
-                onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--text-muted)'; e.currentTarget.style.color = 'var(--text-primary)' }}
-                onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.color = 'var(--text-secondary)' }}
-              >
-                ← Voltar à edição
-              </button>
+              <button onClick={() => setPreviewMode(false)} style={{ background: 'transparent', border: '1px solid var(--border)', color: 'var(--text-secondary)', borderRadius: '6px', padding: '0.4rem 0.9rem', fontSize: '0.78rem', cursor: 'pointer', fontFamily: 'inherit', flexShrink: 0, transition: 'all 0.15s' }} onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--text-muted)'; e.currentTarget.style.color = 'var(--text-primary)' }} onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.color = 'var(--text-secondary)' }}>← Voltar à edição</button>
             </div>
-
-            {/* Cards rendered */}
             {activeCards.map(card => {
               const content = cardContent[card.id] ?? ''
               if (!content.trim()) return null
               return (
-                <div key={card.id} style={{
-                  marginBottom: '2rem', paddingBottom: '2rem',
-                  borderBottom: '1px solid var(--border-subtle)',
-                }}>
-                  <h3 style={{
-                    fontSize: '0.78rem', fontWeight: 700,
-                    color: 'var(--text-muted)', textTransform: 'uppercase',
-                    letterSpacing: '0.06em', marginBottom: '0.75rem', marginTop: 0,
-                  }}>
-                    {card.title}
-                  </h3>
-                  <div style={{ fontSize: '0.9rem', lineHeight: 1.75, color: 'var(--text-primary)' }}>
-                    <MarkdownRenderer content={content} />
-                  </div>
+                <div key={card.id} style={{ marginBottom: '2rem', paddingBottom: '2rem', borderBottom: '1px solid var(--border-subtle)' }}>
+                  <h3 style={{ fontSize: '0.78rem', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '0.75rem', marginTop: 0 }}>{card.title}</h3>
+                  <div style={{ fontSize: '0.9rem', lineHeight: 1.75, color: 'var(--text-primary)' }}><MarkdownRenderer content={content} /></div>
                 </div>
               )
             })}
-
-            {!hasAnyContent && (
-              <div style={{ textAlign: 'center', color: 'var(--text-muted)', fontSize: '0.88rem', paddingTop: '4rem' }}>
-                Nenhum conteúdo ainda.
-              </div>
-            )}
+            {!hasAnyContent && <div style={{ textAlign: 'center', color: 'var(--text-muted)', fontSize: '0.88rem', paddingTop: '4rem' }}>Nenhum conteúdo ainda.</div>}
           </div>
         </div>
       )}
