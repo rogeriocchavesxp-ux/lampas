@@ -429,20 +429,17 @@ export default function VisaoGeralWorkspace({
       return getSectionsByGroupNav(node.phaseGroup, project.study_mode).map(s => {
         const secData = allSections.find(sec => sec.slug === s.slug)
         const label   = (s as { shortTitle?: string; title: string }).shortTitle ?? s.title
-        // Use saved section status as primary source (handles both card and doc modes)
-        if (secData?.status && secData.status !== 'empty') {
-          return { id: s.slug, label, sectionSlug: s.slug, type: 'section' as const, status: secData.status as DrillItem['status'] }
-        }
-        // Fallback: card-based calculation for sections without saved record
         const sCards  = (secData?.content as { cards?: Record<string, string> } | null)?.cards ?? {}
+        const dbStatus = secData?.status as DrillItem['status'] | undefined
+        // Single-card section: keep as leaf (type:'card') to avoid name duplication on expand
         if (s.cards?.length === 1) {
           const onlyCard = s.cards[0]
-          const cardStatus = (secData?.status ?? cardTextStatus(sCards[onlyCard.id] ?? '')) as DrillItem['status']
-          return { id: s.slug, label, sectionSlug: s.slug, type: 'section' as const, status: cardStatus }
+          const cardStatus = dbStatus ?? (cardTextStatus(sCards[onlyCard.id] ?? '') as DrillItem['status'])
+          return { id: onlyCard.id, label, sectionSlug: s.slug, type: 'card' as const, status: cardStatus }
         }
+        // Multi-card or doc-mode section: use saved status as primary source
         const filled = Object.values(sCards).filter(v => v?.trim()).length
         const total  = s.cards?.length ?? 0
-        const dbStatus = secData?.status as DrillItem['status'] | undefined
         const calcStatus: DrillItem['status'] = filled === 0 ? 'empty' : (filled >= total && total > 0 ? 'reviewed' : 'draft')
         return { id: s.slug, label, sectionSlug: s.slug, type: 'section' as const, status: dbStatus ?? calcStatus }
       })
