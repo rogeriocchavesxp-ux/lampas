@@ -255,6 +255,7 @@ export default function SectionWorkspace({
     if (saveTimer.current) clearTimeout(saveTimer.current)
     setCardContent(savedContent.current)
     latestContent.current = savedContent.current
+    setEditingCards(new Set())
     setIsDirty(false)
   }
 
