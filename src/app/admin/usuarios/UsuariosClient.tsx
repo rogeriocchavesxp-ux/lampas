@@ -97,7 +97,7 @@ function fmtRelative(value: string | null): string {
 function getInitials(name: string | null, email: string | null): string {
   if (name) {
     const parts = name.trim().split(' ').filter(Boolean)
-    return (parts[0][0] + (parts[1]?.[0] ?? '')).toUpperCase()
+    if (parts.length > 0) return (parts[0][0] + (parts[1]?.[0] ?? '')).toUpperCase()
   }
   return (email?.[0] ?? '?').toUpperCase()
 }
