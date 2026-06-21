@@ -167,29 +167,14 @@ export default function WorkspaceLateralTabs({ project, userId, onAskAI }: Props
   const [rightTab, setRightTab] = useState<RightTab | null>(null)
   const [teoSub,   setTeoSub]   = useState<'ferramentas_biblica' | 'ferramentas_sistematica'>('ferramentas_biblica')
 
-  useEffect(() => {
-    try {
-      const lt = localStorage.getItem('lampas_lateral_left')
-      const rt = localStorage.getItem('lampas_lateral_right')
-      if (lt && (['dicionario', 'referencias', 'recortes'] as string[]).includes(lt)) setLeftTab(lt as LeftTab)
-      if (rt && (['biblia', 'introducoes', 'teologias'] as string[]).includes(rt)) setRightTab(rt as RightTab)
-    } catch {}
-  }, [project.id])
+  // Painéis laterais sempre iniciam fechados — só abrem por ação explícita do usuário
 
   const toggleLeft = useCallback((id: LeftTab) => {
-    setLeftTab(prev => {
-      const next = prev === id ? null : id
-      try { localStorage.setItem('lampas_lateral_left', next ?? '') } catch {}
-      return next
-    })
+    setLeftTab(prev => prev === id ? null : id)
   }, [])
 
   const toggleRight = useCallback((id: RightTab) => {
-    setRightTab(prev => {
-      const next = prev === id ? null : id
-      try { localStorage.setItem('lampas_lateral_right', next ?? '') } catch {}
-      return next
-    })
+    setRightTab(prev => prev === id ? null : id)
   }, [])
 
   return (
