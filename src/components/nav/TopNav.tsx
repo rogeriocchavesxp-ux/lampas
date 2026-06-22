@@ -247,24 +247,6 @@ export default function TopNav() {
             </button>
           )}
 
-          {/* Novo Projeto CTA */}
-          <button
-            onClick={() => router.push('/dashboard?new=1')}
-            style={{
-              background: 'var(--accent)', color: '#fff', border: 'none',
-              borderRadius: '7px', padding: '0.35rem 0.75rem',
-              fontSize: '0.8rem', fontWeight: 650, fontFamily: 'inherit',
-              cursor: 'pointer', flexShrink: 0, whiteSpace: 'nowrap',
-              display: 'flex', alignItems: 'center', gap: '0.25rem',
-              transition: 'background 0.13s',
-            }}
-            onMouseEnter={e => (e.currentTarget.style.background = 'var(--accent-hover)')}
-            onMouseLeave={e => (e.currentTarget.style.background = 'var(--accent)')}
-          >
-            <span style={{ fontSize: '0.9rem', lineHeight: 1 }}>+</span>
-            <span className="hidden sm:inline">Novo Projeto</span>
-          </button>
-
           {/* User menu */}
           <div style={{ position: 'relative' }}>
             <button
