@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import type { Project, Section } from '@/types/database'
+import { SECTION_DOC_TEMPLATES } from '@/lib/section-doc-templates'
 import type { SectionDef } from '@/lib/workspace-sections'
 import MarkdownRenderer from '@/components/MarkdownRenderer'
 import RichEditor from '@/components/RichEditorLazy'
@@ -100,6 +101,7 @@ function buildPlaceholderLines(placeholder: string): string {
 }
 
 function buildDocTemplate(def: SectionDef): string {
+  if (SECTION_DOC_TEMPLATES[def.slug]) return SECTION_DOC_TEMPLATES[def.slug]
   if (def.cards.length === 0) return ''
   return def.cards
     .map(card => `<h3>${card.title}</h3>${buildPlaceholderLines(card.placeholder)}`)
