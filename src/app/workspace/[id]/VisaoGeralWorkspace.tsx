@@ -1387,7 +1387,7 @@ export default function VisaoGeralWorkspace({
                             onMouseEnter={e => { if (!isEditing && !isSectionExpanded) e.currentTarget.style.background = `${node.color}08` }}
                             onMouseLeave={e => { if (!isEditing && !isSectionExpanded) e.currentTarget.style.background = 'transparent' }}
                           >
-                            {item.type === 'section' ? (
+                            {item.sectionSlug ? (
                               <button
                                 onClick={e => { e.stopPropagation(); onToggleSection?.(item.sectionSlug) }}
                                 title={item.status === 'reviewed' ? 'Marcar como não concluído' : 'Marcar como concluído'}
