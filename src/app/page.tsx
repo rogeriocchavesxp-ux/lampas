@@ -76,7 +76,7 @@ export default function HomePage() {
         <nav className="lp-nav" aria-label="Navegação principal">
           <Link href="#processo">Método</Link>
           <Link href="#recursos">Recursos</Link>
-          <Link href="#planos">Planos</Link>
+          <Link href="/planos">Planos</Link>
         </nav>
         <div className="lp-header-actions">
           <Link href="/auth/login" className="lp-link-muted">Entrar</Link>
@@ -97,7 +97,7 @@ export default function HomePage() {
         <div className="lp-mobile-nav" role="dialog" aria-label="Menu de navegação">
           <Link href="#processo" onClick={() => setMenuOpen(false)}>Método</Link>
           <Link href="#recursos" onClick={() => setMenuOpen(false)}>Recursos</Link>
-          <Link href="#planos"   onClick={() => setMenuOpen(false)}>Planos</Link>
+          <Link href="/planos"   onClick={() => setMenuOpen(false)}>Planos</Link>
           <Link href="/auth/login" onClick={() => setMenuOpen(false)} className="lp-mobile-nav-login">Entrar</Link>
           <Link href="/auth/login" onClick={() => setMenuOpen(false)} className="lp-btn-gold lp-mobile-nav-cta">Começar grátis</Link>
         </div>
@@ -335,7 +335,7 @@ export default function HomePage() {
         <nav className="lp-footer-nav" aria-label="Rodapé">
           <Link href="#recursos">Recursos</Link>
           <Link href="#processo">Método</Link>
-          <Link href="#planos">Planos</Link>
+          <Link href="/planos">Planos</Link>
           <Link href="mailto:contato@lampas.com.br">Contato</Link>
         </nav>
       </footer>
