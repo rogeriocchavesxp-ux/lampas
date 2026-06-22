@@ -183,6 +183,8 @@ export default function WorkspaceClient({ user, project, initialSections }: Prop
     })
   }
 
+  const [vgViewMode, setVgViewMode] = useState<'visual' | 'structured'>('structured')
+
   // Panel layout
   const [sidebarWidth, setSidebarWidth] = useState(264)
   const [referenceWidth, setReferenceWidth] = useState(280)
@@ -671,6 +673,60 @@ export default function WorkspaceClient({ user, project, initialSections }: Prop
               {activePhase.label}
             </span>
           </>
+        )}
+
+        {/* ── Controles de visualização ── */}
+        {(activePhase?.id === 'preparar' || activePhase?.id === 'investigar') && !VG_SLUGS.includes(activeSlug) && (
+          <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: '6px', flexShrink: 0 }}>
+            <span style={{ fontSize: '0.62rem', color: 'var(--text-muted)', whiteSpace: 'nowrap' }}>Modo de trabalho</span>
+            <div style={{ display: 'flex', gap: '2px', background: 'var(--surface)', border: '1px solid var(--border-subtle)', borderRadius: '7px', padding: '2px' }}>
+              {(['guided', 'free'] as const).map(wm => {
+                const isActive = (workModeMap[activePhase!.id] ?? 'guided') === wm
+                return (
+                  <button key={wm} onClick={() => setWorkMode(activePhase!.id, wm)}
+                    style={{
+                      height: '22px', padding: '0 10px', border: 'none',
+                      borderRadius: '5px',
+                      background: isActive ? activePhase!.color : 'transparent',
+                      color: isActive ? '#fff' : 'var(--text-muted)',
+                      fontSize: '0.7rem', fontWeight: isActive ? 700 : 400,
+                      cursor: 'pointer', fontFamily: 'inherit', transition: 'all 0.15s',
+                    }}
+                  >
+                    {wm === 'guided' ? 'Guiado' : 'Livre'}
+                  </button>
+                )
+              })}
+            </div>
+          </div>
+        )}
+
+        {VG_SLUGS.includes(activeSlug) && (
+          <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: '6px', flexShrink: 0 }}>
+            <span style={{ fontSize: '0.62rem', color: 'var(--text-muted)', whiteSpace: 'nowrap' }}>Visualização</span>
+            <div style={{ display: 'flex', gap: '2px', background: 'var(--surface)', border: '1px solid var(--border-subtle)', borderRadius: '7px', padding: '2px' }}>
+              {(['structured', 'visual'] as const).map(vm => {
+                const isActive = vgViewMode === vm
+                return (
+                  <button key={vm} onClick={() => setVgViewMode(vm)}
+                    style={{
+                      display: 'flex', alignItems: 'center', gap: '4px',
+                      height: '22px', padding: '0 10px', border: 'none',
+                      borderRadius: '5px',
+                      background: isActive ? '#fff' : 'transparent',
+                      color: isActive ? 'var(--text-primary)' : 'var(--text-muted)',
+                      fontSize: '0.7rem', fontWeight: isActive ? 600 : 400,
+                      cursor: 'pointer', fontFamily: 'inherit',
+                      boxShadow: isActive ? '0 1px 3px rgba(0,0,0,0.09)' : 'none',
+                      transition: 'all 0.12s',
+                    }}
+                  >
+                    {vm === 'visual' ? 'Mapa' : 'Estruturado'}
+                  </button>
+                )
+              })}
+            </div>
+          </div>
         )}
       </div>
 
@@ -1451,35 +1507,6 @@ export default function WorkspaceClient({ user, project, initialSections }: Prop
                 Voltar
               </button>
 
-              {/* Work mode toggle — only for preparar / investigar */}
-              {(activePhase?.id === 'preparar' || activePhase?.id === 'investigar') && activePhase && (
-                <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: '3px' }}>
-                  {(['guided', 'free'] as const).map(mode => {
-                    const isActive = (workModeMap[activePhase.id] ?? 'guided') === mode
-                    return (
-                      <button
-                        key={mode}
-                        onClick={() => setWorkMode(activePhase.id, mode)}
-                        style={{
-                          height: '22px', padding: '0 10px',
-                          border: `1px solid ${isActive ? activePhase.color : 'var(--border-subtle)'}`,
-                          borderRadius: '5px',
-                          background: isActive ? `${activePhase.color}12` : 'transparent',
-                          color: isActive ? activePhase.color : 'var(--text-muted)',
-                          fontSize: '0.65rem', fontWeight: isActive ? 700 : 400,
-                          cursor: 'pointer', fontFamily: 'inherit',
-                          transition: 'all 0.15s',
-                          letterSpacing: '0.01em',
-                        }}
-                        onMouseEnter={e => { if (!isActive) e.currentTarget.style.borderColor = 'var(--border)' }}
-                        onMouseLeave={e => { if (!isActive) e.currentTarget.style.borderColor = 'var(--border-subtle)' }}
-                      >
-                        {mode === 'guided' ? 'Guiado' : 'Livre'}
-                      </button>
-                    )
-                  })}
-                </div>
-              )}
             </div>
 
             {/* ── Free mode — renders all phase sections as a continuous document ── */}
@@ -1621,6 +1648,8 @@ export default function WorkspaceClient({ user, project, initialSections }: Prop
                 onOpenBible={() => setBibleOpen(true)}
                 onNavigate={navigate}
                 onToggleSection={slug => { void toggleSectionStatus(slug) }}
+                viewMode={vgViewMode}
+                onViewModeChange={setVgViewMode}
               />
             ) : activeDef ? (
               <SectionWorkspace

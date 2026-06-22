@@ -57,6 +57,8 @@ interface Props {
   onOpenBible?: () => void
   onNavigate?: (slug: string) => void
   onToggleSection?: (slug: string) => void
+  viewMode: 'visual' | 'structured'
+  onViewModeChange: (m: 'visual' | 'structured') => void
 }
 
 function VGProgressRing({ pct, color }: { pct: number; color: string }) {
@@ -78,7 +80,7 @@ function VGProgressRing({ pct, color }: { pct: number; color: string }) {
 // ── Component ─────────────────────────────────────────────────────────────────
 
 export default function VisaoGeralWorkspace({
-  sectionDef, project, userId, existingSection, allVGSections, allSections = [], onUpdate, onAskAI, onOpenBible, onNavigate, onToggleSection,
+  sectionDef, project, userId, existingSection, allVGSections, allSections = [], onUpdate, onAskAI, onOpenBible, onNavigate, onToggleSection, viewMode, onViewModeChange,
 }: Props) {
   const supabase    = useMemo(() => createClient(), [])
   const wrapRef     = useRef<HTMLDivElement>(null)
@@ -134,7 +136,6 @@ export default function VisaoGeralWorkspace({
   const [mounted,      setMounted]     = useState(false)
   useEffect(() => { const t = requestAnimationFrame(() => setMounted(true)); return () => cancelAnimationFrame(t) }, [])
 
-  const [mode,         setMode]        = useState<'visual' | 'structured'>('structured')
   const [expandedOutlineNodes,    setExpandedOutlineNodes]    = useState<Set<string>>(new Set())
   const [expandedOutlineSections, setExpandedOutlineSections] = useState<Set<string>>(new Set())
   const [editingOutlineCard,      setEditingOutlineCard]      = useState<string | null>(null)
@@ -296,7 +297,7 @@ export default function VisaoGeralWorkspace({
 
   // Non-passive wheel zoom
   useEffect(() => {
-    if (mode !== 'visual') return
+    if (viewMode !== 'visual') return
     const c = canvasContainerRef.current
     if (!c) return
     const container = c
@@ -315,11 +316,11 @@ export default function VisaoGeralWorkspace({
     }
     container.addEventListener('wheel', onWheel, { passive: false })
     return () => container.removeEventListener('wheel', onWheel)
-  }, [mode])
+  }, [viewMode])
 
   // Center map when canvas first becomes visible
   useEffect(() => {
-    if (mode !== 'visual' || centeredOnce.current || !canvasContainerRef.current) return
+    if (viewMode !== 'visual' || centeredOnce.current || !canvasContainerRef.current) return
     const cw = canvasContainerRef.current.clientWidth
     const ch = canvasContainerRef.current.clientHeight
     if (cw > 0 && ch > 0) {
@@ -327,7 +328,9 @@ export default function VisaoGeralWorkspace({
       setViewX((cw - CW) / 2)
       setViewY((ch - CH) / 2)
     }
-  }, [mode])
+  }, [viewMode])
+
+  useEffect(() => { setActivePanel(null) }, [viewMode])
 
   // fechar menu ao clicar fora — setTimeout garante que o listener só existe
   // no próximo tick, após o click atual terminar de propagar
@@ -1008,7 +1011,7 @@ export default function VisaoGeralWorkspace({
           <div style={{ fontSize: '0.71rem', color: 'var(--text-muted)', marginTop: '2px' }}>
             {isPassageMode ? `${project.book} ${project.passage_ref}` : project.passage_ref}
           </div>
-          {mode === 'visual' && (
+          {viewMode === 'visual' && (
             <div style={{ fontSize: '0.71rem', color: 'var(--text-muted)', marginTop: '2px', lineHeight: 1.4 }}>
               {totalItems === 0
                 ? <span style={{ color: '#B45309' }}>Marque palavras no Texto Bíblico para construir o mapa.</span>
@@ -1018,34 +1021,17 @@ export default function VisaoGeralWorkspace({
         </div>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-          {mode === 'visual' && activePanel && (
+          {viewMode === 'visual' && activePanel && (
             <button onClick={() => setActivePanel(null)}
               style={{ display: 'flex', alignItems: 'center', gap: '4px', background: 'transparent', border: '1px solid var(--border)', borderRadius: '7px', padding: '5px 10px', fontSize: '0.7rem', color: 'var(--text-muted)', cursor: 'pointer', fontFamily: 'inherit' }}
             >
               <X size={11} /> Fechar painel
             </button>
           )}
-          <div style={{ display: 'flex', gap: '2px', background: 'var(--surface-2, #F1F5F9)', borderRadius: '8px', padding: '2px' }}>
-            {(['visual', 'structured'] as const).map(m => (
-              <button key={m} onClick={() => { setMode(m); setActivePanel(null) }}
-                style={{
-                  display: 'flex', alignItems: 'center', gap: '4px',
-                  background: mode === m ? '#FFFFFF' : 'transparent', border: 'none',
-                  borderRadius: '6px', padding: '5px 11px', fontSize: '0.7rem', fontWeight: 600,
-                  color: mode === m ? 'var(--text-primary)' : 'var(--text-muted)',
-                  cursor: 'pointer', fontFamily: 'inherit',
-                  boxShadow: mode === m ? '0 1px 3px rgba(0,0,0,0.09)' : 'none',
-                  transition: 'all 0.12s',
-                }}
-              >
-                {m === 'visual' ? <><Map size={11} strokeWidth={1.75} />Mapa</> : <><List size={11} strokeWidth={1.75} />Estruturado</>}
-              </button>
-            ))}
-          </div>
         </div>
       </div>
 
-      {mode === 'visual' && isLayeredSermon && (
+      {viewMode === 'visual' && isLayeredSermon && (
         <div style={{
           marginBottom: '1rem',
           background: '#FFFFFF',
@@ -1175,7 +1161,7 @@ export default function VisaoGeralWorkspace({
       )}
 
       {/* ── Structured ─────────────────────────────────────────────────────── */}
-      {mode === 'structured' && (
+      {viewMode === 'structured' && (
         <div style={{ background: 'var(--surface)', border: '1px solid var(--border-subtle)', borderRadius: '12px', overflow: 'hidden' }}>
           {/* Root node */}
           <div style={{ padding: '0.8rem 1.1rem', borderBottom: '1px solid var(--border-subtle)', display: 'flex', alignItems: 'baseline', gap: '0.55rem', background: 'var(--surface-2, #F8FAFC)' }}>
@@ -1604,7 +1590,7 @@ export default function VisaoGeralWorkspace({
       )}
 
       {/* ── Visual ─────────────────────────────────────────────────────────── */}
-      {mode === 'visual' && (
+      {viewMode === 'visual' && (
         <>
           <div ref={wrapRef} style={{ display: 'flex', gap: `${PANEL_GAP}px`, alignItems: 'flex-start' }}>
 
