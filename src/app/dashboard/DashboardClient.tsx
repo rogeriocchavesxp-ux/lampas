@@ -47,6 +47,24 @@ export default function DashboardClient({ user, projects: initialProjects, profi
   const [estudarQuery,   setEstudarQuery]  = useState('')
   const [detectedRef,    setDetectedRef]   = useState<{ book: string; testament: 'AT' | 'NT'; passage: string; studyMode: StudyModeId } | null>(null)
 
+  // Trial state
+  const [showTrialActivation, setShowTrialActivation] = useState(false)
+  const [pendingPayload,       setPendingPayload]      = useState<Record<string, unknown> | null>(null)
+  const [activatingTrial,      setActivatingTrial]     = useState(false)
+
+  const trialStatus = useMemo(() => {
+    const startedAt  = profile?.trial_started_at
+    const expiresAt  = profile?.trial_expires_at
+    if (!startedAt || !expiresAt) return { state: 'not_started' as const }
+    const now     = new Date()
+    const expires = new Date(expiresAt)
+    if (expires > now) {
+      const daysLeft = Math.ceil((expires.getTime() - now.getTime()) / (1000 * 60 * 60 * 24))
+      return { state: 'active' as const, daysLeft }
+    }
+    return { state: 'expired' as const }
+  }, [profile])
+
   // View state
   const [dashView, setDashView] = useState<'lista' | 'livro'>('lista')
 
@@ -366,6 +384,14 @@ export default function DashboardClient({ user, projects: initialProjects, profi
       published:         false,
     }
 
+    // First project + trial not yet started → show trial activation screen
+    if (projects.length === 0 && !profile?.trial_started_at) {
+      setPendingPayload(payload)
+      setShowNew(false)
+      setShowTrialActivation(true)
+      return
+    }
+
     setCreating(true)
     try {
       const { data, error } = await supabase.from('projects').insert(payload).select().single()
@@ -387,6 +413,34 @@ export default function DashboardClient({ user, projects: initialProjects, profi
       setCreateError('Não foi possível criar o projeto. Tente novamente.')
     } finally {
       setCreating(false)
+    }
+  }
+
+  async function activateTrial() {
+    if (!pendingPayload) return
+    setActivatingTrial(true)
+    try {
+      const now     = new Date()
+      const expires = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000)
+      await supabase.from('profiles').update({
+        trial_started_at: now.toISOString(),
+        trial_expires_at: expires.toISOString(),
+      }).eq('id', user.id)
+
+      const { data, error } = await supabase.from('projects').insert(pendingPayload).select().single()
+      if (error) {
+        console.error('[Lampas] Erro ao criar projeto após ativar trial', error.message)
+        setActivatingTrial(false)
+        setShowTrialActivation(false)
+        return
+      }
+      if (data) {
+        setProjects(prev => [data as Project, ...prev])
+        void supabase.rpc('log_activity', { p_event_type: 'project_created', p_entity_type: 'project', p_entity_id: data.id })
+        router.push(`/workspace/${data.id}`)
+      }
+    } catch {
+      setActivatingTrial(false)
     }
   }
 
@@ -414,6 +468,154 @@ export default function DashboardClient({ user, projects: initialProjects, profi
           </span>
         </div>
       </header>
+
+      {/* ── Trial banner ── */}
+      {trialStatus.state === 'active' && trialStatus.daysLeft <= 3 && (
+        <div style={{
+          background: 'rgba(201,146,26,0.08)',
+          borderBottom: '1px solid rgba(201,146,26,0.18)',
+          padding: '0.65rem 2rem',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          gap: '1rem',
+          flexWrap: 'wrap',
+        }}>
+          <p style={{ margin: 0, fontSize: '0.84rem', color: 'var(--text-secondary)' }}>
+            Seu período de avaliação do Lampas Premium termina em{' '}
+            <strong style={{ color: 'var(--text-primary)' }}>
+              {trialStatus.daysLeft === 1 ? 'hoje' : `${trialStatus.daysLeft} dias`}
+            </strong>
+            . Esperamos que o Lampas tenha sido útil para o seu ministério.
+          </p>
+          <a
+            href="/billing"
+            style={{
+              fontSize: '0.82rem',
+              fontWeight: 650,
+              color: '#c9921a',
+              textDecoration: 'none',
+              whiteSpace: 'nowrap',
+              flexShrink: 0,
+            }}
+          >
+            Escolher um plano
+          </a>
+        </div>
+      )}
+      {trialStatus.state === 'expired' && (
+        <div style={{
+          background: 'var(--surface)',
+          borderBottom: '1px solid var(--border-subtle)',
+          padding: '0.65rem 2rem',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          gap: '1rem',
+          flexWrap: 'wrap',
+        }}>
+          <p style={{ margin: 0, fontSize: '0.84rem', color: 'var(--text-secondary)' }}>
+            Seu período de avaliação encerrou. Seus projetos e estudos estão preservados.
+          </p>
+          <a
+            href="/billing"
+            style={{
+              fontSize: '0.82rem',
+              fontWeight: 650,
+              color: '#c9921a',
+              textDecoration: 'none',
+              whiteSpace: 'nowrap',
+              flexShrink: 0,
+            }}
+          >
+            Escolher um plano para continuar
+          </a>
+        </div>
+      )}
+
+      {/* ── Trial activation modal ── */}
+      {showTrialActivation && (
+        <div style={{
+          position: 'fixed', inset: 0, zIndex: 200,
+          background: 'rgba(0,0,0,0.6)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          padding: '1.5rem',
+        }}>
+          <div style={{
+            background: 'var(--surface)',
+            border: '1px solid var(--border-subtle)',
+            borderRadius: '14px',
+            padding: '2.5rem',
+            maxWidth: '520px',
+            width: '100%',
+            boxShadow: '0 20px 60px rgba(0,0,0,0.3)',
+          }}>
+            <p style={{ fontSize: '0.72rem', fontWeight: 800, letterSpacing: '0.09em', textTransform: 'uppercase', color: '#c9921a', margin: '0 0 0.75rem' }}>
+              Período de avaliação
+            </p>
+            <h2 style={{ margin: '0 0 0.75rem', fontSize: '1.5rem', fontWeight: 700, color: 'var(--text-primary)', lineHeight: 1.2, fontFamily: 'EB Garamond, Georgia, serif' }}>
+              Experimente o Lampas Premium gratuitamente por 7 dias.
+            </h2>
+            <p style={{ margin: '0 0 1.5rem', fontSize: '0.9rem', color: 'var(--text-secondary)', lineHeight: 1.65 }}>
+              Você terá acesso completo a todos os recursos da plataforma.
+              Ao final do período, basta escolher o plano que melhor atende ao seu ministério.
+              Nenhuma cobrança será realizada durante o teste.
+            </p>
+            <ul style={{ margin: '0 0 2rem', padding: 0, listStyle: 'none', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+              {[
+                'Todos os modos de estudo — Sermão, Exegético, Temático, Doutrinário',
+                'IA exegética especializada sem limite',
+                'Texto original em hebraico e grego',
+                'Comentário expositivo versículo a versículo',
+                'Sermão Builder com exportação em PDF',
+                'Biblioteca, Dicionário e Referências Cruzadas',
+              ].map(f => (
+                <li key={f} style={{ display: 'flex', alignItems: 'flex-start', gap: '0.6rem', fontSize: '0.87rem', color: 'var(--text-secondary)', lineHeight: 1.5 }}>
+                  <span style={{ color: '#c9921a', fontWeight: 750, flexShrink: 0 }}>✓</span>
+                  {f}
+                </li>
+              ))}
+            </ul>
+            <button
+              onClick={activateTrial}
+              disabled={activatingTrial}
+              style={{
+                display: 'block', width: '100%',
+                padding: '0.85rem',
+                background: '#c9921a',
+                color: '#fff',
+                border: 'none',
+                borderRadius: '9px',
+                fontSize: '0.95rem',
+                fontWeight: 700,
+                cursor: activatingTrial ? 'default' : 'pointer',
+                opacity: activatingTrial ? 0.7 : 1,
+                fontFamily: 'inherit',
+                marginBottom: '0.85rem',
+              }}
+            >
+              {activatingTrial ? 'Iniciando…' : 'Iniciar meu teste gratuito'}
+            </button>
+            <button
+              onClick={() => { setShowTrialActivation(false); setPendingPayload(null) }}
+              disabled={activatingTrial}
+              style={{
+                display: 'block', width: '100%',
+                padding: '0.6rem',
+                background: 'transparent',
+                color: 'var(--text-muted)',
+                border: 'none',
+                borderRadius: '7px',
+                fontSize: '0.85rem',
+                cursor: 'pointer',
+                fontFamily: 'inherit',
+              }}
+            >
+              Cancelar
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* ── Main ── */}
       <main style={{ maxWidth: '960px', margin: '0 auto', padding: '2rem 1.5rem 5rem' }}>

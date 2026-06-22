@@ -22,6 +22,8 @@ export interface Profile {
   is_hub_editor?: boolean
   is_blocked?: boolean
   last_active_at?: string | null
+  trial_started_at?: string | null
+  trial_expires_at?: string | null
   created_at: string
 }
 

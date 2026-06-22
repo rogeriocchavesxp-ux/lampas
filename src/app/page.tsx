@@ -46,6 +46,13 @@ const testimonials = [
 
 const PLAN_ORDER = ['free', 'iniciante', 'intermediario', 'avancado'] as const
 
+const PLAN_FOR_WHOM: Record<string, string> = {
+  free:          'Para quem quer conhecer o Lampas antes de se comprometer.',
+  iniciante:     'Para estudantes bíblicos e líderes de grupo que estudam regularmente.',
+  intermediario: 'Para pastores e professores que preparam conteúdo toda semana.',
+  avancado:      'Para pregadores e pesquisadores que vivem do estudo das Escrituras.',
+}
+
 function getInitials(name: string) {
   return name
     .replace(/^(Pr\.|Dr\.|Prof\.)\s*/i, '')
@@ -220,13 +227,49 @@ export default function HomePage() {
       <section className="lp-section lp-plans-section" id="planos">
         <div className="lp-inner">
           <p className="lp-kicker">Planos</p>
-          <h2 className="lp-h2">Escolha o plano certo para o seu ministério.</h2>
+
+          {/* Proposta de valor */}
+          <div className="lp-plans-value">
+            <h2 className="lp-h2 lp-plans-h2">
+              Conheça o Lampas por completo antes de decidir.
+            </h2>
+            <p className="lp-plans-value-text">
+              Preparar um bom sermão, estudo ou aula exige tempo, método e organização.
+              O Lampas reúne tudo isso em um único ambiente — conduzindo você do texto bíblico
+              até a comunicação da Palavra com profundidade e fidelidade.
+            </p>
+            <p className="lp-plans-value-text">
+              Por isso, todo novo usuário recebe acesso completo ao plano Premium durante 7 dias,
+              sem precisar informar cartão de crédito. O período começa apenas quando você
+              criar seu primeiro projeto.
+            </p>
+          </div>
+
+          {/* O que está incluso no teste */}
+          <div className="lp-trial-features">
+            {[
+              'Todos os modos de estudo — Sermão, Exegético, Temático, Doutrinário',
+              'IA exegética especializada em texto bíblico reformado',
+              'Texto original em hebraico e grego',
+              'Comentário expositivo versículo a versículo',
+              'Sermão Builder com exportação em PDF',
+              'Biblioteca, Dicionário Lampas e Referências Cruzadas',
+            ].map(f => (
+              <div key={f} className="lp-trial-feature-item">
+                <span className="lp-trial-check">✓</span>
+                <span>{f}</span>
+              </div>
+            ))}
+          </div>
+
+          {/* Planos */}
           <div className="lp-plans-grid">
             {PLAN_ORDER.map(planId => {
-              const plan      = PLANS[planId]
-              const isPremium = planId === 'avancado'
-              const isPopular = plan.badge === 'Mais popular'
+              const plan       = PLANS[planId]
+              const isPremium  = planId === 'avancado'
+              const isPopular  = plan.badge === 'Mais popular'
               const isFeatured = isPremium || isPopular
+              const isFree     = planId === 'free'
 
               return (
                 <article
@@ -238,39 +281,38 @@ export default function HomePage() {
                       {plan.badge}
                     </div>
                   )}
+
                   <div className="lp-plan-header">
                     <h3>{plan.name}</h3>
-                    <div className="lp-plan-price">
-                      {plan.priceMonthly === 0 ? (
-                        <span className="lp-price-val">Grátis</span>
-                      ) : (
-                        <>
-                          <span className="lp-price-prefix">R$</span>
-                          <span className="lp-price-val">{(plan.priceMonthly / 100).toFixed(0)}</span>
-                          <span className="lp-price-period">/mês</span>
-                        </>
-                      )}
-                    </div>
-                    {isPremium && (
-                      <p className="lp-plan-anchor">menos de R$ 3 por dia · IA sem limite</p>
-                    )}
+                    <p className="lp-plan-for-whom">{PLAN_FOR_WHOM[planId]}</p>
                   </div>
+
                   <ul className="lp-plan-features">
                     {plan.features.map(f => (
                       <li key={f} className={isPremium ? 'lp-feature-premium' : ''}>{f}</li>
                     ))}
                   </ul>
+
                   <Link
-                    href={planId === 'free' ? '/auth/login' : '/auth/login?next=/billing'}
+                    href="/auth/login"
                     className={`lp-plan-btn ${isPremium ? 'lp-plan-btn-gold' : isFeatured ? 'lp-plan-btn-outline-gold' : 'lp-plan-btn-ghost'}`}
                   >
-                    {planId === 'free' ? 'Começar grátis' : isPremium ? 'Assinar Premium' : 'Assinar'}
+                    {isFree ? 'Começar gratuitamente' : 'Experimentar 7 dias grátis'}
                   </Link>
+
+                  <p className="lp-plan-price-note">
+                    {isFree
+                      ? 'Sempre gratuito'
+                      : `A partir de R$ ${(plan.priceMonthly / 100).toFixed(0)}/mês`}
+                  </p>
                 </article>
               )
             })}
           </div>
-          <p className="lp-plans-note">Planos anuais com 20% de desconto · Cancele a qualquer momento</p>
+
+          <p className="lp-plans-note">
+            Planos anuais com 20% de desconto · Cancele a qualquer momento · Nenhuma cobrança durante o teste
+          </p>
         </div>
       </section>
 
@@ -928,7 +970,57 @@ export default function HomePage() {
         }
 
         .lp-plans-section .lp-kicker { color: rgba(201,146,26,0.8); }
-        .lp-plans-section .lp-h2 { color: #f5f0e8; }
+        .lp-plans-h2 { color: #f5f0e8; margin-bottom: 1.25rem; }
+
+        .lp-plans-value {
+          max-width: 680px;
+          margin-bottom: 2.5rem;
+        }
+
+        .lp-plans-value-text {
+          color: rgba(245,240,232,0.55);
+          font-size: 1rem;
+          line-height: 1.72;
+          margin: 0 0 0.85rem;
+        }
+
+        .lp-trial-features {
+          display: grid;
+          grid-template-columns: repeat(2, 1fr);
+          gap: 0.55rem 2rem;
+          margin-bottom: 3.5rem;
+          max-width: 820px;
+        }
+
+        .lp-trial-feature-item {
+          display: flex;
+          align-items: flex-start;
+          gap: 0.6rem;
+          font-size: 0.88rem;
+          color: rgba(245,240,232,0.65);
+          line-height: 1.5;
+        }
+
+        .lp-trial-check {
+          color: #c9921a;
+          font-weight: 750;
+          flex-shrink: 0;
+          margin-top: 0.05rem;
+        }
+
+        .lp-plan-for-whom {
+          margin: 0.35rem 0 0;
+          font-size: 0.82rem;
+          color: rgba(245,240,232,0.4);
+          line-height: 1.55;
+        }
+
+        .lp-plan-price-note {
+          margin: 0;
+          text-align: center;
+          font-size: 0.78rem;
+          color: rgba(245,240,232,0.3);
+        }
 
         .lp-plans-grid {
           display: grid;
@@ -991,42 +1083,11 @@ export default function HomePage() {
         }
 
         .lp-plan-header h3 {
-          font-size: 1rem;
+          font-size: 1.05rem;
           font-weight: 700;
           color: #f5f0e8;
-          margin: 0 0 0.6rem;
+          margin: 0;
           font-family: 'EB Garamond', Georgia, serif;
-        }
-
-        .lp-plan-price {
-          display: flex;
-          align-items: baseline;
-          gap: 0.2rem;
-        }
-
-        .lp-price-prefix {
-          font-size: 0.9rem;
-          color: rgba(245,240,232,0.5);
-          font-weight: 500;
-        }
-
-        .lp-price-val {
-          font-size: 2rem;
-          font-weight: 750;
-          color: #f5f0e8;
-          line-height: 1;
-        }
-
-        .lp-price-period {
-          font-size: 0.84rem;
-          color: rgba(245,240,232,0.4);
-        }
-
-        .lp-plan-anchor {
-          margin: 0.4rem 0 0;
-          font-size: 0.75rem;
-          color: rgba(201,146,26,0.75);
-          line-height: 1.4;
         }
 
         .lp-plan-features {

@@ -16,6 +16,17 @@ export async function checkAIUsage(userId: string): Promise<UsageStatus> {
 
   const supabase = await createClient()
 
+  // Check for active trial before subscription lookup
+  const { data: profileRow } = await supabase
+    .from('profiles')
+    .select('trial_expires_at')
+    .eq('id', userId)
+    .single()
+
+  if (profileRow?.trial_expires_at && new Date(profileRow.trial_expires_at) > new Date()) {
+    return { plan: 'avancado', used: 0, limit: -1, canUse: true, remaining: -1 }
+  }
+
   // Uma única RPC em vez de 2 queries separadas (getUserPlan + get_ai_usage)
   const { data } = await supabase.rpc('get_user_ai_status', { p_user_id: userId })
   const status = data as { plan: string; used: number } | null
