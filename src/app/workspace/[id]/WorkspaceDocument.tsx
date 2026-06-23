@@ -46,11 +46,11 @@ const CHAPTER_META: Record<string, {
     intro: 'Todo estudo bíblico começa antes da investigação. Começa com um coração disposto a ouvir a Deus.',
     placeholders: {
       preparar_oracao:
-        'Peça ao Senhor que abra sua mente para compreender Sua Palavra e que prepare seu coração para ser transformado pelo que Ele vai revelar nesta passagem.',
+        'Antes de abrir qualquer comentário, converse com Deus sobre esta passagem. O que você deseja que Ele transforme em seu coração durante este estudo?',
       preparar_objetivo_estudo:
-        'Por que Deus trouxe esta passagem ao seu coração neste momento? Existe alguma pergunta, necessidade ou desafio que motivou este estudo?',
+        'Por que Deus trouxe esta passagem ao seu coração neste momento? Existe uma pergunta não respondida, uma dor particular, ou um chamado pastoral que motivou este estudo?',
       preparar_ocasiiao_publico:
-        'Onde este estudo será compartilhado? Quem são as pessoas que receberão esta mensagem? Que necessidades ou perguntas elas carregam neste momento?',
+        'Descreva quem você espera alcançar com este estudo. Que perguntas essas pessoas carregam? Que transformação você espera que esta mensagem produza na vida delas?',
     },
   },
   preparar_leia_assimile: {
@@ -64,13 +64,13 @@ const CHAPTER_META: Record<string, {
     },
     placeholders: {
       preparar_leitura_lenta:
-        'Leia lentamente o texto duas ou três vezes. Não tente resolver todas as dúvidas agora. Observe apenas aquilo que naturalmente chama sua atenção — palavras, imagens, emoções, perguntas.',
+        'Leia o texto em voz alta, devagar, duas ou três vezes. Não tente resolver nada ainda. Anote apenas o que naturalmente chama sua atenção — palavras, imagens, emoções, surpresas.',
       preparar_comparacao_traducoes:
-        'Leia o mesmo trecho em duas ou três traduções diferentes. O que muda entre elas? Alguma diferença revela algo importante sobre o sentido do texto?',
+        'Compare o mesmo trecho em duas ou três traduções. O que muda? Que nuances aparecem? Alguma diferença revela algo que sua tradução habitual não mostrava?',
       preparar_ideia_inicial:
-        'Em uma frase simples, o que este texto parece querer comunicar? Escreva sem censura — será revisado e aprofundado nas próximas etapas.',
+        'Em uma frase simples, o que este texto parece querer comunicar? Escreva sem censura — é apenas uma impressão inicial, será revisada depois.',
       preparar_tensoes_repeticoes:
-        'O que se repete? O que contrasta? Que palavras ou expressões saltam aos olhos? Que emoção o texto transmite ao leitor?',
+        'O que se repete neste texto? O que contrasta? Que palavras ou expressões parecem centrais? Que emoção o texto transmite?',
     },
   },
   preparar_visao_geral: {
@@ -78,15 +78,15 @@ const CHAPTER_META: Record<string, {
     intro: 'Com base no seu primeiro contato, o que o texto parece comunicar? Registre suas impressões com honestidade — ainda é cedo para conclusões definitivas.',
     placeholders: {
       preparar_tema_provavel:
-        'Qual parece ser o tema central desta passagem? Use uma frase provisória, aberta a revisão após a investigação exegética.',
+        'Qual parece ser o tema central desta passagem? Escreva uma frase provisória, aberta a revisão após a investigação exegética.',
       preparar_grande_ideia_inicial:
         'Se você tivesse de resumir o ponto principal do texto em uma frase completa — sujeito + predicado — como seria?',
       preparar_estrutura_percebida:
-        'Como o texto parece estar organizado? Quais são as partes, blocos ou movimentos que você consegue identificar nesta primeira leitura?',
+        'Como o texto parece estar organizado? Quais são os blocos ou movimentos que você consegue identificar nesta primeira leitura?',
       preparar_vg_perguntas:
-        'Que perguntas este texto levanta em você? O que ainda não ficou claro? O que surpreende, intriga ou permanece em aberto?',
+        'Que perguntas este texto levanta em você? O que ainda não ficou claro? O que te surpreende ou intriga?',
       preparar_vg_dificuldades:
-        'Que tensões, paradoxos ou dificuldades de compreensão você já percebe nesta passagem? O que exigirá atenção especial na investigação?',
+        'Que tensões, paradoxos ou dificuldades de compreensão você já percebe? O que precisará de atenção especial na investigação?',
     },
   },
 }
@@ -253,6 +253,7 @@ export default function WorkspaceDocument({
   function openChapterAt(idx: number) {
     setOpenChapterIdx(idx)
     setOpenedChapters(prev => new Set([...prev, idx]))
+    setActiveEditorKey(null)
   }
 
   // ── Save ──────────────────────────────────────────────────────────────────
@@ -574,23 +575,32 @@ export default function WorkspaceDocument({
                 }}
               >
                 <div style={{ flex: 1, minWidth: 0 }}>
-                  {/* Chapter title */}
+                  {/* Chapter title — book chapter scale */}
                   <h2 style={{
-                    margin: '0 0 0.4rem',
-                    fontSize: '1.1rem', fontWeight: 800,
+                    margin: '0 0 0.45rem',
+                    fontSize: isChOpen ? '1.65rem' : '1.05rem',
+                    fontWeight: isChOpen ? 900 : 700,
                     color: allDone ? '#10B981' : 'var(--text-primary)',
-                    letterSpacing: '-0.02em', lineHeight: 1.15,
-                    transition: 'color 0.3s ease',
+                    letterSpacing: isChOpen ? '-0.03em' : '-0.01em',
+                    lineHeight: isChOpen ? 1.1 : 1.2,
+                    transition: 'font-size 0.22s ease, font-weight 0.22s ease, color 0.3s ease',
                   }}>
                     {chMetaEntry?.title ?? sectionDef.shortTitle ?? sectionDef.title}
                   </h2>
 
-                  {/* Intro — always visible, teacher voice */}
+                  {/* Intro — always visible; truncated when collapsed */}
                   {chMetaEntry?.intro && (
                     <p style={{
                       margin: '0 0 0.7rem',
-                      fontSize: '0.79rem', fontStyle: 'italic',
-                      color: 'var(--text-secondary)', lineHeight: 1.6,
+                      fontSize: isChOpen ? '0.88rem' : '0.77rem',
+                      fontStyle: 'italic',
+                      color: 'var(--text-secondary)',
+                      lineHeight: 1.65,
+                      ...(isChOpen ? {} : {
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                        whiteSpace: 'nowrap',
+                      }),
                     }}>
                       {chMetaEntry.intro}
                     </p>
@@ -621,8 +631,8 @@ export default function WorkspaceDocument({
                 </span>
               </button>
 
-              {/* ── Toolbar — inside chapter, outside accordion ───── */}
-              {isChOpen && renderToolbar(chapterIdx)}
+              {/* ── Toolbar — only visible while writing ─────────── */}
+              {isChOpen && !!ed && renderToolbar(chapterIdx)}
 
               {/* ── Chapter accordion ────────────────────────────── */}
               <div style={{
@@ -646,16 +656,18 @@ export default function WorkspaceDocument({
                         return (
                           <div key={card.id}>
                             {!isFirst && (
-                              <div style={{ height: '1px', background: 'var(--border-subtle)', margin: '1.1rem 0', opacity: 0.55 }} />
+                              <div style={{ margin: '1.25rem 0', display: 'flex', alignItems: 'center' }}>
+                                <div style={{ flex: 1, height: '1px', background: 'var(--border)', opacity: 0.3 }} />
+                              </div>
                             )}
 
                             {/* Section title */}
                             <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.45rem', marginBottom: '0.3rem' }}>
                               <h3 style={{
                                 margin: 0,
-                                fontSize: '0.87rem', fontWeight: 700,
+                                fontSize: '1.05rem', fontWeight: 700,
                                 color: done ? 'var(--text-secondary)' : 'var(--text-primary)',
-                                letterSpacing: '-0.01em',
+                                letterSpacing: '-0.015em',
                                 transition: 'color 0.3s ease',
                               }}>
                                 {sectionTitle}
@@ -676,20 +688,18 @@ export default function WorkspaceDocument({
                               </p>
                             )}
 
-                            {/* Ruled line + integrated editor */}
-                            <div style={{ borderTop: '1px solid var(--border-subtle)', marginTop: '0.3rem' }}>
-                              <div className="ws-doc-section">
-                                <RichEditor
-                                  value={cardContent}
-                                  onChange={html => scheduleCardSave(sectionDef.slug, card.id, html)}
-                                  placeholder=""
-                                  minHeight={72}
-                                  moduleColor={accent}
-                                  hideToolbar
-                                  onEditorMount={editor => { editorMapRef.current.set(editorKey, editor) }}
-                                  onFocusChange={focused => { if (focused) setActiveEditorKey(editorKey) }}
-                                />
-                              </div>
+                            {/* Writing area — flows naturally from orientation text */}
+                            <div className="ws-doc-section" style={{ marginTop: '0.15rem' }}>
+                              <RichEditor
+                                value={cardContent}
+                                onChange={html => scheduleCardSave(sectionDef.slug, card.id, html)}
+                                placeholder=""
+                                minHeight={72}
+                                moduleColor={accent}
+                                hideToolbar
+                                onEditorMount={editor => { editorMapRef.current.set(editorKey, editor) }}
+                                onFocusChange={focused => { if (focused) setActiveEditorKey(editorKey) }}
+                              />
                             </div>
 
                           </div>
