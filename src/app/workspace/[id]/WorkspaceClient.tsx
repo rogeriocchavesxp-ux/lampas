@@ -1658,6 +1658,7 @@ export default function WorkspaceClient({ user, project, initialSections }: Prop
                 onAskAI={handleAskAI}
                 guided={(workModeMap[activePhase?.id ?? ''] ?? 'guided') === 'guided'}
                 initialSlug={activeSlug}
+                typeLabel={modeConfig.name}
               />
             ) : activeDef ? (
               <SectionWorkspace

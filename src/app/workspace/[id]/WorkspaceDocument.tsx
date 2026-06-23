@@ -220,12 +220,13 @@ interface Props {
   onAskAI: (prompt: string) => void
   guided?: boolean
   initialSlug?: string
+  typeLabel?: string
 }
 
 // ── Component ─────────────────────────────────────────────────────────────────
 
 export default function WorkspaceDocument({
-  blocks, project, userId, onUpdate, guided = true, initialSlug,
+  blocks, project, userId, onUpdate, guided = true, initialSlug, typeLabel,
 }: Props) {
   const supabase = createClient()
 
@@ -574,21 +575,27 @@ export default function WorkspaceDocument({
 
           {/* Paper title */}
           <div style={{ marginBottom: '3.5rem' }}>
+            <div style={{ width: '28px', height: '3px', borderRadius: '2px', background: accent, marginBottom: '1.1rem' }} />
             <h1 style={{
               margin: 0,
-              fontSize: '2.4rem', fontWeight: 700,
-              color: '#1A1D23', letterSpacing: '-0.04em',
-              lineHeight: 1.05,
+              fontSize: '2.5rem', fontWeight: 700,
+              color: '#1A1D23', letterSpacing: '-0.045em',
+              lineHeight: 1.0,
             }}>
-              {project.passage_ref}
+              {project.title}
             </h1>
-            {project.bible_version && (
+            {(typeLabel || project.bible_version) && (
               <p style={{
-                margin: '0.45rem 0 0',
-                fontSize: '0.82rem', fontWeight: 400,
+                margin: '0.6rem 0 0',
+                fontSize: '0.8rem', fontWeight: 400,
                 color: '#64748B', letterSpacing: '0.01em',
+                display: 'flex', alignItems: 'center', gap: '0.4rem',
               }}>
-                {project.bible_version}
+                {typeLabel && <span>{typeLabel}</span>}
+                {typeLabel && project.bible_version && (
+                  <span style={{ opacity: 0.4, fontSize: '0.7rem' }}>•</span>
+                )}
+                {project.bible_version && <span>{project.bible_version}</span>}
               </p>
             )}
             <div style={{ margin: '1.75rem 0 0', height: '1px', background: '#E2E4E8' }} />
@@ -693,22 +700,32 @@ export default function WorkspaceDocument({
       <div style={{ flex: 1, maxWidth: '700px', margin: '0 auto', width: '100%', padding: '1.25rem 1.25rem 4rem' }}>
 
         {/* ── Document title ─────────────────────────────────────────────── */}
-        <div style={{ padding: '1.5rem 1.4rem 2rem' }}>
+        <div style={{ padding: '1.75rem 1.4rem 2rem' }}>
+          {/* Accent bar */}
+          <div style={{ width: '32px', height: '3px', borderRadius: '2px', background: accent, marginBottom: '1.1rem' }} />
+
           <h1 style={{
             margin: 0,
-            fontSize: '2.4rem', fontWeight: 700,
-            color: 'var(--text-primary)', letterSpacing: '-0.04em',
-            lineHeight: 1.05,
+            fontSize: '2.5rem', fontWeight: 700,
+            color: 'var(--text-primary)', letterSpacing: '-0.045em',
+            lineHeight: 1.0,
           }}>
-            {project.passage_ref}
+            {project.title}
           </h1>
-          {project.bible_version && (
+
+          {/* Subtitle line */}
+          {(typeLabel || project.bible_version) && (
             <p style={{
-              margin: '0.45rem 0 0',
-              fontSize: '0.82rem', fontWeight: 400,
+              margin: '0.6rem 0 0',
+              fontSize: '0.8rem', fontWeight: 400,
               color: 'var(--text-secondary)', letterSpacing: '0.01em',
+              display: 'flex', alignItems: 'center', gap: '0.4rem',
             }}>
-              {project.bible_version}
+              {typeLabel && <span>{typeLabel}</span>}
+              {typeLabel && project.bible_version && (
+                <span style={{ opacity: 0.4, fontSize: '0.7rem' }}>•</span>
+              )}
+              {project.bible_version && <span>{project.bible_version}</span>}
             </p>
           )}
         </div>
