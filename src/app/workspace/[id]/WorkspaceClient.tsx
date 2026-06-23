@@ -634,6 +634,8 @@ export default function WorkspaceClient({ user, project, initialSections }: Prop
         onWorkModeChange={(mode) => activePhase && setWorkMode(activePhase.id, mode)}
         vgViewMode={vgViewMode}
         onVgViewModeChange={setVgViewMode}
+        bibleOpen={bibleOpen}
+        onToggleBible={() => setBibleOpen(o => !o)}
       />
 
       {/* ── Guided strip (demo projects only) ─────────────────────────── */}

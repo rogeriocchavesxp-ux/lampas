@@ -108,6 +108,29 @@ function PhaseBadge({ phase }: { phase: NavPhase }) {
   )
 }
 
+// ── BibleToggle ───────────────────────────────────────────────────────────────
+
+function BibleToggle({ open, onClick }: { open: boolean; onClick: () => void }) {
+  return (
+    <button
+      onClick={onClick}
+      style={{
+        display: 'flex', alignItems: 'center', gap: 5,
+        height: SEG_HEIGHT, padding: '0 10px',
+        border: `1px solid ${open ? 'var(--accent)' : 'var(--border-subtle)'}`,
+        borderRadius: 6,
+        background: open ? 'var(--accent)' : 'transparent',
+        color: open ? '#fff' : 'var(--text-muted)',
+        fontSize: '0.71rem', fontWeight: open ? 650 : 400,
+        cursor: 'pointer', fontFamily: 'inherit',
+        transition: 'all 0.12s', whiteSpace: 'nowrap', flexShrink: 0,
+      }}
+    >
+      Texto Bíblico
+    </button>
+  )
+}
+
 // ── Props ─────────────────────────────────────────────────────────────────────
 
 export interface WorkspaceHeaderProps {
@@ -122,6 +145,8 @@ export interface WorkspaceHeaderProps {
   onWorkModeChange:   (mode: 'guided' | 'free') => void
   vgViewMode:         'visual' | 'structured'
   onVgViewModeChange: (mode: 'visual' | 'structured') => void
+  bibleOpen:          boolean
+  onToggleBible:      () => void
 }
 
 // ── WorkspaceHeader ──────────────────────────────────────────────────────────
@@ -132,7 +157,10 @@ export default function WorkspaceHeader({
   showWorkMode, showViewMode,
   workMode, onWorkModeChange,
   vgViewMode, onVgViewModeChange,
+  bibleOpen, onToggleBible,
 }: WorkspaceHeaderProps) {
+  const hasControls = showWorkMode || showViewMode
+
   return (
     <>
       {/* Responsive: chips collapse at smaller viewports — never wrap, never break */}
@@ -147,7 +175,7 @@ export default function WorkspaceHeader({
         height: HEADER_HEIGHT,
         flexShrink: 0,
         display: 'grid',
-        gridTemplateColumns: 'auto 1fr auto',
+        gridTemplateColumns: 'auto 1fr',
         alignItems: 'center',
         padding: '0 16px',
         columnGap: 8,
@@ -182,13 +210,17 @@ export default function WorkspaceHeader({
           </span>
         </div>
 
-        {/* ── CenterGroup — Active phase ── */}
-        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-          {activePhase && <PhaseBadge phase={activePhase} />}
-        </div>
+        {/* ── CenterGroup — Phase + controls ── */}
+        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 8 }}>
+          {activePhase && (
+            <>
+              <PhaseBadge phase={activePhase} />
+              {(hasControls) && (
+                <span style={{ display: 'block', width: 1, height: 14, background: 'var(--border-subtle)', flexShrink: 0 }} />
+              )}
+            </>
+          )}
 
-        {/* ── RightGroup — Mode controls ── */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
           {showWorkMode && (
             <SegmentedControl
               options={[
@@ -200,6 +232,9 @@ export default function WorkspaceHeader({
               color={activePhase?.color}
             />
           )}
+
+          <BibleToggle open={bibleOpen} onClick={onToggleBible} />
+
           {showViewMode && (
             <SegmentedControl
               options={[
