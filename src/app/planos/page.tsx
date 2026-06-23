@@ -18,46 +18,46 @@ interface PlanCard {
 
 const PLAN_CARDS: Record<string, PlanCard> = {
   free: {
-    title: 'O ponto de partida',
-    promise: 'Descubra uma nova forma de se relacionar com o texto bíblico.',
+    title: 'O primeiro passo',
+    promise: 'Descubra o que significa estudar a Bíblia com método, organização e fidelidade ao texto.',
     benefits: [
-      'Organize seus estudos em um ambiente construído especialmente para as Escrituras.',
-      'Explore o contexto histórico e literário de cada passagem com orientação metodológica.',
-      'Prepare devocionais com estrutura e profundidade real.',
-      'Conte com auxílio especializado durante o seu estudo.',
+      'Estude cada passagem com uma estrutura que revela camadas que a leitura comum não alcança.',
+      'Tenha todos os seus estudos em um único ambiente — sem arquivos espalhados, sem nada perdido.',
+      'Prepare devocionais com profundidade real e orientação em cada etapa.',
+      'Receba ajuda especializada durante o estudo, quando precisar.',
     ],
   },
   iniciante: {
     title: 'O hábito que transforma',
-    promise: 'Construa o hábito de estudar com consistência e veja cada semana de preparo produzir mais.',
+    promise: 'Transforme cada semana de preparo em conhecimento que se acumula, se organiza e serve ao seu ministério por anos.',
     benefits: [
-      'Prepare sermões, estudos bíblicos e aulas com metodologia sólida e estrutura clara.',
-      'Preserve tudo o que você aprende em um único lugar permanente.',
-      'Consulte conceitos bíblicos e teológicos sem interromper o ritmo do estudo.',
-      'Compartilhe seu trabalho com a comunidade quando estiver pronto.',
-      'Conte com assistência especializada em cada etapa do preparo.',
+      'Prepare sermões, estudos bíblicos e aulas com método claro e resultados que crescem com o tempo.',
+      'Preserve tudo o que você aprende em um lugar permanente — sempre acessível, sempre organizado.',
+      'Esclareça conceitos bíblicos e teológicos sem interromper o ritmo do seu estudo.',
+      'Construa sobre o que já foi feito — cada estudo fortalece o próximo.',
+      'Conduza sua comunidade com mais segurança, fundamentado em uma interpretação cuidadosa das Escrituras.',
     ],
   },
   intermediario: {
     title: 'A profundidade que o púlpito exige',
-    promise: 'Pregue e ensine com o rigor que o texto bíblico merece, toda semana, sem abrir mão da profundidade.',
+    promise: 'Pregue e ensine com o rigor que o texto bíblico merece — toda semana, sem comprometer a profundidade.',
     benefits: [
-      'Explore qualquer modo de estudo — exegético, temático ou doutrinário — conforme a demanda do ministério.',
-      'Aprofunde sua interpretação com ferramentas de teologia bíblica e sistemática.',
-      'Construa uma biblioteca que cresce e se organiza junto com o seu ministério.',
-      'Receba sínteses inteligentes ao final de cada seção de estudo.',
-      'Exporte e distribua seus estudos com facilidade.',
+      'Aprofunde sua interpretação por múltiplos ângulos — exegético, temático e doutrinário.',
+      'Produza mais em menos tempo, sem abrir mão da qualidade teológica.',
+      'Construa uma biblioteca ministerial que cresce e se organiza junto com o seu ministério.',
+      'Acumule anos de conhecimento que continuará servindo muito depois de cada domingo.',
+      'Explore o texto com liberdade — o método está sempre conduzindo, nunca limitando.',
     ],
   },
   avancado: {
     title: 'O ministério em um só lugar',
-    promise: 'Centralize todo o conhecimento do seu ministério — da exegese à publicação, sem limitações.',
+    promise: 'Centralize todo o conhecimento do seu ministério — da exegese aos idiomas bíblicos, da produção à publicação, sem limitações.',
     benefits: [
-      'Aprofunde sua interpretação consultando diretamente os textos em hebraico e grego.',
-      'Enriqueça cada estudo com comentários expositivos versículo a versículo.',
-      'Construa sermões completos com o Sermão Builder e exporte em PDF com um clique.',
-      'Receba auxílio da IA a qualquer momento, sem nenhuma restrição de uso.',
-      'Construa um patrimônio de conhecimento bíblico que servirá ao ministério por décadas.',
+      'Aprofunde sua interpretação consultando diretamente o hebraico e o grego, no contexto do seu estudo.',
+      'Enriqueça cada análise com comentários expositivos e acesso a toda a tradição hermenêutica reformada.',
+      'Produza sermões completos, exporte estudos em PDF e compartilhe com um único clique.',
+      'Receba auxílio da IA a qualquer momento, em qualquer etapa, sem nenhuma restrição.',
+      'Construa um patrimônio de conhecimento bíblico que servirá ao Reino de Deus durante toda a sua vida.',
     ],
   },
 }
@@ -194,33 +194,141 @@ export default function PlanosPage() {
       </section>
 
       {/* ══════════════════════════════════════════════════════
-          SEÇÃO 2 — O PROBLEMA
+          SEÇÃO 2 — OS 5 PREJUÍZOS
       ══════════════════════════════════════════════════════ */}
-      <section className="pl-section pl-light" id="problema">
+      <section className="pl-section pl-light" id="prejuizos">
         <div className="pl-inner">
-          <p className="pl-kicker">O problema</p>
-          <h2 className="pl-h2">O que acontece com anos de estudo?</h2>
+          <p className="pl-kicker">Uma realidade familiar</p>
+          <h2 className="pl-h2">Talvez você já tenha vivido<br />alguma destas situações.</h2>
           <p className="pl-section-sub">
-            A maioria dos ministros que conheço dedica horas profundas ao estudo da Palavra.
-            Mas ao cabo de alguns anos, onde está tudo isso?
+            Quem estuda a Palavra com seriedade dedica anos a ela.
+            Mas a forma como esse conhecimento é guardado — ou não é guardado — faz toda a diferença.
           </p>
-          <div className="pl-problem-grid">
-            {[
-              { n: '01', pain: 'Sermões espalhados em Word, Google Docs, Pages e PDFs sem ordem nenhuma.' },
-              { n: '02', pain: 'Pesquisas excelentes feitas uma vez e nunca mais encontradas.' },
-              { n: '03', pain: 'Anotações em cadernos físicos que ficam no fundo da gaveta.' },
-              { n: '04', pain: 'Horas procurando algo que você sabe que estudou — mas onde está?' },
-              { n: '05', pain: 'Estudos profundos que nunca são reaproveitados porque não há organização.' },
-              { n: '06', pain: 'Cada novo sermão começa do zero, mesmo que você já tenha trabalhado na passagem.' },
-            ].map(({ n, pain }) => (
-              <div key={n} className="pl-problem-card">
-                <span className="pl-problem-n">{n}</span>
-                <p className="pl-problem-text">{pain}</p>
+
+          <div className="pl-losses">
+
+            <div className="pl-loss">
+              <div className="pl-loss-head">
+                <span className="pl-loss-n">01</span>
+                <h3 className="pl-loss-title">Anos de conhecimento se perdem.</h3>
               </div>
-            ))}
+              <div className="pl-loss-body">
+                <p className="pl-loss-main">
+                  Depois de anos estudando, preparando sermões, aulas e pesquisas, grande parte
+                  desse conhecimento acaba espalhada entre documentos, cadernos, PDFs e aplicativos
+                  que você mal abre mais.
+                </p>
+                <p className="pl-loss-consequence">
+                  Todo esse esforço intelectual — centenas de horas de estudo dedicado —
+                  deixa de ser reaproveitado. Como se cada domingo fosse um recomeço.
+                </p>
+                <p className="pl-loss-close">
+                  O conhecimento que deveria fortalecer o seu ministério durante décadas
+                  acaba sendo perdido ao longo dos anos.
+                </p>
+              </div>
+            </div>
+
+            <div className="pl-loss">
+              <div className="pl-loss-head">
+                <span className="pl-loss-n">02</span>
+                <h3 className="pl-loss-title">Tempo precioso é desperdiçado.</h3>
+              </div>
+              <div className="pl-loss-body">
+                <p className="pl-loss-main">
+                  Muitas horas por semana são gastas procurando arquivos, reorganizando anotações
+                  ou refazendo pesquisas que já haviam sido realizadas meses antes.
+                </p>
+                <p className="pl-loss-consequence">
+                  Menos tempo com a Palavra. Mais tempo administrando documentos.
+                  O que deveria ser profundidade se transforma em logística.
+                </p>
+                <p className="pl-loss-close">
+                  E no final do dia, a sensação é de que o tempo passou,
+                  mas o estudo não avançou como deveria.
+                </p>
+              </div>
+            </div>
+
+            <div className="pl-loss">
+              <div className="pl-loss-head">
+                <span className="pl-loss-n">03</span>
+                <h3 className="pl-loss-title">Os estudos ficam menos profundos.</h3>
+              </div>
+              <div className="pl-loss-body">
+                <p className="pl-loss-main">
+                  Sem um método claro conduzindo cada etapa, detalhes importantes do texto
+                  passam despercebidos e etapas essenciais da interpretação são deixadas de lado
+                  pela pressão do tempo.
+                </p>
+                <p className="pl-loss-consequence">
+                  O texto bíblico merece investigação cuidadosa. Mas quando o método falta,
+                  a tendência é ir direto para o que já é conhecido — e a profundidade fica para depois.
+                </p>
+                <p className="pl-loss-close">
+                  O resultado é uma comunicação menos fiel ao texto do que poderia ser.
+                </p>
+              </div>
+            </div>
+
+            <div className="pl-loss">
+              <div className="pl-loss-head">
+                <span className="pl-loss-n">04</span>
+                <h3 className="pl-loss-title">O trabalho precisa ser refeito.</h3>
+              </div>
+              <div className="pl-loss-body">
+                <p className="pl-loss-main">
+                  Quando o conhecimento está disperso, um estudo raramente fortalece o próximo.
+                  Cada nova pesquisa começa praticamente do zero — como se o esforço anterior não existisse.
+                </p>
+                <p className="pl-loss-consequence">
+                  O conhecimento não se acumula. Não se aprofunda. Não cresce.
+                  Cada pregação exige o mesmo esforço de sempre.
+                </p>
+                <p className="pl-loss-close">
+                  O ministério não constrói sobre si mesmo.
+                </p>
+              </div>
+            </div>
+
+            <div className="pl-loss">
+              <div className="pl-loss-head">
+                <span className="pl-loss-n">05</span>
+                <h3 className="pl-loss-title">O ministério não constrói um legado.</h3>
+              </div>
+              <div className="pl-loss-body">
+                <p className="pl-loss-main">
+                  Depois de muitos anos pregando e ensinando, o conhecimento produzido deveria
+                  formar uma biblioteca viva — um patrimônio ministerial que cresce e serve continuamente.
+                </p>
+                <p className="pl-loss-consequence">
+                  Mas quando tudo está espalhado, esse legado nunca se forma.
+                  Os anos passam. Os sermões ficam perdidos. As pesquisas somem.
+                </p>
+                <p className="pl-loss-close">
+                  E o que poderia ter sido um patrimônio intelectual de toda uma vida
+                  acaba sendo apenas uma coleção de arquivos que ninguém mais sabe encontrar.
+                </p>
+              </div>
+            </div>
+
           </div>
-          <p className="pl-problem-close">
-            Não é falta de disciplina. É falta de um ambiente feito para isso.
+        </div>
+      </section>
+
+      {/* ══════════════════════════════════════════════════════
+          TRANSIÇÃO
+      ══════════════════════════════════════════════════════ */}
+      <section className="pl-transition">
+        <div className="pl-inner pl-transition-inner">
+          <p className="pl-transition-lead">Há uma forma melhor de estudar.</p>
+          <p className="pl-transition-body">
+            Um lugar onde cada estudo se conecta ao anterior.
+            Onde o conhecimento acumulado hoje ainda servirá ao seu ministério daqui a dez anos.
+            Onde a profundidade não compete com o tempo — ela se multiplica com ele.
+          </p>
+          <p className="pl-transition-close">
+            Esse lugar é o Lampas.
           </p>
         </div>
       </section>
@@ -788,29 +896,77 @@ export default function PlanosPage() {
           content: '·'; color: rgba(201,146,26,0.4);
         }
 
-        /* ── Problem ───────────────────────────────── */
-        .pl-problem-grid {
+        /* ── Os 5 Prejuízos ────────────────────────── */
+        .pl-losses {
+          display: flex; flex-direction: column;
+          gap: 0;
+          margin-top: 3.5rem;
+        }
+        .pl-loss {
           display: grid;
-          grid-template-columns: repeat(3, 1fr);
-          gap: 1.25rem;
-          margin-bottom: 3rem;
+          grid-template-columns: 260px 1fr;
+          gap: 2.5rem;
+          padding: 2.75rem 0;
+          border-top: 1px solid rgba(201,146,26,0.12);
         }
-        .pl-problem-card {
-          background: rgba(255,255,255,0.6);
-          border: 1px solid rgba(201,146,26,0.1);
-          border-radius: 10px;
-          padding: 1.75rem 1.5rem;
-          transition: border-color 0.14s, box-shadow 0.14s;
-        }
-        .pl-problem-card:hover {
-          border-color: rgba(201,146,26,0.22);
-          box-shadow: 0 4px 18px rgba(15,23,42,0.06);
-        }
-        .pl-problem-n {
+        .pl-loss:last-child { border-bottom: 1px solid rgba(201,146,26,0.12); }
+        .pl-loss-head { padding-top: 0.2rem; }
+        .pl-loss-n {
           display: block;
-          font-size: 0.68rem; font-weight: 800; color: rgba(201,146,26,0.5);
-          letter-spacing: 0.06em; margin-bottom: 0.75rem;
+          font-size: 0.65rem; font-weight: 800;
+          color: rgba(201,146,26,0.45);
+          letter-spacing: 0.09em; text-transform: uppercase;
+          margin-bottom: 0.75rem;
         }
+        .pl-loss-title {
+          font-size: 1.18rem; font-weight: 700;
+          color: #1e293b; line-height: 1.3; margin: 0;
+          font-family: 'EB Garamond', Georgia, serif;
+        }
+        .pl-loss-body {
+          display: flex; flex-direction: column; gap: 0.9rem;
+        }
+        .pl-loss-main {
+          font-size: 0.97rem; color: #334155;
+          line-height: 1.75; margin: 0;
+        }
+        .pl-loss-consequence {
+          font-size: 0.92rem; color: #64748b;
+          line-height: 1.7; margin: 0;
+        }
+        .pl-loss-close {
+          font-size: 0.92rem; color: #94a3b8;
+          line-height: 1.65; margin: 0; font-style: italic;
+          font-family: 'EB Garamond', Georgia, serif;
+        }
+
+        /* ── Transição ─────────────────────────────── */
+        .pl-transition {
+          background: linear-gradient(135deg, #0f1729 0%, #1a2744 50%, #0f1729 100%);
+          padding: 5rem 1.5rem;
+          text-align: center;
+        }
+        .pl-transition-inner {
+          max-width: 660px; margin: 0 auto;
+          display: flex; flex-direction: column; gap: 1.25rem;
+        }
+        .pl-transition-lead {
+          font-family: 'EB Garamond', Georgia, serif;
+          font-size: clamp(1.6rem, 4vw, 2.2rem);
+          font-weight: 600; color: #f5f0e8;
+          margin: 0; line-height: 1.2;
+        }
+        .pl-transition-body {
+          font-size: 1.05rem; color: rgba(245,240,232,0.55);
+          line-height: 1.8; margin: 0;
+        }
+        .pl-transition-close {
+          font-family: 'EB Garamond', Georgia, serif;
+          font-size: 1.25rem; font-weight: 600;
+          color: #c9921a; margin: 0; letter-spacing: 0.01em;
+        }
+
+        /* ── Problem (legacy, kept for grid responsiveness) */
         .pl-problem-text {
           margin: 0; font-size: 0.92rem; color: #475569; line-height: 1.6;
         }
@@ -1235,7 +1391,7 @@ export default function PlanosPage() {
 
         /* ── Responsive ────────────────────────────── */
         @media (max-width: 900px) {
-          .pl-problem-grid { grid-template-columns: repeat(2, 1fr); }
+          .pl-loss { grid-template-columns: 1fr; gap: 1rem; }
           .pl-plans-grid   { grid-template-columns: repeat(2, 1fr); }
           .pl-eco-grid     { grid-template-columns: repeat(2, 1fr); }
           .pl-norisk-inner { grid-template-columns: 1fr; }
@@ -1247,7 +1403,8 @@ export default function PlanosPage() {
           .pl-hamburger { display: flex; }
           .pl-hero   { padding: 5rem 0 4rem; }
           .pl-section{ padding: 5rem 0; }
-          .pl-problem-grid { grid-template-columns: 1fr; }
+          .pl-loss    { padding: 2rem 0; }
+          .pl-loss-title { font-size: 1.05rem; }
           .pl-plans-grid   { grid-template-columns: 1fr; }
           .pl-eco-grid     { grid-template-columns: 1fr; }
           .pl-compare      { grid-template-columns: 1fr; gap: 2rem; }
