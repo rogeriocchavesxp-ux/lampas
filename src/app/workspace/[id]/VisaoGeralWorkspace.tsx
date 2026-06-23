@@ -320,14 +320,19 @@ export default function VisaoGeralWorkspace({
 
   // Center map when canvas first becomes visible
   useEffect(() => {
-    if (viewMode !== 'visual' || centeredOnce.current || !canvasContainerRef.current) return
-    const cw = canvasContainerRef.current.clientWidth
-    const ch = canvasContainerRef.current.clientHeight
-    if (cw > 0 && ch > 0) {
-      centeredOnce.current = true
-      setViewX((cw - CW) / 2)
-      setViewY((ch - CH) / 2)
-    }
+    if (viewMode !== 'visual' || centeredOnce.current) return
+    // Defer to next frame so the browser has laid out the canvas container
+    const raf = requestAnimationFrame(() => {
+      if (!canvasContainerRef.current) return
+      const cw = canvasContainerRef.current.clientWidth
+      const ch = canvasContainerRef.current.clientHeight
+      if (cw > 0 && ch > 0) {
+        centeredOnce.current = true
+        setViewX((cw - CW) / 2)
+        setViewY((ch - CH) / 2)
+      }
+    })
+    return () => cancelAnimationFrame(raf)
   }, [viewMode])
 
   useEffect(() => { setActivePanel(null) }, [viewMode])
