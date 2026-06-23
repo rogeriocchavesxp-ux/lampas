@@ -484,12 +484,31 @@ const doutr_implicacoes = [
   p(),
 ].join('')
 
+const preparar_visao_geral = [
+  h2('Tema provável'),
+  guide('Qual parece ser o tema central desta passagem? Use uma frase provisória, aberta a revisão.'),
+  p(), hr,
+  h2('Grande ideia inicial'),
+  guide('Se você tivesse de resumir o ponto principal em uma frase completa, como seria? Sujeito + predicado.'),
+  p(), hr,
+  h2('Estrutura percebida'),
+  guide('Como o texto parece estar organizado? Liste seções, blocos ou movimentos que você consegue identificar.'),
+  p(), hr,
+  h2('Perguntas iniciais'),
+  guide('Que perguntas este texto levanta em você? O que não ficou claro? O que surpreende?'),
+  p(), hr,
+  h2('Dificuldades iniciais'),
+  guide('Que tensões, paradoxos ou dificuldades de compreensão você já percebe nesta passagem?'),
+  p(),
+].join('')
+
 // ─── Mapa de slug → template ──────────────────────────────────────────────────
 
 export const SECTION_DOC_TEMPLATES: Record<string, string> = {
   // Preparar
   preparacao_espiritual,
   preparar_leia_assimile,
+  preparar_visao_geral,
 
   // Investigar — Contextual
   contexto_historico,

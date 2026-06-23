@@ -32,6 +32,9 @@ interface Props {
   autoFocus?: boolean
   aiContext?: AIContext
   sticky?: boolean
+  hideToolbar?: boolean
+  onEditorMount?: (editor: import('@tiptap/core').Editor) => void
+  onFocusChange?: (focused: boolean) => void
 }
 
 // ── Color palettes ────────────────────────────────────────────────────────────
@@ -117,6 +120,7 @@ function Sep() {
 export default function RichEditor({
   value, onChange, placeholder, moduleColor = 'var(--accent)', minHeight = 180,
   insertMenu, compact = false, autoFocus = false, aiContext, sticky = false,
+  hideToolbar = false, onEditorMount, onFocusChange,
 }: Props) {
   const [structuralMode, setStructuralMode] = useState(false)
   const [hlOpen,         setHlOpen]         = useState(false)
@@ -127,12 +131,15 @@ export default function RichEditor({
   const [focused,        setFocused]        = useState(false)
   const [aiOpen,         setAiOpen]         = useState(false)
   const [isStuck,        setIsStuck]        = useState(false)
-  const structuralRef  = useRef(false)
-  const hlRef          = useRef<HTMLDivElement>(null)
-  const colorRef       = useRef<HTMLDivElement>(null)
-  const insertRef      = useRef<HTMLDivElement>(null)
-  const linkRef        = useRef<HTMLDivElement>(null)
-  const sentinelRef    = useRef<HTMLDivElement>(null)
+  const structuralRef    = useRef(false)
+  const hlRef            = useRef<HTMLDivElement>(null)
+  const colorRef         = useRef<HTMLDivElement>(null)
+  const insertRef        = useRef<HTMLDivElement>(null)
+  const linkRef          = useRef<HTMLDivElement>(null)
+  const sentinelRef      = useRef<HTMLDivElement>(null)
+  const onFocusChangeRef = useRef(onFocusChange)
+  const editorMountedRef = useRef(false)
+  useEffect(() => { onFocusChangeRef.current = onFocusChange }, [onFocusChange])
   // Tracks whether the pending value change originated inside the editor (typing/AI commands).
   // When true, the sync useEffect must skip setContent to avoid resetting cursor position.
   const isInternalRef  = useRef(false)
@@ -190,8 +197,8 @@ export default function RichEditor({
     content: normalizedValue,
     autofocus: autoFocus ? 'end' : false,
     onUpdate: ({ editor }) => { isInternalRef.current = true; onChange(editor.getHTML()) },
-    onFocus: () => setFocused(true),
-    onBlur:  () => setFocused(false),
+    onFocus: () => { setFocused(true); onFocusChangeRef.current?.(true) },
+    onBlur:  () => { setFocused(false); onFocusChangeRef.current?.(false) },
     editorProps: {
       attributes: { spellcheck: 'false' },
       handleKeyDown: (_view, event): boolean => {
@@ -220,6 +227,14 @@ export default function RichEditor({
       },
     },
   })
+
+  // Notify parent when editor instance is ready (used by WorkspaceDocument shared toolbar).
+  useEffect(() => {
+    if (editor && !editorMountedRef.current) {
+      editorMountedRef.current = true
+      onEditorMount?.(editor)
+    }
+  }, [editor]) // eslint-disable-line react-hooks/exhaustive-deps
 
   // Sync external value changes (AI injection, section change) without disturbing cursor.
   // Root-cause guard: normalizeEditorContent decodes HTML entities (&amp;→&, &lt;→<, etc.)
@@ -270,10 +285,10 @@ export default function RichEditor({
     <>
     <div style={{ position: 'relative' }}>
       {/* Sentinel: 1px invisible div used by IntersectionObserver to detect sticky state */}
-      {sticky && <div ref={sentinelRef} style={{ height: '1px', visibility: 'hidden', pointerEvents: 'none' }} />}
+      {sticky && !hideToolbar && <div ref={sentinelRef} style={{ height: '1px', visibility: 'hidden', pointerEvents: 'none' }} />}
 
       {/* ── Toolbar ── */}
-      <div style={{
+      {!hideToolbar && <div style={{
         display: 'flex', alignItems: 'center', gap: '2px', flexWrap: 'wrap',
         padding: '0.3rem 0.45rem',
         background: sticky && isStuck ? 'var(--background)' : 'var(--surface)',
@@ -501,7 +516,7 @@ export default function RichEditor({
             </button>
           </>
         )}
-      </div>
+      </div>}
 
       {/* ── Editor area ── */}
       <div style={{ position: 'relative' }}>

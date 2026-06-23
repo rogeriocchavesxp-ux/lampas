@@ -11,6 +11,7 @@ import {
   getSectionNavBySlug,
 } from '@/lib/workspace-sections-nav'
 import {
+  WORKSPACE_SECTIONS,
   SYNTHESIS_DEFS,
   isSynthesisSlug,
   getSynthesisBySlug,
@@ -38,6 +39,7 @@ import LiveReferencePanel from './LiveReferencePanel'
 import AIPanel from './AIPanel'
 import BibleFloatingWindow from './BibleFloatingWindow'
 import VisaoGeralWorkspace from './VisaoGeralWorkspace'
+import WorkspaceDocument from './WorkspaceDocument'
 import EnviarParaSermaModal from './EnviarParaSermaModal'
 import DicionarioWorkspace from './DicionarioWorkspace'
 import IntroducaoWorkspace from './IntroducaoWorkspace'
@@ -98,6 +100,8 @@ function ProgressRing({ pct, color, size = 15 }: { pct: number; color: string; s
   )
 }
 
+
+const PREPARAR_DOC_SLUGS = ['preparacao_espiritual', 'preparar_leia_assimile', 'preparar_visao_geral']
 
 // ── Componente principal ────────────────────────────────────────────────────
 
@@ -1650,6 +1654,20 @@ export default function WorkspaceClient({ user, project, initialSections }: Prop
                 onToggleSection={slug => { void toggleSectionStatus(slug) }}
                 viewMode={vgViewMode}
                 onViewModeChange={setVgViewMode}
+              />
+            ) : PREPARAR_DOC_SLUGS.includes(activeSlug) ? (
+              <WorkspaceDocument
+                key="preparar-doc"
+                blocks={PREPARAR_DOC_SLUGS.map(slug => ({
+                  sectionDef: WORKSPACE_SECTIONS.find(s => s.slug === slug)!,
+                  existingSection: sections.find(s => s.slug === slug),
+                }))}
+                project={project}
+                userId={user.id}
+                onUpdate={handleSectionUpdate}
+                onAskAI={handleAskAI}
+                guided={(workModeMap[activePhase?.id ?? ''] ?? 'guided') === 'guided'}
+                initialSlug={activeSlug}
               />
             ) : activeDef ? (
               <SectionWorkspace
