@@ -524,29 +524,6 @@ export default function WorkspaceDocument({
               <span style={{ fontSize: '0.65rem', fontWeight: 600, textDecoration: 'line-through', color: 'var(--text-muted)' }}>A</span>
             </Btn>
 
-            {aiContext && (
-              <>
-                <div style={{ flex: 1 }} />
-                <button type="button"
-                  onMouseDown={e => { e.preventDefault(); setAiOpen(o => !o) }}
-                  title="Assistente IA"
-                  style={{
-                    display: 'flex', alignItems: 'center', gap: '0.3rem',
-                    background: aiOpen ? `${accent}15` : 'transparent',
-                    border: aiOpen ? `1px solid ${accent}40` : '1px solid transparent',
-                    borderRadius: '6px', padding: '0.22rem 0.55rem',
-                    cursor: 'pointer', fontFamily: 'inherit',
-                    fontSize: '0.72rem', fontWeight: 700,
-                    color: aiOpen ? accent : 'var(--text-muted)',
-                    transition: 'all 0.12s',
-                  }}
-                  onMouseEnter={e => { if (!aiOpen) { e.currentTarget.style.background = `${accent}08`; e.currentTarget.style.color = accent } }}
-                  onMouseLeave={e => { if (!aiOpen) { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = 'var(--text-muted)' } }}
-                >
-                  ✨ IA
-                </button>
-              </>
-            )}
           </>
         )}
       </div>
@@ -620,13 +597,33 @@ export default function WorkspaceDocument({
 
                   return (
                     <div key={card.id} style={{ marginTop: cardIdx === 0 ? 0 : '1.25rem' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem', marginBottom: '0.1rem' }}>
                       <h3 style={{
-                        margin: '0 0 0.1rem',
+                        margin: 0,
                         fontSize: '0.9rem', fontWeight: 600,
                         color: '#64748B', letterSpacing: '-0.005em',
                       }}>
                         {sectionTitle}
                       </h3>
+                      {activeEditorKey === editorKey && (
+                        <button
+                          type="button"
+                          onMouseDown={e => { e.preventDefault(); setAiOpen(o => !o) }}
+                          style={{
+                            display: 'inline-flex', alignItems: 'center', gap: '0.2rem',
+                            background: aiOpen ? `${accent}15` : 'transparent',
+                            border: `1px solid ${aiOpen ? `${accent}50` : '#CBD5E1'}`,
+                            borderRadius: '5px', padding: '0.1rem 0.42rem',
+                            cursor: 'pointer', fontFamily: 'inherit',
+                            fontSize: '0.65rem', fontWeight: 700,
+                            color: aiOpen ? accent : '#94A3B8',
+                            transition: 'all 0.12s',
+                          }}
+                        >
+                          ✨ IA
+                        </button>
+                      )}
+                      </div>
                       <div className="ws-doc-section">
                         <RichEditor
                           value={cardContent}
@@ -857,8 +854,8 @@ export default function WorkspaceDocument({
 
                               {/* Section content */}
                               <div style={{ flex: 1, minWidth: 0 }}>
-                                {/* Title */}
-                                <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.4rem', marginBottom: '0.25rem' }}>
+                                {/* Title + inline AI button */}
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.25rem' }}>
                                   <h3 style={{
                                     margin: 0,
                                     fontSize: '1.0rem', fontWeight: 700,
@@ -870,6 +867,24 @@ export default function WorkspaceDocument({
                                   </h3>
                                   {done && (
                                     <span style={{ fontSize: '0.62rem', color: '#10B981', fontWeight: 600 }}>✓</span>
+                                  )}
+                                  {activeEditorKey === editorKey && (
+                                    <button
+                                      type="button"
+                                      onMouseDown={e => { e.preventDefault(); setAiOpen(o => !o) }}
+                                      style={{
+                                        display: 'inline-flex', alignItems: 'center', gap: '0.2rem',
+                                        background: aiOpen ? `${accent}15` : 'transparent',
+                                        border: `1px solid ${aiOpen ? `${accent}50` : 'var(--border-subtle)'}`,
+                                        borderRadius: '5px', padding: '0.1rem 0.42rem',
+                                        cursor: 'pointer', fontFamily: 'inherit',
+                                        fontSize: '0.65rem', fontWeight: 700,
+                                        color: aiOpen ? accent : 'var(--text-muted)',
+                                        transition: 'all 0.12s',
+                                      }}
+                                    >
+                                      ✨ IA
+                                    </button>
                                   )}
                                 </div>
 
