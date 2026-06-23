@@ -45,7 +45,7 @@ const CHAPTER_META: Record<string, {
   placeholders: Record<string, string>
 }> = {
   preparacao_espiritual: {
-    title: 'Antes de começar',
+    title: 'Preparação Espiritual',
     intro: 'Todo estudo bíblico começa antes da investigação. Começa com um coração disposto a ouvir a Deus.',
     why: 'Grandes interpretações não começam com ferramentas, mas com um coração disposto a ouvir. Antes de investigar detalhes do texto, este momento ajuda você a alinhar seu propósito, depender de Deus e lembrar que o objetivo do estudo não é apenas adquirir conhecimento — mas ser transformado pela Palavra.',
     icons: {
