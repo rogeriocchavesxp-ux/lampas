@@ -631,17 +631,6 @@ export default function WorkspaceClient({ user, project, initialSections }: Prop
         <span style={{ fontWeight: 700, color: 'var(--text-primary)', whiteSpace: 'nowrap' }}>
           {titleValue}
         </span>
-        <WorkspaceContextBadge />
-        <span style={{
-          fontSize: '0.62rem', color: 'var(--text-muted)',
-          background: 'var(--surface)', border: '1px solid var(--border-subtle)',
-          borderRadius: '3px', padding: '0.02rem 0.28rem',
-        }}>
-          {project.original_language}
-        </span>
-
-        <span style={{ color: 'var(--border)', fontSize: '0.8rem', userSelect: 'none' }}>·</span>
-
         {/* Tipo do projeto / modo */}
         <span style={{
           fontSize: '0.62rem', fontWeight: 700, letterSpacing: '0.04em',
