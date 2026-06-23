@@ -705,7 +705,7 @@ export default function WorkspaceClient({ user, project, initialSections }: Prop
           </div>
         )}
 
-        {VG_SLUGS.includes(activeSlug) && !PREPARAR_DOC_SLUGS.includes(activeSlug) && (
+        {VG_SLUGS.includes(activeSlug) && (
           <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: '6px', flexShrink: 0 }}>
             <span style={{ fontSize: '0.62rem', color: 'var(--text-muted)', whiteSpace: 'nowrap' }}>Visualização</span>
             <div style={{ display: 'flex', gap: '2px', background: 'var(--surface)', border: '1px solid var(--border-subtle)', borderRadius: '7px', padding: '2px' }}>
