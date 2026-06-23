@@ -700,7 +700,7 @@ export default function WorkspaceDocument({
       <div style={{ flex: 1, maxWidth: '700px', margin: '0 auto', width: '100%', padding: '1.25rem 1.25rem 4rem' }}>
 
         {/* ── Document title ─────────────────────────────────────────────── */}
-        <div style={{ padding: '1.75rem 1.4rem 2rem' }}>
+        <div style={{ padding: '1.75rem 1.4rem 3rem' }}>
           {/* Accent bar */}
           <div style={{ width: '32px', height: '3px', borderRadius: '2px', background: accent, marginBottom: '1.1rem' }} />
 
@@ -786,11 +786,11 @@ export default function WorkspaceDocument({
                   {/* Chapter title — book chapter scale */}
                   <h2 style={{
                     margin: '0 0 0.4rem',
-                    fontSize: isChOpen ? '1.55rem' : '1.05rem',
-                    fontWeight: isChOpen ? 900 : 700,
-                    color: allDone ? '#10B981' : 'var(--text-primary)',
-                    letterSpacing: isChOpen ? '-0.03em' : '-0.01em',
-                    lineHeight: isChOpen ? 1.1 : 1.2,
+                    fontSize: isChOpen ? '1.3rem' : '1.05rem',
+                    fontWeight: 600,
+                    color: allDone ? '#10B981' : isChOpen ? 'var(--text-primary)' : 'var(--text-secondary)',
+                    letterSpacing: isChOpen ? '-0.02em' : '-0.01em',
+                    lineHeight: 1.2,
                     transition: 'font-size 0.22s ease, color 0.3s ease',
                   }}>
                     {chMetaEntry?.title ?? sectionDef.shortTitle ?? sectionDef.title}
