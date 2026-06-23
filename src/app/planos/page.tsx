@@ -10,26 +10,55 @@ import { PLANS } from '@/lib/plans'
 
 const PLAN_ORDER = ['free', 'iniciante', 'intermediario', 'avancado'] as const
 
-const PLAN_PROFILES: Record<string, { profile: string; tagline: string; description: string }> = {
+interface PlanCard {
+  title: string
+  promise: string
+  benefits: string[]
+}
+
+const PLAN_CARDS: Record<string, PlanCard> = {
   free: {
-    profile: 'Conhecendo o Lampas',
-    tagline: 'Para quem está começando.',
-    description: 'Experimente o ambiente, conheça o método e entenda como o Lampas pode transformar sua forma de estudar as Escrituras.',
+    title: 'O ponto de partida',
+    promise: 'Descubra uma nova forma de se relacionar com o texto bíblico.',
+    benefits: [
+      'Organize seus estudos em um ambiente construído especialmente para as Escrituras.',
+      'Explore o contexto histórico e literário de cada passagem com orientação metodológica.',
+      'Prepare devocionais com estrutura e profundidade real.',
+      'Conte com auxílio especializado durante o seu estudo.',
+    ],
   },
   iniciante: {
-    profile: 'Crescendo no estudo',
-    tagline: 'Para líderes e estudantes ativos.',
-    description: 'Você estuda com regularidade, prepara materiais para pequenos grupos ou aulas, e precisa de um lugar organizado para guardar tudo isso.',
+    title: 'O hábito que transforma',
+    promise: 'Construa o hábito de estudar com consistência e veja cada semana de preparo produzir mais.',
+    benefits: [
+      'Prepare sermões, estudos bíblicos e aulas com metodologia sólida e estrutura clara.',
+      'Preserve tudo o que você aprende em um único lugar permanente.',
+      'Consulte conceitos bíblicos e teológicos sem interromper o ritmo do estudo.',
+      'Compartilhe seu trabalho com a comunidade quando estiver pronto.',
+      'Conte com assistência especializada em cada etapa do preparo.',
+    ],
   },
   intermediario: {
-    profile: 'Ensinando com frequência',
-    tagline: 'Para pastores e professores.',
-    description: 'Você prega toda semana, ensina com frequência e quer um ambiente que acompanhe a intensidade do seu ministério sem te fazer perder tempo.',
+    title: 'A profundidade que o púlpito exige',
+    promise: 'Pregue e ensine com o rigor que o texto bíblico merece, toda semana, sem abrir mão da profundidade.',
+    benefits: [
+      'Explore qualquer modo de estudo — exegético, temático ou doutrinário — conforme a demanda do ministério.',
+      'Aprofunde sua interpretação com ferramentas de teologia bíblica e sistemática.',
+      'Construa uma biblioteca que cresce e se organiza junto com o seu ministério.',
+      'Receba sínteses inteligentes ao final de cada seção de estudo.',
+      'Exporte e distribua seus estudos com facilidade.',
+    ],
   },
   avancado: {
-    profile: 'Lampas Completo',
-    tagline: 'Para ministérios sérios.',
-    description: 'Você quer centralizar todo o seu trabalho bíblico em um único lugar — da exegese ao texto original, do sermão à publicação.',
+    title: 'O ministério em um só lugar',
+    promise: 'Centralize todo o conhecimento do seu ministério — da exegese à publicação, sem limitações.',
+    benefits: [
+      'Aprofunde sua interpretação consultando diretamente os textos em hebraico e grego.',
+      'Enriqueça cada estudo com comentários expositivos versículo a versículo.',
+      'Construa sermões completos com o Sermão Builder e exporte em PDF com um clique.',
+      'Receba auxílio da IA a qualquer momento, sem nenhuma restrição de uso.',
+      'Construa um patrimônio de conhecimento bíblico que servirá ao ministério por décadas.',
+    ],
   },
 }
 
@@ -383,22 +412,24 @@ export default function PlanosPage() {
       </section>
 
       {/* ══════════════════════════════════════════════════════
-          SEÇÃO 8 — PLANOS (por perfil)
+          SEÇÃO 8 — PLANOS
       ══════════════════════════════════════════════════════ */}
       <section className="pl-section pl-plans-section" id="planos">
         <div className="pl-inner">
           <p className="pl-kicker pl-kicker-light">Planos</p>
-          <h2 className="pl-h2 pl-h2-light">Encontre o seu lugar no Lampas.</h2>
+          <h2 className="pl-h2 pl-h2-light">
+            Cada etapa da sua jornada<br />tem um lugar no Lampas.
+          </h2>
           <p className="pl-section-sub pl-sub-light">
-            Não importa onde você está na sua jornada — há um plano feito para você.
+            Comece gratuitamente. Avance no seu tempo. Não existe compromisso antes de você decidir.
           </p>
           <div className="pl-plans-grid">
             {PLAN_ORDER.map((planId, i) => {
-              const plan        = PLANS[planId]
-              const prof        = PLAN_PROFILES[planId]
-              const isPremium   = planId === 'avancado'
-              const isPopular   = planId === 'intermediario'
-              const isFree      = planId === 'free'
+              const plan      = PLANS[planId]
+              const card      = PLAN_CARDS[planId]
+              const isPremium = planId === 'avancado'
+              const isPopular = planId === 'intermediario'
+              const isFree    = planId === 'free'
 
               return (
                 <article
@@ -409,36 +440,49 @@ export default function PlanosPage() {
                   {isPremium && <div className="pl-plan-badge pl-plan-badge-gold">Premium</div>}
 
                   <div className="pl-plan-body">
-                    <div>
+
+                    {/* Identidade */}
+                    <div className="pl-plan-identity">
                       <p className="pl-plan-number">0{i + 1}</p>
-                      <h3 className="pl-plan-name">{prof.profile}</h3>
-                      <p className="pl-plan-tagline">{prof.tagline}</p>
-                      <p className="pl-plan-description">{prof.description}</p>
+                      <h3 className="pl-plan-name">{card.title}</h3>
+                      <p className="pl-plan-promise">{card.promise}</p>
                     </div>
 
-                    <div className="pl-plan-price-row">
-                      {isFree ? (
-                        <span className="pl-plan-price-free">Sempre gratuito</span>
-                      ) : (
-                        <span className="pl-plan-price-note">
-                          A partir de <strong>R$ {(plan.priceMonthly / 100).toFixed(0)}/mês</strong>
-                        </span>
-                      )}
+                    {/* Divisor */}
+                    <div className="pl-plan-divider" aria-hidden="true" />
+
+                    {/* Benefícios */}
+                    <ul className="pl-plan-benefits">
+                      {card.benefits.map(b => (
+                        <li key={b} className="pl-plan-benefit">
+                          <Check size={13} strokeWidth={2.5} className={`pl-benefit-check${isPremium ? ' pl-benefit-check-gold' : ''}`} />
+                          <span>{b}</span>
+                        </li>
+                      ))}
+                    </ul>
+
+                    {/* Ação */}
+                    <div className="pl-plan-action">
+                      <Link
+                        href="/auth/login"
+                        className={`pl-plan-btn${isPremium ? ' pl-plan-btn-gold' : isPopular ? ' pl-plan-btn-outline-gold' : ' pl-plan-btn-ghost'}`}
+                      >
+                        {isFree ? 'Começar gratuitamente' : 'Experimentar 7 dias grátis'}
+                      </Link>
+                      <p className="pl-plan-price-note">
+                        {isFree
+                          ? 'Sempre gratuito'
+                          : `A partir de R$ ${(plan.priceMonthly / 100).toFixed(0)}/mês`}
+                      </p>
                     </div>
 
-                    <Link
-                      href="/auth/login"
-                      className={`pl-plan-btn${isPremium ? ' pl-plan-btn-gold' : isPopular ? ' pl-plan-btn-outline-gold' : ' pl-plan-btn-ghost'}`}
-                    >
-                      {isFree ? 'Começar gratuitamente' : 'Experimentar 7 dias grátis'}
-                    </Link>
                   </div>
                 </article>
               )
             })}
           </div>
           <p className="pl-plans-note">
-            Planos anuais com 20% de desconto · Cancele a qualquer momento · Os 7 dias começam no seu primeiro projeto
+            Planos anuais com 20% de desconto · Cancele a qualquer momento · O período de 7 dias começa no seu primeiro projeto
           </p>
         </div>
       </section>
@@ -453,7 +497,7 @@ export default function PlanosPage() {
             onClick={() => setTableOpen(o => !o)}
             aria-expanded={tableOpen}
           >
-            <span>{tableOpen ? 'Fechar comparativo de recursos' : 'Ver comparativo detalhado de recursos'}</span>
+            <span>{tableOpen ? 'Fechar comparativo de recursos' : 'Comparar recursos dos planos em detalhe'}</span>
             <ChevronDown size={18} className={`pl-chevron${tableOpen ? ' pl-chevron-open' : ''}`} />
           </button>
 
@@ -465,7 +509,7 @@ export default function PlanosPage() {
                     <th className="pl-th pl-th-feature">Recurso</th>
                     {PLAN_ORDER.map(planId => (
                       <th key={planId} className={`pl-th pl-th-plan${planId === 'avancado' ? ' pl-th-premium' : ''}`}>
-                        {PLAN_PROFILES[planId].profile}
+                        {PLAN_CARDS[planId].title}
                       </th>
                     ))}
                   </tr>
@@ -997,33 +1041,48 @@ export default function PlanosPage() {
           padding: 0.22rem 0.7rem; border-radius: 999px; white-space: nowrap;
         }
         .pl-plan-badge-gold { background: #c9921a; border-color: #c9921a; color: #fff; }
-        .pl-plan-body { display: flex; flex-direction: column; gap: 1.5rem; flex: 1; }
+        .pl-plan-body { display: flex; flex-direction: column; gap: 0; flex: 1; }
+
+        .pl-plan-identity { margin-bottom: 1.35rem; }
         .pl-plan-number {
-          font-size: 0.65rem; font-weight: 800; color: rgba(201,146,26,0.35);
-          letter-spacing: 0.07em; margin: 0 0 0.6rem;
+          font-size: 0.62rem; font-weight: 800; color: rgba(201,146,26,0.35);
+          letter-spacing: 0.08em; margin: 0 0 0.55rem; text-transform: uppercase;
         }
         .pl-plan-name {
-          font-size: 1.2rem; font-weight: 700; color: #f5f0e8;
-          margin: 0 0 0.35rem;
+          font-size: 1.22rem; font-weight: 700; color: #f5f0e8;
+          margin: 0 0 0.6rem; line-height: 1.2;
           font-family: 'EB Garamond', Georgia, serif;
         }
-        .pl-plan-tagline {
-          font-size: 0.8rem; color: rgba(245,240,232,0.45); margin: 0;
-          font-style: italic;
+        .pl-plan-promise {
+          font-size: 0.85rem; color: rgba(245,240,232,0.45); margin: 0;
+          font-style: italic; line-height: 1.6;
         }
-        .pl-plan-description {
-          font-size: 0.87rem; color: rgba(245,240,232,0.5); line-height: 1.65; margin: 0;
+
+        .pl-plan-divider {
+          height: 1px; background: rgba(255,255,255,0.07);
+          margin-bottom: 1.35rem;
         }
-        .pl-plan-price-row { margin-top: auto; }
-        .pl-plan-price-free {
-          display: block; font-size: 0.8rem; color: rgba(245,240,232,0.3);
-          text-align: center; margin-bottom: 0.75rem;
+        .pl-plan-premium .pl-plan-divider { background: rgba(201,146,26,0.15); }
+
+        .pl-plan-benefits {
+          list-style: none; padding: 0; margin: 0 0 1.75rem;
+          display: flex; flex-direction: column; gap: 0.7rem;
+          flex: 1;
         }
+        .pl-plan-benefit {
+          display: flex; align-items: flex-start; gap: 0.6rem;
+          font-size: 0.84rem; color: rgba(245,240,232,0.55); line-height: 1.55;
+        }
+        .pl-benefit-check {
+          color: rgba(245,240,232,0.3); flex-shrink: 0; margin-top: 0.18rem;
+        }
+        .pl-benefit-check-gold { color: #c9921a; }
+
+        .pl-plan-action { margin-top: auto; }
         .pl-plan-price-note {
-          display: block; font-size: 0.8rem; color: rgba(245,240,232,0.3);
-          text-align: center; margin-bottom: 0.75rem;
+          display: block; font-size: 0.76rem; color: rgba(245,240,232,0.25);
+          text-align: center; margin-top: 0.65rem; margin-bottom: 0;
         }
-        .pl-plan-price-note strong { color: rgba(245,240,232,0.5); }
         .pl-plan-btn {
           display: block; text-align: center;
           padding: 0.72rem 1rem;
