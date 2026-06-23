@@ -686,7 +686,195 @@ export default function DicionarioWorkspace({ project, userId, onAskAI }: Props)
             </div>
           </div>
         </div>
+      ) : (panel === 'detail' || panel === 'history') && selected ? (
+
+        // ── Entry-focused layout: verbete ocupa tela inteira ────────────────────────────
+
+        <>
+          {/* Back bar */}
+          <div style={{ flexShrink: 0, height: '48px', padding: '0 1.5rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '1px solid #F1F5F9', background: '#FFFFFF' }}>
+
+            {/* Back button */}
+            {panel === 'detail' ? (
+              <button
+                onClick={() => setPanel('list')}
+                style={{ display: 'flex', alignItems: 'center', gap: '6px', background: 'none', border: 'none', cursor: 'pointer', color: '#64748B', fontFamily: 'inherit', fontSize: '0.8rem', fontWeight: 500, padding: '4px 8px', borderRadius: '6px' }}
+                onMouseEnter={e => { e.currentTarget.style.background = '#F1F5F9'; e.currentTarget.style.color = '#1E293B' }}
+                onMouseLeave={e => { e.currentTarget.style.background = 'none'; e.currentTarget.style.color = '#64748B' }}
+              >
+                ← Voltar aos resultados
+              </button>
+            ) : (
+              <button
+                onClick={() => setPanel('detail')}
+                style={{ display: 'flex', alignItems: 'center', gap: '6px', background: 'none', border: 'none', cursor: 'pointer', color: '#64748B', fontFamily: 'inherit', fontSize: '0.8rem', fontWeight: 500, padding: '4px 8px', borderRadius: '6px' }}
+                onMouseEnter={e => { e.currentTarget.style.background = '#F1F5F9'; e.currentTarget.style.color = '#1E293B' }}
+                onMouseLeave={e => { e.currentTarget.style.background = 'none'; e.currentTarget.style.color = '#64748B' }}
+              >
+                ← Voltar ao verbete
+              </button>
+            )}
+
+            {/* Entry actions (only in detail) */}
+            {panel === 'detail' && (
+              <div style={{ display: 'flex', gap: '5px' }}>
+                <button onClick={() => openHistory(selected)}
+                  style={{ display: 'flex', alignItems: 'center', gap: '4px', background: 'none', border: '1px solid #E2E8F0', borderRadius: '7px', padding: '4px 9px', fontSize: '0.7rem', color: '#64748B', cursor: 'pointer', fontFamily: 'inherit' }}>
+                  <Clock size={11} /> Histórico
+                </button>
+                <button onClick={() => { setDraft({ title: selected.title, slug: selected.slug, category: selected.category, trust_level: selected.trust_level, is_shared: selected.is_shared, definition: selected.definition ?? '', etymology: selected.etymology ?? '', notes: selected.notes ?? '', lang_hebrew: selected.lang_hebrew ?? '', lang_aramaic: selected.lang_aramaic ?? '', lang_greek: selected.lang_greek ?? '', transliteration: selected.transliteration ?? '', pronunciation: selected.pronunciation ?? '', occurrences: selected.occurrences ?? '', main_texts: selected.main_texts ?? '', theological_biblical: selected.theological_biblical ?? '', theological_systematic: selected.theological_systematic ?? '', applications: selected.applications ?? '', cross_references: selected.cross_references, bibliography: selected.bibliography ?? '', related_terms: selected.related_terms, tags: selected.tags, sources: selected.sources }); setPanel('create') }}
+                  style={{ display: 'flex', alignItems: 'center', gap: '4px', background: 'none', border: '1px solid #E2E8F0', borderRadius: '7px', padding: '4px 9px', fontSize: '0.7rem', color: '#64748B', cursor: 'pointer', fontFamily: 'inherit' }}>
+                  <Edit2 size={11} /> Editar
+                </button>
+                {deleteConfirm ? (
+                  <>
+                    <button onClick={deleteEntry} style={{ background: '#EF4444', border: 'none', borderRadius: '7px', padding: '4px 9px', fontSize: '0.7rem', fontWeight: 600, color: '#FFF', cursor: 'pointer', fontFamily: 'inherit' }}>Confirmar</button>
+                    <button onClick={() => setDeleteConfirm(false)} style={{ background: 'none', border: '1px solid #E2E8F0', borderRadius: '7px', padding: '4px 9px', fontSize: '0.7rem', color: '#64748B', cursor: 'pointer', fontFamily: 'inherit' }}>Cancelar</button>
+                  </>
+                ) : (
+                  <button onClick={() => setDeleteConfirm(true)} style={{ display: 'flex', alignItems: 'center', background: 'none', border: '1px solid #FEE2E2', borderRadius: '7px', padding: '4px 7px', cursor: 'pointer', color: '#EF4444' }}>
+                    <Trash2 size={12} />
+                  </button>
+                )}
+              </div>
+            )}
+          </div>
+
+          {/* Scrollable entry content — starts at the top */}
+          <div style={{ flex: 1, overflowY: 'auto', background: '#FFFFFF' }}>
+
+            {/* Detail */}
+            {panel === 'detail' && (
+              <div style={{ maxWidth: '720px', margin: '0 auto', padding: '2rem 2rem 4rem' }}>
+                <div style={{ marginBottom: '1.75rem' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '0.6rem' }}>
+                    <span style={{ fontSize: '1.1rem' }}>{CATEGORIES.find(c => c.key === selected.category)?.icon ?? '📖'}</span>
+                    <TrustBadge level={selected.trust_level} />
+                    <span style={{ fontSize: '0.62rem', color: '#CBD5E1', display: 'flex', alignItems: 'center', gap: '3px' }}><Eye size={10} /> {selected.query_count}</span>
+                    <span style={{ fontSize: '0.62rem', color: '#CBD5E1', display: 'flex', alignItems: 'center', gap: '3px' }}><Clock size={10} /> {new Date(selected.updated_at).toLocaleDateString('pt-BR')}</span>
+                  </div>
+                  <h1 style={{ fontSize: '1.9rem', fontWeight: 700, color: '#0F172A', letterSpacing: '-0.035em', margin: '0 0 0.25rem', lineHeight: 1.05 }}>
+                    {selected.title}
+                  </h1>
+                  {selected.transliteration && (
+                    <div style={{ fontSize: '0.9rem', color: '#64748B', fontStyle: 'italic' }}>{selected.transliteration}</div>
+                  )}
+                  {selected.tags?.length > 0 && (
+                    <div style={{ display: 'flex', gap: '5px', flexWrap: 'wrap', marginTop: '0.6rem' }}>
+                      {selected.tags.map(t => (
+                        <span key={t} style={{ fontSize: '0.65rem', background: '#F1F5F9', color: '#64748B', borderRadius: '4px', padding: '2px 7px' }}>#{t}</span>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                <Field label="Definição" value={selected.definition}
+                  onExpand={() => setExpandModal({ label: 'Definição', content: selected.definition ?? '', onSave: (v) => { updateFieldDirectly('definition', v); setExpandModal(null) } })}
+                />
+                {(selected.lang_hebrew || selected.lang_greek || selected.lang_aramaic) && (
+                  <div style={{ marginBottom: '1.25rem', padding: '1rem 1.1rem', background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '10px' }}>
+                    <div style={{ fontSize: '0.64rem', fontWeight: 700, color: '#94A3B8', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '10px' }}>Línguas Originais</div>
+                    <div style={{ display: 'flex', gap: '2rem', flexWrap: 'wrap' }}>
+                      {selected.lang_hebrew && <div><div style={{ fontSize: '0.62rem', color: '#94A3B8', marginBottom: '3px' }}>Hebraico</div><div style={{ fontSize: '1rem', fontFamily: 'serif', direction: 'rtl' }}>{selected.lang_hebrew}</div></div>}
+                      {selected.lang_greek && <div><div style={{ fontSize: '0.62rem', color: '#94A3B8', marginBottom: '3px' }}>Grego</div><div style={{ fontSize: '1rem', fontFamily: 'serif' }}>{selected.lang_greek}</div></div>}
+                      {selected.lang_aramaic && <div><div style={{ fontSize: '0.62rem', color: '#94A3B8', marginBottom: '3px' }}>Aramaico</div><div style={{ fontSize: '1rem', fontFamily: 'serif' }}>{selected.lang_aramaic}</div></div>}
+                      {selected.pronunciation && <div><div style={{ fontSize: '0.62rem', color: '#94A3B8', marginBottom: '3px' }}>Pronúncia</div><div style={{ fontSize: '0.88rem', color: '#475569' }}>{selected.pronunciation}</div></div>}
+                    </div>
+                  </div>
+                )}
+                <Field label="Etimologia" value={selected.etymology}
+                  onExpand={() => setExpandModal({ label: 'Etimologia', content: selected.etymology ?? '', onSave: (v) => { updateFieldDirectly('etymology', v); setExpandModal(null) } })}
+                />
+                <Field label="Uso Bíblico" value={[selected.occurrences, selected.main_texts].filter(Boolean).join('\n\n')}
+                  onExpand={() => setExpandModal({ label: 'Uso Bíblico', content: [selected.occurrences, selected.main_texts].filter(Boolean).join('\n\n'), onSave: (v) => { updateFieldDirectly('main_texts', v); setExpandModal(null) } })}
+                />
+                <Field label="Teologia Bíblica" value={selected.theological_biblical}
+                  onExpand={() => setExpandModal({ label: 'Teologia Bíblica', content: selected.theological_biblical ?? '', onSave: (v) => { updateFieldDirectly('theological_biblical', v); setExpandModal(null) } })}
+                />
+                <Field label="Teologia Sistemática" value={selected.theological_systematic}
+                  onExpand={() => setExpandModal({ label: 'Teologia Sistemática', content: selected.theological_systematic ?? '', onSave: (v) => { updateFieldDirectly('theological_systematic', v); setExpandModal(null) } })}
+                />
+                <Field label="Aplicações Pastorais" value={selected.applications}
+                  onExpand={() => setExpandModal({ label: 'Aplicações Pastorais', content: selected.applications ?? '', onSave: (v) => { updateFieldDirectly('applications', v); setExpandModal(null) } })}
+                />
+                {selected.cross_references?.length > 0 && (
+                  <div style={{ marginBottom: '1.25rem' }}>
+                    <div style={{ fontSize: '0.64rem', fontWeight: 700, color: '#94A3B8', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '8px' }}>Referências Cruzadas</div>
+                    <div style={{ display: 'flex', gap: '5px', flexWrap: 'wrap' }}>
+                      {selected.cross_references.map(r => (
+                        <span key={r} style={{ fontSize: '0.76rem', background: '#EEF3FA', color: '#163A6B', borderRadius: '5px', padding: '3px 9px', border: '1px solid #BFDBFE' }}>{r}</span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+                <Field label="Bibliografia" value={selected.bibliography}
+                  onExpand={() => setExpandModal({ label: 'Bibliografia', content: selected.bibliography ?? '', onSave: (v) => { updateFieldDirectly('bibliography', v); setExpandModal(null) } })}
+                />
+                <Field label="Notas Pessoais" value={selected.notes}
+                  onExpand={() => setExpandModal({ label: 'Notas Pessoais', content: selected.notes ?? '', onSave: (v) => { updateFieldDirectly('notes', v); setExpandModal(null) } })}
+                />
+                <div style={{ marginTop: '2rem', paddingTop: '1rem', borderTop: '1px solid #F1F5F9', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '0.75rem' }}>
+                  <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
+                    <span style={{ fontSize: '0.67rem', color: '#CBD5E1' }}>Fontes: {selected.sources?.join(', ') ?? 'IA'}</span>
+                    <span style={{ fontSize: '0.67rem', color: '#CBD5E1' }}>Categoria: {CATEGORIES.find(c => c.key === selected.category)?.label}</span>
+                    <span style={{ fontSize: '0.67rem', color: '#CBD5E1' }}>Criado: {new Date(selected.created_at).toLocaleDateString('pt-BR')}</span>
+                  </div>
+                  <button onClick={() => onAskAI(`Com base no verbete "${selected.title}" do Dicionário Lampas e na passagem ${project.book} ${project.passage_ref}, aprofunde a análise: relações com o contexto imediato, implicações para a exegese da perícope e aplicações pastorais adicionais.`)}
+                    style={{ display: 'inline-flex', alignItems: 'center', gap: '5px', background: 'transparent', border: '1px solid #E2E8F0', borderRadius: '7px', padding: '6px 12px', fontSize: '0.76rem', color: '#64748B', cursor: 'pointer', fontFamily: 'inherit', transition: 'all 0.12s' }}
+                    onMouseEnter={e => { e.currentTarget.style.borderColor = '#8B5CF6'; e.currentTarget.style.color = '#7C3AED' }}
+                    onMouseLeave={e => { e.currentTarget.style.borderColor = '#E2E8F0'; e.currentTarget.style.color = '#64748B' }}
+                  >
+                    <Sparkles size={12} strokeWidth={1.75} /> Aprofundar com IA
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* History */}
+            {panel === 'history' && (
+              <div style={{ maxWidth: '720px', margin: '0 auto', padding: '2rem 2rem 4rem' }}>
+                <div style={{ marginBottom: '1.5rem' }}>
+                  <div style={{ fontSize: '0.67rem', fontWeight: 700, color: '#94A3B8', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '3px' }}>Histórico de versões</div>
+                  <div style={{ fontSize: '1.1rem', fontWeight: 700, color: '#1E293B' }}>{selected.title}</div>
+                </div>
+                {versionsLoading ? (
+                  <div style={{ color: '#94A3B8', fontSize: '0.84rem' }}>Carregando histórico…</div>
+                ) : versions.length === 0 ? (
+                  <div style={{ color: '#94A3B8', fontSize: '0.84rem', fontStyle: 'italic' }}>Nenhuma versão anterior registrada.</div>
+                ) : (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                    {versions.map((v, i) => (
+                      <div key={v.id} style={{ border: '1px solid #E2E8F0', borderRadius: '10px', overflow: 'hidden' }}>
+                        <div style={{ padding: '10px 14px', background: '#F8FAFC', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                          <div>
+                            <span style={{ fontSize: '0.78rem', fontWeight: 600, color: '#1E293B' }}>Versão {versions.length - i}</span>
+                            <span style={{ fontSize: '0.7rem', color: '#94A3B8', marginLeft: '8px' }}>{new Date(v.edited_at).toLocaleString('pt-BR')}</span>
+                          </div>
+                          <button onClick={() => restoreVersion(v)}
+                            style={{ background: '#1E293B', border: 'none', borderRadius: '6px', padding: '4px 10px', fontSize: '0.7rem', fontWeight: 600, color: '#FFF', cursor: 'pointer', fontFamily: 'inherit' }}>
+                            Restaurar
+                          </button>
+                        </div>
+                        {v.snapshot.definition && (
+                          <div style={{ padding: '10px 14px' }}>
+                            <div style={{ fontSize: '0.62rem', fontWeight: 700, color: '#94A3B8', textTransform: 'uppercase', marginBottom: '4px' }}>Definição</div>
+                            <div style={{ fontSize: '0.84rem', color: '#475569', lineHeight: 1.6, maxHeight: '80px', overflow: 'hidden', WebkitMaskImage: 'linear-gradient(to bottom, black 60%, transparent)' }}>
+                              {v.snapshot.definition}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        </>
+
       ) : (
+        // ── Search / list layout ─────────────────────────────────────────────────────────
+
         <>
           {/* ══ TOP — Search + list ══ */}
           <div style={{ flexShrink: 0, background: '#FFFFFF', borderBottom: '1px solid #E2E8F0' }}>
@@ -856,173 +1044,6 @@ export default function DicionarioWorkspace({ project, userId, onAskAI }: Props)
               </div>
             )}
 
-            {/* Entry detail */}
-            {panel === 'detail' && selected && (
-              <div style={{ maxWidth: '720px', margin: '0 auto', padding: '2rem 2rem 4rem' }}>
-
-                {/* Entry header */}
-                <div style={{ marginBottom: '1.75rem' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '0.6rem' }}>
-                    <span style={{ fontSize: '1.1rem' }}>{CATEGORIES.find(c => c.key === selected.category)?.icon ?? '📖'}</span>
-                    <TrustBadge level={selected.trust_level} />
-                    <span style={{ fontSize: '0.62rem', color: '#CBD5E1', display: 'flex', alignItems: 'center', gap: '3px' }}>
-                      <Eye size={10} /> {selected.query_count}
-                    </span>
-                    <span style={{ fontSize: '0.62rem', color: '#CBD5E1', display: 'flex', alignItems: 'center', gap: '3px' }}>
-                      <Clock size={10} /> {new Date(selected.updated_at).toLocaleDateString('pt-BR')}
-                    </span>
-                    <div style={{ marginLeft: 'auto', display: 'flex', gap: '5px' }}>
-                      <button onClick={() => openHistory(selected)}
-                        style={{ display: 'flex', alignItems: 'center', gap: '4px', background: 'none', border: '1px solid #E2E8F0', borderRadius: '7px', padding: '4px 9px', fontSize: '0.7rem', color: '#64748B', cursor: 'pointer', fontFamily: 'inherit' }}>
-                        <Clock size={11} /> Histórico
-                      </button>
-                      <button onClick={() => { setDraft({ title: selected.title, slug: selected.slug, category: selected.category, trust_level: selected.trust_level, is_shared: selected.is_shared, definition: selected.definition ?? '', etymology: selected.etymology ?? '', notes: selected.notes ?? '', lang_hebrew: selected.lang_hebrew ?? '', lang_aramaic: selected.lang_aramaic ?? '', lang_greek: selected.lang_greek ?? '', transliteration: selected.transliteration ?? '', pronunciation: selected.pronunciation ?? '', occurrences: selected.occurrences ?? '', main_texts: selected.main_texts ?? '', theological_biblical: selected.theological_biblical ?? '', theological_systematic: selected.theological_systematic ?? '', applications: selected.applications ?? '', cross_references: selected.cross_references, bibliography: selected.bibliography ?? '', related_terms: selected.related_terms, tags: selected.tags, sources: selected.sources }); setPanel('create') }}
-                        style={{ display: 'flex', alignItems: 'center', gap: '4px', background: 'none', border: '1px solid #E2E8F0', borderRadius: '7px', padding: '4px 9px', fontSize: '0.7rem', color: '#64748B', cursor: 'pointer', fontFamily: 'inherit' }}>
-                        <Edit2 size={11} /> Editar
-                      </button>
-                      {deleteConfirm ? (
-                        <>
-                          <button onClick={deleteEntry} style={{ background: '#EF4444', border: 'none', borderRadius: '7px', padding: '4px 9px', fontSize: '0.7rem', fontWeight: 600, color: '#FFF', cursor: 'pointer', fontFamily: 'inherit' }}>Confirmar</button>
-                          <button onClick={() => setDeleteConfirm(false)} style={{ background: 'none', border: '1px solid #E2E8F0', borderRadius: '7px', padding: '4px 9px', fontSize: '0.7rem', color: '#64748B', cursor: 'pointer', fontFamily: 'inherit' }}>Cancelar</button>
-                        </>
-                      ) : (
-                        <button onClick={() => setDeleteConfirm(true)} style={{ display: 'flex', alignItems: 'center', background: 'none', border: '1px solid #FEE2E2', borderRadius: '7px', padding: '4px 7px', cursor: 'pointer', color: '#EF4444' }}>
-                          <Trash2 size={12} />
-                        </button>
-                      )}
-                    </div>
-                  </div>
-
-                  <h1 style={{ fontSize: '1.9rem', fontWeight: 700, color: '#0F172A', letterSpacing: '-0.035em', margin: '0 0 0.25rem', lineHeight: 1.05 }}>
-                    {selected.title}
-                  </h1>
-                  {selected.transliteration && (
-                    <div style={{ fontSize: '0.9rem', color: '#64748B', fontStyle: 'italic' }}>{selected.transliteration}</div>
-                  )}
-                  {selected.tags?.length > 0 && (
-                    <div style={{ display: 'flex', gap: '5px', flexWrap: 'wrap', marginTop: '0.6rem' }}>
-                      {selected.tags.map(t => (
-                        <span key={t} style={{ fontSize: '0.65rem', background: '#F1F5F9', color: '#64748B', borderRadius: '4px', padding: '2px 7px' }}>#{t}</span>
-                      ))}
-                    </div>
-                  )}
-                </div>
-
-                {/* Content fields */}
-                <Field label="Definição" value={selected.definition}
-                  onExpand={() => setExpandModal({ label: 'Definição', content: selected.definition ?? '', onSave: (v) => { updateFieldDirectly('definition', v); setExpandModal(null) } })}
-                />
-
-                {(selected.lang_hebrew || selected.lang_greek || selected.lang_aramaic) && (
-                  <div style={{ marginBottom: '1.25rem', padding: '1rem 1.1rem', background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '10px' }}>
-                    <div style={{ fontSize: '0.64rem', fontWeight: 700, color: '#94A3B8', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '10px' }}>Línguas Originais</div>
-                    <div style={{ display: 'flex', gap: '2rem', flexWrap: 'wrap' }}>
-                      {selected.lang_hebrew && <div><div style={{ fontSize: '0.62rem', color: '#94A3B8', marginBottom: '3px' }}>Hebraico</div><div style={{ fontSize: '1rem', fontFamily: 'serif', direction: 'rtl' }}>{selected.lang_hebrew}</div></div>}
-                      {selected.lang_greek && <div><div style={{ fontSize: '0.62rem', color: '#94A3B8', marginBottom: '3px' }}>Grego</div><div style={{ fontSize: '1rem', fontFamily: 'serif' }}>{selected.lang_greek}</div></div>}
-                      {selected.lang_aramaic && <div><div style={{ fontSize: '0.62rem', color: '#94A3B8', marginBottom: '3px' }}>Aramaico</div><div style={{ fontSize: '1rem', fontFamily: 'serif' }}>{selected.lang_aramaic}</div></div>}
-                      {selected.pronunciation && <div><div style={{ fontSize: '0.62rem', color: '#94A3B8', marginBottom: '3px' }}>Pronúncia</div><div style={{ fontSize: '0.88rem', color: '#475569' }}>{selected.pronunciation}</div></div>}
-                    </div>
-                  </div>
-                )}
-
-                <Field label="Etimologia" value={selected.etymology}
-                  onExpand={() => setExpandModal({ label: 'Etimologia', content: selected.etymology ?? '', onSave: (v) => { updateFieldDirectly('etymology', v); setExpandModal(null) } })}
-                />
-                <Field label="Uso Bíblico" value={[selected.occurrences, selected.main_texts].filter(Boolean).join('\n\n')}
-                  onExpand={() => setExpandModal({ label: 'Uso Bíblico', content: [selected.occurrences, selected.main_texts].filter(Boolean).join('\n\n'), onSave: (v) => { updateFieldDirectly('main_texts', v); setExpandModal(null) } })}
-                />
-                <Field label="Teologia Bíblica" value={selected.theological_biblical}
-                  onExpand={() => setExpandModal({ label: 'Teologia Bíblica', content: selected.theological_biblical ?? '', onSave: (v) => { updateFieldDirectly('theological_biblical', v); setExpandModal(null) } })}
-                />
-                <Field label="Teologia Sistemática" value={selected.theological_systematic}
-                  onExpand={() => setExpandModal({ label: 'Teologia Sistemática', content: selected.theological_systematic ?? '', onSave: (v) => { updateFieldDirectly('theological_systematic', v); setExpandModal(null) } })}
-                />
-                <Field label="Aplicações Pastorais" value={selected.applications}
-                  onExpand={() => setExpandModal({ label: 'Aplicações Pastorais', content: selected.applications ?? '', onSave: (v) => { updateFieldDirectly('applications', v); setExpandModal(null) } })}
-                />
-
-                {selected.cross_references?.length > 0 && (
-                  <div style={{ marginBottom: '1.25rem' }}>
-                    <div style={{ fontSize: '0.64rem', fontWeight: 700, color: '#94A3B8', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '8px' }}>Referências Cruzadas</div>
-                    <div style={{ display: 'flex', gap: '5px', flexWrap: 'wrap' }}>
-                      {selected.cross_references.map(r => (
-                        <span key={r} style={{ fontSize: '0.76rem', background: '#EEF3FA', color: '#163A6B', borderRadius: '5px', padding: '3px 9px', border: '1px solid #BFDBFE' }}>{r}</span>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                <Field label="Bibliografia" value={selected.bibliography}
-                  onExpand={() => setExpandModal({ label: 'Bibliografia', content: selected.bibliography ?? '', onSave: (v) => { updateFieldDirectly('bibliography', v); setExpandModal(null) } })}
-                />
-                <Field label="Notas Pessoais" value={selected.notes}
-                  onExpand={() => setExpandModal({ label: 'Notas Pessoais', content: selected.notes ?? '', onSave: (v) => { updateFieldDirectly('notes', v); setExpandModal(null) } })}
-                />
-
-                {/* Footer */}
-                <div style={{ marginTop: '2rem', paddingTop: '1rem', borderTop: '1px solid #F1F5F9', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '0.75rem' }}>
-                  <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
-                    <span style={{ fontSize: '0.67rem', color: '#CBD5E1' }}>Fontes: {selected.sources?.join(', ') ?? 'IA'}</span>
-                    <span style={{ fontSize: '0.67rem', color: '#CBD5E1' }}>Categoria: {CATEGORIES.find(c => c.key === selected.category)?.label}</span>
-                    <span style={{ fontSize: '0.67rem', color: '#CBD5E1' }}>Criado: {new Date(selected.created_at).toLocaleDateString('pt-BR')}</span>
-                  </div>
-                  <button onClick={() => onAskAI(`Com base no verbete "${selected.title}" do Dicionário Lampas e na passagem ${project.book} ${project.passage_ref}, aprofunde a análise: relações com o contexto imediato, implicações para a exegese da perícope e aplicações pastorais adicionais.`)}
-                    style={{ display: 'inline-flex', alignItems: 'center', gap: '5px', background: 'transparent', border: '1px solid #E2E8F0', borderRadius: '7px', padding: '6px 12px', fontSize: '0.76rem', color: '#64748B', cursor: 'pointer', fontFamily: 'inherit', transition: 'all 0.12s' }}
-                    onMouseEnter={e => { e.currentTarget.style.borderColor = '#8B5CF6'; e.currentTarget.style.color = '#7C3AED' }}
-                    onMouseLeave={e => { e.currentTarget.style.borderColor = '#E2E8F0'; e.currentTarget.style.color = '#64748B' }}
-                  >
-                    <Sparkles size={12} strokeWidth={1.75} /> Aprofundar com IA
-                  </button>
-                </div>
-              </div>
-            )}
-
-            {/* History panel */}
-            {panel === 'history' && selected && (
-              <div style={{ maxWidth: '720px', margin: '0 auto', padding: '2rem 2rem 4rem' }}>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1.5rem' }}>
-                  <div>
-                    <div style={{ fontSize: '0.67rem', fontWeight: 700, color: '#94A3B8', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '3px' }}>Histórico de versões</div>
-                    <div style={{ fontSize: '1.1rem', fontWeight: 700, color: '#1E293B' }}>{selected.title}</div>
-                  </div>
-                  <button onClick={() => setPanel('detail')} style={{ background: 'none', border: '1px solid #E2E8F0', borderRadius: '7px', padding: '5px 12px', cursor: 'pointer', color: '#64748B', fontSize: '0.76rem', fontFamily: 'inherit' }}>
-                    ← Voltar
-                  </button>
-                </div>
-                {versionsLoading ? (
-                  <div style={{ color: '#94A3B8', fontSize: '0.84rem' }}>Carregando histórico…</div>
-                ) : versions.length === 0 ? (
-                  <div style={{ color: '#94A3B8', fontSize: '0.84rem', fontStyle: 'italic' }}>Nenhuma versão anterior registrada.</div>
-                ) : (
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                    {versions.map((v, i) => (
-                      <div key={v.id} style={{ border: '1px solid #E2E8F0', borderRadius: '10px', overflow: 'hidden' }}>
-                        <div style={{ padding: '10px 14px', background: '#F8FAFC', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                          <div>
-                            <span style={{ fontSize: '0.78rem', fontWeight: 600, color: '#1E293B' }}>Versão {versions.length - i}</span>
-                            <span style={{ fontSize: '0.7rem', color: '#94A3B8', marginLeft: '8px' }}>
-                              {new Date(v.edited_at).toLocaleString('pt-BR')}
-                            </span>
-                          </div>
-                          <button onClick={() => restoreVersion(v)}
-                            style={{ background: '#1E293B', border: 'none', borderRadius: '6px', padding: '4px 10px', fontSize: '0.7rem', fontWeight: 600, color: '#FFF', cursor: 'pointer', fontFamily: 'inherit' }}>
-                            Restaurar
-                          </button>
-                        </div>
-                        {v.snapshot.definition && (
-                          <div style={{ padding: '10px 14px' }}>
-                            <div style={{ fontSize: '0.62rem', fontWeight: 700, color: '#94A3B8', textTransform: 'uppercase', marginBottom: '4px' }}>Definição</div>
-                            <div style={{ fontSize: '0.84rem', color: '#475569', lineHeight: 1.6, maxHeight: '80px', overflow: 'hidden', WebkitMaskImage: 'linear-gradient(to bottom, black 60%, transparent)' }}>
-                              {v.snapshot.definition}
-                            </div>
-                          </div>
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-            )}
           </div>
         </>
       )}
