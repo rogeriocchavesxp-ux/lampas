@@ -494,26 +494,22 @@ export default function WorkspaceMenuBar({
           <button
             onClick={() => setOpenMenu(p => p === 'user' ? null : 'user')}
             style={{
-              display: 'flex', alignItems: 'center', gap: '0.35rem',
+              display: 'flex', alignItems: 'center', gap: '0.3rem',
               background: 'none', border: '1px solid var(--border)',
-              borderRadius: '6px', padding: '0.22rem 0.48rem',
+              borderRadius: '6px', padding: '0.22rem 0.4rem',
               cursor: 'pointer', fontFamily: 'inherit',
-              color: 'var(--text-secondary)', fontSize: '0.76rem',
               transition: 'border-color 0.13s',
             }}
             onMouseEnter={e => (e.currentTarget.style.borderColor = 'var(--accent)')}
             onMouseLeave={e => { if (openMenu !== 'user') e.currentTarget.style.borderColor = 'var(--border)' }}
           >
             <span style={{
-              width: '20px', height: '20px', borderRadius: '50%',
+              width: '22px', height: '22px', borderRadius: '50%',
               background: 'var(--accent)', color: '#fff',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
-              fontSize: '0.62rem', fontWeight: 700, flexShrink: 0,
+              fontSize: '0.67rem', fontWeight: 700, flexShrink: 0,
             }}>
               {initial}
-            </span>
-            <span style={{ maxWidth: '110px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-              {userEmail ?? '…'}
             </span>
             <ChevronIcon open={openMenu === 'user'} />
           </button>
@@ -524,14 +520,24 @@ export default function WorkspaceMenuBar({
               background: 'var(--surface)', border: '1px solid var(--border-subtle)',
               borderRadius: '9px',
               boxShadow: '0 8px 24px rgba(15,23,42,0.1), 0 2px 6px rgba(15,23,42,0.06)',
-              padding: '0.3rem', zIndex: 700, minWidth: '180px',
+              padding: '0.3rem', zIndex: 700, minWidth: '196px',
             }}>
-              <div style={{ padding: '0.4rem 0.75rem 0.3rem', fontSize: '0.7rem', color: 'var(--text-muted)', fontWeight: 500 }}>
-                {userEmail}
+              {/* User identity */}
+              <div style={{ padding: '0.5rem 0.75rem 0.45rem', borderBottom: '1px solid var(--border-subtle)', marginBottom: '0.2rem' }}>
+                <div style={{ width: 28, height: 28, borderRadius: '50%', background: 'var(--accent)', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.75rem', fontWeight: 700, marginBottom: '0.4rem' }}>
+                  {initial}
+                </div>
+                <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                  {userEmail}
+                </div>
               </div>
-              <div style={{ height: '1px', background: 'var(--border-subtle)', margin: '0.2rem 0' }} />
-              <ProfileItem label="Planos" onClick={() => { setOpenMenu(null); router.push('/billing') }} />
+
+              <ProfileItem label="Minha Conta" />
+              <ProfileItem label="Assinatura" onClick={() => { setOpenMenu(null); router.push('/billing') }} />
               {isAdmin && <ProfileItem label="Admin" onClick={() => { setOpenMenu(null); router.push('/admin/billing') }} />}
+              <div style={{ height: '1px', background: 'var(--border-subtle)', margin: '0.2rem 0' }} />
+              <ProfileItem label="Configurações" />
+              <ProfileItem label="Ajuda" />
               <div style={{ height: '1px', background: 'var(--border-subtle)', margin: '0.2rem 0' }} />
               <ProfileItem label="Sair" onClick={signOut} danger />
             </div>
@@ -655,21 +661,26 @@ function DropdownItem({ item, onClick }: { item: MenuAction; onClick: () => void
   )
 }
 
-function ProfileItem({ label, onClick, danger }: { label: string; onClick: () => void; danger?: boolean }) {
+function ProfileItem({ label, onClick, danger }: { label: string; onClick?: () => void; danger?: boolean }) {
   return (
     <button
       onClick={onClick}
       style={{
         display: 'flex', alignItems: 'center', width: '100%',
-        padding: '0.42rem 0.75rem', background: 'none', border: 'none',
-        borderRadius: '6px', cursor: 'pointer', fontSize: '0.8rem',
-        fontFamily: 'inherit', color: danger ? '#EF4444' : 'var(--text-primary)',
+        padding: '0.4rem 0.75rem', background: 'none', border: 'none',
+        borderRadius: '6px', cursor: onClick ? 'pointer' : 'default', fontSize: '0.8rem',
+        fontFamily: 'inherit', color: danger ? '#EF4444' : onClick ? 'var(--text-primary)' : 'var(--text-muted)',
         fontWeight: 450, textAlign: 'left',
       }}
-      onMouseEnter={e => (e.currentTarget.style.background = danger ? 'rgba(239,68,68,0.06)' : 'var(--surface-2)')}
+      onMouseEnter={e => { if (onClick) e.currentTarget.style.background = danger ? 'rgba(239,68,68,0.06)' : 'var(--surface-2)' }}
       onMouseLeave={e => (e.currentTarget.style.background = 'none')}
     >
       {label}
+      {!onClick && !danger && (
+        <span style={{ marginLeft: 'auto', fontSize: '0.58rem', color: 'var(--text-muted)', background: 'var(--surface-2)', border: '1px solid var(--border-subtle)', borderRadius: 3, padding: '0.01rem 0.22rem', fontWeight: 500 }}>
+          em breve
+        </span>
+      )}
     </button>
   )
 }

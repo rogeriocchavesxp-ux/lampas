@@ -40,6 +40,7 @@ import AIPanel from './AIPanel'
 import BibleFloatingWindow from './BibleFloatingWindow'
 import VisaoGeralWorkspace from './VisaoGeralWorkspace'
 import WorkspaceDocument from './WorkspaceDocument'
+import WorkspaceHeader from './WorkspaceHeader'
 import EnviarParaSermaModal from './EnviarParaSermaModal'
 import DicionarioWorkspace from './DicionarioWorkspace'
 import IntroducaoWorkspace from './IntroducaoWorkspace'
@@ -618,110 +619,22 @@ export default function WorkspaceClient({ user, project, initialSections }: Prop
         onEnviarKB={() => window.dispatchEvent(new CustomEvent('lampas:kb-open-create'))}
       />
 
-      {/* ── Barra contextual do projeto ───────────────────────────────────── */}
-      <div style={{
-        height: '36px', flexShrink: 0,
-        borderBottom: '1px solid var(--border-subtle)',
-        background: 'var(--surface-2)',
-        display: 'flex', alignItems: 'center',
-        padding: '0 1rem', gap: '0.65rem',
-        fontSize: '0.75rem',
-      }}>
-        {/* Nome + referência */}
-        <span style={{ fontWeight: 700, color: 'var(--text-primary)', whiteSpace: 'nowrap' }}>
-          {titleValue}
-        </span>
-        {/* Tipo do projeto / modo */}
-        <span style={{
-          fontSize: '0.62rem', fontWeight: 700, letterSpacing: '0.04em',
-          color: modeConfig.color,
-          background: `${modeConfig.color}14`,
-          border: `1px solid ${modeConfig.color}30`,
-          borderRadius: '4px', padding: '0.02rem 0.32rem',
-          whiteSpace: 'nowrap',
-        }}>
-          {modeConfig.name}
-        </span>
-
-        <span style={{ color: 'var(--border)', fontSize: '0.8rem', userSelect: 'none' }}>·</span>
-
-        {/* Tradução */}
-        <span style={{ color: 'var(--text-muted)', whiteSpace: 'nowrap' }}>
-          {project.bible_version}
-        </span>
-
-        <span style={{ color: 'var(--border)', fontSize: '0.8rem', userSelect: 'none' }}>·</span>
-
-        {/* Progresso */}
-        <span style={{ color: 'var(--text-muted)', whiteSpace: 'nowrap' }}>{pct}% concluído</span>
-        <div style={{ width: '52px', height: '2px', background: 'var(--border)', borderRadius: '1px', overflow: 'hidden' }}>
-          <div style={{ width: `${pct}%`, height: '100%', background: modeConfig.color, transition: 'width 0.5s ease' }} />
-        </div>
-
-        {/* Fase ativa */}
-        {activePhase && (
-          <>
-            <span style={{ color: 'var(--border)', fontSize: '0.8rem', userSelect: 'none' }}>·</span>
-            <span style={{ color: activePhase.color, fontWeight: 600, fontSize: '0.72rem', whiteSpace: 'nowrap' }}>
-              {activePhase.label}
-            </span>
-          </>
-        )}
-
-        {/* ── Controles de visualização ── */}
-        {(activePhase?.id === 'preparar' || activePhase?.id === 'investigar') && (!VG_SLUGS.includes(activeSlug) || PREPARAR_DOC_SLUGS.includes(activeSlug)) && (
-          <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: '6px', flexShrink: 0 }}>
-            <span style={{ fontSize: '0.62rem', color: 'var(--text-muted)', whiteSpace: 'nowrap' }}>Modo de trabalho</span>
-            <div style={{ display: 'flex', gap: '2px', background: 'var(--surface)', border: '1px solid var(--border-subtle)', borderRadius: '7px', padding: '2px' }}>
-              {(['guided', 'free'] as const).map(wm => {
-                const isActive = (workModeMap[activePhase!.id] ?? 'guided') === wm
-                return (
-                  <button key={wm} onClick={() => setWorkMode(activePhase!.id, wm)}
-                    style={{
-                      height: '22px', padding: '0 10px', border: 'none',
-                      borderRadius: '5px',
-                      background: isActive ? activePhase!.color : 'transparent',
-                      color: isActive ? '#fff' : 'var(--text-muted)',
-                      fontSize: '0.7rem', fontWeight: isActive ? 700 : 400,
-                      cursor: 'pointer', fontFamily: 'inherit', transition: 'all 0.15s',
-                    }}
-                  >
-                    {wm === 'guided' ? 'Guiado' : 'Livre'}
-                  </button>
-                )
-              })}
-            </div>
-          </div>
-        )}
-
-        {VG_SLUGS.includes(activeSlug) && !PREPARAR_DOC_SLUGS.includes(activeSlug) && (
-          <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: '6px', flexShrink: 0 }}>
-            <span style={{ fontSize: '0.62rem', color: 'var(--text-muted)', whiteSpace: 'nowrap' }}>Visualização</span>
-            <div style={{ display: 'flex', gap: '2px', background: 'var(--surface)', border: '1px solid var(--border-subtle)', borderRadius: '7px', padding: '2px' }}>
-              {(['structured', 'visual'] as const).map(vm => {
-                const isActive = vgViewMode === vm
-                return (
-                  <button key={vm} onClick={() => setVgViewMode(vm)}
-                    style={{
-                      display: 'flex', alignItems: 'center', gap: '4px',
-                      height: '22px', padding: '0 10px', border: 'none',
-                      borderRadius: '5px',
-                      background: isActive ? '#fff' : 'transparent',
-                      color: isActive ? 'var(--text-primary)' : 'var(--text-muted)',
-                      fontSize: '0.7rem', fontWeight: isActive ? 600 : 400,
-                      cursor: 'pointer', fontFamily: 'inherit',
-                      boxShadow: isActive ? '0 1px 3px rgba(0,0,0,0.09)' : 'none',
-                      transition: 'all 0.12s',
-                    }}
-                  >
-                    {vm === 'visual' ? 'Mapa' : 'Estruturado'}
-                  </button>
-                )
-              })}
-            </div>
-          </div>
-        )}
-      </div>
+      <WorkspaceHeader
+        titleValue={titleValue}
+        modeConfig={modeConfig}
+        bibleVersion={project.bible_version ?? ''}
+        pct={pct}
+        activePhase={activePhase}
+        showWorkMode={
+          (activePhase?.id === 'preparar' || activePhase?.id === 'investigar') &&
+          (!VG_SLUGS.includes(activeSlug) || PREPARAR_DOC_SLUGS.includes(activeSlug))
+        }
+        showViewMode={VG_SLUGS.includes(activeSlug) && !PREPARAR_DOC_SLUGS.includes(activeSlug)}
+        workMode={activePhase ? (workModeMap[activePhase.id] ?? 'guided') : 'guided'}
+        onWorkModeChange={(mode) => activePhase && setWorkMode(activePhase.id, mode)}
+        vgViewMode={vgViewMode}
+        onVgViewModeChange={setVgViewMode}
+      />
 
       {/* ── Guided strip (demo projects only) ─────────────────────────── */}
       {project.is_demo && <GuidedStrip activeSlug={activeSlug} onNavigate={navigate} modeColor={modeConfig.color} />}
