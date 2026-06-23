@@ -92,22 +92,6 @@ function ProgressChip({ pct, color }: { pct: number; color: string }) {
   )
 }
 
-// ── PhaseBadge ───────────────────────────────────────────────────────────────
-
-function PhaseBadge({ phase }: { phase: NavPhase }) {
-  return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexShrink: 0 }}>
-      <span style={{ display: 'block', width: 6, height: 6, borderRadius: '50%', background: phase.color, flexShrink: 0 }} />
-      <span style={{
-        fontSize: '0.7rem', fontWeight: 700, color: phase.color,
-        textTransform: 'uppercase', letterSpacing: '0.06em', whiteSpace: 'nowrap',
-      }}>
-        {phase.label}
-      </span>
-    </div>
-  )
-}
-
 // ── BibleToggle ───────────────────────────────────────────────────────────────
 
 function BibleToggle({ open, onClick }: { open: boolean; onClick: () => void }) {
@@ -159,8 +143,6 @@ export default function WorkspaceHeader({
   vgViewMode, onVgViewModeChange,
   bibleOpen, onToggleBible,
 }: WorkspaceHeaderProps) {
-  const hasControls = showWorkMode || showViewMode
-
   return (
     <>
       {/* Responsive: chips collapse at smaller viewports — never wrap, never break */}
@@ -175,10 +157,9 @@ export default function WorkspaceHeader({
         height: HEADER_HEIGHT,
         flexShrink: 0,
         display: 'grid',
-        gridTemplateColumns: 'auto 1fr',
+        gridTemplateColumns: '1fr auto 1fr',
         alignItems: 'center',
         padding: '0 16px',
-        columnGap: 8,
         background: 'var(--surface-2)',
         borderBottom: '1px solid var(--border-subtle)',
       }}>
@@ -210,17 +191,8 @@ export default function WorkspaceHeader({
           </span>
         </div>
 
-        {/* ── CenterGroup — Phase + controls ── */}
-        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 8 }}>
-          {activePhase && (
-            <>
-              <PhaseBadge phase={activePhase} />
-              {(hasControls) && (
-                <span style={{ display: 'block', width: 1, height: 14, background: 'var(--border-subtle)', flexShrink: 0 }} />
-              )}
-            </>
-          )}
-
+        {/* ── CenterGroup — Controls only (phase shown in bottom nav) ── */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
           {showWorkMode && (
             <SegmentedControl
               options={[
@@ -246,6 +218,9 @@ export default function WorkspaceHeader({
             />
           )}
         </div>
+
+        {/* ── RightGroup — spacer para manter controles centrados ── */}
+        <div />
       </div>
     </>
   )

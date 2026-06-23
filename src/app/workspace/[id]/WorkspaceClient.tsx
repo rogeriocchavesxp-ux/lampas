@@ -626,7 +626,7 @@ export default function WorkspaceClient({ user, project, initialSections }: Prop
         pct={pct}
         activePhase={activePhase}
         showWorkMode={
-          (activePhase?.id === 'preparar' || activePhase?.id === 'investigar') &&
+          activePhase?.id === 'preparar' &&
           (!VG_SLUGS.includes(activeSlug) || PREPARAR_DOC_SLUGS.includes(activeSlug))
         }
         showViewMode={VG_SLUGS.includes(activeSlug) && !PREPARAR_DOC_SLUGS.includes(activeSlug)}
