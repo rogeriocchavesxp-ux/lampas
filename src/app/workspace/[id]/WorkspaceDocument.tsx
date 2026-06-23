@@ -578,10 +578,23 @@ export default function WorkspaceDocument({
       <div style={{ display: 'flex', flexDirection: 'column', flex: 1 }}>
         <style>{editorStyles}</style>
 
-        {/* Single toolbar at top, only while writing */}
+        {/* Toolbar — sticky at viewport top, only while writing */}
         {!!ed && renderToolbar(0)}
 
-        <div style={{ flex: 1, maxWidth: '640px', margin: '0 auto', width: '100%', padding: '2rem 1.5rem 6rem' }}>
+        {/* Desk — gray background behind the paper */}
+        <div style={{ flex: 1, background: '#ECEEF1', padding: '2.5rem 2rem 8rem' }}>
+
+          {/* Paper sheet — white card with shadow */}
+          <div style={{
+            maxWidth: '680px',
+            margin: '0 auto',
+            background: '#ffffff',
+            boxShadow: '0 1px 3px rgba(0,0,0,0.06), 0 6px 24px rgba(0,0,0,0.07)',
+            borderRadius: '2px',
+            padding: '4rem 5rem',
+            minHeight: 'calc(100vh - 160px)',
+          }}>
+
           {blocks.map(({ sectionDef }, chapterIdx) => {
             const chMetaEntry = CHAPTER_META[sectionDef.slug]
             const contents    = cardContents[sectionDef.slug] ?? {}
@@ -589,13 +602,13 @@ export default function WorkspaceDocument({
             return (
               <div key={sectionDef.slug}>
                 {chapterIdx > 0 && (
-                  <div style={{ margin: '2.5rem 0', height: '1px', background: 'var(--border)', opacity: 0.18 }} />
+                  <div style={{ margin: '3rem 0', height: '1px', background: '#E2E4E8' }} />
                 )}
 
                 <h2 style={{
-                  margin: '0 0 0.9rem',
-                  fontSize: '1.35rem', fontWeight: 800,
-                  color: 'var(--text-primary)', letterSpacing: '-0.02em',
+                  margin: '0 0 1rem',
+                  fontSize: '1.4rem', fontWeight: 800,
+                  color: '#1A1D23', letterSpacing: '-0.02em',
                 }}>
                   {chMetaEntry?.title ?? sectionDef.title}
                 </h2>
@@ -606,11 +619,11 @@ export default function WorkspaceDocument({
                   const sectionTitle = chMetaEntry?.sectionTitles?.[card.id] ?? card.title
 
                   return (
-                    <div key={card.id} style={{ marginTop: cardIdx === 0 ? 0 : '1.1rem' }}>
+                    <div key={card.id} style={{ marginTop: cardIdx === 0 ? 0 : '1.25rem' }}>
                       <h3 style={{
-                        margin: '0 0 0.15rem',
-                        fontSize: '0.95rem', fontWeight: 600,
-                        color: 'var(--text-secondary)', letterSpacing: '-0.01em',
+                        margin: '0 0 0.1rem',
+                        fontSize: '0.9rem', fontWeight: 600,
+                        color: '#64748B', letterSpacing: '-0.005em',
                       }}>
                         {sectionTitle}
                       </h3>
@@ -632,7 +645,9 @@ export default function WorkspaceDocument({
               </div>
             )
           })}
-        </div>
+
+          </div>{/* /paper */}
+        </div>{/* /desk */}
 
         {aiOpen && aiContext && ed && (
           <AIAssistantPanel
