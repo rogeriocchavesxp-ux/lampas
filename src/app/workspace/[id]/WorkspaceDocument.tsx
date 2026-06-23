@@ -555,25 +555,105 @@ export default function WorkspaceDocument({
 
   // ── Render ────────────────────────────────────────────────────────────────
 
+  const editorStyles = `
+    .ws-doc-section .rich-editor .ProseMirror {
+      border: none;
+      border-radius: 0;
+      background: transparent;
+      box-shadow: none;
+      padding: 0.4rem 0 0.6rem;
+      min-height: 72px;
+    }
+    .ws-doc-section .rich-editor .ProseMirror:focus {
+      box-shadow: none;
+      border: none;
+    }
+    .ws-doc-section .rich-editor .ProseMirror p:first-child { margin-top: 0; }
+  `
+
+  // ── Free mode — single continuous document (no accordion, no cards) ────
+
+  if (!guided) {
+    return (
+      <div style={{ display: 'flex', flexDirection: 'column', flex: 1 }}>
+        <style>{editorStyles}</style>
+
+        {/* Single toolbar at top, only while writing */}
+        {!!ed && renderToolbar(0)}
+
+        <div style={{ flex: 1, maxWidth: '640px', margin: '0 auto', width: '100%', padding: '2rem 1.5rem 6rem' }}>
+          {blocks.map(({ sectionDef }, chapterIdx) => {
+            const chMetaEntry = CHAPTER_META[sectionDef.slug]
+            const contents    = cardContents[sectionDef.slug] ?? {}
+
+            return (
+              <div key={sectionDef.slug}>
+                {chapterIdx > 0 && (
+                  <div style={{ margin: '2.5rem 0', height: '1px', background: 'var(--border)', opacity: 0.18 }} />
+                )}
+
+                <h2 style={{
+                  margin: '0 0 0.9rem',
+                  fontSize: '1.35rem', fontWeight: 800,
+                  color: 'var(--text-primary)', letterSpacing: '-0.02em',
+                }}>
+                  {chMetaEntry?.title ?? sectionDef.title}
+                </h2>
+
+                {sectionDef.cards.map((card, cardIdx) => {
+                  const cardContent  = contents[card.id] ?? ''
+                  const editorKey    = `${sectionDef.slug}:${card.id}`
+                  const sectionTitle = chMetaEntry?.sectionTitles?.[card.id] ?? card.title
+
+                  return (
+                    <div key={card.id} style={{ marginTop: cardIdx === 0 ? 0 : '1.1rem' }}>
+                      <h3 style={{
+                        margin: '0 0 0.15rem',
+                        fontSize: '0.95rem', fontWeight: 600,
+                        color: 'var(--text-secondary)', letterSpacing: '-0.01em',
+                      }}>
+                        {sectionTitle}
+                      </h3>
+                      <div className="ws-doc-section">
+                        <RichEditor
+                          value={cardContent}
+                          onChange={html => scheduleCardSave(sectionDef.slug, card.id, html)}
+                          placeholder=""
+                          minHeight={60}
+                          moduleColor={accent}
+                          hideToolbar
+                          onEditorMount={editor => { editorMapRef.current.set(editorKey, editor) }}
+                          onFocusChange={focused => { if (focused) setActiveEditorKey(editorKey) }}
+                        />
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
+            )
+          })}
+        </div>
+
+        {aiOpen && aiContext && ed && (
+          <AIAssistantPanel
+            context={aiContext}
+            currentContent={ed.getHTML()}
+            onInsert={handleAiInsert}
+            onReplace={handleAiReplace}
+            onAppend={handleAiAppend}
+            onClose={() => setAiOpen(false)}
+          />
+        )}
+      </div>
+    )
+  }
+
+  // ── Guided mode ───────────────────────────────────────────────────────────
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', flex: 1 }}>
 
-      {/* Integrated editor styling — removes box from RichEditor */}
-      <style>{`
-        .ws-doc-section .rich-editor .ProseMirror {
-          border: none;
-          border-radius: 0;
-          background: transparent;
-          box-shadow: none;
-          padding: 0.4rem 0 0.6rem;
-          min-height: 72px;
-        }
-        .ws-doc-section .rich-editor .ProseMirror:focus {
-          box-shadow: none;
-          border: none;
-        }
-        .ws-doc-section .rich-editor .ProseMirror p:first-child { margin-top: 0; }
-      `}</style>
+      <style>{editorStyles}</style>
 
       {/* ── Chapters ─────────────────────────────────────────────────────── */}
       <div style={{ flex: 1, maxWidth: '700px', margin: '0 auto', width: '100%', padding: '1.25rem 1.25rem 4rem' }}>
