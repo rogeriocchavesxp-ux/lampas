@@ -33,8 +33,7 @@ const TEXT_COLORS = [
   { color: '#64748B', label: 'Cinza'    },
 ]
 
-// ── Chapter / section metadata ────────────────────────────────────────────────
-// Titles are narrative (conversational), placeholders are the teacher's voice.
+// ── Chapter metadata ──────────────────────────────────────────────────────────
 
 const CHAPTER_META: Record<string, {
   title: string
@@ -44,50 +43,50 @@ const CHAPTER_META: Record<string, {
 }> = {
   preparacao_espiritual: {
     title: 'Antes de começar',
-    intro: 'Antes de abrir os comentários e analisar o texto, prepare seu coração diante de Deus e defina o propósito deste estudo.',
+    intro: 'Todo estudo bíblico começa antes da investigação. Começa com um coração disposto a ouvir a Deus.',
     placeholders: {
       preparar_oracao:
-        'Peça ao Senhor sabedoria para compreender Sua Palavra, fidelidade na interpretação e um coração disposto a ser transformado pelo que Ele vai revelar.',
+        'Peça ao Senhor que abra sua mente para compreender Sua Palavra e que prepare seu coração para ser transformado pelo que Ele vai revelar nesta passagem.',
       preparar_objetivo_estudo:
-        'O que motivou você a estudar esta passagem hoje? Existe alguma pergunta que espera responder? Que fruto pastoral espera deste processo?',
+        'Por que Deus trouxe esta passagem ao seu coração neste momento? Existe alguma pergunta, necessidade ou desafio que motivou este estudo?',
       preparar_ocasiiao_publico:
-        'Onde este estudo será utilizado? Quem são as pessoas que ouvirão esta mensagem? O que elas estão vivendo neste momento?',
+        'Onde este estudo será compartilhado? Quem são as pessoas que receberão esta mensagem? Que necessidades ou perguntas elas carregam neste momento?',
     },
   },
   preparar_leia_assimile: {
     title: 'Primeiro Contato com o Texto',
-    intro: 'Leia o texto com atenção e registre suas primeiras impressões. Ainda não é o momento de analisar — apenas de ouvir o que o texto comunica.',
+    intro: 'Antes de buscar respostas, simplesmente observe o texto. Nesta etapa não existem interpretações certas — apenas atenção honesta ao que está escrito.',
     sectionTitles: {
-      preparar_leitura_lenta:       'Primeira leitura',
-      preparar_comparacao_traducoes: 'Comparação de traduções',
-      preparar_ideia_inicial:        'Ideia central provisória',
-      preparar_tensoes_repeticoes:   'Tensões e repetições',
+      preparar_leitura_lenta:        'Primeira leitura',
+      preparar_comparacao_traducoes:  'Comparação de traduções',
+      preparar_ideia_inicial:         'Ideia central provisória',
+      preparar_tensoes_repeticoes:    'Tensões e repetições',
     },
     placeholders: {
       preparar_leitura_lenta:
-        'Leia lentamente o texto duas ou três vezes. Não tente resolver todas as dúvidas agora. Observe apenas aquilo que naturalmente chama sua atenção.',
+        'Leia lentamente o texto duas ou três vezes. Não tente resolver todas as dúvidas agora. Observe apenas aquilo que naturalmente chama sua atenção — palavras, imagens, emoções, perguntas.',
       preparar_comparacao_traducoes:
-        'Leia o mesmo trecho em duas ou três traduções diferentes. O que muda? Alguma diferença revela algo importante sobre o texto?',
+        'Leia o mesmo trecho em duas ou três traduções diferentes. O que muda entre elas? Alguma diferença revela algo importante sobre o sentido do texto?',
       preparar_ideia_inicial:
-        'Em uma frase simples, qual parece ser a ideia central desta passagem? Pode ser provisória — você terá oportunidade de revisá-la.',
+        'Em uma frase simples, o que este texto parece querer comunicar? Escreva sem censura — será revisado e aprofundado nas próximas etapas.',
       preparar_tensoes_repeticoes:
-        'O que se repete? O que contrasta? Que palavras ou expressões saltam aos olhos? Que emoção o texto transmite?',
+        'O que se repete? O que contrasta? Que palavras ou expressões saltam aos olhos? Que emoção o texto transmite ao leitor?',
     },
   },
   preparar_visao_geral: {
     title: 'O que o Texto Parece Dizer?',
-    intro: 'Com base na sua leitura, o que o texto parece comunicar? Ainda é cedo para conclusões — registre suas impressões com honestidade.',
+    intro: 'Com base no seu primeiro contato, o que o texto parece comunicar? Registre suas impressões com honestidade — ainda é cedo para conclusões definitivas.',
     placeholders: {
       preparar_tema_provavel:
-        'Qual parece ser o tema central desta passagem? Use uma frase provisória, aberta a revisão após a investigação.',
+        'Qual parece ser o tema central desta passagem? Use uma frase provisória, aberta a revisão após a investigação exegética.',
       preparar_grande_ideia_inicial:
-        'Se você tivesse de resumir o ponto principal em uma frase completa — sujeito + predicado — como seria?',
+        'Se você tivesse de resumir o ponto principal do texto em uma frase completa — sujeito + predicado — como seria?',
       preparar_estrutura_percebida:
-        'Como o texto parece estar organizado? Quais são as partes, blocos ou movimentos que você consegue identificar?',
+        'Como o texto parece estar organizado? Quais são as partes, blocos ou movimentos que você consegue identificar nesta primeira leitura?',
       preparar_vg_perguntas:
-        'Que perguntas este texto levanta em você? O que ainda não ficou claro? O que surpreende ou intriga?',
+        'Que perguntas este texto levanta em você? O que ainda não ficou claro? O que surpreende, intriga ou permanece em aberto?',
       preparar_vg_dificuldades:
-        'Que tensões, paradoxos ou dificuldades de compreensão você já percebe nesta passagem?',
+        'Que tensões, paradoxos ou dificuldades de compreensão você já percebe nesta passagem? O que exigirá atenção especial na investigação?',
     },
   },
 }
@@ -194,18 +193,13 @@ export default function WorkspaceDocument({
     return idx >= 0 ? idx : 0
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Card contents: { [sectionSlug]: { [cardId]: html } }
   const [cardContents, setCardContents] = useState<Record<string, Record<string, string>>>(() =>
     Object.fromEntries(blocks.map(b => [b.sectionDef.slug, loadCardsFromSection(b.sectionDef, b.existingSection)]))
   )
-
-  // One chapter open at a time
   const [openChapterIdx, setOpenChapterIdx] = useState<number>(initialChapterIdx)
-
-  // Lazy-mount: chapter content only rendered after first open
   const [openedChapters, setOpenedChapters] = useState<Set<number>>(() => new Set([initialChapterIdx]))
 
-  // Shared toolbar
+  // Shared toolbar state
   const [activeEditorKey, setActiveEditorKey] = useState<string | null>(null)
   const [, forceUpdate] = useState(0)
   const [hlOpen,    setHlOpen]    = useState(false)
@@ -213,9 +207,11 @@ export default function WorkspaceDocument({
   const [linkOpen,  setLinkOpen]  = useState(false)
   const [linkUrl,   setLinkUrl]   = useState('')
   const [aiOpen,    setAiOpen]    = useState(false)
-  const hlRef    = useRef<HTMLDivElement>(null)
-  const colorRef = useRef<HTMLDivElement>(null)
-  const linkRef  = useRef<HTMLDivElement>(null)
+
+  // Per-chapter picker refs (toolbar lives inside each chapter)
+  const hlRefs    = useRef<(HTMLDivElement | null)[]>([])
+  const colorRefs = useRef<(HTMLDivElement | null)[]>([])
+  const linkRefs  = useRef<(HTMLDivElement | null)[]>([])
 
   const editorMapRef = useRef<Map<string, Editor>>(new Map())
   const saveTimers   = useRef<Record<string, ReturnType<typeof setTimeout>>>({})
@@ -227,7 +223,6 @@ export default function WorkspaceDocument({
   const focusedSlug   = activeEditorKey?.split(':')?.[0] ?? null
   const focusedCardId = activeEditorKey?.split(':')?.[1] ?? null
 
-  // Subscribe to active editor transactions → toolbar reflects state
   useEffect(() => {
     if (!activeEditor) return
     const h = () => forceUpdate(n => n + 1)
@@ -235,10 +230,11 @@ export default function WorkspaceDocument({
     return () => { activeEditor.off('transaction', h) }
   }, [activeEditor])
 
-  // Close pickers on outside click
+  // Close pickers on outside click — checks all chapter refs
   useEffect(() => {
     function h(e: MouseEvent) {
-      if ([hlRef, colorRef, linkRef].every(r => !r.current?.contains(e.target as Node))) {
+      const allRefs = [...hlRefs.current, ...colorRefs.current, ...linkRefs.current].filter(Boolean)
+      if (allRefs.every(r => !r?.contains(e.target as Node))) {
         setHlOpen(false); setColorOpen(false); setLinkOpen(false)
       }
     }
@@ -246,7 +242,6 @@ export default function WorkspaceDocument({
     return () => document.removeEventListener('mousedown', h)
   }, [])
 
-  // Respond to initialSlug changes (sidebar navigation)
   useEffect(() => {
     if (!initialSlug) return
     const idx = blocks.findIndex(b => b.sectionDef.slug === initialSlug)
@@ -316,8 +311,6 @@ export default function WorkspaceDocument({
     }
   }, [focusedBlock, focusedCard, project, userId, chMeta])
 
-  // ── Link ──────────────────────────────────────────────────────────────────
-
   function applyLink() {
     if (!activeEditor) return
     const url = linkUrl.trim()
@@ -326,8 +319,6 @@ export default function WorkspaceDocument({
     activeEditor.chain().focus().setLink({ href }).run()
     setLinkOpen(false); setLinkUrl('')
   }
-
-  // ── AI handlers ───────────────────────────────────────────────────────────
 
   const handleAiInsert = useCallback((html: string) => {
     if (!activeEditor || !focusedSlug || !focusedCardId) return
@@ -351,41 +342,18 @@ export default function WorkspaceDocument({
   const accent = '#D97706'
   const ed     = activeEditor
 
-  // ── Render ────────────────────────────────────────────────────────────────
+  // ── Toolbar render (per-chapter, receives chapter index for refs) ──────────
 
-  return (
-    <div style={{ display: 'flex', flexDirection: 'column', flex: 1 }}>
-
-      {/*
-        Override RichEditor border when used in document mode.
-        The editor should look integrated, not boxed.
-      */}
-      <style>{`
-        .ws-doc-section .rich-editor .ProseMirror {
-          border: none;
-          border-radius: 0;
-          background: transparent;
-          box-shadow: none;
-          padding: 0.25rem 0 0.5rem;
-          min-height: 80px;
-        }
-        .ws-doc-section .rich-editor .ProseMirror:focus {
-          box-shadow: none;
-          border: none;
-        }
-        .ws-doc-section .rich-editor .ProseMirror p:first-child {
-          margin-top: 0;
-        }
-      `}</style>
-
-      {/* ── Shared sticky toolbar ─────────────────────────────────────────── */}
+  function renderToolbar(chIdx: number) {
+    return (
       <div style={{
         position: 'sticky', top: '37px', zIndex: 20,
         display: 'flex', alignItems: 'center', gap: '2px', flexWrap: 'wrap',
-        padding: '0.3rem 0.45rem',
+        padding: '0.28rem 0.45rem',
         background: 'var(--background)',
+        borderTop: '1px solid rgba(0,0,0,0.06)',
         borderBottom: '1px solid rgba(0,0,0,0.08)',
-        boxShadow: '0 2px 8px rgba(0,0,0,0.05)',
+        boxShadow: '0 2px 6px rgba(0,0,0,0.04)',
       }}>
         {!ed ? (
           <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)', padding: '0 0.25rem' }}>
@@ -408,7 +376,9 @@ export default function WorkspaceDocument({
             <Btn active={ed.isActive('underline')} onClick={() => ed.chain().focus().toggleUnderline().run()} title="Sublinhado"><u>U</u></Btn>
             <Btn active={ed.isActive('strike')}    onClick={() => ed.chain().focus().toggleStrike().run()}    title="Tachado"><s>S</s></Btn>
             <Sep />
-            <div ref={colorRef} style={{ position: 'relative' }}>
+
+            {/* Text color */}
+            <div ref={el => { colorRefs.current[chIdx] = el }} style={{ position: 'relative' }}>
               <Btn active={colorOpen} onClick={() => { setColorOpen(o => !o); setHlOpen(false); setLinkOpen(false) }} title="Cor do texto">
                 <span style={{ display: 'inline-flex', flexDirection: 'column', alignItems: 'center', gap: '1px' }}>
                   <span style={{ fontSize: '0.75rem', fontWeight: 700, color: ed.getAttributes('textStyle').color ?? 'var(--text-primary)', lineHeight: 1 }}>A</span>
@@ -430,7 +400,9 @@ export default function WorkspaceDocument({
                 </div>
               )}
             </div>
-            <div ref={hlRef} style={{ position: 'relative' }}>
+
+            {/* Highlight */}
+            <div ref={el => { hlRefs.current[chIdx] = el }} style={{ position: 'relative' }}>
               <Btn active={hlOpen || ed.isActive('highlight')} onClick={() => { setHlOpen(o => !o); setColorOpen(false); setLinkOpen(false) }} title="Destaque">
                 <span style={{ display: 'inline-flex', alignItems: 'center', gap: '2px' }}>
                   <span style={{ width: '12px', height: '12px', borderRadius: '2px', background: ed.isActive('highlight') ? (ed.getAttributes('highlight').color ?? '#FEF3C7') : '#FEF3C7', border: '1px solid rgba(0,0,0,0.1)' }} />
@@ -453,6 +425,8 @@ export default function WorkspaceDocument({
               )}
             </div>
             <Sep />
+
+            {/* Lists */}
             <Btn active={ed.isActive('bulletList')}  onClick={() => ed.chain().focus().toggleBulletList().run()}  title="Lista">
               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><line x1="9" y1="6" x2="20" y2="6"/><line x1="9" y1="12" x2="20" y2="12"/><line x1="9" y1="18" x2="20" y2="18"/><circle cx="4" cy="6" r="1.5" fill="currentColor"/><circle cx="4" cy="12" r="1.5" fill="currentColor"/><circle cx="4" cy="18" r="1.5" fill="currentColor"/></svg>
             </Btn>
@@ -463,6 +437,8 @@ export default function WorkspaceDocument({
               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><rect x="3" y="5" width="5" height="5" rx="1"/><polyline points="5 8 6.5 9.5 9 7"/><line x1="13" y1="7.5" x2="21" y2="7.5"/><rect x="3" y="14" width="5" height="5" rx="1"/><line x1="13" y1="16.5" x2="21" y2="16.5"/></svg>
             </Btn>
             <Sep />
+
+            {/* Block formats */}
             <Btn active={ed.isActive('blockquote')} onClick={() => ed.chain().focus().toggleBlockquote().run()} title="Citação">
               <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M3 21c3 0 7-1 7-8V5c0-1.25-.756-2.017-2-2H4c-1.25 0-2 .75-2 1.972V11c0 1.25.75 2 2 2 1 0 1 0 1 1v1c0 1-1 2-2 2s-1 .008-1 1.031V20c0 1 0 1 1 1z"/><path d="M15 21c3 0 7-1 7-8V5c0-1.25-.757-2.017-2-2h-4c-1.25 0-2 .75-2 1.972V11c0 1.25.75 2 2 2h.75c0 2.25.25 4-2.75 4v3c0 1 0 1 1 1z"/></svg>
             </Btn>
@@ -472,7 +448,9 @@ export default function WorkspaceDocument({
             <Btn active={false} onClick={() => ed.chain().focus().setHorizontalRule().run()} title="Linha horizontal">
               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><line x1="2" y1="12" x2="22" y2="12"/></svg>
             </Btn>
-            <div ref={linkRef} style={{ position: 'relative' }}>
+
+            {/* Link */}
+            <div ref={el => { linkRefs.current[chIdx] = el }} style={{ position: 'relative' }}>
               <Btn active={ed.isActive('link') || linkOpen} onClick={() => {
                 setLinkOpen(o => !o); setHlOpen(false); setColorOpen(false)
                 if (!linkOpen) setLinkUrl(ed.getAttributes('link').href ?? '')
@@ -502,6 +480,7 @@ export default function WorkspaceDocument({
             <Btn active={false} onClick={() => ed.chain().focus().clearNodes().unsetAllMarks().run()} title="Limpar formatação">
               <span style={{ fontSize: '0.65rem', fontWeight: 600, textDecoration: 'line-through', color: 'var(--text-muted)' }}>A</span>
             </Btn>
+
             {aiContext && (
               <>
                 <div style={{ flex: 1 }} />
@@ -528,9 +507,33 @@ export default function WorkspaceDocument({
           </>
         )}
       </div>
+    )
+  }
+
+  // ── Render ────────────────────────────────────────────────────────────────
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', flex: 1 }}>
+
+      {/* Integrated editor styling — removes box from RichEditor */}
+      <style>{`
+        .ws-doc-section .rich-editor .ProseMirror {
+          border: none;
+          border-radius: 0;
+          background: transparent;
+          box-shadow: none;
+          padding: 0.4rem 0 0.6rem;
+          min-height: 72px;
+        }
+        .ws-doc-section .rich-editor .ProseMirror:focus {
+          box-shadow: none;
+          border: none;
+        }
+        .ws-doc-section .rich-editor .ProseMirror p:first-child { margin-top: 0; }
+      `}</style>
 
       {/* ── Chapters ─────────────────────────────────────────────────────── */}
-      <div style={{ flex: 1, maxWidth: '720px', margin: '0 auto', width: '100%', padding: '1.5rem 1.25rem 4rem' }}>
+      <div style={{ flex: 1, maxWidth: '700px', margin: '0 auto', width: '100%', padding: '1.25rem 1.25rem 4rem' }}>
         {blocks.map(({ sectionDef }, chapterIdx) => {
           const chMetaEntry = CHAPTER_META[sectionDef.slug]
           const isChOpen    = openChapterIdx === chapterIdx
@@ -539,70 +542,63 @@ export default function WorkspaceDocument({
           const doneCount   = sectionDef.cards.filter(c => isCardDone(contents[c.id] ?? '')).length
           const totalCount  = sectionDef.cards.length
           const allDone     = doneCount === totalCount && totalCount > 0
+          const hasNext     = chapterIdx < blocks.length - 1
+
+          const progressLabel = doneCount === 0
+            ? 'Você ainda não iniciou esta etapa.'
+            : allDone
+              ? 'Etapa concluída.'
+              : `Você concluiu ${doneCount} de ${totalCount} reflexões. Continue de onde parou.`
 
           return (
             <div
               key={sectionDef.slug}
               style={{
-                marginBottom: '0.65rem',
+                marginBottom: '0.5rem',
                 borderRadius: '14px',
                 border: `1px solid ${isChOpen ? `${accent}20` : 'var(--border-subtle)'}`,
-                overflow: 'hidden',
                 transition: 'border-color 0.25s ease',
                 background: 'var(--surface)',
               }}
             >
-              {/* ── Chapter header ──────────────────────────────────────── */}
+              {/* ── Chapter header — book chapter style ─────────────── */}
               <button
                 type="button"
                 onClick={() => openChapterAt(chapterIdx)}
                 style={{
-                  width: '100%', display: 'flex', alignItems: 'center', gap: '0.85rem',
-                  padding: '1rem 1.25rem',
+                  width: '100%', display: 'flex', alignItems: 'flex-start', gap: '0.75rem',
+                  padding: '1.15rem 1.4rem',
                   background: 'transparent', border: 'none', cursor: 'pointer',
                   textAlign: 'left', fontFamily: 'inherit',
+                  borderRadius: '14px 14px 0 0',
                 }}
               >
-                {/* Chapter number circle */}
-                <span style={{
-                  width: '32px', height: '32px', borderRadius: '50%', flexShrink: 0,
-                  background: allDone ? '#10B98115' : isChOpen ? `${accent}15` : 'var(--surface-2)',
-                  border: `2px solid ${allDone ? '#10B981' : isChOpen ? accent : 'var(--border)'}`,
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  transition: 'all 0.2s ease',
-                  fontSize: '0.8rem', fontWeight: 700,
-                  color: allDone ? '#10B981' : isChOpen ? accent : 'var(--text-muted)',
-                }}>
-                  {allDone ? '✓' : chapterIdx + 1}
-                </span>
-
                 <div style={{ flex: 1, minWidth: 0 }}>
-                  {/* Etapa label */}
-                  <span style={{
-                    fontSize: '0.6rem', fontWeight: 700, letterSpacing: '0.1em',
-                    textTransform: 'uppercase',
-                    color: allDone ? '#10B981' : isChOpen ? accent : 'var(--text-muted)',
-                    display: 'block', marginBottom: '0.2rem',
-                  }}>
-                    Etapa {chapterIdx + 1} de {blocks.length}
-                  </span>
-
                   {/* Chapter title */}
                   <h2 style={{
-                    margin: '0 0 0.5rem',
-                    fontSize: '1rem', fontWeight: 700,
-                    color: 'var(--text-primary)', letterSpacing: '-0.01em',
-                    lineHeight: 1.2,
+                    margin: '0 0 0.4rem',
+                    fontSize: '1.1rem', fontWeight: 800,
+                    color: allDone ? '#10B981' : 'var(--text-primary)',
+                    letterSpacing: '-0.02em', lineHeight: 1.15,
+                    transition: 'color 0.3s ease',
                   }}>
                     {chMetaEntry?.title ?? sectionDef.shortTitle ?? sectionDef.title}
                   </h2>
 
-                  {/* Progress */}
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
-                    <div style={{
-                      flex: 1, maxWidth: '120px', height: '3px',
-                      background: 'var(--border-subtle)', borderRadius: '2px', overflow: 'hidden',
+                  {/* Intro — always visible, teacher voice */}
+                  {chMetaEntry?.intro && (
+                    <p style={{
+                      margin: '0 0 0.7rem',
+                      fontSize: '0.79rem', fontStyle: 'italic',
+                      color: 'var(--text-secondary)', lineHeight: 1.6,
                     }}>
+                      {chMetaEntry.intro}
+                    </p>
+                  )}
+
+                  {/* Progress */}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.55rem' }}>
+                    <div style={{ width: '80px', height: '3px', background: 'var(--border-subtle)', borderRadius: '2px', overflow: 'hidden', flexShrink: 0 }}>
                       <div style={{
                         height: '100%',
                         width: `${totalCount > 0 ? (doneCount / totalCount) * 100 : 0}%`,
@@ -610,22 +606,25 @@ export default function WorkspaceDocument({
                         borderRadius: '2px', transition: 'width 0.45s ease',
                       }} />
                     </div>
-                    <span style={{ fontSize: '0.66rem', color: 'var(--text-muted)', whiteSpace: 'nowrap' }}>
-                      {doneCount === 0 ? 'Não iniciada' : allDone ? 'Concluída' : `${doneCount} de ${totalCount}`}
+                    <span style={{ fontSize: '0.64rem', color: allDone ? '#10B981' : 'var(--text-muted)', lineHeight: 1.3 }}>
+                      {progressLabel}
                     </span>
                   </div>
                 </div>
 
                 <span style={{
                   color: 'var(--text-muted)', fontSize: '0.72rem', flexShrink: 0,
-                  transition: 'transform 0.22s ease',
+                  transition: 'transform 0.22s ease', marginTop: '2px',
                   transform: isChOpen ? 'rotate(0deg)' : 'rotate(-90deg)',
                 }}>
                   ▾
                 </span>
               </button>
 
-              {/* ── Chapter body — accordion ─────────────────────────── */}
+              {/* ── Toolbar — inside chapter, outside accordion ───── */}
+              {isChOpen && renderToolbar(chapterIdx)}
+
+              {/* ── Chapter accordion ────────────────────────────── */}
               <div style={{
                 display: 'grid',
                 gridTemplateRows: isChOpen ? '1fr' : '0fr',
@@ -633,43 +632,28 @@ export default function WorkspaceDocument({
               }}>
                 <div style={{ overflow: 'hidden' }}>
                   {isRendered && (
-                    <div style={{ padding: '0 1.5rem 2rem' }}>
-
-                      {/* Chapter intro */}
-                      {chMetaEntry?.intro && (
-                        <p style={{
-                          margin: '0 0 1.75rem',
-                          fontSize: '0.85rem', color: 'var(--text-secondary)',
-                          lineHeight: 1.7, fontStyle: 'italic',
-                        }}>
-                          {chMetaEntry.intro}
-                        </p>
-                      )}
+                    <div style={{ padding: '0.85rem 1.4rem 1.5rem' }}>
 
                       {/* Sections — continuous document */}
                       {sectionDef.cards.map((card, cardIdx) => {
-                        const cardContent   = contents[card.id] ?? ''
-                        const isFirst       = cardIdx === 0
-                        const sectionTitle  = chMetaEntry?.sectionTitles?.[card.id] ?? card.title
-                        const orientation   = guided ? (chMetaEntry?.placeholders?.[card.id] ?? '') : ''
-                        const editorKey     = `${sectionDef.slug}:${card.id}`
-                        const done          = isCardDone(cardContent)
+                        const cardContent  = contents[card.id] ?? ''
+                        const isFirst      = cardIdx === 0
+                        const sectionTitle = chMetaEntry?.sectionTitles?.[card.id] ?? card.title
+                        const orientation  = guided ? (chMetaEntry?.placeholders?.[card.id] ?? '') : ''
+                        const editorKey    = `${sectionDef.slug}:${card.id}`
+                        const done         = isCardDone(cardContent)
 
                         return (
                           <div key={card.id}>
-                            {/* Section divider */}
                             {!isFirst && (
-                              <div style={{
-                                height: '1px', background: 'var(--border-subtle)',
-                                margin: '1.5rem 0', opacity: 0.6,
-                              }} />
+                              <div style={{ height: '1px', background: 'var(--border-subtle)', margin: '1.1rem 0', opacity: 0.55 }} />
                             )}
 
                             {/* Section title */}
-                            <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.5rem', marginBottom: '0.45rem' }}>
+                            <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.45rem', marginBottom: '0.3rem' }}>
                               <h3 style={{
                                 margin: 0,
-                                fontSize: '0.9rem', fontWeight: 700,
+                                fontSize: '0.87rem', fontWeight: 700,
                                 color: done ? 'var(--text-secondary)' : 'var(--text-primary)',
                                 letterSpacing: '-0.01em',
                                 transition: 'color 0.3s ease',
@@ -677,44 +661,74 @@ export default function WorkspaceDocument({
                                 {sectionTitle}
                               </h3>
                               {done && (
-                                <span style={{ fontSize: '0.65rem', color: '#10B981', fontWeight: 600 }}>
-                                  ✓
-                                </span>
+                                <span style={{ fontSize: '0.62rem', color: '#10B981', fontWeight: 600 }}>✓</span>
                               )}
                             </div>
 
-                            {/* Orientation (teacher's voice — always visible in guided mode) */}
+                            {/* Orientation — teacher's voice, always visible in guided mode */}
                             {orientation && (
                               <p style={{
-                                margin: '0 0 0.5rem',
-                                fontSize: '0.79rem', color: 'var(--text-muted)',
-                                lineHeight: 1.65, fontStyle: 'italic',
+                                margin: '0 0 0.3rem',
+                                fontSize: '0.77rem', color: 'var(--text-muted)',
+                                lineHeight: 1.6, fontStyle: 'italic',
                               }}>
                                 {orientation}
                               </p>
                             )}
 
-                            {/* Editor — integrated, borderless */}
-                            <div className="ws-doc-section">
-                              <RichEditor
-                                value={cardContent}
-                                onChange={html => scheduleCardSave(sectionDef.slug, card.id, html)}
-                                placeholder=""
-                                minHeight={80}
-                                moduleColor={accent}
-                                hideToolbar
-                                onEditorMount={editor => {
-                                  editorMapRef.current.set(editorKey, editor)
-                                }}
-                                onFocusChange={focused => {
-                                  if (focused) setActiveEditorKey(editorKey)
-                                }}
-                              />
+                            {/* Ruled line + integrated editor */}
+                            <div style={{ borderTop: '1px solid var(--border-subtle)', marginTop: '0.3rem' }}>
+                              <div className="ws-doc-section">
+                                <RichEditor
+                                  value={cardContent}
+                                  onChange={html => scheduleCardSave(sectionDef.slug, card.id, html)}
+                                  placeholder=""
+                                  minHeight={72}
+                                  moduleColor={accent}
+                                  hideToolbar
+                                  onEditorMount={editor => { editorMapRef.current.set(editorKey, editor) }}
+                                  onFocusChange={focused => { if (focused) setActiveEditorKey(editorKey) }}
+                                />
+                              </div>
                             </div>
 
                           </div>
                         )
                       })}
+
+                      {/* Completion banner */}
+                      {allDone && (
+                        <div style={{
+                          marginTop: '1.25rem',
+                          padding: '0.75rem 1rem',
+                          background: '#10B98108',
+                          border: '1px solid #10B98125',
+                          borderRadius: '10px',
+                          display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '1rem',
+                        }}>
+                          <div>
+                            <span style={{ fontSize: '0.8rem', fontWeight: 700, color: '#10B981' }}>✓ Etapa concluída</span>
+                            <span style={{ fontSize: '0.77rem', color: 'var(--text-secondary)', marginLeft: '0.5rem' }}>
+                              Excelente. Seu coração já está preparado para continuar.
+                            </span>
+                          </div>
+                          {hasNext && (
+                            <button
+                              type="button"
+                              onClick={() => openChapterAt(chapterIdx + 1)}
+                              style={{
+                                background: accent, color: '#fff', border: 'none',
+                                borderRadius: '7px', padding: '0.35rem 0.9rem',
+                                fontSize: '0.78rem', fontWeight: 600,
+                                cursor: 'pointer', fontFamily: 'inherit', whiteSpace: 'nowrap',
+                              }}
+                            >
+                              Próxima etapa →
+                            </button>
+                          )}
+                        </div>
+                      )}
+
                     </div>
                   )}
                 </div>
