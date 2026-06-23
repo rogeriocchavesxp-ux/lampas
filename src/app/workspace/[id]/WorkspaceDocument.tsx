@@ -175,12 +175,13 @@ export default function WorkspaceDocument({
     return () => document.removeEventListener('mousedown', h)
   }, [])
 
-  // Scroll to initialSlug block on mount
+  // Scroll + focus when initialSlug changes (sidebar navigation between PREPARAR sections)
   useEffect(() => {
     if (!initialSlug) return
+    setFocusedSlug(initialSlug)
     const el = document.getElementById(`ws-doc-block-${initialSlug}`)
     if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' })
-  }, []) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [initialSlug])
 
   const registerEditor = useCallback((slug: string, editor: Editor) => {
     editorMapRef.current.set(slug, editor)
