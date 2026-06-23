@@ -38,12 +38,26 @@ const TEXT_COLORS = [
 const CHAPTER_META: Record<string, {
   title: string
   intro: string
+  why?: string
+  icons?: Record<string, string>
+  editorHints?: Record<string, string>
   sectionTitles?: Record<string, string>
   placeholders: Record<string, string>
 }> = {
   preparacao_espiritual: {
     title: 'Antes de começar',
     intro: 'Todo estudo bíblico começa antes da investigação. Começa com um coração disposto a ouvir a Deus.',
+    why: 'Grandes interpretações não começam com ferramentas, mas com um coração disposto a ouvir. Antes de investigar detalhes do texto, este momento ajuda você a alinhar seu propósito, depender de Deus e lembrar que o objetivo do estudo não é apenas adquirir conhecimento — mas ser transformado pela Palavra.',
+    icons: {
+      preparar_oracao:            '🙏',
+      preparar_objetivo_estudo:   '🎯',
+      preparar_ocasiiao_publico:  '👥',
+    },
+    editorHints: {
+      preparar_oracao:            'Comece escrevendo sua oração...',
+      preparar_objetivo_estudo:   'Escreva aqui seu objetivo...',
+      preparar_ocasiiao_publico:  'Escreva aqui sobre a ocasião e o público...',
+    },
     placeholders: {
       preparar_oracao:
         'Antes de abrir qualquer comentário, converse com Deus sobre esta passagem. O que você deseja que Ele transforme em seu coração durante este estudo?',
@@ -56,6 +70,19 @@ const CHAPTER_META: Record<string, {
   preparar_leia_assimile: {
     title: 'Primeiro Contato com o Texto',
     intro: 'Antes de buscar respostas, simplesmente observe o texto. Nesta etapa não existem interpretações certas — apenas atenção honesta ao que está escrito.',
+    why: 'Muitos intérpretes correm para comentários e livros antes de realmente ouvir o texto. Nesta etapa, você aprende a ouvir primeiro as Escrituras — registrando suas impressões iniciais antes de buscar explicações externas.',
+    icons: {
+      preparar_leitura_lenta:        '📖',
+      preparar_comparacao_traducoes:  '🔍',
+      preparar_ideia_inicial:         '💡',
+      preparar_tensoes_repeticoes:    '⚡',
+    },
+    editorHints: {
+      preparar_leitura_lenta:        'O que você observou na leitura...',
+      preparar_comparacao_traducoes:  'O que mudou entre as traduções...',
+      preparar_ideia_inicial:         'Sua ideia central provisória...',
+      preparar_tensoes_repeticoes:    'Tensões e repetições que você notou...',
+    },
     sectionTitles: {
       preparar_leitura_lenta:        'Primeira leitura',
       preparar_comparacao_traducoes:  'Comparação de traduções',
@@ -76,6 +103,21 @@ const CHAPTER_META: Record<string, {
   preparar_visao_geral: {
     title: 'O que o Texto Parece Dizer?',
     intro: 'Com base no seu primeiro contato, o que o texto parece comunicar? Registre suas impressões com honestidade — ainda é cedo para conclusões definitivas.',
+    why: 'Antes de mergulhar nos detalhes do texto, é preciso enxergar o todo. Esta etapa forma sua primeira impressão da mensagem — que será desafiada, confirmada e aprofundada ao longo de toda a investigação.',
+    icons: {
+      preparar_tema_provavel:         '🗂️',
+      preparar_grande_ideia_inicial:  '✍️',
+      preparar_estrutura_percebida:   '🏗️',
+      preparar_vg_perguntas:          '❓',
+      preparar_vg_dificuldades:       '🔎',
+    },
+    editorHints: {
+      preparar_tema_provavel:         'O tema que você identificou...',
+      preparar_grande_ideia_inicial:  'A grande ideia em uma frase...',
+      preparar_estrutura_percebida:   'Como o texto está organizado...',
+      preparar_vg_perguntas:          'Suas perguntas sobre o texto...',
+      preparar_vg_dificuldades:       'O que ainda não ficou claro...',
+    },
     placeholders: {
       preparar_tema_provavel:
         'Qual parece ser o tema central desta passagem? Escreva uma frase provisória, aberta a revisão após a investigação exegética.',
@@ -562,28 +604,41 @@ export default function WorkspaceDocument({
                 background: 'var(--surface)',
               }}
             >
-              {/* ── Chapter header — book chapter style ─────────────── */}
+              {/* ── Chapter header ───────────────────────────────────── */}
               <button
                 type="button"
                 onClick={() => openChapterAt(chapterIdx)}
                 style={{
-                  width: '100%', display: 'flex', alignItems: 'flex-start', gap: '0.75rem',
+                  width: '100%', display: 'flex', alignItems: 'flex-start', gap: '1rem',
                   padding: '1.15rem 1.4rem',
                   background: 'transparent', border: 'none', cursor: 'pointer',
                   textAlign: 'left', fontFamily: 'inherit',
                   borderRadius: '14px 14px 0 0',
                 }}
               >
+                {/* Chapter circle */}
+                <div style={{
+                  width: '44px', height: '44px', borderRadius: '50%', flexShrink: 0,
+                  background: allDone ? '#10B981' : isChOpen ? accent : 'var(--border)',
+                  color: isChOpen || allDone ? '#fff' : 'var(--text-muted)',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  fontSize: allDone ? '1.1rem' : '1.15rem', fontWeight: 900,
+                  transition: 'background 0.3s ease',
+                  marginTop: '2px',
+                }}>
+                  {allDone ? '✓' : chapterIdx + 1}
+                </div>
+
                 <div style={{ flex: 1, minWidth: 0 }}>
                   {/* Chapter title — book chapter scale */}
                   <h2 style={{
-                    margin: '0 0 0.45rem',
-                    fontSize: isChOpen ? '1.65rem' : '1.05rem',
+                    margin: '0 0 0.4rem',
+                    fontSize: isChOpen ? '1.55rem' : '1.05rem',
                     fontWeight: isChOpen ? 900 : 700,
                     color: allDone ? '#10B981' : 'var(--text-primary)',
                     letterSpacing: isChOpen ? '-0.03em' : '-0.01em',
                     lineHeight: isChOpen ? 1.1 : 1.2,
-                    transition: 'font-size 0.22s ease, font-weight 0.22s ease, color 0.3s ease',
+                    transition: 'font-size 0.22s ease, color 0.3s ease',
                   }}>
                     {chMetaEntry?.title ?? sectionDef.shortTitle ?? sectionDef.title}
                   </h2>
@@ -591,8 +646,8 @@ export default function WorkspaceDocument({
                   {/* Intro — always visible; truncated when collapsed */}
                   {chMetaEntry?.intro && (
                     <p style={{
-                      margin: '0 0 0.7rem',
-                      fontSize: isChOpen ? '0.88rem' : '0.77rem',
+                      margin: '0 0 0.65rem',
+                      fontSize: isChOpen ? '0.87rem' : '0.77rem',
                       fontStyle: 'italic',
                       color: 'var(--text-secondary)',
                       lineHeight: 1.65,
@@ -624,7 +679,7 @@ export default function WorkspaceDocument({
 
                 <span style={{
                   color: 'var(--text-muted)', fontSize: '0.72rem', flexShrink: 0,
-                  transition: 'transform 0.22s ease', marginTop: '2px',
+                  transition: 'transform 0.22s ease', marginTop: '6px',
                   transform: isChOpen ? 'rotate(0deg)' : 'rotate(-90deg)',
                 }}>
                   ▾
@@ -642,66 +697,114 @@ export default function WorkspaceDocument({
               }}>
                 <div style={{ overflow: 'hidden' }}>
                   {isRendered && (
-                    <div style={{ padding: '0.85rem 1.4rem 1.5rem' }}>
+                    <div style={{ padding: '0.5rem 1.4rem 1.5rem' }}>
 
-                      {/* Sections — continuous document */}
+                      {/* "Por que esta etapa importa?" */}
+                      {chMetaEntry?.why && (
+                        <div style={{
+                          marginBottom: '1.25rem',
+                          padding: '0.75rem 1rem',
+                          background: `${accent}08`,
+                          borderLeft: `3px solid ${accent}50`,
+                          borderRadius: '0 8px 8px 0',
+                        }}>
+                          <p style={{
+                            margin: '0 0 0.2rem',
+                            fontSize: '0.64rem', fontWeight: 700,
+                            letterSpacing: '0.07em', textTransform: 'uppercase',
+                            color: accent,
+                          }}>
+                            Por que esta etapa importa
+                          </p>
+                          <p style={{
+                            margin: 0,
+                            fontSize: '0.8rem', color: 'var(--text-secondary)', lineHeight: 1.65,
+                          }}>
+                            {chMetaEntry.why}
+                          </p>
+                        </div>
+                      )}
+
+                      {/* Sections */}
                       {sectionDef.cards.map((card, cardIdx) => {
                         const cardContent  = contents[card.id] ?? ''
                         const isFirst      = cardIdx === 0
                         const sectionTitle = chMetaEntry?.sectionTitles?.[card.id] ?? card.title
                         const orientation  = guided ? (chMetaEntry?.placeholders?.[card.id] ?? '') : ''
+                        const editorHint   = chMetaEntry?.editorHints?.[card.id] ?? ''
+                        const icon         = chMetaEntry?.icons?.[card.id]
                         const editorKey    = `${sectionDef.slug}:${card.id}`
                         const done         = isCardDone(cardContent)
 
                         return (
                           <div key={card.id}>
                             {!isFirst && (
-                              <div style={{ margin: '1.25rem 0', display: 'flex', alignItems: 'center' }}>
-                                <div style={{ flex: 1, height: '1px', background: 'var(--border)', opacity: 0.3 }} />
+                              <div style={{ margin: '1.15rem 0', display: 'flex', alignItems: 'center' }}>
+                                <div style={{ flex: 1, height: '1px', background: 'var(--border)', opacity: 0.2 }} />
                               </div>
                             )}
 
-                            {/* Section title */}
-                            <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.45rem', marginBottom: '0.3rem' }}>
-                              <h3 style={{
-                                margin: 0,
-                                fontSize: '1.05rem', fontWeight: 700,
-                                color: done ? 'var(--text-secondary)' : 'var(--text-primary)',
-                                letterSpacing: '-0.015em',
-                                transition: 'color 0.3s ease',
-                              }}>
-                                {sectionTitle}
-                              </h3>
-                              {done && (
-                                <span style={{ fontSize: '0.62rem', color: '#10B981', fontWeight: 600 }}>✓</span>
+                            {/* Section row: icon + content */}
+                            <div style={{ display: 'flex', gap: '0.85rem', alignItems: 'flex-start' }}>
+
+                              {/* Icon box */}
+                              {icon && (
+                                <div style={{
+                                  width: '38px', height: '38px', borderRadius: '10px', flexShrink: 0,
+                                  background: done ? '#10B98112' : `${accent}14`,
+                                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                  fontSize: '1.05rem', marginTop: '1px',
+                                  transition: 'background 0.3s ease',
+                                }}>
+                                  {icon}
+                                </div>
                               )}
-                            </div>
 
-                            {/* Orientation — teacher's voice, always visible in guided mode */}
-                            {orientation && (
-                              <p style={{
-                                margin: '0 0 0.3rem',
-                                fontSize: '0.77rem', color: 'var(--text-muted)',
-                                lineHeight: 1.6, fontStyle: 'italic',
-                              }}>
-                                {orientation}
-                              </p>
-                            )}
+                              {/* Section content */}
+                              <div style={{ flex: 1, minWidth: 0 }}>
+                                {/* Title */}
+                                <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.4rem', marginBottom: '0.25rem' }}>
+                                  <h3 style={{
+                                    margin: 0,
+                                    fontSize: '1.0rem', fontWeight: 700,
+                                    color: done ? 'var(--text-secondary)' : 'var(--text-primary)',
+                                    letterSpacing: '-0.015em',
+                                    transition: 'color 0.3s ease',
+                                  }}>
+                                    {sectionTitle}
+                                  </h3>
+                                  {done && (
+                                    <span style={{ fontSize: '0.62rem', color: '#10B981', fontWeight: 600 }}>✓</span>
+                                  )}
+                                </div>
 
-                            {/* Writing area — flows naturally from orientation text */}
-                            <div className="ws-doc-section" style={{ marginTop: '0.15rem' }}>
-                              <RichEditor
-                                value={cardContent}
-                                onChange={html => scheduleCardSave(sectionDef.slug, card.id, html)}
-                                placeholder=""
-                                minHeight={72}
-                                moduleColor={accent}
-                                hideToolbar
-                                onEditorMount={editor => { editorMapRef.current.set(editorKey, editor) }}
-                                onFocusChange={focused => { if (focused) setActiveEditorKey(editorKey) }}
-                              />
-                            </div>
+                                {/* Orientation */}
+                                {orientation && (
+                                  <p style={{
+                                    margin: '0 0 0.25rem',
+                                    fontSize: '0.77rem', color: 'var(--text-muted)',
+                                    lineHeight: 1.6, fontStyle: 'italic',
+                                  }}>
+                                    {orientation}
+                                  </p>
+                                )}
 
+                                {/* Writing area */}
+                                <div className="ws-doc-section" style={{ marginTop: '0.1rem' }}>
+                                  <RichEditor
+                                    value={cardContent}
+                                    onChange={html => scheduleCardSave(sectionDef.slug, card.id, html)}
+                                    placeholder={editorHint}
+                                    minHeight={72}
+                                    moduleColor={accent}
+                                    hideToolbar
+                                    onEditorMount={editor => { editorMapRef.current.set(editorKey, editor) }}
+                                    onFocusChange={focused => { if (focused) setActiveEditorKey(editorKey) }}
+                                  />
+                                </div>
+
+                              </div>{/* /section content */}
+                            </div>{/* /section row */}
                           </div>
                         )
                       })}
