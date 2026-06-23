@@ -562,7 +562,7 @@ export default function EstruturaLiterariaWorkspace({
                     }}>
                       {card.title}
                     </span>
-                    <HelpIcon cardId={card.id} onAskAI={onAskAI} />
+                    <HelpIcon cardId={card.id} onAskAI={onAskAI} visible={expanded} />
                     <button
                       onClick={e => { e.stopPropagation(); if (!isWorking) generateCard(card.id) }}
                       disabled={isWorking || generatingAll}

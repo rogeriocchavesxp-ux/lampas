@@ -839,7 +839,7 @@ export default function SectionWorkspace({
                     {card.title}
                   </span>
                   {(() => {
-                    if (HELP_CONTENT[card.id]) return <HelpIcon cardId={card.id} onAskAI={onAskAI} />
+                    if (HELP_CONTENT[card.id]) return <HelpIcon cardId={card.id} onAskAI={onAskAI} visible={expanded} />
                     const help = getCardHelp(card.id)
                     return help ? <CardHelpTooltip help={help} /> : null
                   })()}

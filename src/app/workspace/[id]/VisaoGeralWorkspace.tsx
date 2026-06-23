@@ -1401,7 +1401,7 @@ export default function VisaoGeralWorkspace({
                             )}
                             <span style={{ fontSize: '0.75rem', color: isSectionExpanded ? node.color : 'var(--text-primary)', fontWeight: item.type === 'section' ? 600 : 400, lineHeight: 1.4 }}>{item.label}</span>
                             {item.type === 'card' && HELP_CONTENT[item.id] && (
-                              <HelpIcon cardId={item.id} onAskAI={onAskAI} />
+                              <HelpIcon cardId={item.id} onAskAI={onAskAI} visible={isEditing} />
                             )}
                           </div>
 

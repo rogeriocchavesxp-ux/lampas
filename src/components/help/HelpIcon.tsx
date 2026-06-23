@@ -8,6 +8,7 @@ import HelpModal from './HelpModal'
 interface HelpIconProps {
   cardId: string
   onAskAI?: (prompt: string) => void
+  visible?: boolean
 }
 
 interface TooltipPosition {
@@ -20,7 +21,7 @@ function truncate(text: string, maxLength: number): string {
   return `${text.slice(0, maxLength).trim()}...`
 }
 
-export default function HelpIcon({ cardId, onAskAI }: HelpIconProps) {
+export default function HelpIcon({ cardId, onAskAI, visible = true }: HelpIconProps) {
   const entry = HELP_CONTENT[cardId]
   const buttonRef = useRef<HTMLButtonElement>(null)
   const [showTooltip, setShowTooltip] = useState(false)
@@ -28,7 +29,7 @@ export default function HelpIcon({ cardId, onAskAI }: HelpIconProps) {
   const [hovering, setHovering] = useState(false)
   const [tooltipPosition, setTooltipPosition] = useState<TooltipPosition>({ top: 0, left: 0 })
 
-  if (!entry) return null
+  if (!entry || !visible) return null
 
   function openModal(event: MouseEvent<HTMLButtonElement>) {
     event.stopPropagation()
