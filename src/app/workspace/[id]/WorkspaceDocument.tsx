@@ -9,7 +9,7 @@ import type { AIContext } from '@/components/RichEditor'
 import AIAssistantPanel from '@/components/AIAssistantPanel'
 import RichEditor from '@/components/RichEditorLazy'
 
-// ── Color palettes (mirrors RichEditor) ──────────────────────────────────────
+// ── Color palettes ────────────────────────────────────────────────────────────
 
 const HL_COLORS = [
   { color: '#FEF3C7', label: 'Amarelo' },
@@ -33,41 +33,61 @@ const TEXT_COLORS = [
   { color: '#64748B', label: 'Cinza'    },
 ]
 
-// ── Chapter metadata — conversational titles, intro, mentor placeholders ──────
+// ── Chapter / section metadata ────────────────────────────────────────────────
+// Titles are narrative (conversational), placeholders are the teacher's voice.
 
 const CHAPTER_META: Record<string, {
   title: string
   intro: string
+  sectionTitles?: Record<string, string>
   placeholders: Record<string, string>
 }> = {
   preparacao_espiritual: {
     title: 'Antes de começar',
     intro: 'Antes de abrir os comentários e analisar o texto, prepare seu coração diante de Deus e defina o propósito deste estudo.',
     placeholders: {
-      preparar_oracao: 'Peça ao Senhor sabedoria para compreender Sua Palavra, fidelidade na interpretação e um coração disposto a ser transformado pelo que Ele vai revelar.',
-      preparar_objetivo_estudo: 'O que motivou você a estudar esta passagem hoje? Existe alguma pergunta que espera responder? Que fruto pastoral espera deste processo?',
-      preparar_ocasiiao_publico: 'Onde este estudo será utilizado? Quem são as pessoas que ouvirão esta mensagem? O que elas estão vivendo neste momento?',
+      preparar_oracao:
+        'Peça ao Senhor sabedoria para compreender Sua Palavra, fidelidade na interpretação e um coração disposto a ser transformado pelo que Ele vai revelar.',
+      preparar_objetivo_estudo:
+        'O que motivou você a estudar esta passagem hoje? Existe alguma pergunta que espera responder? Que fruto pastoral espera deste processo?',
+      preparar_ocasiiao_publico:
+        'Onde este estudo será utilizado? Quem são as pessoas que ouvirão esta mensagem? O que elas estão vivendo neste momento?',
     },
   },
   preparar_leia_assimile: {
     title: 'Primeiro Contato com o Texto',
     intro: 'Leia o texto com atenção e registre suas primeiras impressões. Ainda não é o momento de analisar — apenas de ouvir o que o texto comunica.',
+    sectionTitles: {
+      preparar_leitura_lenta:       'Primeira leitura',
+      preparar_comparacao_traducoes: 'Comparação de traduções',
+      preparar_ideia_inicial:        'Ideia central provisória',
+      preparar_tensoes_repeticoes:   'Tensões e repetições',
+    },
     placeholders: {
-      preparar_leitura_lenta: 'Registre o que chamou atenção no primeiro contato com o texto. Palavras, imagens, emoções, perguntas — tudo que surgiu durante a leitura.',
-      preparar_comparacao_traducoes: 'Leia o mesmo trecho em duas ou três traduções diferentes. O que muda? Alguma diferença revela algo importante sobre o texto?',
-      preparar_ideia_inicial: 'Em uma frase simples, qual parece ser a ideia central desta passagem? Pode ser provisória — você terá oportunidade de revisá-la.',
-      preparar_tensoes_repeticoes: 'O que se repete? O que contrasta? Que palavras ou expressões saltam aos olhos? Que emoção o texto transmite?',
+      preparar_leitura_lenta:
+        'Leia lentamente o texto duas ou três vezes. Não tente resolver todas as dúvidas agora. Observe apenas aquilo que naturalmente chama sua atenção.',
+      preparar_comparacao_traducoes:
+        'Leia o mesmo trecho em duas ou três traduções diferentes. O que muda? Alguma diferença revela algo importante sobre o texto?',
+      preparar_ideia_inicial:
+        'Em uma frase simples, qual parece ser a ideia central desta passagem? Pode ser provisória — você terá oportunidade de revisá-la.',
+      preparar_tensoes_repeticoes:
+        'O que se repete? O que contrasta? Que palavras ou expressões saltam aos olhos? Que emoção o texto transmite?',
     },
   },
   preparar_visao_geral: {
     title: 'O que o Texto Parece Dizer?',
     intro: 'Com base na sua leitura, o que o texto parece comunicar? Ainda é cedo para conclusões — registre suas impressões com honestidade.',
     placeholders: {
-      preparar_tema_provavel: 'Qual parece ser o tema central desta passagem? Use uma frase provisória, aberta a revisão após a investigação.',
-      preparar_grande_ideia_inicial: 'Se você tivesse de resumir o ponto principal em uma frase completa — sujeito + predicado — como seria?',
-      preparar_estrutura_percebida: 'Como o texto parece estar organizado? Quais são as partes, blocos ou movimentos que você consegue identificar?',
-      preparar_vg_perguntas: 'Que perguntas este texto levanta em você? O que ainda não ficou claro? O que surpreende ou intriga?',
-      preparar_vg_dificuldades: 'Que tensões, paradoxos ou dificuldades de compreensão você já percebe nesta passagem?',
+      preparar_tema_provavel:
+        'Qual parece ser o tema central desta passagem? Use uma frase provisória, aberta a revisão após a investigação.',
+      preparar_grande_ideia_inicial:
+        'Se você tivesse de resumir o ponto principal em uma frase completa — sujeito + predicado — como seria?',
+      preparar_estrutura_percebida:
+        'Como o texto parece estar organizado? Quais são as partes, blocos ou movimentos que você consegue identificar?',
+      preparar_vg_perguntas:
+        'Que perguntas este texto levanta em você? O que ainda não ficou claro? O que surpreende ou intriga?',
+      preparar_vg_dificuldades:
+        'Que tensões, paradoxos ou dificuldades de compreensão você já percebe nesta passagem?',
     },
   },
 }
@@ -139,8 +159,8 @@ function loadCardsFromSection(def: SectionDef, existing: Section | undefined): R
 
 function isCardDone(html: string): boolean {
   if (!html?.trim() || html === '<p></p>') return false
-  const withoutBlockquotes = html.replace(/<blockquote[\s\S]*?<\/blockquote>/gi, '')
-  const text = withoutBlockquotes.replace(/<[^>]+>/g, '').replace(/\s+/g, ' ').trim()
+  const text = html.replace(/<blockquote[\s\S]*?<\/blockquote>/gi, '')
+    .replace(/<[^>]+>/g, '').replace(/\s+/g, ' ').trim()
   return text.length > 10
 }
 
@@ -168,7 +188,6 @@ export default function WorkspaceDocument({
 }: Props) {
   const supabase = createClient()
 
-  // Compute initial chapter index from initialSlug
   const initialChapterIdx = useMemo(() => {
     if (!initialSlug) return 0
     const idx = blocks.findIndex(b => b.sectionDef.slug === initialSlug)
@@ -180,31 +199,11 @@ export default function WorkspaceDocument({
     Object.fromEntries(blocks.map(b => [b.sectionDef.slug, loadCardsFromSection(b.sectionDef, b.existingSection)]))
   )
 
-  // Which chapter accordion is open (one at a time)
+  // One chapter open at a time
   const [openChapterIdx, setOpenChapterIdx] = useState<number>(initialChapterIdx)
 
-  // Which card is open per chapter: { [sectionSlug]: cardId | null }
-  const [openCardMap, setOpenCardMap] = useState<Record<string, string | null>>(() => {
-    return Object.fromEntries(blocks.map((b, idx) => {
-      if (idx !== initialChapterIdx) return [b.sectionDef.slug, null]
-      const contents = loadCardsFromSection(b.sectionDef, b.existingSection)
-      const firstIncomplete = b.sectionDef.cards.find(c => !isCardDone(contents[c.id] ?? ''))
-      return [b.sectionDef.slug, (firstIncomplete ?? b.sectionDef.cards[0])?.id ?? null]
-    }))
-  })
-
-  // Lazy-mount editors: only rendered after first open, then stay in DOM
-  const [mountedCards, setMountedCards] = useState<Set<string>>(() => {
-    const preMount = new Set<string>()
-    const block = blocks[initialChapterIdx]
-    if (block) {
-      const contents = loadCardsFromSection(block.sectionDef, block.existingSection)
-      const firstIncomplete = block.sectionDef.cards.find(c => !isCardDone(contents[c.id] ?? ''))
-      const firstCard = firstIncomplete ?? block.sectionDef.cards[0]
-      if (firstCard) preMount.add(`${block.sectionDef.slug}:${firstCard.id}`)
-    }
-    return preMount
-  })
+  // Lazy-mount: chapter content only rendered after first open
+  const [openedChapters, setOpenedChapters] = useState<Set<number>>(() => new Set([initialChapterIdx]))
 
   // Shared toolbar
   const [activeEditorKey, setActiveEditorKey] = useState<string | null>(null)
@@ -218,7 +217,6 @@ export default function WorkspaceDocument({
   const colorRef = useRef<HTMLDivElement>(null)
   const linkRef  = useRef<HTMLDivElement>(null)
 
-  // Refs
   const editorMapRef = useRef<Map<string, Editor>>(new Map())
   const saveTimers   = useRef<Record<string, ReturnType<typeof setTimeout>>>({})
   const sectionRefs  = useRef<Record<string, Section | undefined>>(
@@ -248,7 +246,7 @@ export default function WorkspaceDocument({
     return () => document.removeEventListener('mousedown', h)
   }, [])
 
-  // Respond to initialSlug change (sidebar navigation between PREPARAR sections)
+  // Respond to initialSlug changes (sidebar navigation)
   useEffect(() => {
     if (!initialSlug) return
     const idx = blocks.findIndex(b => b.sectionDef.slug === initialSlug)
@@ -259,20 +257,7 @@ export default function WorkspaceDocument({
 
   function openChapterAt(idx: number) {
     setOpenChapterIdx(idx)
-    const block = blocks[idx]
-    if (!block) return
-    const contents = cardContents[block.sectionDef.slug] ?? {}
-    const firstIncomplete = block.sectionDef.cards.find(c => !isCardDone(contents[c.id] ?? ''))
-    const target = firstIncomplete ?? block.sectionDef.cards[0]
-    if (!target) return
-    const editorKey = `${block.sectionDef.slug}:${target.id}`
-    setOpenCardMap(prev => ({ ...prev, [block.sectionDef.slug]: target.id }))
-    setMountedCards(prev => new Set([...prev, editorKey]))
-  }
-
-  function openCard(sectionSlug: string, cardId: string | null) {
-    setOpenCardMap(prev => ({ ...prev, [sectionSlug]: cardId }))
-    if (cardId) setMountedCards(prev => new Set([...prev, `${sectionSlug}:${cardId}`]))
+    setOpenedChapters(prev => new Set([...prev, idx]))
   }
 
   // ── Save ──────────────────────────────────────────────────────────────────
@@ -307,31 +292,6 @@ export default function WorkspaceDocument({
     } else {
       const { data } = await supabase.from('sections').insert(payload).select().single()
       if (data) { onUpdate(data as Section); sectionRefs.current[sectionSlug] = data as Section }
-    }
-  }
-
-  // ── Continue (flush save + advance) ──────────────────────────────────────
-
-  function handleContinue(sectionSlug: string, chapterIdx: number) {
-    const sectionDef = blocks[chapterIdx]?.sectionDef
-    if (!sectionDef) return
-    const currentOpenCard = openCardMap[sectionSlug]
-
-    if (currentOpenCard) {
-      const key = `${sectionSlug}:${currentOpenCard}`
-      const html = editorMapRef.current.get(key)?.getHTML() ?? (cardContents[sectionSlug]?.[currentOpenCard] ?? '')
-      if (saveTimers.current[key]) { clearTimeout(saveTimers.current[key]); delete saveTimers.current[key] }
-      void performCardSave(sectionSlug, currentOpenCard, html)
-    }
-
-    const currentIdx = sectionDef.cards.findIndex(c => c.id === currentOpenCard)
-    const nextCard = sectionDef.cards[currentIdx + 1]
-
-    if (nextCard) {
-      openCard(sectionSlug, nextCard.id)
-    } else {
-      const nextChapterIdx = chapterIdx + 1
-      if (nextChapterIdx < blocks.length) openChapterAt(nextChapterIdx)
     }
   }
 
@@ -396,6 +356,28 @@ export default function WorkspaceDocument({
   return (
     <div style={{ display: 'flex', flexDirection: 'column', flex: 1 }}>
 
+      {/*
+        Override RichEditor border when used in document mode.
+        The editor should look integrated, not boxed.
+      */}
+      <style>{`
+        .ws-doc-section .rich-editor .ProseMirror {
+          border: none;
+          border-radius: 0;
+          background: transparent;
+          box-shadow: none;
+          padding: 0.25rem 0 0.5rem;
+          min-height: 80px;
+        }
+        .ws-doc-section .rich-editor .ProseMirror:focus {
+          box-shadow: none;
+          border: none;
+        }
+        .ws-doc-section .rich-editor .ProseMirror p:first-child {
+          margin-top: 0;
+        }
+      `}</style>
+
       {/* ── Shared sticky toolbar ─────────────────────────────────────────── */}
       <div style={{
         position: 'sticky', top: '37px', zIndex: 20,
@@ -407,7 +389,7 @@ export default function WorkspaceDocument({
       }}>
         {!ed ? (
           <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)', padding: '0 0.25rem' }}>
-            Clique em uma reflexão para começar a escrever
+            Clique em uma seção para começar a escrever
           </span>
         ) : (
           <>
@@ -548,23 +530,23 @@ export default function WorkspaceDocument({
       </div>
 
       {/* ── Chapters ─────────────────────────────────────────────────────── */}
-      <div style={{ flex: 1, maxWidth: '760px', margin: '0 auto', width: '100%', padding: '1.5rem 1.25rem 3rem' }}>
+      <div style={{ flex: 1, maxWidth: '720px', margin: '0 auto', width: '100%', padding: '1.5rem 1.25rem 4rem' }}>
         {blocks.map(({ sectionDef }, chapterIdx) => {
           const chMetaEntry = CHAPTER_META[sectionDef.slug]
           const isChOpen    = openChapterIdx === chapterIdx
+          const isRendered  = openedChapters.has(chapterIdx)
           const contents    = cardContents[sectionDef.slug] ?? {}
           const doneCount   = sectionDef.cards.filter(c => isCardDone(contents[c.id] ?? '')).length
           const totalCount  = sectionDef.cards.length
           const allDone     = doneCount === totalCount && totalCount > 0
-          const openCardId  = openCardMap[sectionDef.slug] ?? null
 
           return (
             <div
               key={sectionDef.slug}
               style={{
-                marginBottom: '0.75rem',
+                marginBottom: '0.65rem',
                 borderRadius: '14px',
-                border: `1px solid ${isChOpen ? `${accent}25` : 'var(--border-subtle)'}`,
+                border: `1px solid ${isChOpen ? `${accent}20` : 'var(--border-subtle)'}`,
                 overflow: 'hidden',
                 transition: 'border-color 0.25s ease',
                 background: 'var(--surface)',
@@ -575,52 +557,67 @@ export default function WorkspaceDocument({
                 type="button"
                 onClick={() => openChapterAt(chapterIdx)}
                 style={{
-                  width: '100%', display: 'flex', alignItems: 'center', gap: '1rem',
+                  width: '100%', display: 'flex', alignItems: 'center', gap: '0.85rem',
                   padding: '1rem 1.25rem',
                   background: 'transparent', border: 'none', cursor: 'pointer',
                   textAlign: 'left', fontFamily: 'inherit',
                 }}
               >
+                {/* Chapter number circle */}
+                <span style={{
+                  width: '32px', height: '32px', borderRadius: '50%', flexShrink: 0,
+                  background: allDone ? '#10B98115' : isChOpen ? `${accent}15` : 'var(--surface-2)',
+                  border: `2px solid ${allDone ? '#10B981' : isChOpen ? accent : 'var(--border)'}`,
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  transition: 'all 0.2s ease',
+                  fontSize: '0.8rem', fontWeight: 700,
+                  color: allDone ? '#10B981' : isChOpen ? accent : 'var(--text-muted)',
+                }}>
+                  {allDone ? '✓' : chapterIdx + 1}
+                </span>
+
                 <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.55rem' }}>
-                    <span style={{
-                      fontSize: '0.6rem', fontWeight: 800, letterSpacing: '0.1em',
-                      textTransform: 'uppercase', color: accent,
-                      background: `${accent}12`, borderRadius: '4px', padding: '0.1rem 0.4rem',
-                      flexShrink: 0,
-                    }}>
-                      {chapterIdx + 1}
-                    </span>
-                    <h2 style={{
-                      margin: 0, fontSize: '0.95rem', fontWeight: 700,
-                      color: 'var(--text-primary)', letterSpacing: '-0.01em',
-                    }}>
-                      {chMetaEntry?.title ?? sectionDef.shortTitle ?? sectionDef.title}
-                    </h2>
-                    {allDone && (
-                      <span style={{ color: '#10B981', fontSize: '0.75rem', flexShrink: 0 }}>✓</span>
-                    )}
-                  </div>
+                  {/* Etapa label */}
+                  <span style={{
+                    fontSize: '0.6rem', fontWeight: 700, letterSpacing: '0.1em',
+                    textTransform: 'uppercase',
+                    color: allDone ? '#10B981' : isChOpen ? accent : 'var(--text-muted)',
+                    display: 'block', marginBottom: '0.2rem',
+                  }}>
+                    Etapa {chapterIdx + 1} de {blocks.length}
+                  </span>
+
+                  {/* Chapter title */}
+                  <h2 style={{
+                    margin: '0 0 0.5rem',
+                    fontSize: '1rem', fontWeight: 700,
+                    color: 'var(--text-primary)', letterSpacing: '-0.01em',
+                    lineHeight: 1.2,
+                  }}>
+                    {chMetaEntry?.title ?? sectionDef.shortTitle ?? sectionDef.title}
+                  </h2>
+
+                  {/* Progress */}
                   <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
                     <div style={{
-                      flex: 1, height: '3px', maxWidth: '140px',
+                      flex: 1, maxWidth: '120px', height: '3px',
                       background: 'var(--border-subtle)', borderRadius: '2px', overflow: 'hidden',
                     }}>
                       <div style={{
                         height: '100%',
                         width: `${totalCount > 0 ? (doneCount / totalCount) * 100 : 0}%`,
                         background: allDone ? '#10B981' : accent,
-                        borderRadius: '2px',
-                        transition: 'width 0.45s ease',
+                        borderRadius: '2px', transition: 'width 0.45s ease',
                       }} />
                     </div>
-                    <span style={{ fontSize: '0.67rem', color: 'var(--text-muted)', whiteSpace: 'nowrap' }}>
-                      {doneCount === 0 ? 'Não iniciada' : allDone ? 'Concluída' : `${doneCount} de ${totalCount} reflexões`}
+                    <span style={{ fontSize: '0.66rem', color: 'var(--text-muted)', whiteSpace: 'nowrap' }}>
+                      {doneCount === 0 ? 'Não iniciada' : allDone ? 'Concluída' : `${doneCount} de ${totalCount}`}
                     </span>
                   </div>
                 </div>
+
                 <span style={{
-                  color: 'var(--text-muted)', fontSize: '0.75rem', flexShrink: 0,
+                  color: 'var(--text-muted)', fontSize: '0.72rem', flexShrink: 0,
                   transition: 'transform 0.22s ease',
                   transform: isChOpen ? 'rotate(0deg)' : 'rotate(-90deg)',
                 }}>
@@ -628,145 +625,98 @@ export default function WorkspaceDocument({
                 </span>
               </button>
 
-              {/* ── Chapter body — animated ──────────────────────────── */}
+              {/* ── Chapter body — accordion ─────────────────────────── */}
               <div style={{
                 display: 'grid',
                 gridTemplateRows: isChOpen ? '1fr' : '0fr',
-                transition: 'grid-template-rows 0.28s cubic-bezier(0.4, 0, 0.2, 1)',
+                transition: 'grid-template-rows 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
               }}>
                 <div style={{ overflow: 'hidden' }}>
+                  {isRendered && (
+                    <div style={{ padding: '0 1.5rem 2rem' }}>
 
-                  {/* Intro */}
-                  {chMetaEntry?.intro && (
-                    <p style={{
-                      margin: '0 1.25rem 1rem',
-                      padding: '0 0 0 0.75rem',
-                      borderLeft: `2px solid ${accent}35`,
-                      fontSize: '0.82rem', color: 'var(--text-secondary)',
-                      lineHeight: 1.65, fontStyle: 'italic',
-                    }}>
-                      {chMetaEntry.intro}
-                    </p>
-                  )}
+                      {/* Chapter intro */}
+                      {chMetaEntry?.intro && (
+                        <p style={{
+                          margin: '0 0 1.75rem',
+                          fontSize: '0.85rem', color: 'var(--text-secondary)',
+                          lineHeight: 1.7, fontStyle: 'italic',
+                        }}>
+                          {chMetaEntry.intro}
+                        </p>
+                      )}
 
-                  {/* Cards */}
-                  <div style={{ padding: '0 1rem 1.25rem' }}>
-                    {sectionDef.cards.map((card, cardIdx) => {
-                      const cardContent = contents[card.id] ?? ''
-                      const done        = isCardDone(cardContent)
-                      const isOpen      = openCardId === card.id
-                      const placeholder = guided ? (chMetaEntry?.placeholders?.[card.id] ?? card.placeholder ?? '') : ''
-                      const editorKey   = `${sectionDef.slug}:${card.id}`
-                      const mounted     = mountedCards.has(editorKey)
-                      const isLast      = cardIdx === sectionDef.cards.length - 1
-                      const isLastChapter = chapterIdx === blocks.length - 1
+                      {/* Sections — continuous document */}
+                      {sectionDef.cards.map((card, cardIdx) => {
+                        const cardContent   = contents[card.id] ?? ''
+                        const isFirst       = cardIdx === 0
+                        const sectionTitle  = chMetaEntry?.sectionTitles?.[card.id] ?? card.title
+                        const orientation   = guided ? (chMetaEntry?.placeholders?.[card.id] ?? '') : ''
+                        const editorKey     = `${sectionDef.slug}:${card.id}`
+                        const done          = isCardDone(cardContent)
 
-                      return (
-                        <div key={card.id} style={{ marginBottom: '0.35rem' }}>
-
-                          {/* Card header */}
-                          <button
-                            type="button"
-                            onClick={() => {
-                              const newCardId = isOpen ? null : card.id
-                              openCard(sectionDef.slug, newCardId)
-                            }}
-                            style={{
-                              width: '100%', display: 'flex', alignItems: 'center', gap: '0.7rem',
-                              padding: '0.6rem 0.8rem',
-                              background: isOpen ? `${accent}07` : 'transparent',
-                              border: `1px solid ${isOpen ? `${accent}20` : 'transparent'}`,
-                              borderRadius: '9px',
-                              cursor: 'pointer', fontFamily: 'inherit', textAlign: 'left',
-                              transition: 'background 0.15s ease, border-color 0.15s ease',
-                            }}
-                            onMouseEnter={e => { if (!isOpen) e.currentTarget.style.background = 'var(--surface-2)' }}
-                            onMouseLeave={e => { if (!isOpen) e.currentTarget.style.background = 'transparent' }}
-                          >
-                            {/* Status circle */}
-                            <span style={{
-                              width: '18px', height: '18px', borderRadius: '50%', flexShrink: 0,
-                              border: `2px solid ${done ? '#10B981' : isOpen ? accent : 'var(--border)'}`,
-                              background: done ? '#10B981' : isOpen ? `${accent}18` : 'transparent',
-                              display: 'flex', alignItems: 'center', justifyContent: 'center',
-                              transition: 'all 0.2s ease',
-                            }}>
-                              {done && (
-                                <svg width="8" height="8" viewBox="0 0 12 12" fill="none">
-                                  <polyline points="2,6 5,9 10,3" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
-                                </svg>
-                              )}
-                            </span>
-
-                            <span style={{
-                              fontSize: '0.85rem',
-                              fontWeight: isOpen ? 600 : 500,
-                              color: done && !isOpen ? 'var(--text-secondary)' : 'var(--text-primary)',
-                              flex: 1,
-                            }}>
-                              {card.title}
-                            </span>
-
-                            {!isOpen && done && (
-                              <span style={{ fontSize: '0.67rem', color: '#10B981' }}>concluída</span>
+                        return (
+                          <div key={card.id}>
+                            {/* Section divider */}
+                            {!isFirst && (
+                              <div style={{
+                                height: '1px', background: 'var(--border-subtle)',
+                                margin: '1.5rem 0', opacity: 0.6,
+                              }} />
                             )}
-                          </button>
 
-                          {/* Card body — animated */}
-                          <div style={{
-                            display: 'grid',
-                            gridTemplateRows: isOpen ? '1fr' : '0fr',
-                            transition: 'grid-template-rows 0.22s cubic-bezier(0.4, 0, 0.2, 1)',
-                          }}>
-                            <div style={{ overflow: 'hidden' }}>
-                              {mounted && (
-                                <div style={{ padding: '0.5rem 0.35rem 0.5rem' }}>
-                                  <RichEditor
-                                    value={cardContent}
-                                    onChange={html => scheduleCardSave(sectionDef.slug, card.id, html)}
-                                    placeholder={placeholder}
-                                    minHeight={110}
-                                    moduleColor={accent}
-                                    hideToolbar
-                                    onEditorMount={editor => {
-                                      editorMapRef.current.set(editorKey, editor)
-                                    }}
-                                    onFocusChange={focused => {
-                                      if (focused) setActiveEditorKey(editorKey)
-                                    }}
-                                  />
-                                  <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '0.4rem', paddingRight: '0.1rem' }}>
-                                    <button
-                                      type="button"
-                                      onClick={() => handleContinue(sectionDef.slug, chapterIdx)}
-                                      style={{
-                                        background: 'transparent',
-                                        color: accent,
-                                        border: `1px solid ${accent}40`,
-                                        borderRadius: '7px',
-                                        padding: '0.32rem 0.85rem',
-                                        fontSize: '0.78rem', fontWeight: 600,
-                                        cursor: 'pointer', fontFamily: 'inherit',
-                                        transition: 'background 0.12s, border-color 0.12s',
-                                      }}
-                                      onMouseEnter={e => { e.currentTarget.style.background = `${accent}10`; e.currentTarget.style.borderColor = `${accent}70` }}
-                                      onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.borderColor = `${accent}40` }}
-                                    >
-                                      {isLast
-                                        ? (isLastChapter ? 'Concluir' : 'Próxima etapa →')
-                                        : 'Continuar →'}
-                                    </button>
-                                  </div>
-                                </div>
+                            {/* Section title */}
+                            <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.5rem', marginBottom: '0.45rem' }}>
+                              <h3 style={{
+                                margin: 0,
+                                fontSize: '0.9rem', fontWeight: 700,
+                                color: done ? 'var(--text-secondary)' : 'var(--text-primary)',
+                                letterSpacing: '-0.01em',
+                                transition: 'color 0.3s ease',
+                              }}>
+                                {sectionTitle}
+                              </h3>
+                              {done && (
+                                <span style={{ fontSize: '0.65rem', color: '#10B981', fontWeight: 600 }}>
+                                  ✓
+                                </span>
                               )}
                             </div>
+
+                            {/* Orientation (teacher's voice — always visible in guided mode) */}
+                            {orientation && (
+                              <p style={{
+                                margin: '0 0 0.5rem',
+                                fontSize: '0.79rem', color: 'var(--text-muted)',
+                                lineHeight: 1.65, fontStyle: 'italic',
+                              }}>
+                                {orientation}
+                              </p>
+                            )}
+
+                            {/* Editor — integrated, borderless */}
+                            <div className="ws-doc-section">
+                              <RichEditor
+                                value={cardContent}
+                                onChange={html => scheduleCardSave(sectionDef.slug, card.id, html)}
+                                placeholder=""
+                                minHeight={80}
+                                moduleColor={accent}
+                                hideToolbar
+                                onEditorMount={editor => {
+                                  editorMapRef.current.set(editorKey, editor)
+                                }}
+                                onFocusChange={focused => {
+                                  if (focused) setActiveEditorKey(editorKey)
+                                }}
+                              />
+                            </div>
+
                           </div>
-
-                        </div>
-                      )
-                    })}
-                  </div>
-
+                        )
+                      })}
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
