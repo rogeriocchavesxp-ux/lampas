@@ -572,6 +572,28 @@ export default function WorkspaceDocument({
             minHeight: 'calc(100vh - 160px)',
           }}>
 
+          {/* Paper title */}
+          <div style={{ marginBottom: '3.5rem' }}>
+            <h1 style={{
+              margin: 0,
+              fontSize: '2.4rem', fontWeight: 700,
+              color: '#1A1D23', letterSpacing: '-0.04em',
+              lineHeight: 1.05,
+            }}>
+              {project.passage_ref}
+            </h1>
+            {project.bible_version && (
+              <p style={{
+                margin: '0.45rem 0 0',
+                fontSize: '0.82rem', fontWeight: 400,
+                color: '#64748B', letterSpacing: '0.01em',
+              }}>
+                {project.bible_version}
+              </p>
+            )}
+            <div style={{ margin: '1.75rem 0 0', height: '1px', background: '#E2E4E8' }} />
+          </div>
+
           {blocks.map(({ sectionDef }, chapterIdx) => {
             const chMetaEntry = CHAPTER_META[sectionDef.slug]
             const contents    = cardContents[sectionDef.slug] ?? {}
@@ -669,6 +691,28 @@ export default function WorkspaceDocument({
 
       {/* ── Chapters ─────────────────────────────────────────────────────── */}
       <div style={{ flex: 1, maxWidth: '700px', margin: '0 auto', width: '100%', padding: '1.25rem 1.25rem 4rem' }}>
+
+        {/* ── Document title ─────────────────────────────────────────────── */}
+        <div style={{ padding: '1.5rem 1.4rem 2rem' }}>
+          <h1 style={{
+            margin: 0,
+            fontSize: '2.4rem', fontWeight: 700,
+            color: 'var(--text-primary)', letterSpacing: '-0.04em',
+            lineHeight: 1.05,
+          }}>
+            {project.passage_ref}
+          </h1>
+          {project.bible_version && (
+            <p style={{
+              margin: '0.45rem 0 0',
+              fontSize: '0.82rem', fontWeight: 400,
+              color: 'var(--text-secondary)', letterSpacing: '0.01em',
+            }}>
+              {project.bible_version}
+            </p>
+          )}
+        </div>
+
         {blocks.map(({ sectionDef }, chapterIdx) => {
           const chMetaEntry = CHAPTER_META[sectionDef.slug]
           const isChOpen    = openChapterIdx === chapterIdx
