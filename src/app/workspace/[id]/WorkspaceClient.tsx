@@ -1638,7 +1638,7 @@ export default function WorkspaceClient({ user, project, initialSections }: Prop
                 onUpdate={handleSectionUpdate}
                 onAskAI={handleAskAI}
               />
-            ) : VG_SLUGS.includes(activeSlug) && activeDef ? (
+            ) : VG_SLUGS.includes(activeSlug) && !PREPARAR_DOC_SLUGS.includes(activeSlug) && activeDef ? (
               <VisaoGeralWorkspace
                 key={activeSlug}
                 sectionDef={activeDef}
