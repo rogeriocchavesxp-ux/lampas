@@ -106,6 +106,7 @@ const PREPARAR_DOC_SLUGS = ['preparacao_espiritual', 'preparar_leia_assimile', '
 const INVESTIGAR_DOC_SLUGS = ['inv_estudo_contextual', 'inv_estudo_textual', 'inv_estudo_teologico', 'investigar_visao_geral']
 const NARRATIVAS_DOC_SLUGS    = ['nr_estudo_contextual', 'nr_estudo_textual', 'nr_estudo_teologico', 'nr_investigar_vg']
 const NARRATIVAS_PREPARAR_SLUGS = ['preparacao_espiritual', 'preparar_leia_assimile', 'nr_preparar_visao_geral']
+const ALL_DOC_SLUGS = [...PREPARAR_DOC_SLUGS, ...NARRATIVAS_PREPARAR_SLUGS, ...INVESTIGAR_DOC_SLUGS, ...NARRATIVAS_DOC_SLUGS]
 
 // ── Componente principal ────────────────────────────────────────────────────
 
@@ -628,12 +629,9 @@ export default function WorkspaceClient({ user, project, initialSections }: Prop
         bibleVersion={project.bible_version ?? ''}
         pct={pct}
         activePhase={activePhase}
-        showWorkMode={
-          activePhase?.id === 'preparar' &&
-          (!VG_SLUGS.includes(activeSlug) || PREPARAR_DOC_SLUGS.includes(activeSlug))
-        }
-        showViewMode={VG_SLUGS.includes(activeSlug) && !PREPARAR_DOC_SLUGS.includes(activeSlug)}
-        workMode={activePhase ? (workModeMap[activePhase.id] ?? 'guided') : 'guided'}
+        showWorkMode={ALL_DOC_SLUGS.includes(activeSlug)}
+        showViewMode={VG_SLUGS.includes(activeSlug) && !PREPARAR_DOC_SLUGS.includes(activeSlug) && !NARRATIVAS_PREPARAR_SLUGS.includes(activeSlug)}
+        workMode={activePhase ? (workModeMap[activePhase.id] ?? (activePhase.id === 'investigar' ? 'free' : 'guided')) : 'guided'}
         onWorkModeChange={(mode) => activePhase && setWorkMode(activePhase.id, mode)}
         vgViewMode={vgViewMode}
         onVgViewModeChange={setVgViewMode}
@@ -1557,7 +1555,7 @@ export default function WorkspaceClient({ user, project, initialSections }: Prop
                 userId={user.id}
                 onUpdate={handleSectionUpdate}
                 onAskAI={handleAskAI}
-                guided={false}
+                guided={(workModeMap['investigar'] ?? 'free') === 'guided'}
                 initialSlug={activeSlug}
                 typeLabel="Investigar"
               />
@@ -1572,7 +1570,7 @@ export default function WorkspaceClient({ user, project, initialSections }: Prop
                 userId={user.id}
                 onUpdate={handleSectionUpdate}
                 onAskAI={handleAskAI}
-                guided={false}
+                guided={(workModeMap['investigar'] ?? 'free') === 'guided'}
                 initialSlug={activeSlug}
                 typeLabel="Narrativas"
               />

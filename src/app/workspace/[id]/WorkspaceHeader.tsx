@@ -191,7 +191,7 @@ export default function WorkspaceHeader({
           </span>
         </div>
 
-        {/* ── CenterGroup — Controls only (phase shown in bottom nav) ── */}
+        {/* ── CenterGroup — View controls (always centered) ── */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
           {showWorkMode && (
             <SegmentedControl
@@ -205,8 +205,6 @@ export default function WorkspaceHeader({
             />
           )}
 
-          <BibleToggle open={bibleOpen} onClick={onToggleBible} />
-
           {showViewMode && (
             <SegmentedControl
               options={[
@@ -219,8 +217,10 @@ export default function WorkspaceHeader({
           )}
         </div>
 
-        {/* ── RightGroup — spacer para manter controles centrados ── */}
-        <div />
+        {/* ── RightGroup — Bible toggle ── */}
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end' }}>
+          <BibleToggle open={bibleOpen} onClick={onToggleBible} />
+        </div>
       </div>
     </>
   )
