@@ -360,20 +360,39 @@ export default function ComentarioExegeticoWorkspace({ project, userId, existing
   }
 
   return (
-    <div style={{ padding: inline ? '0' : '1.25rem 1.5rem 2.5rem', maxWidth: inline ? undefined : '900px' }}>
+    <div style={{ padding: inline ? '0' : '2rem clamp(1rem,3vw,2rem) 5rem', maxWidth: inline ? undefined : '720px', margin: inline ? undefined : '0 auto' }}>
 
-      {/* Header */}
+      {/* ── Document header (não-inline) ── */}
+      {!inline && (
+        <div style={{ paddingBottom: '2.5rem' }}>
+          <div style={{ width: '28px', height: '3px', borderRadius: '2px', background: color, marginBottom: '1.1rem' }} />
+          <h1 style={{ margin: 0, fontSize: '2.5rem', fontWeight: 700, color: 'var(--text-primary,#1e293b)', letterSpacing: '-0.045em', lineHeight: 1.0 }}>
+            {project.title}
+          </h1>
+          <p style={{ margin: '0.6rem 0 0', fontSize: '0.8rem', color: 'var(--text-muted,#64748b)', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+            <span>Investigar</span>
+            {project.bible_version && (
+              <><span style={{ opacity: 0.4, fontSize: '0.7rem' }}>·</span><span>{project.bible_version}</span></>
+            )}
+            {project.original_language && (
+              <><span style={{ opacity: 0.4, fontSize: '0.7rem' }}>·</span><span>{project.original_language}</span></>
+            )}
+            <span style={{ marginLeft: 'auto', fontSize: '0.72rem', color: saving ? 'var(--ai)' : savedAt ? 'var(--success)' : 'transparent', transition: 'color 0.3s' }}>
+              {saving ? 'salvando…' : savedAt ? `salvo ${savedAt.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}` : '·'}
+            </span>
+          </p>
+          <div style={{ margin: '1.75rem 0 0', height: '1px', background: 'var(--border-subtle,#e2e8f0)' }} />
+        </div>
+      )}
+
+      {/* Header — chapter title + add button */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.75rem', gap: '0.75rem', flexWrap: 'wrap' }}>
         {!inline && (
-          <div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <span style={{ fontSize: '0.87rem', fontWeight: 700, color: 'var(--text-primary,#1e293b)' }}>2.7 Comentário Exegético</span>
-              <HelpIcon cardId="comentario_exegetico" onAskAI={onAskAI} />
-            </div>
-            <div style={{ fontSize: '0.72rem', color: 'var(--text-secondary,#64748b)', marginTop: '0.15rem' }}>
-              {blocks.length} {blocks.length === 1 ? 'bloco' : 'blocos'}
-              {saving ? ' · Salvando…' : savedAt ? ` · Salvo às ${savedAt.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}` : ''}
-            </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+            <h2 style={{ margin: 0, fontSize: '1.4rem', fontWeight: 800, letterSpacing: '-0.02em', color: 'var(--text-primary,#1e293b)' }}>
+              Comentário Exegético
+            </h2>
+            <HelpIcon cardId="comentario_exegetico" onAskAI={onAskAI} />
           </div>
         )}
         {inline && (

@@ -321,40 +321,39 @@ export default function EstruturaLiterariaWorkspace({
   const keyQuestions = genre ? GENRE_QUESTIONS[genre] : sectionDef.keyQuestions
 
   return (
-    <div style={{ maxWidth: '900px', margin: '0 auto', padding: '2.5rem clamp(1.5rem, 4vw, 2.5rem) 5rem', fontFamily: 'var(--font-sans)' }}>
+    <div style={{ maxWidth: '720px', margin: '0 auto', padding: '2rem clamp(1rem, 3vw, 2rem) 5rem', fontFamily: 'var(--font-sans)' }}>
 
-      {/* Breadcrumb */}
-      <div style={{
-        display: 'flex', alignItems: 'center', gap: '0.4rem',
-        fontSize: '0.68rem', color: 'var(--text-muted)',
-        textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: '0.75rem',
-      }}>
-        <span style={{ color: moduleColor, fontWeight: '700' }}>Inventio</span>
-        <span style={{ color: 'var(--border)' }}>·</span>
-        <span>Estudo Textual</span>
-        <span style={{
-          marginLeft: 'auto', fontSize: '0.7rem',
-          color: saving ? 'var(--ai)' : savedAt ? 'var(--success)' : 'transparent',
-          textTransform: 'none', letterSpacing: 0, transition: 'color 0.3s',
-        }}>
-          {savedLabel || '·'}
-        </span>
+      {/* ── Document header ── */}
+      <div style={{ paddingBottom: '2.5rem' }}>
+        <div style={{ width: '28px', height: '3px', borderRadius: '2px', background: moduleColor, marginBottom: '1.1rem' }} />
+        <h1 style={{ margin: 0, fontSize: '2.5rem', fontWeight: 700, color: 'var(--text-primary)', letterSpacing: '-0.045em', lineHeight: 1.0 }}>
+          {project.title}
+        </h1>
+        <p style={{ margin: '0.6rem 0 0', fontSize: '0.8rem', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+          <span>Estudo Textual</span>
+          {project.bible_version && (
+            <><span style={{ opacity: 0.4, fontSize: '0.7rem' }}>·</span><span>{project.bible_version}</span></>
+          )}
+          {project.original_language && (
+            <><span style={{ opacity: 0.4, fontSize: '0.7rem' }}>·</span><span>{project.original_language}</span></>
+          )}
+          <span style={{ marginLeft: 'auto', fontSize: '0.72rem', color: saving ? 'var(--ai)' : savedAt ? 'var(--success)' : 'transparent', transition: 'color 0.3s' }}>
+            {savedLabel || '·'}
+          </span>
+        </p>
+        <div style={{ margin: '1.75rem 0 0', height: '1px', background: 'var(--border-subtle)' }} />
       </div>
 
-      {/* Title */}
-      <h1 style={{ fontSize: '1.6rem', fontWeight: '700', letterSpacing: '-0.025em', lineHeight: 1.2, color: 'var(--text-primary)', marginBottom: '0.85rem' }}>
+      {/* ── Chapter heading ── */}
+      <h2 style={{ margin: '0 0 0.5rem', fontSize: '1.4rem', fontWeight: 800, letterSpacing: '-0.02em', lineHeight: 1.15, color: 'var(--text-primary)' }}>
         {sectionDef.title}
-      </h1>
-
-      <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginBottom: '1.25rem' }}>
-        {project.book} {project.passage_ref} · {project.original_language}
-      </p>
+      </h2>
 
       {/* Objective */}
       <p style={{
-        fontSize: '0.87rem', color: 'var(--text-secondary)', lineHeight: '1.8',
-        fontStyle: 'italic', borderLeft: `2px solid ${moduleColor}`,
-        paddingLeft: '1rem', marginBottom: '1.5rem',
+        fontSize: '0.9rem', color: 'var(--text-secondary)', lineHeight: '1.75',
+        fontStyle: 'italic', borderLeft: `2px solid ${moduleColor}50`,
+        paddingLeft: '1rem', marginBottom: '1.5rem', marginTop: '0.75rem',
       }}>
         {sectionDef.objective}
       </p>

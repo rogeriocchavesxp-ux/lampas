@@ -539,68 +539,66 @@ export default function SectionWorkspace({
     : ''
 
   return (
-    <div style={{ maxWidth: '820px', margin: '0 auto', padding: '2.5rem clamp(1.5rem, 4vw, 2.5rem) 6rem', fontFamily: 'var(--font-sans)' }}>
+    <div style={{ maxWidth: '720px', margin: '0 auto', padding: '2rem clamp(1rem, 3vw, 2rem) 6rem', fontFamily: 'var(--font-sans)' }}>
 
-      {/* Breadcrumb */}
-      {(() => {
-        const isThematicLexical = sectionDef.group.startsWith('termos_') || sectionDef.group.startsWith('et_')
-        const showPhaseBadge = !isThematicLexical && (sectionDef.phase === 'comunicar' || sectionDef.phase === 'preparar')
-        return (
-      <div style={{
-        display: 'flex', alignItems: 'center', gap: '0.4rem',
-        fontSize: '0.68rem', color: 'var(--text-muted)',
-        textTransform: 'uppercase', letterSpacing: '0.07em',
-        marginBottom: '1.25rem',
-      }}>
-        {showPhaseBadge && (
-          <>
-            <span style={{
-              color: theme.color,
-              background: theme.bg,
-              border: `1px solid ${theme.color}35`,
-              borderRadius: '5px',
-              padding: '0.1rem 0.5rem',
-              fontWeight: '700',
-            }}>
-              {theme.label}
-            </span>
-            <span style={{ color: 'var(--border)' }}>·</span>
-          </>
-        )}
-        {!isThematicLexical && (
-          <>
-            <span style={{ color: moduleColor, fontWeight: '600' }}>
-              {sectionDef.module.charAt(0).toUpperCase() + sectionDef.module.slice(1)}
-            </span>
-            <span style={{ color: 'var(--border)' }}>·</span>
-          </>
-        )}
-        <span>{sectionDef.groupLabel}</span>
-        <span style={{
-          marginLeft: 'auto',
-          fontSize: '0.7rem', letterSpacing: 0, textTransform: 'none',
-          color: saving ? 'var(--ai)' : savedAt ? 'var(--success)' : 'transparent',
-          transition: 'color 0.3s',
-        }}>
-          {savedLabel || '·'}
-        </span>
-      </div>
-        )
-      })()}
+      {/* ── Document header — mesmo padrão visual do WorkspaceDocument ── */}
+      <div style={{ paddingBottom: '2.5rem' }}>
+        <div style={{ width: '28px', height: '3px', borderRadius: '2px', background: moduleColor, marginBottom: '1.1rem' }} />
 
-      {/* Section title + orientation button */}
-      <div style={{ display: 'flex', alignItems: 'flex-start', gap: '0.65rem', marginBottom: '0.5rem' }}>
         <h1 style={{
+          margin: 0,
+          fontSize: '2.5rem', fontWeight: 700,
+          color: 'var(--text-primary)', letterSpacing: '-0.045em',
+          lineHeight: 1.0,
+        }}>
+          {project.title}
+        </h1>
+
+        <p style={{
+          margin: '0.6rem 0 0',
+          fontSize: '0.8rem', fontWeight: 400,
+          color: 'var(--text-muted)', letterSpacing: '0.01em',
+          display: 'flex', alignItems: 'center', gap: '0.4rem',
+        }}>
+          <span>{sectionDef.groupLabel}</span>
+          {project.bible_version && (
+            <>
+              <span style={{ opacity: 0.4, fontSize: '0.7rem' }}>·</span>
+              <span>{project.bible_version}</span>
+            </>
+          )}
+          {project.original_language && (
+            <>
+              <span style={{ opacity: 0.4, fontSize: '0.7rem' }}>·</span>
+              <span>{project.original_language}</span>
+            </>
+          )}
+          <span style={{
+            marginLeft: 'auto',
+            fontSize: '0.72rem',
+            color: saving ? 'var(--ai)' : savedAt ? 'var(--success)' : 'transparent',
+            transition: 'color 0.3s',
+          }}>
+            {savedLabel || '·'}
+          </span>
+        </p>
+
+        <div style={{ margin: '1.75rem 0 0', height: '1px', background: 'var(--border-subtle)' }} />
+      </div>
+
+      {/* ── Chapter heading ── */}
+      <div style={{ display: 'flex', alignItems: 'flex-start', gap: '0.65rem', marginBottom: '0.5rem' }}>
+        <h2 style={{
           flex: 1,
-          fontSize: '1.75rem', fontWeight: '700',
-          letterSpacing: '-0.03em', lineHeight: 1.15,
+          fontSize: '1.4rem', fontWeight: 800,
+          letterSpacing: '-0.02em', lineHeight: 1.15,
           color: 'var(--text-primary)', margin: 0,
         }}>
           {sectionDef.title}
-        </h1>
+        </h2>
 
         {sectionDef.keyQuestions.length > 0 && (
-          <div style={{ position: 'relative', flexShrink: 0, marginTop: '0.35rem' }}>
+          <div style={{ position: 'relative', flexShrink: 0, marginTop: '0.3rem' }}>
             <button
               onClick={() => setQuestionsOpen(o => !o)}
               title="Perguntas orientadoras"
@@ -670,17 +668,12 @@ export default function SectionWorkspace({
         )}
       </div>
 
-      {/* Reference */}
-      <p style={{ fontSize: '0.82rem', color: 'var(--text-muted)', marginBottom: '1.5rem', letterSpacing: '0.01em', marginTop: '0.5rem' }}>
-        {project.book} {project.passage_ref} · {project.original_language}
-      </p>
-
       {/* Objective */}
       <p style={{
         fontSize: '0.9rem', color: 'var(--text-secondary)',
         lineHeight: '1.75', fontStyle: 'italic',
         borderLeft: `2px solid ${theme.color}50`,
-        paddingLeft: '1rem', marginBottom: '2rem',
+        paddingLeft: '1rem', marginBottom: '2rem', marginTop: '0.75rem',
       }}>
         {sectionDef.objective}
       </p>
