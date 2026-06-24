@@ -690,7 +690,9 @@ export function DesenvolvimentoEditor({
             onMouseEnter={() => setHoveredPontoId(ponto.id)}
             onMouseLeave={() => setHoveredPontoId(null)}
             style={{
-              border: '1px solid var(--border-subtle)',
+              borderTop: '1px solid var(--border-subtle)',
+              borderRight: '1px solid var(--border-subtle)',
+              borderBottom: '1px solid var(--border-subtle)',
               borderLeft: `4px solid ${isOpen ? AI_COLOR : `${AI_COLOR}44`}`,
               borderRadius: '8px',
               background: isOpen ? '#fff' : 'var(--surface)',

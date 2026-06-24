@@ -385,7 +385,7 @@ export default function WorkspaceLateralTabs({ project, userId, onAskAI }: Props
                       onClick={() => setTeoSub(slug)}
                       style={{
                         flex: 1, padding: '0.38rem 0.4rem',
-                        border: 'none', borderBottom: isActive ? `2px solid ${tab.color}` : '2px solid transparent',
+                        borderTop: 'none', borderLeft: 'none', borderRight: 'none', borderBottom: isActive ? `2px solid ${tab.color}` : '2px solid transparent',
                         cursor: 'pointer', fontFamily: 'inherit',
                         fontSize: '0.72rem', fontWeight: isActive ? 700 : 400,
                         color: isActive ? tab.color : 'var(--text-muted)',

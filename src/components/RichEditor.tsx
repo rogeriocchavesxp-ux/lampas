@@ -477,7 +477,7 @@ export default function RichEditor({
                   {insertMenu.map((item, idx) => (
                     <button key={idx} type="button"
                       onMouseDown={e => { e.preventDefault(); editor.chain().focus().insertContent(item.snippet).run(); setInsertOpen(false) }}
-                      style={{ width: '100%', display: 'flex', alignItems: 'center', gap: '0.55rem', border: 'none', background: 'transparent', padding: '0.5rem 0.85rem', cursor: 'pointer', fontFamily: 'inherit', fontSize: '0.78rem', color: 'var(--text-primary)', textAlign: 'left', borderBottom: idx < insertMenu.length - 1 ? '1px solid var(--border-subtle)' : 'none' }}
+                      style={{ width: '100%', display: 'flex', alignItems: 'center', gap: '0.55rem', borderTop: 'none', borderLeft: 'none', borderRight: 'none', background: 'transparent', padding: '0.5rem 0.85rem', cursor: 'pointer', fontFamily: 'inherit', fontSize: '0.78rem', color: 'var(--text-primary)', textAlign: 'left', borderBottom: idx < insertMenu.length - 1 ? '1px solid var(--border-subtle)' : 'none' }}
                       onMouseEnter={e => { e.currentTarget.style.background = '#F8FAFC' }}
                       onMouseLeave={e => { e.currentTarget.style.background = 'transparent' }}
                     >

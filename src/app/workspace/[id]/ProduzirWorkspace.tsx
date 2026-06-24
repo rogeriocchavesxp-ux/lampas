@@ -191,7 +191,7 @@ function ProduzirLivre({ project, userId, data, saving, savedAt, onChange, onBac
         value={data.title}
         onChange={e => onChange({ ...data, title: e.target.value })}
         placeholder="Título…"
-        style={{ width: '100%', border: 'none', borderBottom: `2px solid ${PRODUZIR_COLOR}30`, background: 'transparent', fontSize: '1.1rem', fontWeight: 700, color: 'var(--text-primary,#1e293b)', padding: '0.3rem 0', marginBottom: '1rem', outline: 'none', fontFamily: 'inherit', boxSizing: 'border-box' }}
+        style={{ width: '100%', borderTop: 'none', borderLeft: 'none', borderRight: 'none', borderBottom: `2px solid ${PRODUZIR_COLOR}30`, background: 'transparent', fontSize: '1.1rem', fontWeight: 700, color: 'var(--text-primary,#1e293b)', padding: '0.3rem 0', marginBottom: '1rem', outline: 'none', fontFamily: 'inherit', boxSizing: 'border-box' }}
       />
 
       {/* Editor */}

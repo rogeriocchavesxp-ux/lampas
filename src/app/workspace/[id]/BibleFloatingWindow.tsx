@@ -763,7 +763,7 @@ export default function BibleFloatingWindow({ book, passageRef, testament, proje
         </div>
       )}
 
-      <div style={{ ...windowStyle, zIndex: sidebarMode ? 1 : 500, background: '#FFFFFF', border: sidebarMode ? 'none' : '1px solid var(--border)', borderLeft: sidebarMode ? '1px solid var(--border-subtle)' : undefined, borderRadius: sidebarMode ? 0 : maximized ? '0' : '14px', boxShadow: sidebarMode ? 'none' : '0 8px 40px rgba(0,0,0,0.12), 0 2px 8px rgba(0,0,0,0.08)', display: 'flex', flexDirection: 'column', overflow: 'hidden', animation: sidebarMode ? 'none' : 'fadeInScale 0.18s cubic-bezier(0.16,1,0.3,1)' }}>
+      <div style={{ ...windowStyle, zIndex: sidebarMode ? 1 : 500, background: '#FFFFFF', borderTop: sidebarMode ? 'none' : '1px solid var(--border)', borderRight: sidebarMode ? 'none' : '1px solid var(--border)', borderBottom: sidebarMode ? 'none' : '1px solid var(--border)', borderLeft: sidebarMode ? '1px solid var(--border-subtle)' : '1px solid var(--border)', borderRadius: sidebarMode ? 0 : maximized ? '0' : '14px', boxShadow: sidebarMode ? 'none' : '0 8px 40px rgba(0,0,0,0.12), 0 2px 8px rgba(0,0,0,0.08)', display: 'flex', flexDirection: 'column', overflow: 'hidden', animation: sidebarMode ? 'none' : 'fadeInScale 0.18s cubic-bezier(0.16,1,0.3,1)' }}>
 
         {/* ── Chrome header ── */}
         <div onMouseDown={sidebarMode ? undefined : onTitleMouseDown} style={{ flexShrink: 0, display: 'flex', flexDirection: 'column', background: 'var(--surface)', borderBottom: '1px solid var(--border-subtle)', cursor: sidebarMode ? 'default' : maximized ? 'default' : 'move', userSelect: 'none' }}>
@@ -843,7 +843,7 @@ export default function BibleFloatingWindow({ book, passageRef, testament, proje
           <div style={{ display: 'flex', gap: '0', borderTop: '1px solid var(--border-subtle)', padding: '0 0.85rem' }} onMouseDown={e => e.stopPropagation()}>
             {VIEW_MODES.map(m => (
               <button key={m.id} onClick={() => changeViewMode(m.id)}
-                style={{ padding: '5px 10px', fontSize: '0.65rem', fontWeight: viewMode === m.id ? 700 : 500, color: viewMode === m.id ? accent : 'var(--text-muted)', background: 'transparent', border: 'none', borderBottom: `2px solid ${viewMode === m.id ? accent : 'transparent'}`, cursor: 'pointer', fontFamily: 'inherit', transition: 'all 0.12s', whiteSpace: 'nowrap' }}>
+                style={{ padding: '5px 10px', fontSize: '0.65rem', fontWeight: viewMode === m.id ? 700 : 500, color: viewMode === m.id ? accent : 'var(--text-muted)', background: 'transparent', borderTop: 'none', borderLeft: 'none', borderRight: 'none', borderBottom: `2px solid ${viewMode === m.id ? accent : 'transparent'}`, cursor: 'pointer', fontFamily: 'inherit', transition: 'all 0.12s', whiteSpace: 'nowrap' }}>
                 {m.label}
               </button>
             ))}
