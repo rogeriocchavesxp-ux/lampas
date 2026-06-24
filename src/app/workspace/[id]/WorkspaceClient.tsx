@@ -1421,7 +1421,8 @@ export default function WorkspaceClient({ user, project, initialSections }: Prop
             {/* ── Free mode — renders all phase sections as a continuous document ── */}
             {activePhase && (activePhase.id === 'preparar' || activePhase.id === 'investigar') &&
               (workModeMap[activePhase.id] ?? 'guided') === 'free' &&
-              !PREPARAR_DOC_SLUGS.includes(activeSlug) ? (
+              !PREPARAR_DOC_SLUGS.includes(activeSlug) &&
+              !ALL_DOC_SLUGS.includes(activeSlug) ? (
               <FreeModeEditor
                 key={`free-${activePhase.id}`}
                 phase={activePhase}
