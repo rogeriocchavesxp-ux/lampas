@@ -95,9 +95,9 @@ export const NAV_BASE: SectionNav[] = [
     "groupLabel": "Estudo Contextual",
     "order": 1,
     "cards": [
-      { "id": "inv_ctx_historico", "title": "Contexto histórico" },
-      { "id": "inv_ctx_literario", "title": "Contexto literário" },
-      { "id": "inv_ctx_canonico", "title": "Contexto canônico" }
+      { "id": "contexto_historico", "title": "Contexto histórico" },
+      { "id": "contexto_literario", "title": "Contexto literário" },
+      { "id": "contexto_canonico", "title": "Contexto canônico" }
     ]
   },
   {
@@ -110,10 +110,10 @@ export const NAV_BASE: SectionNav[] = [
     "groupLabel": "Estudo Textual",
     "order": 5,
     "cards": [
-      { "id": "inv_txt_original", "title": "Texto original" },
-      { "id": "inv_txt_estrutura", "title": "Estrutura do texto" },
-      { "id": "inv_txt_observacoes", "title": "Observações exegéticas" },
-      { "id": "inv_txt_mensagem", "title": "Mensagem aos primeiros ouvintes" }
+      { "id": "texto_original", "title": "Texto original" },
+      { "id": "estrutura_do_texto", "title": "Estrutura do texto" },
+      { "id": "observacoes_exegeticas", "title": "Observações exegéticas" },
+      { "id": "mensagem_primeiros_ouvintes", "title": "Mensagem aos primeiros ouvintes" }
     ]
   },
   {
@@ -126,9 +126,9 @@ export const NAV_BASE: SectionNav[] = [
     "groupLabel": "Estudo Teológico",
     "order": 10,
     "cards": [
-      { "id": "inv_teo_redenção", "title": "História da redenção" },
-      { "id": "inv_teo_doutrinas", "title": "Doutrinas" },
-      { "id": "inv_teo_implicacoes", "title": "Implicações" }
+      { "id": "historia_redencao", "title": "História da redenção" },
+      { "id": "doutrinas", "title": "Doutrinas" },
+      { "id": "implicacoes", "title": "Implicações" }
     ]
   },
   {
@@ -141,18 +141,9 @@ export const NAV_BASE: SectionNav[] = [
     "groupLabel": "Descoberta exegética",
     "order": -20,
     "cards": [
-      {
-        "id": "preparar_grande_ideia_inicial",
-        "title": "Grande ideia"
-      },
-      {
-        "id": "investigar_vg_temas_teol",
-        "title": "Verdades centrais"
-      },
-      {
-        "id": "investigar_vg_conexoes",
-        "title": "Aplicações e conexões"
-      }
+      { "id": "grande_ideia", "title": "Grande ideia" },
+      { "id": "verdades_centrais", "title": "Verdades centrais" },
+      { "id": "aplicacoes_principais", "title": "Aplicações principais" }
     ]
   },
   {

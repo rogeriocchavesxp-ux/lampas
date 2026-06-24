@@ -99,9 +99,9 @@ export const PREPARE_SECTIONS: SectionDef[] = [
     ],
     relevantAuthors: ['Grant Osborne', 'Gordon Fee', 'Douglas Stuart', 'D.A. Carson'],
     cards: [
-      card('preparar_grande_ideia_inicial', 'Grande ideia', 'Formule a grande ideia da passagem com o que a investigação confirmou ou corrigiu — sujeito e complemento em uma frase completa.', 'Ajude-me a formular a grande ideia da passagem após a investigação exegética.'),
-      card('investigar_vg_temas_teol', 'Verdades centrais', 'Liste as verdades teológicas centrais identificadas na investigação: o que o texto ensina sobre Deus, o homem, a redenção, a aliança.', 'Identifique as verdades teológicas centrais desta passagem e explique como cada uma se desenvolve no texto.'),
-      card('investigar_vg_conexoes', 'Aplicações e conexões', 'Registre as principais implicações práticas e conexões canônicas: como este texto se encaixa na história da redenção e que transformações ele produz.', 'Identifique as aplicações práticas e as conexões canônicas desta passagem — citações, alusões, paralelos e seu lugar na progressão da revelação bíblica.'),
+      card('grande_ideia', 'Grande ideia', 'Formule a ideia central da passagem em uma frase completa, com sujeito e complemento.', 'Ajude-me a formular a grande ideia da passagem após a investigação exegética.'),
+      card('verdades_centrais', 'Verdades centrais', 'Liste as principais verdades bíblicas e teológicas que emergem da investigação.', 'Identifique as verdades teológicas centrais desta passagem e explique como cada uma se desenvolve no texto.'),
+      card('aplicacoes_principais', 'Aplicações principais', 'Registre aplicações principais que nascem diretamente do significado do texto.', 'Identifique as aplicações práticas e as conexões canônicas desta passagem — citações, alusões, paralelos e seu lugar na progressão da revelação bíblica.'),
     ],
   },
   {

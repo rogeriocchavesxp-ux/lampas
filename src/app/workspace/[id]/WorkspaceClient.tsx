@@ -103,6 +103,7 @@ function ProgressRing({ pct, color, size = 15 }: { pct: number; color: string; s
 
 
 const PREPARAR_DOC_SLUGS = ['preparacao_espiritual', 'preparar_leia_assimile', 'preparar_visao_geral']
+const INVESTIGAR_DOC_SLUGS = ['inv_estudo_contextual', 'inv_estudo_textual', 'inv_estudo_teologico', 'investigar_visao_geral']
 
 // ── Componente principal ────────────────────────────────────────────────────
 
@@ -1542,6 +1543,21 @@ export default function WorkspaceClient({ user, project, initialSections }: Prop
                 existingSection={activeSection}
                 onUpdate={handleSectionUpdate}
                 onAskAI={handleAskAI}
+              />
+            ) : INVESTIGAR_DOC_SLUGS.includes(activeSlug) ? (
+              <WorkspaceDocument
+                key="investigar-doc"
+                blocks={INVESTIGAR_DOC_SLUGS.map(slug => ({
+                  sectionDef: WORKSPACE_SECTIONS.find(s => s.slug === slug)!,
+                  existingSection: sections.find(s => s.slug === slug),
+                }))}
+                project={project}
+                userId={user.id}
+                onUpdate={handleSectionUpdate}
+                onAskAI={handleAskAI}
+                guided={(workModeMap[activePhase?.id ?? ''] ?? 'guided') === 'guided'}
+                initialSlug={activeSlug}
+                typeLabel="Investigar"
               />
             ) : VG_SLUGS.includes(activeSlug) && !PREPARAR_DOC_SLUGS.includes(activeSlug) && activeDef ? (
               <VisaoGeralWorkspace

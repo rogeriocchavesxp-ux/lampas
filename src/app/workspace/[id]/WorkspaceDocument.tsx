@@ -100,6 +100,64 @@ const CHAPTER_META: Record<string, {
         'O que se repete neste texto? O que contrasta? Que palavras ou expressões parecem centrais? Que emoção o texto transmite?',
     },
   },
+  inv_estudo_contextual: {
+    title: 'Estudo Contextual',
+    intro: 'Analise o contexto histórico, literário e canônico da passagem para compreender o ambiente em que o texto foi escrito.',
+    editorHints: {
+      contexto_historico: 'Descreva o cenário histórico...',
+      contexto_literario: 'Identifique o gênero literário...',
+      contexto_canonico: 'Explique como esta passagem se relaciona...',
+    },
+    placeholders: {
+      contexto_historico: 'Descreva o cenário histórico, político, social e cultural relacionado à escrita da passagem.',
+      contexto_literario: 'Identifique o gênero literário, o propósito do autor e a função desta passagem dentro do livro.',
+      contexto_canonico: 'Explique como esta passagem se relaciona com o restante das Escrituras e com o desenvolvimento da revelação bíblica.',
+    },
+  },
+  inv_estudo_textual: {
+    title: 'Estudo Textual',
+    intro: 'Examine a estrutura, as palavras, a gramática e o desenvolvimento interno da passagem.',
+    editorHints: {
+      texto_original: 'Observe o vocabulário original...',
+      estrutura_do_texto: 'Descreva as unidades e movimentos...',
+      observacoes_exegeticas: 'Anote detalhes gramaticais relevantes...',
+      mensagem_primeiros_ouvintes: 'Explique o que os primeiros ouvintes teriam entendido...',
+    },
+    placeholders: {
+      texto_original: 'Registre observações relevantes do hebraico ou grego que ajudem a compreender o texto.',
+      estrutura_do_texto: 'Descreva como a passagem está organizada: unidades, movimentos, contrastes, paralelos e progressão.',
+      observacoes_exegeticas: 'Anote detalhes gramaticais, lexicais, sintáticos e literários importantes para a interpretação.',
+      mensagem_primeiros_ouvintes: 'Explique como os primeiros leitores ou ouvintes teriam compreendido esta passagem em seu contexto original.',
+    },
+  },
+  inv_estudo_teologico: {
+    title: 'Estudo Teológico',
+    intro: 'Observe como a passagem se conecta com a história da redenção, com as doutrinas bíblicas e com suas implicações teológicas.',
+    editorHints: {
+      historia_redencao: 'Mostre o lugar desta passagem no plano de Deus...',
+      doutrinas: 'Identifique as doutrinas ensinadas...',
+      implicacoes: 'Registre as implicações práticas e pastorais...',
+    },
+    placeholders: {
+      historia_redencao: 'Mostre como esta passagem se encaixa no desenvolvimento do plano redentivo de Deus.',
+      doutrinas: 'Identifique as doutrinas ensinadas, pressupostas ou iluminadas por esta passagem.',
+      implicacoes: 'Registre implicações teológicas, pastorais e práticas derivadas do texto.',
+    },
+  },
+  investigar_visao_geral: {
+    title: 'Visão Geral',
+    intro: 'Sintetize os principais achados da investigação em uma formulação clara e útil para a comunicação.',
+    editorHints: {
+      grande_ideia: 'Formule a grande ideia em uma frase completa...',
+      verdades_centrais: 'Liste as verdades teológicas centrais...',
+      aplicacoes_principais: 'Registre as aplicações que nascem do texto...',
+    },
+    placeholders: {
+      grande_ideia: 'Formule a ideia central da passagem em uma frase completa, com sujeito e complemento.',
+      verdades_centrais: 'Liste as principais verdades bíblicas e teológicas que emergem da investigação.',
+      aplicacoes_principais: 'Registre aplicações principais que nascem diretamente do significado do texto.',
+    },
+  },
   preparar_visao_geral: {
     title: 'O que o Texto Parece Dizer?',
     intro: 'Com base no seu primeiro contato, o que o texto parece comunicar? Registre suas impressões com honestidade — ainda é cedo para conclusões definitivas.',
