@@ -74,7 +74,7 @@ function DocSep() {
 export interface DocumentBlock {
   id: string
   title: string
-  placeholder?: string
+  description?: string
 }
 
 export interface WorkspaceDocumentRendererProps {
@@ -377,13 +377,14 @@ export default function WorkspaceDocumentRenderer({
     <>
       <style>{`
         .wdr-block .rich-editor > div:first-child { display: none !important; }
+        .wdr-block .rich-editor { border: none !important; box-shadow: none !important; background: transparent !important; }
         .wdr-block .rich-editor .ProseMirror {
-          border: none; border-radius: 0; background: transparent; box-shadow: none;
-          padding: 0.35rem 0 0.65rem; min-height: 56px;
+          border: none !important; border-radius: 0; background: transparent !important; box-shadow: none !important;
+          padding: 0.25rem 0 0.5rem; min-height: 80px; outline: none !important;
         }
-        .wdr-block .rich-editor .ProseMirror:focus { box-shadow: none; border: none; }
+        .wdr-block .rich-editor .ProseMirror:focus { box-shadow: none !important; border: none !important; outline: none !important; }
         .wdr-block .rich-editor .ProseMirror p:first-child { margin-top: 0; }
-        .wdr-block .rich-editor { border: none !important; box-shadow: none !important; }
+        .wdr-block .rich-editor .ProseMirror p.is-editor-empty:first-child::before { color: #CBD5E1; font-style: italic; }
       `}</style>
 
       {/* Desk */}
@@ -440,10 +441,10 @@ export default function WorkspaceDocumentRenderer({
               const isFocused = activeEditorKey === block.id
 
               return (
-                <div key={block.id} style={{ marginTop: idx === 0 ? 0 : '1.5rem' }}>
+                <div key={block.id} style={{ marginTop: idx === 0 ? 0 : '3rem', paddingBottom: '1rem', borderBottom: idx < blocks.length - 1 ? '1px solid #F1F5F9' : 'none' }}>
                   {/* Subtitle row */}
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem', marginBottom: '0.1rem' }}>
-                    <h3 style={{ margin: 0, fontSize: '0.88rem', fontWeight: 600, color: moduleColor, letterSpacing: '-0.005em', lineHeight: 1.3 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.4rem' }}>
+                    <h3 style={{ margin: 0, fontSize: '1rem', fontWeight: 700, color: moduleColor, letterSpacing: '-0.01em', lineHeight: 1.3 }}>
                       {block.title}
                     </h3>
                     {isFocused && (
@@ -466,13 +467,19 @@ export default function WorkspaceDocumentRenderer({
                     )}
                   </div>
 
+                  {/* Visible description */}
+                  {block.description && (
+                    <p style={{ margin: '0 0 0.6rem', fontSize: '0.82rem', fontStyle: 'italic', color: '#94A3B8', lineHeight: 1.55 }}>
+                      {block.description}
+                    </p>
+                  )}
+
                   {/* Seamless editor */}
                   <div className="wdr-block">
                     <RichEditor
                       value={content}
                       onChange={html => onBlockChange(block.id, html)}
-                      placeholder={block.placeholder ?? ''}
-                      minHeight={56}
+                      minHeight={80}
                       moduleColor={moduleColor}
                       hideToolbar
                       onEditorMount={editor => { editorMapRef.current.set(block.id, editor) }}

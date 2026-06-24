@@ -1041,7 +1041,7 @@ export default function VisaoGeralWorkspace({
         sectionSlug={sectionDef.slug}
         sectionTitle={sectionDef.shortTitle ?? sectionDef.title}
         sectionObjective={sectionDef.objective}
-        blocks={sectionDef.cards.map(c => ({ id: c.id, title: c.title, placeholder: c.placeholder ?? '' }))}
+        blocks={sectionDef.cards.map(c => ({ id: c.id, title: c.title, description: c.placeholder ?? '' }))}
         blockContent={localCards}
         onBlockChange={handleBlockChange}
         userId={userId}
