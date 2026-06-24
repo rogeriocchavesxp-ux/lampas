@@ -1545,7 +1545,7 @@ export default function WorkspaceClient({ user, project, initialSections }: Prop
                 onUpdate={handleSectionUpdate}
                 onAskAI={handleAskAI}
               />
-            ) : INVESTIGAR_DOC_SLUGS.includes(activeSlug) ? (
+            ) : INVESTIGAR_DOC_SLUGS.includes(activeSlug) && !(activeSlug === 'investigar_visao_geral' && vgViewMode === 'visual') ? (
               <WorkspaceDocument
                 key="investigar-doc"
                 blocks={INVESTIGAR_DOC_SLUGS.map(slug => ({
