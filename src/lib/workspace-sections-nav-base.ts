@@ -86,6 +86,52 @@ export const NAV_BASE: SectionNav[] = [
     ]
   },
   {
+    "slug": "inv_estudo_contextual",
+    "title": "Estudo Contextual",
+    "shortTitle": "Contextual",
+    "phase": "interpretar",
+    "module": "inventio",
+    "group": "contextual",
+    "groupLabel": "Estudo Contextual",
+    "order": 1,
+    "cards": [
+      { "id": "inv_ctx_historico", "title": "Contexto histórico" },
+      { "id": "inv_ctx_literario", "title": "Contexto literário" },
+      { "id": "inv_ctx_canonico", "title": "Contexto canônico" }
+    ]
+  },
+  {
+    "slug": "inv_estudo_textual",
+    "title": "Estudo Textual",
+    "shortTitle": "Textual",
+    "phase": "interpretar",
+    "module": "inventio",
+    "group": "textual",
+    "groupLabel": "Estudo Textual",
+    "order": 5,
+    "cards": [
+      { "id": "inv_txt_original", "title": "Texto original" },
+      { "id": "inv_txt_estrutura", "title": "Estrutura do texto" },
+      { "id": "inv_txt_observacoes", "title": "Observações exegéticas" },
+      { "id": "inv_txt_mensagem", "title": "Mensagem aos primeiros ouvintes" }
+    ]
+  },
+  {
+    "slug": "inv_estudo_teologico",
+    "title": "Estudo Teológico",
+    "shortTitle": "Teológico",
+    "phase": "interpretar",
+    "module": "inventio",
+    "group": "teologico",
+    "groupLabel": "Estudo Teológico",
+    "order": 10,
+    "cards": [
+      { "id": "inv_teo_redenção", "title": "História da redenção" },
+      { "id": "inv_teo_doutrinas", "title": "Doutrinas" },
+      { "id": "inv_teo_implicacoes", "title": "Implicações" }
+    ]
+  },
+  {
     "slug": "investigar_visao_geral",
     "title": "Visão Geral Investigativa",
     "shortTitle": "Visão Geral",
@@ -98,10 +144,6 @@ export const NAV_BASE: SectionNav[] = [
       {
         "id": "preparar_grande_ideia_inicial",
         "title": "Grande ideia"
-      },
-      {
-        "id": "preparar_tema_provavel",
-        "title": "Tema refinado"
       },
       {
         "id": "investigar_vg_temas_teol",
@@ -172,7 +214,7 @@ export const NAV_BASE: SectionNav[] = [
     "title": "1.1 Contexto Histórico",
     "shortTitle": "Contexto Histórico",
     "module": "inventio",
-    "group": "contextual",
+    "group": "contextual_legado",
     "groupLabel": "Estudo Contextual",
     "order": 1,
     "cards": [
@@ -187,7 +229,7 @@ export const NAV_BASE: SectionNav[] = [
     "title": "1.2 Contexto Literário",
     "shortTitle": "Contexto Literário",
     "module": "inventio",
-    "group": "contextual",
+    "group": "contextual_legado",
     "groupLabel": "Estudo Contextual",
     "order": 2,
     "cards": [
@@ -202,7 +244,7 @@ export const NAV_BASE: SectionNav[] = [
     "title": "1.3 Contexto Canônico",
     "shortTitle": "Contexto Canônico",
     "module": "inventio",
-    "group": "contextual",
+    "group": "contextual_legado",
     "groupLabel": "Estudo Contextual",
     "order": 3,
     "cards": [
@@ -263,7 +305,7 @@ export const NAV_BASE: SectionNav[] = [
     "title": "2.1 Texto Original",
     "shortTitle": "Texto Original",
     "module": "inventio",
-    "group": "textual",
+    "group": "textual_legado",
     "groupLabel": "Estudo Textual",
     "order": 5.5
   },
@@ -272,7 +314,7 @@ export const NAV_BASE: SectionNav[] = [
     "title": "2.3 Observações Exegéticas",
     "shortTitle": "Observações Exegéticas",
     "module": "inventio",
-    "group": "textual",
+    "group": "textual_legado",
     "groupLabel": "Estudo Textual",
     "order": 7,
     "cards": [
@@ -317,7 +359,7 @@ export const NAV_BASE: SectionNav[] = [
     "title": "2.2 Estrutura do Texto",
     "shortTitle": "Estrutura do Texto",
     "module": "inventio",
-    "group": "textual",
+    "group": "textual_legado",
     "groupLabel": "Estudo Textual",
     "order": 6,
     "cards": [
@@ -347,7 +389,7 @@ export const NAV_BASE: SectionNav[] = [
     "title": "2.4 Comentário Exegético",
     "shortTitle": "Comentário Exegético",
     "module": "inventio",
-    "group": "textual",
+    "group": "textual_legado",
     "groupLabel": "Estudo Textual",
     "order": 8,
     "cards": [
@@ -362,7 +404,7 @@ export const NAV_BASE: SectionNav[] = [
     "title": "2.5 Mensagem para os Primeiros Ouvintes",
     "shortTitle": "Mensagem aos Primeiros Ouvintes",
     "module": "inventio",
-    "group": "textual",
+    "group": "textual_legado",
     "groupLabel": "Estudo Textual",
     "order": 9,
     "cards": [
@@ -602,7 +644,7 @@ export const NAV_BASE: SectionNav[] = [
     "title": "3.1 Relação com a História da Redenção",
     "shortTitle": "História da Redenção",
     "module": "inventio",
-    "group": "teologico",
+    "group": "teologico_legado",
     "groupLabel": "Estudo Teológico",
     "order": 11,
     "cards": [
@@ -617,7 +659,7 @@ export const NAV_BASE: SectionNav[] = [
     "title": "3.2 Doutrinas Ensinadas",
     "shortTitle": "Doutrinas Ensinadas",
     "module": "inventio",
-    "group": "teologico",
+    "group": "teologico_legado",
     "groupLabel": "Estudo Teológico",
     "order": 12,
     "cards": [
@@ -632,7 +674,7 @@ export const NAV_BASE: SectionNav[] = [
     "title": "3.3 Implicações para a Vida",
     "shortTitle": "Implicações para a Vida",
     "module": "inventio",
-    "group": "teologico",
+    "group": "teologico_legado",
     "groupLabel": "Estudo Teológico",
     "order": 13,
     "cards": [

@@ -100,7 +100,6 @@ export const PREPARE_SECTIONS: SectionDef[] = [
     relevantAuthors: ['Grant Osborne', 'Gordon Fee', 'Douglas Stuart', 'D.A. Carson'],
     cards: [
       card('preparar_grande_ideia_inicial', 'Grande ideia', 'Formule a grande ideia da passagem com o que a investigação confirmou ou corrigiu — sujeito e complemento em uma frase completa.', 'Ajude-me a formular a grande ideia da passagem após a investigação exegética.'),
-      card('preparar_tema_provavel', 'Tema refinado', 'Atualize o tema da passagem com base nos achados da investigação contextual, textual e teológica.', 'Ajude-me a formular o tema refinado da passagem após a investigação exegética.'),
       card('investigar_vg_temas_teol', 'Verdades centrais', 'Liste as verdades teológicas centrais identificadas na investigação: o que o texto ensina sobre Deus, o homem, a redenção, a aliança.', 'Identifique as verdades teológicas centrais desta passagem e explique como cada uma se desenvolve no texto.'),
       card('investigar_vg_conexoes', 'Aplicações e conexões', 'Registre as principais implicações práticas e conexões canônicas: como este texto se encaixa na história da redenção e que transformações ele produz.', 'Identifique as aplicações práticas e as conexões canônicas desta passagem — citações, alusões, paralelos e seu lugar na progressão da revelação bíblica.'),
     ],

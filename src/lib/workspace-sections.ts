@@ -37,6 +37,127 @@ export interface SectionDef {
 
 export const WORKSPACE_SECTIONS: SectionDef[] = [
   ...PREPARE_SECTIONS,
+
+  // ── INVESTIGAR: SEÇÕES COMBINADAS ────────────────────────────────────────
+  {
+    slug: 'inv_estudo_contextual',
+    title: 'Estudo Contextual',
+    shortTitle: 'Contextual',
+    phase: 'interpretar',
+    module: 'inventio',
+    group: 'contextual',
+    groupLabel: 'Estudo Contextual',
+    order: 1,
+    objective: 'Analise o contexto histórico, literário e canônico da passagem para compreender o ambiente em que o texto foi escrito.',
+    keyQuestions: [
+      'Qual era o cenário histórico, político, social e cultural da época?',
+      'Qual é o gênero literário, o propósito do autor e o estilo da seção?',
+      'Como esta passagem se relaciona com o restante da Bíblia e o plano redentor?',
+    ],
+    relevantAuthors: ['Craig Keener', 'D.A. Carson', 'Gordon Fee', 'F.F. Bruce', 'David deSilva'],
+    cards: [
+      {
+        id: 'inv_ctx_historico',
+        title: 'Contexto histórico',
+        placeholder: 'Descreva o cenário histórico, político, social e cultural relacionado à escrita da passagem.',
+        aiTrigger: 'Analise o contexto histórico desta passagem: período, cenário político, cultura e costumes da época, situação do autor e dos destinatários.',
+      },
+      {
+        id: 'inv_ctx_literario',
+        title: 'Contexto literário',
+        placeholder: 'Identifique o gênero literário, o propósito do autor e o estilo da seção.',
+        aiTrigger: 'Analise o contexto literário desta passagem: gênero literário, propósito do autor, destinatários e estilo de escrita.',
+      },
+      {
+        id: 'inv_ctx_canonico',
+        title: 'Contexto canônico',
+        placeholder: 'Explique a relação desta passagem com o restante da Bíblia e o plano redentor.',
+        aiTrigger: 'Explique como esta passagem se relaciona com o restante da Bíblia: posição no cânon, conexões com o plano redentor e sua contribuição à revelação progressiva.',
+      },
+    ],
+  },
+  {
+    slug: 'inv_estudo_textual',
+    title: 'Estudo Textual',
+    shortTitle: 'Textual',
+    phase: 'interpretar',
+    module: 'inventio',
+    group: 'textual',
+    groupLabel: 'Estudo Textual',
+    order: 5,
+    objective: 'Analise o texto na sua língua original, estrutura literária e observações exegéticas para extrair o significado preciso da passagem.',
+    keyQuestions: [
+      'O que o texto diz em sua língua original?',
+      'Como a passagem é estruturada internamente?',
+      'Quais são as observações exegéticas mais relevantes?',
+      'Qual era a mensagem para os primeiros ouvintes?',
+    ],
+    relevantAuthors: ['Gordon Fee', 'Douglas Stuart', 'Grant Osborne', 'D.A. Carson', 'David Alan Black'],
+    cards: [
+      {
+        id: 'inv_txt_original',
+        title: 'Texto original',
+        placeholder: 'Apresente o texto na língua original com transliteração e observações textuais relevantes.',
+        aiTrigger: 'Apresente o texto desta passagem na língua original com transliteração e note as principais variantes textuais e sua relevância exegética.',
+      },
+      {
+        id: 'inv_txt_estrutura',
+        title: 'Estrutura do texto',
+        placeholder: 'Analise a estrutura, divisões e padrões literários da passagem (quiasmo, paralelismo, inclusio, etc.).',
+        aiTrigger: 'Analise a estrutura interna desta passagem: divisões, padrões literários (quiasmo, paralelismo, inclusio), gênero do texto e fluxo argumentativo ou narrativo.',
+      },
+      {
+        id: 'inv_txt_observacoes',
+        title: 'Observações exegéticas',
+        placeholder: 'Registre as observações exegéticas relevantes: gramática, sintaxe, termos-chave e peso para a interpretação.',
+        aiTrigger: 'Registre as observações exegéticas mais relevantes desta passagem: análise gramatical e sintática, termos decisivos, usos importantes e implicações para a interpretação.',
+      },
+      {
+        id: 'inv_txt_mensagem',
+        title: 'Mensagem aos primeiros ouvintes',
+        placeholder: 'Qual era a mensagem desta passagem para os destinatários originais? O que o autor queria que eles compreendessem e fizessem?',
+        aiTrigger: 'Qual era a mensagem desta passagem para os destinatários originais? O que o autor pretendia comunicar, e como os primeiros ouvintes teriam entendido e respondido a esse texto?',
+      },
+    ],
+  },
+  {
+    slug: 'inv_estudo_teologico',
+    title: 'Estudo Teológico',
+    shortTitle: 'Teológico',
+    phase: 'interpretar',
+    module: 'inventio',
+    group: 'teologico',
+    groupLabel: 'Estudo Teológico',
+    order: 10,
+    objective: 'Explore as dimensões teológicas da passagem: seu lugar na história da redenção, as doutrinas que ilumina e as implicações para a vida cristã.',
+    keyQuestions: [
+      'Como este texto se situa na história da redenção e aponta para Cristo?',
+      'Quais doutrinas este texto ensina, ilumina ou corrige?',
+      'Que implicações práticas e aplicações emergem desta passagem?',
+    ],
+    relevantAuthors: ['Graeme Goldsworthy', 'D.A. Carson', 'John Frame', 'Timothy Keller', 'Michael Horton'],
+    cards: [
+      {
+        id: 'inv_teo_redenção',
+        title: 'História da redenção',
+        placeholder: 'Como este texto se situa na história da redenção? Como aponta para Cristo e se encaixa na progressão da revelação bíblica?',
+        aiTrigger: 'Analise como esta passagem se situa na história da redenção: sua posição na progressão da revelação, relação com as alianças, tipologias e cumprimentos, e como aponta para Cristo.',
+      },
+      {
+        id: 'inv_teo_doutrinas',
+        title: 'Doutrinas',
+        placeholder: 'Quais doutrinas este texto ensina, ilumina ou corrige? O que afirma sobre Deus, Cristo, o Espírito, o homem e a salvação?',
+        aiTrigger: 'Identifique as doutrinas que esta passagem ensina, ilumina ou corrige: o que afirma sobre Deus, Cristo, o Espírito Santo, a salvação, a igreja, o homem e o pecado.',
+      },
+      {
+        id: 'inv_teo_implicacoes',
+        title: 'Implicações',
+        placeholder: 'Que implicações práticas emergem desta passagem? Que transformações ela produz na vida individual e coletiva?',
+        aiTrigger: 'Analise as implicações práticas desta passagem: que pecados confronta, que virtudes incentiva, e que aplicações pastorais, éticas e missionais surgem do texto.',
+      },
+    ],
+  },
+
   // ── ESTUDO CONTEXTUAL ──────────────────────────────────────────────────────
 
   {
