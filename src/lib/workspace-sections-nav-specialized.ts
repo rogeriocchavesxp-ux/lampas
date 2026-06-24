@@ -1437,198 +1437,60 @@ export const NAV_SPECIALIZED: SectionNav[] = [
     ]
   },
   {
-    "slug": "nr_ctx_historico",
-    "title": "Contexto Histórico",
-    "shortTitle": "Contexto Histórico",
+    "slug": "nr_estudo_contextual",
+    "title": "Estudo Contextual",
+    "shortTitle": "Contextual",
     "module": "inventio",
     "group": "nr_contextual_grp",
     "groupLabel": "Estudo Contextual",
-    "order": 710,
+    "order": 709,
     "cards": [
-      {
-        "id": "nr_ctx_hist_main",
-        "title": "Contexto Histórico"
-      }
+      { "id": "nr_ctx_hist_main", "title": "Contexto Histórico" },
+      { "id": "nr_ctx_lit_main",  "title": "Contexto Literário" },
+      { "id": "nr_ctx_can_main",  "title": "Contexto Canônico" }
     ]
   },
   {
-    "slug": "nr_ctx_literario",
-    "title": "Contexto Literário",
-    "shortTitle": "Contexto Literário",
-    "module": "inventio",
-    "group": "nr_contextual_grp",
-    "groupLabel": "Estudo Contextual",
-    "order": 711,
-    "cards": [
-      {
-        "id": "nr_ctx_lit_main",
-        "title": "Contexto Literário"
-      }
-    ]
-  },
-  {
-    "slug": "nr_ctx_canonico",
-    "title": "Contexto Canônico",
-    "shortTitle": "Contexto Canônico",
-    "module": "inventio",
-    "group": "nr_contextual_grp",
-    "groupLabel": "Estudo Contextual",
-    "order": 712,
-    "cards": [
-      {
-        "id": "nr_ctx_can_main",
-        "title": "Contexto Canônico"
-      }
-    ]
-  },
-  {
-    "slug": "nr_txt_original",
-    "title": "Texto Original",
-    "shortTitle": "Texto Original",
+    "slug": "nr_estudo_textual",
+    "title": "Estudo Textual",
+    "shortTitle": "Textual",
     "module": "inventio",
     "group": "nr_textual_grp",
     "groupLabel": "Estudo Textual",
-    "order": 720,
+    "order": 719,
     "cards": [
-      {
-        "id": "nr_txt_orig_main",
-        "title": "Texto Original"
-      }
+      { "id": "nr_txt_orig_main",   "title": "Texto Original" },
+      { "id": "nr_txt_struct_main", "title": "Estrutura do Texto" },
+      { "id": "nr_txt_exeg_main",   "title": "Observações Exegéticas" },
+      { "id": "nr_txt_msg_main",    "title": "Mensagem para os Primeiros Ouvintes" }
     ]
   },
   {
-    "slug": "nr_txt_estrutura",
-    "title": "Estrutura do Texto",
-    "shortTitle": "Estrutura do Texto",
-    "module": "inventio",
-    "group": "nr_textual_grp",
-    "groupLabel": "Estudo Textual",
-    "order": 721,
-    "cards": [
-      {
-        "id": "nr_txt_struct_main",
-        "title": "Estrutura do Texto"
-      }
-    ]
-  },
-  {
-    "slug": "nr_txt_exegese",
-    "title": "Observações Exegéticas",
-    "shortTitle": "Exegese",
-    "module": "inventio",
-    "group": "nr_textual_grp",
-    "groupLabel": "Estudo Textual",
-    "order": 722,
-    "cards": [
-      {
-        "id": "nr_txt_exeg_main",
-        "title": "Observações Exegéticas"
-      }
-    ]
-  },
-  {
-    "slug": "nr_txt_mensagem",
-    "title": "Mensagem para os Primeiros Ouvintes",
-    "shortTitle": "Mensagem Original",
-    "module": "inventio",
-    "group": "nr_textual_grp",
-    "groupLabel": "Estudo Textual",
-    "order": 723,
-    "cards": [
-      {
-        "id": "nr_txt_msg_main",
-        "title": "Mensagem para os Primeiros Ouvintes"
-      }
-    ]
-  },
-  {
-    "slug": "nr_teo_redentor",
-    "title": "Relação com a História da Redenção",
-    "shortTitle": "História da Redenção",
+    "slug": "nr_estudo_teologico",
+    "title": "Estudo Teológico",
+    "shortTitle": "Teológico",
     "module": "inventio",
     "group": "nr_teologico_grp",
     "groupLabel": "Estudo Teológico",
-    "order": 730,
+    "order": 729,
     "cards": [
-      {
-        "id": "nr_teo_redentor_main",
-        "title": "Relação com a História da Redenção"
-      }
+      { "id": "nr_teo_redentor_main", "title": "Relação com a História da Redenção" },
+      { "id": "nr_teo_doc_main",      "title": "Doutrinas Ensinadas" },
+      { "id": "nr_teo_impl_main",     "title": "Implicações para a Vida" }
     ]
   },
   {
-    "slug": "nr_teo_doutrinas",
-    "title": "Doutrinas Ensinadas",
-    "shortTitle": "Doutrinas",
-    "module": "inventio",
-    "group": "nr_teologico_grp",
-    "groupLabel": "Estudo Teológico",
-    "order": 731,
-    "cards": [
-      {
-        "id": "nr_teo_doc_main",
-        "title": "Doutrinas Ensinadas"
-      }
-    ]
-  },
-  {
-    "slug": "nr_teo_implicacoes",
-    "title": "Implicações para a Vida",
-    "shortTitle": "Implicações",
-    "module": "inventio",
-    "group": "nr_teologico_grp",
-    "groupLabel": "Estudo Teológico",
-    "order": 732,
-    "cards": [
-      {
-        "id": "nr_teo_impl_main",
-        "title": "Implicações para a Vida"
-      }
-    ]
-  },
-  {
-    "slug": "nr_ivg_ideia",
-    "title": "Grande Ideia",
-    "shortTitle": "Grande Ideia",
+    "slug": "nr_investigar_vg",
+    "title": "Visão Geral da Investigação",
+    "shortTitle": "Visão Geral",
     "module": "inventio",
     "group": "nr_ivg_grp",
     "groupLabel": "Visão Geral da Investigação",
-    "order": 740,
+    "order": 739,
     "cards": [
-      {
-        "id": "nr_ivg_ideia_main",
-        "title": "Grande Ideia"
-      }
-    ]
-  },
-  {
-    "slug": "nr_ivg_verdades",
-    "title": "Verdades Centrais",
-    "shortTitle": "Verdades",
-    "module": "inventio",
-    "group": "nr_ivg_grp",
-    "groupLabel": "Visão Geral da Investigação",
-    "order": 741,
-    "cards": [
-      {
-        "id": "nr_ivg_verd_main",
-        "title": "Verdades Centrais"
-      }
-    ]
-  },
-  {
-    "slug": "nr_ivg_aplic",
-    "title": "Aplicações Principais",
-    "shortTitle": "Aplicações",
-    "module": "inventio",
-    "group": "nr_ivg_grp",
-    "groupLabel": "Visão Geral da Investigação",
-    "order": 742,
-    "cards": [
-      {
-        "id": "nr_ivg_aplic_main",
-        "title": "Aplicações Principais"
-      }
+      { "id": "nr_ivg_ideia_main", "title": "Grande Ideia" },
+      { "id": "nr_ivg_verd_main",  "title": "Verdades Centrais" },
+      { "id": "nr_ivg_aplic_main", "title": "Aplicações Principais" }
     ]
   },
   {

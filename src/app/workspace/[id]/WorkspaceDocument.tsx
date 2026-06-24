@@ -158,6 +158,64 @@ const CHAPTER_META: Record<string, {
       aplicacoes_principais: 'Registre aplicações principais que nascem diretamente do significado do texto.',
     },
   },
+  nr_estudo_contextual: {
+    title: 'Estudo Contextual',
+    intro: 'Analise o contexto histórico, literário e canônico da narrativa para compreender o ambiente em que ela foi escrita e transmitida.',
+    editorHints: {
+      nr_ctx_hist_main: 'Descreva o cenário histórico e cultural da narrativa...',
+      nr_ctx_lit_main:  'Situe a narrativa dentro do livro e do cânone...',
+      nr_ctx_can_main:  'Descreva as conexões canônicas e a tipologia...',
+    },
+    placeholders: {
+      nr_ctx_hist_main: 'Descreva o contexto histórico-cultural: período, cenário geopolítico, costumes relevantes e como esse ambiente molda os personagens e eventos.',
+      nr_ctx_lit_main:  'Situe a narrativa dentro do livro: onde aparece na estrutura maior, como se conecta às perícopes vizinhas e que temas do livro ela desenvolve.',
+      nr_ctx_can_main:  'Descreva as conexões canônicas: textos que a iluminam, ecos e tipologias, promessas da aliança e como ela se encaixa na história da redenção.',
+    },
+  },
+  nr_estudo_textual: {
+    title: 'Estudo Textual',
+    intro: 'Examine o texto original, a estrutura da narrativa, as observações exegéticas e a mensagem para os primeiros ouvintes.',
+    editorHints: {
+      nr_txt_orig_main:   'Cole o texto original e delimite a perícope...',
+      nr_txt_struct_main: 'Esboce as cenas e o movimento da narrativa...',
+      nr_txt_exeg_main:   'Registre observações sobre narrador, personagens e diálogos...',
+      nr_txt_msg_main:    'Identifique a mensagem para os primeiros ouvintes...',
+    },
+    placeholders: {
+      nr_txt_orig_main:   'Cole o texto em hebraico ou grego, delimite a perícope justificando os limites e note variantes textuais relevantes.',
+      nr_txt_struct_main: 'Esboce as cenas ou episódios, identifique padrões literários e descreva o movimento da tensão narrativa.',
+      nr_txt_exeg_main:   'Registre observações sobre o narrador, personagens, diálogos, silêncios e repetições significativas.',
+      nr_txt_msg_main:    'Identifique a situação pastoral endereçada, a resposta convocada e por que a forma narrativa era o meio ideal para essa mensagem.',
+    },
+  },
+  nr_estudo_teologico: {
+    title: 'Estudo Teológico',
+    intro: 'Situe a narrativa na história da redenção, identifique as doutrinas ensinadas pela forma da história e suas implicações para a vida cristã.',
+    editorHints: {
+      nr_teo_redentor_main: 'Mostre o lugar desta narrativa no plano redentor de Deus...',
+      nr_teo_doc_main:      'Identifique as doutrinas ensinadas pela forma da história...',
+      nr_teo_impl_main:     'Registre as implicações pastorais e práticas...',
+    },
+    placeholders: {
+      nr_teo_redentor_main: 'Situe a narrativa na história da redenção: época, ação de Deus, tipologias e como avança a aliança rumo a Cristo.',
+      nr_teo_doc_main:      'Identifique as doutrinas ensinadas explicitamente ou pela forma da história, e que erros teológicos a narrativa corrige.',
+      nr_teo_impl_main:     'Registre implicações para a vida cristã: chamado à fé, padrões afirmados ou condenados, e como a tipologia molda a aplicação.',
+    },
+  },
+  nr_investigar_vg: {
+    title: 'Visão Geral da Investigação',
+    intro: 'Sintetize os achados da investigação narrativa em uma grande ideia, verdades centrais e aplicações pastorais.',
+    editorHints: {
+      nr_ivg_ideia_main: 'Formule a grande ideia: sujeito + predicado...',
+      nr_ivg_verd_main:  'Liste as 2-3 verdades centrais que emergem da narrativa...',
+      nr_ivg_aplic_main: 'Desenvolva as aplicações pastorais principais...',
+    },
+    placeholders: {
+      nr_ivg_ideia_main: 'Formule a grande ideia: sujeito (do que a narrativa fala) + predicado (o que afirma). Deve emergir do texto e integrar mensagem histórica e verdade atemporal.',
+      nr_ivg_verd_main:  'Liste as 2-3 verdades centrais: cada uma derivada do texto, ensinada pela forma narrativa, atemporal e confirmada pelo cânone.',
+      nr_ivg_aplic_main: 'Desenvolva aplicações que fluem das verdades centrais, não de moralismos, moldadas pela tipologia cristológica.',
+    },
+  },
   preparar_visao_geral: {
     title: 'O que o Texto Parece Dizer?',
     intro: 'Com base no seu primeiro contato, o que o texto parece comunicar? Registre suas impressões com honestidade — ainda é cedo para conclusões definitivas.',

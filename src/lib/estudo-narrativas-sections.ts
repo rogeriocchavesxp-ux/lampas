@@ -204,14 +204,115 @@ export const ESTUDO_NARRATIVAS_SECTIONS: SectionDef[] = [
     ],
   },
 
-  // ── Investigar: Estudo Contextual ────────────────────────────────────────
+  // ── Investigar: Seções combinadas (documento) ────────────────────────────
+
+  {
+    slug: 'nr_estudo_contextual',
+    title: 'Estudo Contextual',
+    shortTitle: 'Contextual',
+    module: 'inventio',
+    group: 'nr_contextual_grp',
+    groupLabel: 'Estudo Contextual',
+    order: 709,
+    objective: 'Analisar o contexto histórico, literário e canônico da narrativa.',
+    keyQuestions: [],
+    relevantAuthors: ['John Walton', 'Robert Alter', 'Graeme Goldsworthy'],
+    cards: [
+      card('nr_ctx_hist_main', 'Contexto Histórico',
+        'Descreva o contexto histórico-cultural da narrativa.\n\nOrientações:\n→ Que período? Data aproximada dos eventos?\n→ Qual o cenário geopolítico — que nações, reis, conflitos são relevantes?\n→ Que costumes, valores ou instituições são refletidos no texto?\n→ Que tensões históricas moldam a situação dos personagens?\n→ Como esse contexto ilumina escolhas, reações ou conflitos na narrativa?',
+        'Descreva o contexto histórico-cultural desta narrativa: período, cenário geopolítico, costumes relevantes e como esse ambiente molda os personagens e eventos.'),
+      card('nr_ctx_lit_main', 'Contexto Literário',
+        'Situe a narrativa dentro do livro e do cânone.\n\nOrientações:\n→ Onde esta perícope está no livro — início, meio, clímax, conclusão?\n→ Que narrativas a precedem e sucedem? Como se conectam?\n→ Que temas ou motivos do livro maior aparecem aqui?\n→ Como este episódio avança a narrativa do livro como um todo?\n→ Que paralelismos ou contrastes há com outras perícopes do mesmo livro?',
+        'Situe esta narrativa dentro do livro: onde aparece na estrutura maior, como se conecta às perícopes vizinhas e que temas do livro ela desenvolve.'),
+      card('nr_ctx_can_main', 'Contexto Canônico',
+        'Descreva as conexões desta narrativa com o restante do cânone.\n\nOrientações:\n→ Que textos do AT ou NT iluminam esta história?\n→ Há paralelos, ecos ou tipologias com outras narrativas?\n→ Que promessas da aliança aparecem ou são avançadas?\n→ Como esta história aponta para a redenção e para Cristo?\n→ Que lugar esta perícope ocupa no arco da história da redenção?',
+        'Descreva as conexões canônicas desta narrativa: textos que a iluminam, ecos e tipologias, promessas da aliança e como ela se encaixa na história da redenção.'),
+    ],
+  },
+
+  {
+    slug: 'nr_estudo_textual',
+    title: 'Estudo Textual',
+    shortTitle: 'Textual',
+    module: 'inventio',
+    group: 'nr_textual_grp',
+    groupLabel: 'Estudo Textual',
+    order: 719,
+    objective: 'Examinar o texto original, a estrutura, as observações exegéticas e a mensagem para os primeiros ouvintes.',
+    keyQuestions: [],
+    relevantAuthors: ['Robert Alter', 'Meir Sternberg', 'Shimon Bar-Efrat', 'Sidney Greidanus'],
+    cards: [
+      card('nr_txt_orig_main', 'Texto Original',
+        'Cole o texto em hebraico ou grego e sua tradução, e delimite a perícope.\n\nOrientações:\n→ Onde começa e termina a unidade literária? Justifique os limites.\n→ Que divisão textual você utiliza (BHS, NA28, LXX)?\n→ Há variantes textuais relevantes?\n→ Que tradução(ões) você usará como base para o trabalho?',
+        'Delimite a perícope justificando os limites, apresente o texto original e a tradução de trabalho, e note variantes textuais relevantes.'),
+      card('nr_txt_struct_main', 'Estrutura do Texto',
+        'Esboce a estrutura da narrativa e descreva seu movimento interno.\n\nOrientações:\n→ Quais são as cenas ou episódios identificáveis?\n→ Há padrões literários — inclusio, quiasmo, paralelismo, repetição?\n→ Como o texto se move: exposição → complicação → clímax → resolução?\n→ Onde está o ponto de maior tensão ou virada?\n→ O movimento estrutural apoia o significado teológico?',
+        'Esboce a estrutura da narrativa, identifique as cenas, descreva o movimento da tensão e note padrões literários como inclusio, quiasmo ou repetição.'),
+      card('nr_txt_exeg_main', 'Observações Exegéticas',
+        'Registre as observações exegéticas mais significativas do texto.\n\nOrientações:\n→ Que personagens, lugares, tempos ou objetos merecem atenção?\n→ Como o narrador usa onisciência, ponto de vista e distância narrativa?\n→ Que diálogos ou discursos revelam caráter, conflito ou teologia?\n→ Que silêncios ou omissões são significativos?\n→ Que palavras ou imagens se repetem — e o que essa repetição sugere?',
+        'Registre as principais observações exegéticas: uso do narrador, personagens, diálogos, silêncios e repetições — o que cada detalhe contribui para o significado.'),
+      card('nr_txt_msg_main', 'Mensagem para os Primeiros Ouvintes',
+        'Qual foi a mensagem desta narrativa para seus primeiros ouvintes?\n\nOrientações:\n→ Que situação pastoral ou histórica de Israel/da comunidade esta história endereçava?\n→ Que resposta o autor buscava provocar — fé, arrependimento, esperança, obediência, identidade?\n→ Que verdades sobre Deus, o homem ou a aliança eram cruciais para aquele contexto?\n→ Como a forma narrativa (em vez de lei ou profecia) era especialmente adequada para essa mensagem?',
+        'Qual foi a mensagem desta narrativa para seus primeiros ouvintes? Que situação ela endereçava, que resposta convocava e por que a forma narrativa era o meio ideal?'),
+    ],
+  },
+
+  {
+    slug: 'nr_estudo_teologico',
+    title: 'Estudo Teológico',
+    shortTitle: 'Teológico',
+    module: 'inventio',
+    group: 'nr_teologico_grp',
+    groupLabel: 'Estudo Teológico',
+    order: 729,
+    objective: 'Situar a narrativa na história da redenção, identificar doutrinas e implicações para a vida cristã.',
+    keyQuestions: [],
+    relevantAuthors: ['Graeme Goldsworthy', 'Sidney Greidanus', 'Bryan Chapell', 'John Frame'],
+    cards: [
+      card('nr_teo_redentor_main', 'Relação com a História da Redenção',
+        'Como esta narrativa se encaixa e avança a história da redenção?\n\nOrientações:\n→ Que época da história redentora (criação, queda, patriarcas, êxodo, monarquia, exílio, retorno)?\n→ Como Deus age aqui — promessa, cumprimento, julgamento, graça, providência?\n→ Há tipologia explícita ou implícita — pessoas, eventos ou instituições que apontam para Cristo?\n→ Como esta história avança o fio da aliança desde Gênesis 3.15?\n→ Que elos canônicos (Hebreus, NT, Salmos) iluminam a tipologia?',
+        'Como esta narrativa se encaixa na história da redenção? Que época representa, como Deus age, que tipologias aponta para Cristo e como avança a aliança?'),
+      card('nr_teo_doc_main', 'Doutrinas Ensinadas',
+        'Que doutrinas teológicas emergem desta narrativa?\n\nOrientações:\n→ O que o texto ensina sobre Deus, o homem, a salvação, a aliança, a lei, a graça?\n→ Essas verdades são ensinadas explicitamente (declarações) ou implicitamente (pela forma da história)?\n→ Como a experiência dos personagens ilustra, exemplifica ou problematiza essas doutrinas?\n→ Que erros doutrinários esta narrativa corrige ou previne?',
+        'Que doutrinas emergem desta narrativa — ensinadas explicitamente ou pela forma da história? Como os personagens as ilustram, e que erros teológicos a narrativa corrige?'),
+      card('nr_teo_impl_main', 'Implicações para a Vida',
+        'Quais são as implicações desta narrativa para a vida cristã?\n\nOrientações:\n→ Como ela chama à fé, ao arrependimento, à obediência ou à esperança?\n→ Que padrões de vida ela afirma ou condena?\n→ Que verdades sobre Deus confortam, desafiam ou reorientam o povo de Deus hoje?\n→ Como a tipologia cristológica molda a aplicação para o povo do novo pacto?\n→ Que perigo aplicacional (moralismo, exemplarismo) esta narrativa exige evitar?',
+        'Quais são as implicações desta narrativa para a vida cristã? Que chamado ela convoca, que padrões afirma ou condena, e como a tipologia cristológica molda a aplicação?'),
+    ],
+  },
+
+  {
+    slug: 'nr_investigar_vg',
+    title: 'Visão Geral da Investigação',
+    shortTitle: 'Visão Geral',
+    module: 'inventio',
+    group: 'nr_ivg_grp',
+    groupLabel: 'Visão Geral da Investigação',
+    order: 739,
+    objective: 'Sintetizar os achados da investigação: grande ideia, verdades centrais e aplicações pastorais.',
+    keyQuestions: [],
+    relevantAuthors: ['Haddon Robinson', 'Bryan Chapell', 'Sidney Greidanus'],
+    cards: [
+      card('nr_ivg_ideia_main', 'Grande Ideia',
+        'Formule a grande ideia desta narrativa.\n\nA grande ideia tem dois componentes:\n→ Sujeito: do que a narrativa fala?\n→ Predicado: o que a narrativa afirma sobre esse sujeito?\n\nCritérios:\n→ Emerge da narrativa — não imposta sobre ela\n→ Integra a mensagem histórica e a verdade atemporal\n→ É formulada como afirmação (não como pergunta)\n→ Pode guiar tanto a exposição quanto a pregação',
+        'Formule a grande ideia desta narrativa: sujeito (do que fala) + predicado (o que afirma). Deve emergir do texto e integrar mensagem histórica e verdade atemporal.'),
+      card('nr_ivg_verd_main', 'Verdades Centrais',
+        'Liste as 2-3 verdades centrais que a narrativa ensina.\n\nCritérios para cada verdade:\n→ Derivada diretamente do texto, não de paralelos externos\n→ Ensinada pela forma narrativa (não apenas por declarações do narrador)\n→ Atemporal, mas articulada historicamente\n→ Confirmada por paralelos canônicos\n→ Distinta — não repetição da grande ideia em outras palavras',
+        'Liste as 2-3 verdades centrais desta narrativa: cada uma deve emergir do texto, ser ensinada pela forma narrativa, ser atemporal e ser confirmada pelo cânone.'),
+      card('nr_ivg_aplic_main', 'Aplicações Principais',
+        'Desenvolva as aplicações pastorais principais desta narrativa.\n\nOrientações:\n→ Que chamado à ação, à fé ou à reflexão o texto convoca?\n→ Como as aplicações fluem das verdades identificadas (não de moralismos da história)?\n→ Que grupos de ouvintes são especialmente endereçados?\n→ Como a tipologia cristológica molda a aplicação para o povo do novo pacto?\n→ Que perigo aplicacional (moralismo, exemplarismo) esta narrativa exige evitar?',
+        'Desenvolva as principais aplicações pastorais: devem fluir das verdades centrais, não de moralismos da história, e ser moldadas pela tipologia cristológica.'),
+    ],
+  },
+
+  // ── Investigar: Seções individuais (legado — arquivadas) ─────────────────
 
   {
     slug: 'nr_ctx_historico',
     title: 'Contexto Histórico',
     shortTitle: 'Contexto Histórico',
     module: 'inventio',
-    group: 'nr_contextual_grp',
+    group: 'nr_contextual_legado',
     groupLabel: 'Estudo Contextual',
     order: 710,
     objective:
@@ -235,7 +336,7 @@ export const ESTUDO_NARRATIVAS_SECTIONS: SectionDef[] = [
     title: 'Contexto Literário',
     shortTitle: 'Contexto Literário',
     module: 'inventio',
-    group: 'nr_contextual_grp',
+    group: 'nr_contextual_legado',
     groupLabel: 'Estudo Contextual',
     order: 711,
     objective:
@@ -259,7 +360,7 @@ export const ESTUDO_NARRATIVAS_SECTIONS: SectionDef[] = [
     title: 'Contexto Canônico',
     shortTitle: 'Contexto Canônico',
     module: 'inventio',
-    group: 'nr_contextual_grp',
+    group: 'nr_contextual_legado',
     groupLabel: 'Estudo Contextual',
     order: 712,
     objective:
@@ -285,7 +386,7 @@ export const ESTUDO_NARRATIVAS_SECTIONS: SectionDef[] = [
     title: 'Texto Original',
     shortTitle: 'Texto Original',
     module: 'inventio',
-    group: 'nr_textual_grp',
+    group: 'nr_textual_legado',
     groupLabel: 'Estudo Textual',
     order: 720,
     objective:
@@ -308,7 +409,7 @@ export const ESTUDO_NARRATIVAS_SECTIONS: SectionDef[] = [
     title: 'Estrutura do Texto',
     shortTitle: 'Estrutura do Texto',
     module: 'inventio',
-    group: 'nr_textual_grp',
+    group: 'nr_textual_legado',
     groupLabel: 'Estudo Textual',
     order: 721,
     objective:
@@ -332,7 +433,7 @@ export const ESTUDO_NARRATIVAS_SECTIONS: SectionDef[] = [
     title: 'Observações Exegéticas',
     shortTitle: 'Exegese',
     module: 'inventio',
-    group: 'nr_textual_grp',
+    group: 'nr_textual_legado',
     groupLabel: 'Estudo Textual',
     order: 722,
     objective:
@@ -357,7 +458,7 @@ export const ESTUDO_NARRATIVAS_SECTIONS: SectionDef[] = [
     title: 'Mensagem para os Primeiros Ouvintes',
     shortTitle: 'Mensagem Original',
     module: 'inventio',
-    group: 'nr_textual_grp',
+    group: 'nr_textual_legado',
     groupLabel: 'Estudo Textual',
     order: 723,
     objective:
@@ -383,7 +484,7 @@ export const ESTUDO_NARRATIVAS_SECTIONS: SectionDef[] = [
     title: 'Relação com a História da Redenção',
     shortTitle: 'História da Redenção',
     module: 'inventio',
-    group: 'nr_teologico_grp',
+    group: 'nr_teologico_legado',
     groupLabel: 'Estudo Teológico',
     order: 730,
     objective:
@@ -407,7 +508,7 @@ export const ESTUDO_NARRATIVAS_SECTIONS: SectionDef[] = [
     title: 'Doutrinas Ensinadas',
     shortTitle: 'Doutrinas',
     module: 'inventio',
-    group: 'nr_teologico_grp',
+    group: 'nr_teologico_legado',
     groupLabel: 'Estudo Teológico',
     order: 731,
     objective:
@@ -431,7 +532,7 @@ export const ESTUDO_NARRATIVAS_SECTIONS: SectionDef[] = [
     title: 'Implicações para a Vida',
     shortTitle: 'Implicações',
     module: 'inventio',
-    group: 'nr_teologico_grp',
+    group: 'nr_teologico_legado',
     groupLabel: 'Estudo Teológico',
     order: 732,
     objective:
@@ -457,7 +558,7 @@ export const ESTUDO_NARRATIVAS_SECTIONS: SectionDef[] = [
     title: 'Grande Ideia',
     shortTitle: 'Grande Ideia',
     module: 'inventio',
-    group: 'nr_ivg_grp',
+    group: 'nr_ivg_legado',
     groupLabel: 'Visão Geral da Investigação',
     order: 740,
     objective:
@@ -480,7 +581,7 @@ export const ESTUDO_NARRATIVAS_SECTIONS: SectionDef[] = [
     title: 'Verdades Centrais',
     shortTitle: 'Verdades',
     module: 'inventio',
-    group: 'nr_ivg_grp',
+    group: 'nr_ivg_legado',
     groupLabel: 'Visão Geral da Investigação',
     order: 741,
     objective:
@@ -503,7 +604,7 @@ export const ESTUDO_NARRATIVAS_SECTIONS: SectionDef[] = [
     title: 'Aplicações Principais',
     shortTitle: 'Aplicações',
     module: 'inventio',
-    group: 'nr_ivg_grp',
+    group: 'nr_ivg_legado',
     groupLabel: 'Visão Geral da Investigação',
     order: 742,
     objective:
