@@ -96,52 +96,20 @@ export const NAV_BASE: SectionNav[] = [
     "order": -20,
     "cards": [
       {
+        "id": "preparar_grande_ideia_inicial",
+        "title": "Grande ideia"
+      },
+      {
         "id": "preparar_tema_provavel",
         "title": "Tema refinado"
       },
       {
-        "id": "preparar_grande_ideia_inicial",
-        "title": "Grande ideia refinada"
-      },
-      {
-        "id": "preparar_estrutura_percebida",
-        "title": "Estrutura refinada"
-      },
-      {
-        "id": "preparar_personagens",
-        "title": "Personagens"
-      },
-      {
-        "id": "investigar_vg_lugares",
-        "title": "Lugares"
-      },
-      {
-        "id": "investigar_vg_termos_chave",
-        "title": "Termos-chave"
-      },
-      {
-        "id": "investigar_vg_estrutura_lit",
-        "title": "Estrutura literária"
-      },
-      {
-        "id": "preparar_movimento_narrativo",
-        "title": "Movimento narrativo"
-      },
-      {
-        "id": "preparar_fluxo_argumentativo",
-        "title": "Fluxo argumentativo"
-      },
-      {
-        "id": "preparar_climax",
-        "title": "Clímax"
-      },
-      {
         "id": "investigar_vg_temas_teol",
-        "title": "Temas teológicos"
+        "title": "Verdades centrais"
       },
       {
         "id": "investigar_vg_conexoes",
-        "title": "Conexões canônicas"
+        "title": "Aplicações e conexões"
       }
     ]
   },
