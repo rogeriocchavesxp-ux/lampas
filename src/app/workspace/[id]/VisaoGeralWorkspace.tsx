@@ -11,6 +11,7 @@ import { loadClassificationsFromDB, saveClassificationToDB, deleteClassification
 import MarkdownRenderer from '@/components/MarkdownRenderer'
 import RichEditor from '@/components/RichEditorLazy'
 import ReadingPopup from '@/components/ReadingPopup'
+import WorkspaceDocumentRenderer from './WorkspaceDocumentRenderer'
 import HelpIcon from '@/components/help/HelpIcon'
 import { HELP_CONTENT } from '@/lib/help-content'
 import { getSectionNavBySlug, getSectionsByGroupNav } from '@/lib/workspace-sections-nav'
@@ -184,6 +185,9 @@ export default function VisaoGeralWorkspace({
   const [wrapW,        setWrapW]       = useState(CW)
   const [cardDraft,    setCardDraft]   = useState<Record<string, string>>({})
   const [savingCard,   setSavingCard]  = useState<string | null>(null)
+  const [localCards,   setLocalCards]  = useState<Record<string, string>>({})
+  const [vgSavedAt,    setVgSavedAt]   = useState<Date | null>(null)
+  const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const [itemMenuState,setItemMenuState] = useState<{ id: string; x: number; y: number } | null>(null)
   const [aiLoading,    setAiLoading]   = useState<string | null>(null)      // cls id
   const [aiResults,    setAiResults]   = useState<Record<string, string>>({}) // cls id → text
@@ -356,6 +360,41 @@ export default function VisaoGeralWorkspace({
     () => (existingSection?.content as { cards?: Record<string, string> } | null)?.cards ?? {},
     [existingSection],
   )
+
+  // Sync localCards from DB when section loads/changes
+  useEffect(() => {
+    setLocalCards(cards)
+  }, [existingSection?.id]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  const handleBlockChange = useCallback((cardId: string, html: string) => {
+    setLocalCards(prev => ({ ...prev, [cardId]: html }))
+    if (saveTimerRef.current) clearTimeout(saveTimerRef.current)
+    saveTimerRef.current = setTimeout(async () => {
+      setSavingCard(cardId)
+      try {
+        const supabaseClient = createClient()
+        const { data } = await supabaseClient.from('sections').select()
+          .eq('project_id', project.id).eq('slug', sectionDef.slug).maybeSingle()
+        const prev     = (data?.content as { cards?: Record<string, string> } | null)?.cards ?? {}
+        const allCards = { ...prev, [cardId]: html }
+        const hasContent = Object.values(allCards).some(v => v.trim().length > 0)
+        const allFilled  = sectionDef.cards.length > 0 &&
+          sectionDef.cards.every(c => (allCards[c.id] ?? '').trim().length > 0)
+        const payload = {
+          project_id: project.id, user_id: userId, slug: sectionDef.slug,
+          module: 'inventio' as const, title: sectionDef.title,
+          status: (allFilled ? 'reviewed' : hasContent ? 'draft' : 'empty') as 'empty' | 'draft' | 'reviewed',
+          content: { cards: allCards },
+        }
+        const op = data?.id
+          ? supabaseClient.from('sections').update(payload).eq('id', data.id).select().single()
+          : supabaseClient.from('sections').insert(payload).select().single()
+        const { data: updated } = await op
+        if (updated) { onUpdate(updated as Section); setVgSavedAt(new Date()) }
+      } catch { /* noop */ }
+      finally { setSavingCard(null) }
+    }, 1000)
+  }, [project.id, userId, sectionDef, onUpdate])
 
   const obsContent = useMemo(() => {
     const entries: Array<{ label: string; value: string }> = []
@@ -993,40 +1032,45 @@ export default function VisaoGeralWorkspace({
   // ── Render ─────────────────────────────────────────────────────────────────
   return (
     <>
-    <div style={{ flex: 1, background: viewMode === 'structured' ? '#ECEEF1' : undefined, padding: viewMode === 'structured' ? '2.5rem 2rem 8rem' : '1.25rem 1.5rem 2rem', opacity: mounted ? 1 : 0, transition: 'opacity 0.25s ease', fontFamily: 'var(--font-sans)' }}>
-    <div style={{ maxWidth: viewMode === 'structured' ? '680px' : undefined, margin: viewMode === 'structured' ? '0 auto' : undefined, background: viewMode === 'structured' ? '#ffffff' : undefined, boxShadow: viewMode === 'structured' ? '0 1px 3px rgba(0,0,0,0.06), 0 6px 24px rgba(0,0,0,0.07)' : undefined, borderRadius: viewMode === 'structured' ? '2px' : undefined, padding: viewMode === 'structured' ? '4rem 5rem' : undefined, minHeight: 'calc(100vh - 160px)' }}>
-
-      {/* ── Document header ─────────────────────────────────────────────────── */}
-      <div style={{ paddingBottom: '2.5rem' }}>
-        <div style={{ width: '28px', height: '3px', borderRadius: '2px', background: PHASE_COLOR[phase], marginBottom: '1.1rem' }} />
-        <h1 style={{ margin: 0, fontSize: '2.5rem', fontWeight: 700, letterSpacing: '-0.045em', lineHeight: 1.0 }}>
-          {project.title}
-        </h1>
-        <p style={{ margin: '0.6rem 0 0', fontSize: '0.8rem', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-          <span>{PHASE_LABEL[phase]}</span>
-          {project.bible_version && (<><span style={{ opacity: 0.4 }}>·</span><span>{project.bible_version}</span></>)}
-          {project.original_language && (<><span style={{ opacity: 0.4 }}>·</span><span>{project.original_language}</span></>)}
-        </p>
-        <div style={{ margin: '1.75rem 0 0', height: '1px', background: 'var(--border-subtle)' }} />
-      </div>
-
-      {/* ── Chapter heading ─────────────────────────────────────────────────── */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', marginBottom: '1.25rem' }}>
-        <h2 style={{ flex: 1, margin: 0, fontSize: '1.4rem', fontWeight: 800, letterSpacing: '-0.02em' }}>Visão Geral</h2>
-        {viewMode === 'visual' && activePanel && (
-          <button onClick={() => setActivePanel(null)}
-            style={{ display: 'flex', alignItems: 'center', gap: '4px', background: 'transparent', border: '1px solid var(--border)', borderRadius: '7px', padding: '5px 10px', fontSize: '0.7rem', color: 'var(--text-muted)', cursor: 'pointer', fontFamily: 'inherit' }}
-          >
-            <X size={11} /> Fechar painel
-          </button>
-        )}
-        {viewMode === 'visual' && (
-          <div style={{ fontSize: '0.71rem', color: 'var(--text-muted)' }}>
+    {viewMode === 'structured' ? (
+      <WorkspaceDocumentRenderer
+        project={project}
+        phase={phase}
+        phaseLabel={PHASE_LABEL[phase]}
+        moduleColor={PHASE_COLOR[phase]}
+        sectionSlug={sectionDef.slug}
+        sectionTitle={sectionDef.shortTitle ?? sectionDef.title}
+        sectionObjective={sectionDef.objective}
+        blocks={sectionDef.cards.map(c => ({ id: c.id, title: c.title, placeholder: c.placeholder ?? '' }))}
+        blockContent={localCards}
+        onBlockChange={handleBlockChange}
+        userId={userId}
+        saving={savingCard !== null}
+        savedAt={vgSavedAt}
+      />
+    ) : (
+    <div style={{ padding: '1.25rem 1.5rem 2rem', opacity: mounted ? 1 : 0, transition: 'opacity 0.25s ease' }}>
+      {/* ── Compact header (visual/map mode) ──────────────────────────────────── */}
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1.1rem', gap: '0.75rem', flexWrap: 'wrap' }}>
+        <div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            <div style={{ fontSize: '0.87rem', fontWeight: 700, color: 'var(--text-primary)', letterSpacing: '-0.01em' }}>Visão Geral</div>
+            <span style={{ fontSize: '0.63rem', fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase', color: PHASE_COLOR[phase], background: PHASE_COLOR[phase] + '15', border: `1px solid ${PHASE_COLOR[phase]}30`, padding: '2px 7px', borderRadius: '999px' }}>{PHASE_LABEL[phase]}</span>
+          </div>
+          <div style={{ fontSize: '0.71rem', color: 'var(--text-muted)', marginTop: '2px' }}>{isPassageMode ? `${project.book} ${project.passage_ref}` : project.passage_ref}</div>
+          <div style={{ fontSize: '0.71rem', color: 'var(--text-muted)', marginTop: '2px', lineHeight: 1.4 }}>
             {totalItems === 0
               ? <span style={{ color: '#B45309' }}>Marque palavras no Texto Bíblico para construir o mapa.</span>
-              : `${totalItems} elemento${totalItems !== 1 ? 's' : ''} mapeado${totalItems !== 1 ? 's' : ''}.`}
+              : `${totalItems} elemento${totalItems !== 1 ? 's' : ''} mapeado${totalItems !== 1 ? 's' : ''}${activePanel ? ' — clique fora para fechar o painel' : ' — clique em um nó para explorar'}.`}
           </div>
-        )}
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+          {activePanel && (
+            <button onClick={() => setActivePanel(null)} style={{ display: 'flex', alignItems: 'center', gap: '4px', background: 'transparent', border: '1px solid var(--border)', borderRadius: '7px', padding: '5px 10px', fontSize: '0.7rem', color: 'var(--text-muted)', cursor: 'pointer', fontFamily: 'inherit' }}>
+              <X size={11} /> Fechar painel
+            </button>
+          )}
+        </div>
       </div>
 
       {viewMode === 'visual' && isLayeredSermon && (
@@ -1158,9 +1202,9 @@ export default function VisaoGeralWorkspace({
         </div>
       )}
 
-      {/* ── Structured ─────────────────────────────────────────────────────── */}
-      {viewMode === 'structured' && (
-        <div style={{ background: 'var(--surface)', border: '1px solid var(--border-subtle)', borderRadius: '12px', overflow: 'hidden' }}>
+      {/* ── Structured view was replaced by WorkspaceDocumentRenderer above ── */}
+      {false && (
+        <div>
           {/* Root node */}
           <div style={{ padding: '0.8rem 1.1rem', borderBottom: '1px solid var(--border-subtle)', display: 'flex', alignItems: 'baseline', gap: '0.55rem', background: 'var(--surface-2, #F8FAFC)' }}>
             <span style={{ fontSize: '0.92rem', fontWeight: 700, color: 'var(--text-primary)' }}>{centerTitle}</span>
@@ -3102,7 +3146,7 @@ export default function VisaoGeralWorkspace({
         )
       })()}
     </div>
-    </div>
+    )}
 
     {/* ── Floating Node Windows ───────────────────────────────────────── */}
     {floatingWindows.map(win => (
