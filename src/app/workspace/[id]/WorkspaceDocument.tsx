@@ -232,6 +232,114 @@ const CHAPTER_META: Record<string, {
       nr_ivg_aplic_main: 'Desenvolva aplicações que fluem das verdades centrais, não de moralismos, moldadas pela tipologia cristológica.',
     },
   },
+  et_definicao: {
+    title: 'Definição do Tema',
+    intro: 'Delimite com precisão o tema teológico investigado — seu nome, campo semântico, questão orientadora e escopo canônico.',
+    editorHints: {
+      nome_tema:            'Identifique o tema e seu campo semântico...',
+      questao_orientadora:  'Formule a questão central que orienta o estudo...',
+      delimitacao:          'Defina o escopo: o que está incluído e excluído...',
+    },
+    placeholders: {
+      nome_tema:            'Identifique o tema, seus termos hebraicos e gregos principais, e o campo semântico completo.',
+      questao_orientadora:  'Formule a questão teológica central que este estudo busca responder. Deve ser precisa e orientar toda a investigação canônica.',
+      delimitacao:          'Qual é o escopo do estudo? Quais subtemas serão incluídos ou excluídos? Por quê?',
+    },
+  },
+  et_ocorrencias: {
+    title: 'Ocorrências Bíblicas',
+    intro: 'Mapeie as ocorrências do tema em todo o cânone, identificando sua distribuição nos Testamentos e as passagens centrais para a investigação.',
+    editorHints: {
+      ocorrencias_at:      'Liste as principais ocorrências no AT por livro ou período...',
+      ocorrencias_nt:      'Liste as principais ocorrências no NT por autor e livro...',
+      passagens_centrais:  'Identifique os loci classici — textos incontornáveis...',
+      frequencia:          'Analise a distribuição: concentração, gênero, período...',
+    },
+    placeholders: {
+      ocorrencias_at:      'Liste as ocorrências principais do tema no Antigo Testamento, organizadas por livro ou período. Quais textos são mais relevantes?',
+      ocorrencias_nt:      'Liste as ocorrências principais do tema no Novo Testamento. Como o NT desenvolve e cumpre o ensino do AT sobre este tema?',
+      passagens_centrais:  'Identifique os textos que mais concentram o ensino sobre o tema — os loci classici que qualquer investigação séria deve abordar.',
+      frequencia:          'Analise a distribuição do tema: está concentrado em algum período, gênero literário ou autor bíblico? O que isso revela sobre a progressão da revelação?',
+    },
+  },
+  et_desenvolvimento: {
+    title: 'Desenvolvimento Progressivo',
+    intro: 'Rastreie o desenvolvimento do tema ao longo do cânone, do Pentateuco ao Apocalipse, identificando a progressão da revelação em cada período.',
+    editorHints: {
+      pentateuco:          'Como o tema aparece no Pentateuco?',
+      historicos_profetas: 'Desenvolvimento nos livros históricos e nos Profetas...',
+      sabedoria:           'Contribuição da literatura sapiencial e poética...',
+      evangelhos:          'Como os Evangelhos apresentam Jesus como cumprimento...',
+      epistolas:           'Desenvolvimento nas cartas apostólicas...',
+      cumprimento:         'O horizonte final no Apocalipse...',
+    },
+    placeholders: {
+      pentateuco:          'Como o tema aparece no Pentateuco? Quais eventos e textos de Gênesis ao Deuteronômio são determinantes para o seu desenvolvimento?',
+      historicos_profetas: 'Como o tema se desenvolve nos livros históricos (Josué ao Ester) e nos Profetas Maiores e Menores?',
+      sabedoria:           'Qual é a contribuição da literatura sapiencial e poética (Salmos, Provérbios, Jó, Eclesiastes) para o tema?',
+      evangelhos:          'Como os Evangelhos apresentam Jesus como cumprimento ou desenvolvimento do tema? Quais ensinamentos, parábolas ou eventos são decisivos?',
+      epistolas:           'Como as cartas paulinas, Pedro, João, Tiago, Judas e Hebreus desenvolvem o tema para a Igreja?',
+      cumprimento:         'Como o Apocalipse e a escatologia neotestamentária representam o horizonte final e o cumprimento pleno do tema?',
+    },
+  },
+  et_teologia_biblica: {
+    title: 'Teologia Bíblica do Tema',
+    intro: 'Sintetize o fio condutor do tema ao longo de toda a Escritura, identificando a progressão da revelação, o centro cristológico e a unidade dos Testamentos.',
+    editorHints: {
+      fio_condutor:          'Qual é o fio narrativo e teológico que une as ocorrências...',
+      progressao_revelacao:  'Como a revelação progressiva aprofunda o tema...',
+      centro_cristologico:   'Como Cristo é o centro e cumprimento do tema...',
+      unidade_testamentos:   'Como AT e NT formam uma unidade neste tema...',
+    },
+    placeholders: {
+      fio_condutor:          'Qual é o fio narrativo e teológico que une as ocorrências do tema ao longo de todo o cânone? Como ele se mantém coerente da criação à consumação?',
+      progressao_revelacao:  'Como a revelação progressiva de Deus aprofunda, clarifica e expande a compreensão do tema ao longo dos séculos?',
+      centro_cristologico:   'Como Jesus Cristo é o centro e cumprimento do tema? Em que dimensões de sua pessoa e obra o tema encontra seu ápice?',
+      unidade_testamentos:   'Como AT e NT formam uma unidade no tratamento deste tema? Como o NT ilumina o AT e como o AT prepara o NT?',
+    },
+  },
+  et_relacao_cristo: {
+    title: 'Relação com Cristo',
+    intro: 'Analise como o tema se relaciona com Cristo por meio de tipologia, prefigurações e cumprimento redentor-histórico.',
+    editorHints: {
+      tipologia:               'Quais tipos e prefigurações apontam para Cristo...',
+      cumprimento_cristologico: 'Como Cristo cumpre o tema em sua pessoa e obra...',
+      aplicacao_redentor:      'Como o cumprimento se aplica à Igreja hoje...',
+    },
+    placeholders: {
+      tipologia:               'Quais tipos, sombras e prefigurações veterotestamentárias apontam para Cristo no desenvolvimento deste tema? Como funcionam como antecipações?',
+      cumprimento_cristologico: 'Como Jesus Cristo cumpre este tema em sua pessoa (encarnação), obra (vida, morte, ressurreição) e reinado (glorificação e parousia)?',
+      aplicacao_redentor:      'Como o cumprimento do tema em Cristo se aplica à Igreja — o povo do novo pacto que vive entre a primeira e a segunda vinda?',
+    },
+  },
+  et_implicacoes: {
+    title: 'Implicações Teológicas',
+    intro: 'Derive as principais implicações doutrinárias, éticas e missionais do tema para a reflexão teológica e a prática cristã.',
+    editorHints: {
+      doutrina_relacionada: 'Quais doutrinas sistemáticas são iluminadas por este tema...',
+      etica_crista:         'Que imperativos éticos nascem do indicativo teológico...',
+      missao:               'Como o tema informa a missão da Igreja...',
+    },
+    placeholders: {
+      doutrina_relacionada: 'Quais doutrinas da teologia sistemática são iluminadas, fundamentadas ou implicadas por este tema bíblico?',
+      etica_crista:         'Que imperativos éticos nascem do indicativo teológico deste tema? Como a verdade revelada transforma a conduta cristã?',
+      missao:               'Como este tema fundamenta, motiva ou orienta a missão da Igreja no mundo — o evangelismo, o discipulado e a expansão do reino?',
+    },
+  },
+  et_aplicacoes: {
+    title: 'Aplicações',
+    intro: 'Derive da investigação temática implicações pastorais, devocionais e missionais para a vida cristã e ministerial.',
+    editorHints: {
+      vida_crista: 'Como o tema alimenta a piedade pessoal e o crescimento na graça...',
+      eclesial:    'Implicações para o culto, a pregação e a vida eclesial...',
+      missional:   'Como o tema se conecta com a missão da Igreja...',
+    },
+    placeholders: {
+      vida_crista: 'Como este tema alimenta a piedade pessoal, a oração e o crescimento na graça?',
+      eclesial:    'Implicações para a vida da Igreja: culto, pregação, sacramentos, comunhão e disciplina.',
+      missional:   'Como este tema se conecta com a missão da Igreja, o evangelismo e a expansão do reino?',
+    },
+  },
   preparar_visao_geral: {
     title: 'O que o Texto Parece Dizer?',
     intro: 'Com base no seu primeiro contato, o que o texto parece comunicar? Registre suas impressões com honestidade — ainda é cedo para conclusões definitivas.',

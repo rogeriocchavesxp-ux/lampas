@@ -106,7 +106,9 @@ const PREPARAR_DOC_SLUGS = ['preparacao_espiritual', 'preparar_leia_assimile', '
 const INVESTIGAR_DOC_SLUGS = ['inv_estudo_contextual', 'inv_estudo_textual', 'inv_estudo_teologico', 'investigar_visao_geral']
 const NARRATIVAS_DOC_SLUGS    = ['nr_estudo_contextual', 'nr_estudo_textual', 'nr_estudo_teologico', 'nr_investigar_vg']
 const NARRATIVAS_PREPARAR_SLUGS = ['preparacao_espiritual', 'preparar_leia_assimile', 'nr_preparar_visao_geral']
-const ALL_DOC_SLUGS = [...PREPARAR_DOC_SLUGS, ...NARRATIVAS_PREPARAR_SLUGS, ...INVESTIGAR_DOC_SLUGS, ...NARRATIVAS_DOC_SLUGS]
+const TEMATICO_PREPARAR_SLUGS = ['et_definicao']
+const TEMATICO_DOC_SLUGS = ['et_ocorrencias', 'et_desenvolvimento', 'et_teologia_biblica', 'et_relacao_cristo', 'et_implicacoes', 'et_aplicacoes']
+const ALL_DOC_SLUGS = [...PREPARAR_DOC_SLUGS, ...NARRATIVAS_PREPARAR_SLUGS, ...INVESTIGAR_DOC_SLUGS, ...NARRATIVAS_DOC_SLUGS, ...TEMATICO_PREPARAR_SLUGS, ...TEMATICO_DOC_SLUGS]
 
 // ── Componente principal ────────────────────────────────────────────────────
 
@@ -1579,6 +1581,36 @@ export default function WorkspaceClient({ user, project, initialSections }: Prop
               <WorkspaceDocument
                 key="narrativas-preparar-doc"
                 blocks={NARRATIVAS_PREPARAR_SLUGS.map(slug => ({
+                  sectionDef: WORKSPACE_SECTIONS.find(s => s.slug === slug)!,
+                  existingSection: sections.find(s => s.slug === slug),
+                }))}
+                project={project}
+                userId={user.id}
+                onUpdate={handleSectionUpdate}
+                onAskAI={handleAskAI}
+                guided={(workModeMap[activePhase?.id ?? ''] ?? 'guided') === 'guided'}
+                initialSlug={activeSlug}
+                typeLabel={modeConfig.name}
+              />
+            ) : TEMATICO_DOC_SLUGS.includes(activeSlug) ? (
+              <WorkspaceDocument
+                key="tematico-doc"
+                blocks={TEMATICO_DOC_SLUGS.map(slug => ({
+                  sectionDef: WORKSPACE_SECTIONS.find(s => s.slug === slug)!,
+                  existingSection: sections.find(s => s.slug === slug),
+                }))}
+                project={project}
+                userId={user.id}
+                onUpdate={handleSectionUpdate}
+                onAskAI={handleAskAI}
+                guided={(workModeMap['investigar'] ?? 'free') === 'guided'}
+                initialSlug={activeSlug}
+                typeLabel="Estudo Temático"
+              />
+            ) : modeConfig.id === 'estudo_tematico' && TEMATICO_PREPARAR_SLUGS.includes(activeSlug) ? (
+              <WorkspaceDocument
+                key="tematico-preparar-doc"
+                blocks={TEMATICO_PREPARAR_SLUGS.map(slug => ({
                   sectionDef: WORKSPACE_SECTIONS.find(s => s.slug === slug)!,
                   existingSection: sections.find(s => s.slug === slug),
                 }))}
