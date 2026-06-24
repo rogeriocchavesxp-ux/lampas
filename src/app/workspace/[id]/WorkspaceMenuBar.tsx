@@ -125,7 +125,7 @@ export default function WorkspaceMenuBar({
         { label: 'Saída', header: true, separator: true },
         { label: 'Salvar',                shortcut: '⌘S', soon: true },
         { label: 'Imprimir',              shortcut: '⌘P', onClick: () => window.print() },
-        { label: 'Exportar PDF',          soon: true },
+        { label: 'Exportar PDF',          onClick: () => window.print() },
         { label: 'Exportar DOCX',         soon: true },
         { label: 'Exportar Slides',       soon: true },
         { label: 'Navegação', header: true, separator: true },
