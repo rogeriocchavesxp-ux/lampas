@@ -1,6 +1,7 @@
 'use client'
 
-import { useState, useEffect, useRef, useCallback } from 'react'
+import { useState, useEffect, useRef, useCallback, useMemo } from 'react'
+import type { Editor } from '@tiptap/core'
 import { createClient } from '@/lib/supabase/client'
 import type { Project, Section } from '@/types/database'
 import { SECTION_DOC_TEMPLATES } from '@/lib/section-doc-templates'
@@ -8,6 +9,7 @@ import type { SectionDef } from '@/lib/workspace-sections'
 import MarkdownRenderer from '@/components/MarkdownRenderer'
 import RichEditor from '@/components/RichEditorLazy'
 import ReadingPopup from '@/components/ReadingPopup'
+import AIAssistantPanel from '@/components/AIAssistantPanel'
 import { ChevronDown, ChevronUp, MoreHorizontal } from 'lucide-react'
 import ResearchGuidePanel from './ResearchGuidePanel'
 import CardHelpTooltip from './CardHelpTooltip'
@@ -15,6 +17,57 @@ import HelpIcon from '@/components/help/HelpIcon'
 import { getResearchGuide } from '@/lib/research-guides'
 import { getCardHelp } from '@/lib/card-help'
 import { HELP_CONTENT } from '@/lib/help-content'
+
+const HL_COLORS = [
+  { color: '#FEF3C7', label: 'Amarelo' },
+  { color: '#DBEAFE', label: 'Azul'    },
+  { color: '#DCFCE7', label: 'Verde'   },
+  { color: '#EDE9FE', label: 'Roxo'    },
+  { color: '#FFEDD5', label: 'Laranja' },
+  { color: '#FCE7F3', label: 'Rosa'    },
+]
+
+const TEXT_COLORS = [
+  { color: '#1E293B', label: 'Padrão'   },
+  { color: '#DC2626', label: 'Vermelho' },
+  { color: '#D97706', label: 'Âmbar'    },
+  { color: '#16A34A', label: 'Verde'    },
+  { color: '#2563EB', label: 'Azul'     },
+  { color: '#7C3AED', label: 'Roxo'     },
+  { color: '#0891B2', label: 'Ciano'    },
+  { color: '#64748B', label: 'Cinza'    },
+]
+
+function DocBtn({ active, onClick, title, children }: { active?: boolean; onClick: () => void; title?: string; children: React.ReactNode }) {
+  return (
+    <button type="button" onMouseDown={e => { e.preventDefault(); onClick() }} title={title}
+      style={{ background: active ? 'var(--surface-2)' : 'transparent', border: active ? '1px solid var(--border)' : '1px solid transparent', borderRadius: '5px', padding: '0.22rem 0.35rem', cursor: 'pointer', fontFamily: 'inherit', color: active ? 'var(--text-primary)' : 'var(--text-muted)', fontSize: '0.78rem', fontWeight: active ? 600 : 400, display: 'flex', alignItems: 'center', justifyContent: 'center', minWidth: '26px', transition: 'background 0.1s, color 0.1s' }}
+      onMouseEnter={e => { if (!active) e.currentTarget.style.background = 'var(--surface)' }}
+      onMouseLeave={e => { if (!active) e.currentTarget.style.background = 'transparent' }}
+    >{children}</button>
+  )
+}
+function DocSep() { return <span style={{ width: '1px', background: 'var(--border-subtle)', alignSelf: 'stretch', margin: '0 2px' }} /> }
+
+function extractCardsFromDocHtml(def: SectionDef, doc: string): Record<string, string> {
+  if (typeof DOMParser === 'undefined') return {}
+  const container = new DOMParser().parseFromString(`<div>${doc}</div>`, 'text/html').querySelector('div')
+  if (!container) return {}
+  const headings = Array.from(container.querySelectorAll('h2, h3'))
+  const result: Record<string, string> = {}
+  headings.forEach((heading, idx) => {
+    const card = def.cards[idx]
+    if (!card) return
+    const parts: string[] = []
+    let el = heading.nextElementSibling
+    while (el && !['H2', 'H3'].includes(el.tagName)) {
+      if (el.textContent?.trim()) parts.push(el.outerHTML)
+      el = el.nextElementSibling
+    }
+    if (parts.length > 0) result[card.id] = parts.join('')
+  })
+  return result
+}
 
 type CardState = 'idle' | 'generating' | 'saving' | 'saved'
 type WorkspaceCard = SectionDef['cards'][number]
@@ -186,11 +239,11 @@ export default function SectionWorkspace({
 
   const loadCards = useCallback((): Record<string, string> => {
     const stored = existingSection?.content as Record<string, unknown> | null
-    if (stored && typeof stored === 'object' && 'cards' in stored) {
-      return stored.cards as Record<string, string>
-    }
+    if (!stored) return {}
+    if ('cards' in stored) return stored.cards as Record<string, string>
+    if (stored.doc && typeof stored.doc === 'string') return extractCardsFromDocHtml(sectionDef, stored.doc)
     return {}
-  }, [existingSection])
+  }, [existingSection, sectionDef])
 
   const isPalestraConstruir = sectionDef.slug === 'palestra_construir'
   const isTabLayout        = !isPalestraConstruir
@@ -245,6 +298,19 @@ export default function SectionWorkspace({
   const [readingCard, setReadingCard]     = useState<string | null>(null)
   const [isDirty, setIsDirty]             = useState(false)
   const [previewMode, setPreviewMode]     = useState(false)
+
+  // ── Inline-doc toolbar state ─────────────────────────────────────────────
+  const [activeEditorKey, setActiveEditorKey] = useState<string | null>(null)
+  const [, forceToolbar] = useState(0)
+  const [hlOpen,    setHlOpen]    = useState(false)
+  const [colorOpen, setColorOpen] = useState(false)
+  const [linkOpen,  setLinkOpen]  = useState(false)
+  const [linkUrl,   setLinkUrl]   = useState('')
+  const [docAiOpen, setDocAiOpen] = useState(false)
+  const editorMapRef = useRef<Map<string, Editor>>(new Map())
+  const hlRef    = useRef<HTMLDivElement | null>(null)
+  const colorRef = useRef<HTMLDivElement | null>(null)
+  const linkRef  = useRef<HTMLDivElement | null>(null)
 
   const saveTimer    = useRef<ReturnType<typeof setTimeout> | null>(null)
   const latestContent = useRef(cardContent)
@@ -538,6 +604,145 @@ export default function SectionWorkspace({
     ? `salvo ${savedAt.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}`
     : ''
 
+  // ── Inline-doc: active editor + AI context ───────────────────────────────
+  const activeEditor = activeEditorKey ? (editorMapRef.current.get(activeEditorKey) ?? null) : null
+  const focusedCardId = activeEditorKey?.split(':')[1] ?? null
+  const focusedCard   = sectionDef.cards.find(c => c.id === focusedCardId) ?? null
+
+  useEffect(() => {
+    if (!activeEditor) return
+    const h = () => forceToolbar(n => n + 1)
+    activeEditor.on('transaction', h)
+    return () => { activeEditor.off('transaction', h) }
+  }, [activeEditor])
+
+  useEffect(() => {
+    function h(e: MouseEvent) {
+      if (hlRef.current && !hlRef.current.contains(e.target as Node)) setHlOpen(false)
+      if (colorRef.current && !colorRef.current.contains(e.target as Node)) setColorOpen(false)
+      if (linkRef.current && !linkRef.current.contains(e.target as Node)) setLinkOpen(false)
+    }
+    document.addEventListener('mousedown', h)
+    return () => document.removeEventListener('mousedown', h)
+  }, [])
+
+  const docAiContext = useMemo(() => {
+    if (!focusedCard) return undefined
+    return {
+      project: { id: project.id, book: project.book, passage_ref: project.passage_ref, testament: project.testament, original_language: project.original_language, study_mode: project.study_mode ?? undefined },
+      phase: sectionDef.phase,
+      phaseLabel: ({ preparar: 'Preparar', investigar: 'Investigar', comunicar: 'Pregar', ferramentas: 'Ferramentas' } as Record<string, string>)[sectionDef.phase ?? ''] ?? sectionDef.phase,
+      section: sectionDef.slug, sectionLabel: sectionDef.title,
+      field: focusedCard.id, fieldLabel: focusedCard.title,
+      userId,
+    }
+  }, [focusedCard, project, sectionDef, userId])
+
+  function applyLink() {
+    if (!activeEditor) return
+    const url = linkUrl.trim()
+    if (!url) { activeEditor.chain().focus().unsetLink().run(); setLinkOpen(false); return }
+    const href = /^https?:\/\//i.test(url) ? url : `https://${url}`
+    activeEditor.chain().focus().setLink({ href }).run()
+    setLinkOpen(false); setLinkUrl('')
+  }
+
+  function handleDocAiInsert(html: string) {
+    if (!activeEditor || !focusedCardId) return
+    activeEditor.chain().focus().insertContent(html).run()
+    scheduleAutosave(focusedCardId, activeEditor.getHTML())
+  }
+  function handleDocAiReplace(html: string) {
+    if (!activeEditor || !focusedCardId) return
+    activeEditor.chain().focus().setContent(html).run()
+    scheduleAutosave(focusedCardId, html)
+  }
+  function handleDocAiAppend(html: string) {
+    if (!activeEditor || !focusedCardId) return
+    const end = activeEditor.state.doc.content.size
+    activeEditor.chain().focus().setTextSelection(end).insertContent(html).run()
+    scheduleAutosave(focusedCardId, activeEditor.getHTML())
+  }
+
+  const ed = activeEditor
+
+  function renderInlineToolbar() {
+    return (
+      <div style={{ position: 'sticky', top: '37px', zIndex: 20, display: 'flex', alignItems: 'center', gap: '2px', flexWrap: 'wrap', padding: '0.28rem 0.45rem', background: 'var(--background)', borderTop: '1px solid rgba(0,0,0,0.06)', borderBottom: '1px solid rgba(0,0,0,0.08)', boxShadow: '0 2px 6px rgba(0,0,0,0.04)' }}>
+        {!ed ? (
+          <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)', padding: '0 0.25rem' }}>Clique em uma seção para escrever</span>
+        ) : (<>
+          <DocBtn active={ed.isActive('bold')}      onClick={() => ed.chain().focus().toggleBold().run()}      title="Negrito"><strong>B</strong></DocBtn>
+          <DocBtn active={ed.isActive('italic')}    onClick={() => ed.chain().focus().toggleItalic().run()}    title="Itálico"><em>I</em></DocBtn>
+          <DocBtn active={ed.isActive('underline')} onClick={() => ed.chain().focus().toggleUnderline().run()} title="Sublinhado"><u>U</u></DocBtn>
+          <DocBtn active={ed.isActive('strike')}    onClick={() => ed.chain().focus().toggleStrike().run()}    title="Tachado"><s>S</s></DocBtn>
+          <DocSep />
+          <div ref={colorRef} style={{ position: 'relative' }}>
+            <DocBtn active={colorOpen} onClick={() => { setColorOpen(o => !o); setHlOpen(false); setLinkOpen(false) }} title="Cor do texto">
+              <span style={{ display: 'inline-flex', flexDirection: 'column', alignItems: 'center', gap: '1px' }}>
+                <span style={{ fontSize: '0.75rem', fontWeight: 700, color: ed.getAttributes('textStyle').color ?? 'var(--text-primary)', lineHeight: 1 }}>A</span>
+                <span style={{ width: '12px', height: '3px', borderRadius: '1px', background: ed.getAttributes('textStyle').color ?? '#1E293B' }} />
+              </span>
+            </DocBtn>
+            {colorOpen && (
+              <div style={{ position: 'absolute', top: 'calc(100% + 4px)', left: 0, zIndex: 50, background: '#FFF', border: '1px solid var(--border)', borderRadius: '8px', padding: '0.4rem', display: 'flex', gap: '4px', flexWrap: 'wrap', width: '120px', boxShadow: '0 4px 16px rgba(0,0,0,0.08)' }}>
+                {TEXT_COLORS.map(c => <button key={c.color} type="button" title={c.label} onMouseDown={e => { e.preventDefault(); ed.chain().focus().setColor(c.color).run(); setColorOpen(false) }} style={{ width: '24px', height: '24px', borderRadius: '4px', border: '2px solid rgba(0,0,0,0.08)', background: c.color, cursor: 'pointer' }} />)}
+                <button type="button" title="Padrão" onMouseDown={e => { e.preventDefault(); ed.chain().focus().unsetColor().run(); setColorOpen(false) }} style={{ width: '24px', height: '24px', borderRadius: '4px', border: '1px solid var(--border)', background: 'transparent', cursor: 'pointer', fontSize: '0.6rem', color: 'var(--text-muted)' }}>✕</button>
+              </div>
+            )}
+          </div>
+          <div ref={hlRef} style={{ position: 'relative' }}>
+            <DocBtn active={hlOpen || ed.isActive('highlight')} onClick={() => { setHlOpen(o => !o); setColorOpen(false); setLinkOpen(false) }} title="Destaque">
+              <span style={{ display: 'inline-flex', alignItems: 'center', gap: '2px' }}>
+                <span style={{ width: '12px', height: '12px', borderRadius: '2px', background: ed.isActive('highlight') ? (ed.getAttributes('highlight').color ?? '#FEF3C7') : '#FEF3C7', border: '1px solid rgba(0,0,0,0.1)' }} />
+                <span style={{ fontSize: '0.6rem', color: 'var(--text-muted)' }}>▾</span>
+              </span>
+            </DocBtn>
+            {hlOpen && (
+              <div style={{ position: 'absolute', top: 'calc(100% + 4px)', left: 0, zIndex: 50, background: '#FFF', border: '1px solid var(--border)', borderRadius: '8px', padding: '0.35rem', display: 'flex', gap: '4px', flexWrap: 'wrap', width: '112px', boxShadow: '0 4px 16px rgba(0,0,0,0.08)' }}>
+                {HL_COLORS.map(h => <button key={h.color} type="button" title={h.label} onMouseDown={e => { e.preventDefault(); ed.chain().focus().toggleHighlight({ color: h.color }).run(); setHlOpen(false) }} style={{ width: '24px', height: '24px', borderRadius: '4px', border: '1px solid rgba(0,0,0,0.1)', background: h.color, cursor: 'pointer' }} />)}
+                <button type="button" title="Remover" onMouseDown={e => { e.preventDefault(); ed.chain().focus().unsetHighlight().run(); setHlOpen(false) }} style={{ width: '24px', height: '24px', borderRadius: '4px', border: '1px solid var(--border)', background: 'transparent', cursor: 'pointer', fontSize: '0.65rem', color: 'var(--text-muted)' }}>✕</button>
+              </div>
+            )}
+          </div>
+          <DocSep />
+          <DocBtn active={ed.isActive('bulletList')}  onClick={() => ed.chain().focus().toggleBulletList().run()}  title="Lista">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><line x1="9" y1="6" x2="20" y2="6"/><line x1="9" y1="12" x2="20" y2="12"/><line x1="9" y1="18" x2="20" y2="18"/><circle cx="4" cy="6" r="1.5" fill="currentColor"/><circle cx="4" cy="12" r="1.5" fill="currentColor"/><circle cx="4" cy="18" r="1.5" fill="currentColor"/></svg>
+          </DocBtn>
+          <DocBtn active={ed.isActive('orderedList')} onClick={() => ed.chain().focus().toggleOrderedList().run()} title="Numeração">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="10" y1="6" x2="21" y2="6"/><line x1="10" y1="12" x2="21" y2="12"/><line x1="10" y1="18" x2="21" y2="18"/><path d="M4 6h1v4" strokeLinecap="round"/><path d="M4 10h2" strokeLinecap="round"/><path d="M6 18H4c0-1 2-2 2-3s-1-1.5-2-1" strokeLinecap="round"/></svg>
+          </DocBtn>
+          <DocBtn active={ed.isActive('blockquote')} onClick={() => ed.chain().focus().toggleBlockquote().run()} title="Citação">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M3 21c3 0 7-1 7-8V5c0-1.25-.756-2.017-2-2H4c-1.25 0-2 .75-2 1.972V11c0 1.25.75 2 2 2 1 0 1 0 1 1v1c0 1-1 2-2 2s-1 .008-1 1.031V20c0 1 0 1 1 1z"/><path d="M15 21c3 0 7-1 7-8V5c0-1.25-.757-2.017-2-2h-4c-1.25 0-2 .75-2 1.972V11c0 1.25.75 2 2 2h.75c0 2.25.25 4-2.75 4v3c0 1 0 1 1 1z"/></svg>
+          </DocBtn>
+          <DocSep />
+          <div ref={linkRef} style={{ position: 'relative' }}>
+            <DocBtn active={ed.isActive('link') || linkOpen} onClick={() => { setLinkOpen(o => !o); setHlOpen(false); setColorOpen(false); if (!linkOpen) setLinkUrl(ed.getAttributes('link').href ?? '') }} title="Link">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+            </DocBtn>
+            {linkOpen && (
+              <div style={{ position: 'absolute', top: 'calc(100% + 4px)', left: 0, zIndex: 50, background: '#FFF', border: '1px solid var(--border)', borderRadius: '8px', padding: '0.5rem', width: '220px', boxShadow: '0 4px 16px rgba(0,0,0,0.1)', display: 'flex', gap: '4px' }}>
+                <input autoFocus value={linkUrl} onChange={e => setLinkUrl(e.target.value)} onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); applyLink() } if (e.key === 'Escape') setLinkOpen(false) }} placeholder="https://..." style={{ flex: 1, border: '1px solid var(--border)', borderRadius: '5px', padding: '4px 8px', fontSize: '0.75rem', outline: 'none', fontFamily: 'inherit' }} />
+                <button type="button" onMouseDown={e => { e.preventDefault(); applyLink() }} style={{ background: moduleColor, color: '#fff', border: 'none', borderRadius: '5px', padding: '4px 8px', fontSize: '0.72rem', fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>OK</button>
+              </div>
+            )}
+          </div>
+        </>)}
+      </div>
+    )
+  }
+
+  const inlineEditorStyles = `
+    .ws-inline-card .rich-editor > div:first-child { display: none !important; }
+    .ws-inline-card .rich-editor .ProseMirror {
+      border: none; border-radius: 0; background: transparent; box-shadow: none;
+      padding: 0.35rem 0 0.65rem; min-height: 60px;
+    }
+    .ws-inline-card .rich-editor .ProseMirror:focus { box-shadow: none; border: none; }
+    .ws-inline-card .rich-editor .ProseMirror p:first-child { margin-top: 0; }
+    .ws-inline-card .rich-editor { border: none !important; box-shadow: none !important; }
+  `
+
   return (
     <div style={{ maxWidth: '720px', margin: '0 auto', padding: '2rem clamp(1rem, 3vw, 2rem) 6rem', fontFamily: 'var(--font-sans)' }}>
 
@@ -689,21 +894,62 @@ export default function SectionWorkspace({
       {/* ── Content ────────────────────────────────────────────────────────── */}
       <div>
         {isDocMode ? (
-          <RichEditor
-            value={docContent}
-            onChange={scheduleAutosaveDoc}
-            moduleColor={moduleColor}
-            minHeight={560}
-            sticky
-            aiContext={{
-              project: { id: project.id, book: project.book, passage_ref: project.passage_ref, testament: project.testament, original_language: project.original_language, study_mode: project.study_mode ?? undefined },
-              phase: sectionDef.phase,
-              phaseLabel: ({ preparar: 'Preparar', investigar: 'Investigar', comunicar: 'Pregar', ferramentas: 'Ferramentas' } as Record<string, string>)[sectionDef.phase ?? ''] ?? sectionDef.phase,
-              section: sectionDef.slug,
-              sectionLabel: sectionDef.title,
-              userId,
-            }}
-          />
+          <>
+            <style>{inlineEditorStyles}</style>
+            {renderInlineToolbar()}
+            <div style={{ paddingTop: '0.25rem' }}>
+              {activeCards.map((card, cardIdx) => {
+                const content   = cardContent[card.id] ?? ''
+                const editorKey = `${sectionDef.slug}:${card.id}`
+                const state     = cardStates[card.id] ?? 'idle'
+                const isGenerating = state === 'generating'
+                const isFocused = activeEditorKey === editorKey
+
+                return (
+                  <div key={card.id} style={{ marginTop: cardIdx === 0 ? 0 : '1.5rem' }}>
+                    {/* Card subtitle + IA button */}
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem', marginBottom: '0.1rem' }}>
+                      <h3 style={{ margin: 0, fontSize: '0.88rem', fontWeight: 600, color: moduleColor, letterSpacing: '-0.005em', lineHeight: 1.3 }}>
+                        {card.title}
+                      </h3>
+                      {isGenerating && <span style={{ fontSize: '0.68rem', color: 'var(--text-muted)', fontStyle: 'italic' }}>gerando…</span>}
+                      {isFocused && !isGenerating && (
+                        <button type="button" onMouseDown={e => { e.preventDefault(); setDocAiOpen(o => !o) }}
+                          style={{ display: 'inline-flex', alignItems: 'center', gap: '0.2rem', background: docAiOpen ? `${moduleColor}15` : 'transparent', border: `1px solid ${docAiOpen ? `${moduleColor}50` : '#CBD5E1'}`, borderRadius: '5px', padding: '0.1rem 0.42rem', cursor: 'pointer', fontFamily: 'inherit', fontSize: '0.65rem', fontWeight: 700, color: docAiOpen ? moduleColor : '#94A3B8', transition: 'all 0.12s' }}>
+                          ✨ IA
+                        </button>
+                      )}
+                    </div>
+
+                    {/* Seamless editor */}
+                    <div className="ws-inline-card">
+                      <RichEditor
+                        value={content}
+                        onChange={html => scheduleAutosave(card.id, html)}
+                        placeholder={card.placeholder ?? ''}
+                        minHeight={60}
+                        moduleColor={moduleColor}
+                        hideToolbar
+                        onEditorMount={editor => { editorMapRef.current.set(editorKey, editor) }}
+                        onFocusChange={focused => { if (focused) setActiveEditorKey(editorKey) }}
+                      />
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+
+            {docAiOpen && docAiContext && activeEditor && (
+              <AIAssistantPanel
+                context={docAiContext}
+                currentContent={activeEditor.getHTML()}
+                onInsert={handleDocAiInsert}
+                onReplace={handleDocAiReplace}
+                onAppend={handleDocAiAppend}
+                onClose={() => setDocAiOpen(false)}
+              />
+            )}
+          </>
         ) : null}
 
         {!isTabLayout && activeCards.map((card, idx) => {
