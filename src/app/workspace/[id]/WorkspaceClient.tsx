@@ -1555,7 +1555,7 @@ export default function WorkspaceClient({ user, project, initialSections }: Prop
                 userId={user.id}
                 onUpdate={handleSectionUpdate}
                 onAskAI={handleAskAI}
-                guided={(workModeMap[activePhase?.id ?? ''] ?? 'guided') === 'guided'}
+                guided={false}
                 initialSlug={activeSlug}
                 typeLabel="Investigar"
               />
