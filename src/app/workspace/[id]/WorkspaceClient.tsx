@@ -103,7 +103,7 @@ function ProgressRing({ pct, color, size = 15 }: { pct: number; color: string; s
 
 
 const PREPARAR_DOC_SLUGS = ['preparacao_espiritual', 'preparar_leia_assimile', 'preparar_visao_geral']
-const INVESTIGAR_DOC_SLUGS = ['inv_estudo_contextual', 'inv_estudo_textual', 'inv_estudo_teologico', 'investigar_visao_geral']
+const INVESTIGAR_DOC_SLUGS = ['inv_estudo_contextual', 'inv_estudo_textual', 'inv_estudo_teologico']
 const NARRATIVAS_DOC_SLUGS    = ['nr_estudo_contextual', 'nr_estudo_textual', 'nr_estudo_teologico', 'nr_investigar_vg']
 const NARRATIVAS_PREPARAR_SLUGS = ['preparacao_espiritual', 'preparar_leia_assimile', 'nr_preparar_visao_geral']
 const ALL_DOC_SLUGS = [...PREPARAR_DOC_SLUGS, ...NARRATIVAS_PREPARAR_SLUGS, ...INVESTIGAR_DOC_SLUGS, ...NARRATIVAS_DOC_SLUGS]
