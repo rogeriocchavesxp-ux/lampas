@@ -820,7 +820,7 @@ export default function BibleTextBlock({ book, passageRef, testament, projectId,
               ) : (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem', maxHeight: '320px', overflowY: 'auto' }}>
                   {[...hlList].sort((a, b) => a.startVerse - b.startVerse).map(h => (
-                    <div key={h.id} style={{ display: 'flex', alignItems: 'flex-start', gap: '0.6rem', padding: '0.55rem 0.75rem', borderRadius: '8px', background: HCOLORS[h.color].bg, border: `1px solid ${HCOLORS[h.color].dot}25`, borderLeft: `3px solid ${HCOLORS[h.color].dot}` }}>
+                    <div key={h.id} style={{ display: 'flex', alignItems: 'flex-start', gap: '0.6rem', padding: '0.55rem 0.75rem', borderRadius: '8px', background: HCOLORS[h.color].bg, borderTop: `1px solid ${HCOLORS[h.color].dot}25`, borderRight: `1px solid ${HCOLORS[h.color].dot}25`, borderBottom: `1px solid ${HCOLORS[h.color].dot}25`, borderLeft: `3px solid ${HCOLORS[h.color].dot}` }}>
                       <div style={{ flex: 1, minWidth: 0 }}>
                         <div style={{ fontSize: '0.67rem', fontWeight: 700, color: HCOLORS[h.color].dot, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.15rem' }}>
                           v.{h.startVerse}{h.endVerse !== h.startVerse ? `–${h.endVerse}` : ''}
