@@ -99,7 +99,9 @@ function DiscussionBox({ data, color }: { data: DiscussionPositions; color: stri
   return (
     <div style={{
       marginTop: '0.75rem',
-      border: `1px solid ${color}25`,
+      borderTop: `1px solid ${color}25`,
+      borderRight: `1px solid ${color}25`,
+      borderBottom: `1px solid ${color}25`,
       borderLeft: `3px solid ${color}`,
       borderRadius: '6px',
       overflow: 'hidden',
@@ -301,7 +303,9 @@ function IntroDetail({ intro, onBack, onAskAI, color }: {
             {intro.main_divisions.map((d, i) => (
               <div key={i} style={{
                 padding: '0.55rem 0.8rem',
-                border: `1px solid ${color}18`,
+                borderTop: `1px solid ${color}18`,
+                borderRight: `1px solid ${color}18`,
+                borderBottom: `1px solid ${color}18`,
                 borderLeft: `3px solid ${color}`,
                 borderRadius: '6px',
                 background: `${color}04`,
@@ -348,7 +352,9 @@ function IntroDetail({ intro, onBack, onAskAI, color }: {
           <div style={{
             padding: '0.85rem 1rem',
             background: `${color}07`,
-            border: `1px solid ${color}25`,
+            borderTop: `1px solid ${color}25`,
+            borderRight: `1px solid ${color}25`,
+            borderBottom: `1px solid ${color}25`,
             borderLeft: `4px solid ${color}`,
             borderRadius: '8px',
             fontSize: '0.82rem', color: '#1e293b', lineHeight: 1.7,

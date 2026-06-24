@@ -1026,12 +1026,18 @@ export default function WorkspaceClient({ user, project, initialSections }: Prop
                                               style={{
                                                 width: 'calc(100% - 12px)',
                                                 marginLeft: '6px', marginRight: '6px',
-                                                border: isEnhanced
+                                                borderTop: isEnhanced
+                                                  ? (highlight ? `1px solid ${groupColor}55` : `1px solid ${groupColor}22`)
+                                                  : (isActive ? `1px solid ${mode.color}28` : '1px solid transparent'),
+                                                borderRight: isEnhanced
+                                                  ? (highlight ? `1px solid ${groupColor}55` : `1px solid ${groupColor}22`)
+                                                  : (isActive ? `1px solid ${mode.color}28` : '1px solid transparent'),
+                                                borderBottom: isEnhanced
                                                   ? (highlight ? `1px solid ${groupColor}55` : `1px solid ${groupColor}22`)
                                                   : (isActive ? `1px solid ${mode.color}28` : '1px solid transparent'),
                                                 borderLeft: isEnhanced
                                                   ? `3px solid ${highlight ? groupColor : groupColor + '55'}`
-                                                  : undefined,
+                                                  : (isActive ? `1px solid ${mode.color}28` : '1px solid transparent'),
                                                 cursor: 'pointer',
                                                 background: isEnhanced
                                                   ? (highlight ? `${groupColor}14` : `${groupColor}08`)

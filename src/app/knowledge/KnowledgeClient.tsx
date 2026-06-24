@@ -841,7 +841,7 @@ export default function KnowledgeClient({ userId, initialItems, initialDashboard
                           style={{
                             width: '100%', display: 'flex', alignItems: 'center', gap: '0.35rem',
                             padding: '0.28rem 0.45rem 0.28rem 0.5rem', background: isGroupCollapsed ? 'transparent' : groupBg + 'CC',
-                            border: 'none', borderLeft: `3px solid ${isGroupCollapsed ? 'transparent' : groupColor}`,
+                            borderTop: 'none', borderRight: 'none', borderBottom: 'none', borderLeft: `3px solid ${isGroupCollapsed ? 'transparent' : groupColor}`,
                             cursor: 'pointer', fontFamily: 'inherit', transition: 'all 0.14s',
                           }}
                           onMouseEnter={e => { if (isGroupCollapsed) { e.currentTarget.style.borderLeftColor = groupColor + '50'; e.currentTarget.style.background = groupBg + '70' } }}

@@ -408,11 +408,14 @@ export function StudyCard({ project, onClick, onDelete }: { project: Project; on
     <div
       onClick={onClick}
       style={{
-        background: 'var(--surface)', border: `1px solid ${visual.border}`,
+        background: 'var(--surface)',
+        borderTop: `3px solid ${visual.color}`,
+        borderRight: `1px solid ${visual.border}`,
+        borderBottom: `1px solid ${visual.border}`,
+        borderLeft: `1px solid ${visual.border}`,
         borderRadius: '12px', padding: '1.15rem 1.2rem',
         cursor: 'pointer', display: 'flex', flexDirection: 'column', gap: '0.75rem',
         transition: 'box-shadow 0.15s', position: 'relative',
-        borderTop: `3px solid ${visual.color}`,
       }}
       onMouseEnter={e => { (e.currentTarget as HTMLElement).style.boxShadow = '0 4px 18px rgba(15,23,42,0.09)' }}
       onMouseLeave={e => { (e.currentTarget as HTMLElement).style.boxShadow = 'none' }}
