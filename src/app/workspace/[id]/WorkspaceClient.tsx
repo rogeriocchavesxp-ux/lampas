@@ -630,7 +630,7 @@ export default function WorkspaceClient({ user, project, initialSections }: Prop
         pct={pct}
         activePhase={activePhase}
         showWorkMode={ALL_DOC_SLUGS.includes(activeSlug)}
-        showViewMode={VG_SLUGS.includes(activeSlug) && !PREPARAR_DOC_SLUGS.includes(activeSlug) && !NARRATIVAS_PREPARAR_SLUGS.includes(activeSlug)}
+        showViewMode={(VG_SLUGS.includes(activeSlug) || activeSlug === 'nr_investigar_vg') && !PREPARAR_DOC_SLUGS.includes(activeSlug) && !NARRATIVAS_PREPARAR_SLUGS.includes(activeSlug)}
         workMode={activePhase ? (workModeMap[activePhase.id] ?? (activePhase.id === 'investigar' ? 'free' : 'guided')) : 'guided'}
         onWorkModeChange={(mode) => activePhase && setWorkMode(activePhase.id, mode)}
         vgViewMode={vgViewMode}
@@ -1560,7 +1560,7 @@ export default function WorkspaceClient({ user, project, initialSections }: Prop
                 initialSlug={activeSlug}
                 typeLabel="Investigar"
               />
-            ) : NARRATIVAS_DOC_SLUGS.includes(activeSlug) ? (
+            ) : NARRATIVAS_DOC_SLUGS.includes(activeSlug) && !(activeSlug === 'nr_investigar_vg' && vgViewMode === 'visual') ? (
               <WorkspaceDocument
                 key="narrativas-doc"
                 blocks={NARRATIVAS_DOC_SLUGS.map(slug => ({
@@ -1590,7 +1590,7 @@ export default function WorkspaceClient({ user, project, initialSections }: Prop
                 initialSlug={activeSlug}
                 typeLabel={modeConfig.name}
               />
-            ) : VG_SLUGS.includes(activeSlug) && !PREPARAR_DOC_SLUGS.includes(activeSlug) && activeDef ? (
+            ) : (VG_SLUGS.includes(activeSlug) || activeSlug === 'nr_investigar_vg') && !PREPARAR_DOC_SLUGS.includes(activeSlug) && activeDef ? (
               <VisaoGeralWorkspace
                 key={activeSlug}
                 sectionDef={activeDef}
