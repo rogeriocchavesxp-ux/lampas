@@ -993,7 +993,8 @@ export default function VisaoGeralWorkspace({
   // ── Render ─────────────────────────────────────────────────────────────────
   return (
     <>
-    <div style={{ padding: '2rem clamp(1rem, 3vw, 2rem) 6rem', opacity: mounted ? 1 : 0, transition: 'opacity 0.25s ease', maxWidth: viewMode === 'structured' ? '720px' : undefined, margin: viewMode === 'structured' ? '0 auto' : undefined, fontFamily: 'var(--font-sans)' }}>
+    <div style={{ flex: 1, background: viewMode === 'structured' ? '#ECEEF1' : undefined, padding: viewMode === 'structured' ? '2.5rem 2rem 8rem' : '1.25rem 1.5rem 2rem', opacity: mounted ? 1 : 0, transition: 'opacity 0.25s ease', fontFamily: 'var(--font-sans)' }}>
+    <div style={{ maxWidth: viewMode === 'structured' ? '680px' : undefined, margin: viewMode === 'structured' ? '0 auto' : undefined, background: viewMode === 'structured' ? '#ffffff' : undefined, boxShadow: viewMode === 'structured' ? '0 1px 3px rgba(0,0,0,0.06), 0 6px 24px rgba(0,0,0,0.07)' : undefined, borderRadius: viewMode === 'structured' ? '2px' : undefined, padding: viewMode === 'structured' ? '4rem 5rem' : undefined, minHeight: 'calc(100vh - 160px)' }}>
 
       {/* ── Document header ─────────────────────────────────────────────────── */}
       <div style={{ paddingBottom: '2.5rem' }}>
@@ -3100,6 +3101,7 @@ export default function VisaoGeralWorkspace({
           </div>
         )
       })()}
+    </div>
     </div>
 
     {/* ── Floating Node Windows ───────────────────────────────────────── */}

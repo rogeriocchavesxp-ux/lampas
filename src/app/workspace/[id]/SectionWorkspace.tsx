@@ -744,7 +744,8 @@ export default function SectionWorkspace({
   `
 
   return (
-    <div style={{ maxWidth: '720px', margin: '0 auto', padding: '2rem clamp(1rem, 3vw, 2rem) 6rem', fontFamily: 'var(--font-sans)' }}>
+    <div style={{ flex: 1, background: '#ECEEF1', padding: '2.5rem 2rem 8rem', fontFamily: 'var(--font-sans)' }}>
+    <div style={{ maxWidth: '680px', margin: '0 auto', background: '#ffffff', boxShadow: '0 1px 3px rgba(0,0,0,0.06), 0 6px 24px rgba(0,0,0,0.07)', borderRadius: '2px', padding: '4rem 5rem', minHeight: 'calc(100vh - 160px)' }}>
 
       {/* ── Document header — mesmo padrão visual do WorkspaceDocument ── */}
       <div style={{ paddingBottom: '2.5rem' }}>
@@ -1481,6 +1482,7 @@ export default function SectionWorkspace({
           </div>
         </div>
       )}
+    </div>
     </div>
   )
 }
