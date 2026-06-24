@@ -993,47 +993,39 @@ export default function VisaoGeralWorkspace({
   // ── Render ─────────────────────────────────────────────────────────────────
   return (
     <>
-    <div style={{ padding: '1.25rem 1.5rem 2rem', opacity: mounted ? 1 : 0, transition: 'opacity 0.25s ease' }}>
+    <div style={{ padding: '2rem clamp(1rem, 3vw, 2rem) 6rem', opacity: mounted ? 1 : 0, transition: 'opacity 0.25s ease', maxWidth: viewMode === 'structured' ? '720px' : undefined, margin: viewMode === 'structured' ? '0 auto' : undefined, fontFamily: 'var(--font-sans)' }}>
 
-      {/* ── Header ─────────────────────────────────────────────────────────── */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1.1rem', gap: '0.75rem', flexWrap: 'wrap' }}>
-        <div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-            <div style={{ fontSize: '0.87rem', fontWeight: 700, color: 'var(--text-primary)', letterSpacing: '-0.01em' }}>
-              Visão Geral
-            </div>
-            <span style={{
-              fontSize: '0.63rem', fontWeight: 700, letterSpacing: '0.06em',
-              textTransform: 'uppercase',
-              color: PHASE_COLOR[phase],
-              background: PHASE_COLOR[phase] + '15',
-              border: `1px solid ${PHASE_COLOR[phase]}30`,
-              padding: '2px 7px', borderRadius: '999px',
-            }}>
-              {PHASE_LABEL[phase]}
-            </span>
-          </div>
-          <div style={{ fontSize: '0.71rem', color: 'var(--text-muted)', marginTop: '2px' }}>
-            {isPassageMode ? `${project.book} ${project.passage_ref}` : project.passage_ref}
-          </div>
-          {viewMode === 'visual' && (
-            <div style={{ fontSize: '0.71rem', color: 'var(--text-muted)', marginTop: '2px', lineHeight: 1.4 }}>
-              {totalItems === 0
-                ? <span style={{ color: '#B45309' }}>Marque palavras no Texto Bíblico para construir o mapa.</span>
-                : `${totalItems} elemento${totalItems !== 1 ? 's' : ''} mapeado${totalItems !== 1 ? 's' : ''}${activePanel ? ' — clique fora para fechar o painel' : ' — clique em um nó para explorar'}.`}
-            </div>
-          )}
-        </div>
+      {/* ── Document header ─────────────────────────────────────────────────── */}
+      <div style={{ paddingBottom: '2.5rem' }}>
+        <div style={{ width: '28px', height: '3px', borderRadius: '2px', background: PHASE_COLOR[phase], marginBottom: '1.1rem' }} />
+        <h1 style={{ margin: 0, fontSize: '2.5rem', fontWeight: 700, letterSpacing: '-0.045em', lineHeight: 1.0 }}>
+          {project.title}
+        </h1>
+        <p style={{ margin: '0.6rem 0 0', fontSize: '0.8rem', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+          <span>{PHASE_LABEL[phase]}</span>
+          {project.bible_version && (<><span style={{ opacity: 0.4 }}>·</span><span>{project.bible_version}</span></>)}
+          {project.original_language && (<><span style={{ opacity: 0.4 }}>·</span><span>{project.original_language}</span></>)}
+        </p>
+        <div style={{ margin: '1.75rem 0 0', height: '1px', background: 'var(--border-subtle)' }} />
+      </div>
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-          {viewMode === 'visual' && activePanel && (
-            <button onClick={() => setActivePanel(null)}
-              style={{ display: 'flex', alignItems: 'center', gap: '4px', background: 'transparent', border: '1px solid var(--border)', borderRadius: '7px', padding: '5px 10px', fontSize: '0.7rem', color: 'var(--text-muted)', cursor: 'pointer', fontFamily: 'inherit' }}
-            >
-              <X size={11} /> Fechar painel
-            </button>
-          )}
-        </div>
+      {/* ── Chapter heading ─────────────────────────────────────────────────── */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', marginBottom: '1.25rem' }}>
+        <h2 style={{ flex: 1, margin: 0, fontSize: '1.4rem', fontWeight: 800, letterSpacing: '-0.02em' }}>Visão Geral</h2>
+        {viewMode === 'visual' && activePanel && (
+          <button onClick={() => setActivePanel(null)}
+            style={{ display: 'flex', alignItems: 'center', gap: '4px', background: 'transparent', border: '1px solid var(--border)', borderRadius: '7px', padding: '5px 10px', fontSize: '0.7rem', color: 'var(--text-muted)', cursor: 'pointer', fontFamily: 'inherit' }}
+          >
+            <X size={11} /> Fechar painel
+          </button>
+        )}
+        {viewMode === 'visual' && (
+          <div style={{ fontSize: '0.71rem', color: 'var(--text-muted)' }}>
+            {totalItems === 0
+              ? <span style={{ color: '#B45309' }}>Marque palavras no Texto Bíblico para construir o mapa.</span>
+              : `${totalItems} elemento${totalItems !== 1 ? 's' : ''} mapeado${totalItems !== 1 ? 's' : ''}.`}
+          </div>
+        )}
       </div>
 
       {viewMode === 'visual' && isLayeredSermon && (
