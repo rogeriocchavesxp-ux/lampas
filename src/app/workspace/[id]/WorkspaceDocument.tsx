@@ -158,6 +158,22 @@ const CHAPTER_META: Record<string, {
       aplicacoes_principais: 'Registre aplicações principais que nascem diretamente do significado do texto.',
     },
   },
+  nr_preparar_visao_geral: {
+    title: 'Visão Geral da Narrativa',
+    intro: 'Registre sua percepção inicial da narrativa antes de qualquer análise técnica — tema, estrutura, personagens e movimento do texto.',
+    editorHints: {
+      nr_vg_tema:        'Nomeie o tema provável em uma frase provisória...',
+      nr_vg_estrutura:   'Esboce as partes que você percebe neste momento...',
+      nr_vg_personagens: 'Quem são os personagens e como o narrador os apresenta?',
+      nr_vg_movimento:   'Descreva como o texto se move — clímax, repetições, contrastes...',
+    },
+    placeholders: {
+      nr_vg_tema:        'Nomeie o tema provável da narrativa em uma frase simples e provisória. O que esta história parece ser "sobre"?',
+      nr_vg_estrutura:   'Esboce as partes da narrativa como você as percebe neste momento inicial. Há introdução, desenvolvimento, virada, resolução?',
+      nr_vg_personagens: 'Quem são os personagens da narrativa? Como o narrador os apresenta? Que papel cada um parece desempenhar?',
+      nr_vg_movimento:   'Descreva como o texto se move. Há um clímax identificável? Existem repetições ou palavras-chave recorrentes? Há contrastes entre personagens ou situações?',
+    },
+  },
   nr_estudo_contextual: {
     title: 'Estudo Contextual',
     intro: 'Analise o contexto histórico, literário e canônico da narrativa para compreender o ambiente em que ela foi escrita e transmitida.',

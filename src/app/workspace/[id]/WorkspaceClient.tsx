@@ -104,7 +104,8 @@ function ProgressRing({ pct, color, size = 15 }: { pct: number; color: string; s
 
 const PREPARAR_DOC_SLUGS = ['preparacao_espiritual', 'preparar_leia_assimile', 'preparar_visao_geral']
 const INVESTIGAR_DOC_SLUGS = ['inv_estudo_contextual', 'inv_estudo_textual', 'inv_estudo_teologico', 'investigar_visao_geral']
-const NARRATIVAS_DOC_SLUGS = ['nr_estudo_contextual', 'nr_estudo_textual', 'nr_estudo_teologico', 'nr_investigar_vg']
+const NARRATIVAS_DOC_SLUGS    = ['nr_estudo_contextual', 'nr_estudo_textual', 'nr_estudo_teologico', 'nr_investigar_vg']
+const NARRATIVAS_PREPARAR_SLUGS = ['preparacao_espiritual', 'preparar_leia_assimile', 'nr_preparar_visao_geral']
 
 // ── Componente principal ────────────────────────────────────────────────────
 
@@ -1574,6 +1575,21 @@ export default function WorkspaceClient({ user, project, initialSections }: Prop
                 guided={false}
                 initialSlug={activeSlug}
                 typeLabel="Narrativas"
+              />
+            ) : modeConfig.id === 'estudo_narrativas' && NARRATIVAS_PREPARAR_SLUGS.includes(activeSlug) ? (
+              <WorkspaceDocument
+                key="narrativas-preparar-doc"
+                blocks={NARRATIVAS_PREPARAR_SLUGS.map(slug => ({
+                  sectionDef: WORKSPACE_SECTIONS.find(s => s.slug === slug)!,
+                  existingSection: sections.find(s => s.slug === slug),
+                }))}
+                project={project}
+                userId={user.id}
+                onUpdate={handleSectionUpdate}
+                onAskAI={handleAskAI}
+                guided={(workModeMap[activePhase?.id ?? ''] ?? 'guided') === 'guided'}
+                initialSlug={activeSlug}
+                typeLabel={modeConfig.name}
               />
             ) : VG_SLUGS.includes(activeSlug) && !PREPARAR_DOC_SLUGS.includes(activeSlug) && activeDef ? (
               <VisaoGeralWorkspace
