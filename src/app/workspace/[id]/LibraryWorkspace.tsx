@@ -174,6 +174,7 @@ export default function LibraryWorkspace({ project, onAskAI }: Props) {
   const [loading,  setLoading]  = useState(false)
   const [searched, setSearched] = useState(false)
   const [expanded, setExpanded] = useState<Set<string>>(new Set())
+  const [rpcError, setRpcError] = useState<string | null>(null)
 
   const { chapter, verse } = useMemo(
     () => parsePassage(project.passage_ref ?? ''),
@@ -186,21 +187,27 @@ export default function LibraryWorkspace({ project, onAskAI }: Props) {
     if (!project.book) return
     setLoading(true)
     setSearched(false)
-    const { data } = await supabase.rpc('lib_get_commentaries', {
+    setRpcError(null)
+    const { data, error } = await supabase.rpc('lib_get_commentaries', {
       p_bible_book: toEnBook(project.book),
       p_chapter:    chapter,
       p_verse:      null,
     })
+    if (error) {
+      console.error('[LibraryWorkspace] lib_get_commentaries:', error)
+      setRpcError(error.message ?? 'Erro ao buscar comentários')
+    }
     setEntries((data ?? []) as LibEntry[])
     setLoading(false)
     setSearched(true)
-  }, [supabase, project.book, chapter, verse])
+  }, [supabase, project.book, chapter])
 
   useEffect(() => {
     setEntries([])
     setQuery('')
     setExpanded(new Set())
     setSearched(false)
+    setRpcError(null)
     if (tab === 'comentarios') loadCommentaries()
   }, [tab]) // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -212,15 +219,17 @@ export default function LibraryWorkspace({ project, onAskAI }: Props) {
     }
     setLoading(true)
     setSearched(false)
+    setRpcError(null)
 
     if (tab === 'dicionario') {
-      const { data } = await supabase.rpc('lib_search_refs', {
+      const { data, error } = await supabase.rpc('lib_search_refs', {
         p_term:       q,
         p_work_types: ['dictionary'],
       })
+      if (error) { console.error('[LibraryWorkspace] lib_search_refs:', error); setRpcError(error.message ?? 'Erro na busca') }
       setEntries((data ?? []) as LibEntry[])
     } else {
-      const { data } = await supabase.rpc('lib_search', {
+      const { data, error } = await supabase.rpc('lib_search', {
         p_query:         q,
         p_work_type:     'commentary',
         p_tradition:     null,
@@ -228,6 +237,7 @@ export default function LibraryWorkspace({ project, onAskAI }: Props) {
         p_bible_chapter: null,
         p_limit:         20,
       })
+      if (error) { console.error('[LibraryWorkspace] lib_search:', error); setRpcError(error.message ?? 'Erro na busca') }
       setEntries((data ?? []) as LibEntry[])
     }
 
@@ -359,7 +369,24 @@ export default function LibraryWorkspace({ project, onAskAI }: Props) {
 
         {loading && <Skeleton />}
 
-        {!loading && (entries.length === 0 || (!searched && tab === 'dicionario')) && (
+        {!loading && rpcError && (
+          <div style={{ padding: '0.75rem', borderRadius: '8px', background: '#FFF1F1', border: '1px solid #FEE2E2', margin: '0.4rem' }}>
+            <div style={{ fontSize: '0.73rem', fontWeight: 600, color: '#B91C1C', marginBottom: '4px' }}>
+              Erro ao carregar comentários
+            </div>
+            <div style={{ fontSize: '0.68rem', color: '#7F1D1D', lineHeight: 1.5, marginBottom: '8px', wordBreak: 'break-all' }}>
+              {rpcError}
+            </div>
+            <button
+              onClick={() => tab === 'comentarios' ? loadCommentaries() : undefined}
+              style={{ background: '#B91C1C', border: 'none', borderRadius: '5px', padding: '4px 10px', fontSize: '0.68rem', fontWeight: 600, color: '#FFF', cursor: 'pointer', fontFamily: 'inherit' }}
+            >
+              Tentar novamente
+            </button>
+          </div>
+        )}
+
+        {!loading && !rpcError && (entries.length === 0 || (!searched && tab === 'dicionario')) && (
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '8px', height: '100%', color: 'var(--text-muted)' }}>
             <BookOpen size={26} strokeWidth={1} style={{ opacity: 0.2 }} />
             {emptyMsg && <span style={{ fontSize: '0.78rem', textAlign: 'center', padding: '0 1rem' }}>{emptyMsg}</span>}
