@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useRef, useCallback, useEffect, useMemo } from 'react'
-import { Search, BookMarked, Sparkles, X } from 'lucide-react'
+import { Search, BookMarked, Sparkles, X, Pin, PinOff } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import type { Project } from '@/types/database'
 
@@ -47,6 +47,7 @@ export default function DicionarioFlutuante({ project, userId, focusMode }: Prop
 
   const [menuOpen,   setMenuOpen]   = useState(false)
   const [drawerMode, setDrawerMode] = useState<DrawerMode | null>(null)
+  const [pinned,     setPinned]     = useState(false)
 
   // Dictionary state
   const [dictQuery,   setDictQuery]   = useState('')
@@ -185,6 +186,7 @@ export default function DicionarioFlutuante({ project, userId, focusMode }: Prop
   }
 
   function closeDrawer() {
+    setPinned(false)
     setDrawerMode(null)
   }
 
@@ -279,7 +281,11 @@ export default function DicionarioFlutuante({ project, userId, focusMode }: Prop
 
         {/* Button */}
         <button
-          onClick={() => setMenuOpen(o => !o)}
+          onClick={() => {
+            if (pinned && drawerMode === null) { setDrawerMode('dictionary'); return }
+            if (pinned) return
+            setMenuOpen(o => !o)
+          }}
           title="Consulta lexical — Dicionário Lampas"
           style={{
             width: '40px', height: '40px', borderRadius: '50%',
@@ -362,6 +368,25 @@ export default function DicionarioFlutuante({ project, userId, focusMode }: Prop
             >
               {drawerMode === 'dictionary' ? <Sparkles size={10} /> : <BookMarked size={10} />}
               {drawerMode === 'dictionary' ? 'IA' : 'Dicionário'}
+            </button>
+
+            {/* Pin button */}
+            <button
+              onClick={() => setPinned(p => !p)}
+              title={pinned ? 'Desafixar painel' : 'Fixar painel'}
+              style={{
+                background: pinned ? 'var(--accent-subtle, #EEF3FA)' : 'none',
+                border: `1px solid ${pinned ? 'var(--accent)' : 'var(--border)'}`,
+                borderRadius: '6px', padding: '0.26rem 0.46rem',
+                cursor: 'pointer',
+                color: pinned ? 'var(--accent)' : 'var(--text-muted)',
+                display: 'flex', alignItems: 'center',
+                transition: 'all 0.12s', flexShrink: 0,
+              }}
+              onMouseEnter={e => { if (!pinned) { e.currentTarget.style.color = 'var(--text-secondary)'; e.currentTarget.style.borderColor = 'var(--border)' } }}
+              onMouseLeave={e => { if (!pinned) { e.currentTarget.style.color = 'var(--text-muted)'; e.currentTarget.style.borderColor = 'var(--border)' } }}
+            >
+              {pinned ? <PinOff size={12} /> : <Pin size={12} />}
             </button>
 
             <button
