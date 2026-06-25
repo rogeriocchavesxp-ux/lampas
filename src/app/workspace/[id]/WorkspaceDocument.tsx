@@ -807,7 +807,7 @@ export default function WorkspaceDocument({
             maxWidth: '680px',
             margin: '0 auto',
             background: '#ffffff',
-            boxShadow: '0 1px 3px rgba(0,0,0,0.06), 0 6px 24px rgba(0,0,0,0.07)',
+            boxShadow: '0 2px 8px rgba(0,0,0,0.10), 0 12px 40px rgba(0,0,0,0.14)',
             borderRadius: '2px',
             padding: '4rem 5rem',
             minHeight: 'calc(100vh - 160px)',
