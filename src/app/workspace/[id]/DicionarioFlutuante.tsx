@@ -484,30 +484,38 @@ export default function DicionarioFlutuante({ project, userId, focusMode }: Prop
                         onMouseEnter={e => { e.currentTarget.style.background = 'var(--surface)'; e.currentTarget.style.borderColor = 'var(--border-subtle)' }}
                         onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.borderColor = 'transparent' }}
                       >
-                        <div style={{ display: 'flex', alignItems: 'flex-start', gap: '0.5rem' }}>
-                          <div style={{ flex: 1, minWidth: 0 }}>
-                            <div style={{ fontWeight: 600, fontSize: '0.85rem', color: 'var(--text-primary)', lineHeight: 1.2 }}>
-                              {entry.title}
-                            </div>
-                            {entry.transliteration && (
-                              <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)', fontStyle: 'italic', marginTop: '1px' }}>
-                                {entry.transliteration}
-                              </div>
-                            )}
-                            {entry.definition && (
-                              <div style={{ fontSize: '0.74rem', color: 'var(--text-secondary)', marginTop: '3px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', lineHeight: 1.3 }}>
-                                {entry.definition}
-                              </div>
-                            )}
-                          </div>
-                          <span style={{
-                            fontSize: '0.58rem', fontWeight: 700, color: 'var(--text-muted)',
-                            background: 'var(--surface-2)', borderRadius: '4px',
-                            padding: '2px 5px', flexShrink: 0, marginTop: '2px',
-                          }}>
-                            {CATEGORY_LABELS[entry.category] ?? entry.category}
-                          </span>
+                        {/* Title + transliteration */}
+                        <div style={{ fontWeight: 600, fontSize: '0.85rem', color: 'var(--text-primary)', lineHeight: 1.3, marginBottom: '4px' }}>
+                          {entry.title}
+                          {entry.transliteration && (
+                            <span style={{ fontWeight: 400, fontStyle: 'italic', fontSize: '0.72rem', color: 'var(--text-muted)', marginLeft: '6px' }}>
+                              {entry.transliteration}
+                            </span>
+                          )}
                         </div>
+
+                        {/* Definition — below, wraps 2 lines */}
+                        {entry.definition && (
+                          <div style={{
+                            fontSize: '0.74rem', color: 'var(--text-secondary)', lineHeight: 1.45,
+                            marginBottom: '5px',
+                            display: '-webkit-box',
+                            WebkitLineClamp: 2,
+                            WebkitBoxOrient: 'vertical',
+                            overflow: 'hidden',
+                          }}>
+                            {entry.definition}
+                          </div>
+                        )}
+
+                        {/* Category — below */}
+                        <span style={{
+                          fontSize: '0.58rem', fontWeight: 700, color: 'var(--text-muted)',
+                          background: 'var(--surface-2)', borderRadius: '4px',
+                          padding: '2px 5px', display: 'inline-block',
+                        }}>
+                          {CATEGORY_LABELS[entry.category] ?? entry.category}
+                        </span>
                       </button>
                     ))}
                   </div>
