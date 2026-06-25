@@ -85,11 +85,13 @@ const SOURCES = {
 }
 
 // ─── Livros bíblicos ─────────────────────────────────────────────────────────
-const BIBLE_BOOKS = [
+
+// Nomes canônicos (forma final armazenada no banco)
+const CANONICAL_BOOKS = [
   'Genesis','Exodus','Leviticus','Numbers','Deuteronomy','Joshua','Judges','Ruth',
   '1 Samuel','2 Samuel','1 Kings','2 Kings','1 Chronicles','2 Chronicles',
-  'Ezra','Nehemiah','Esther','Job','Psalms','Psalm','Proverbs','Ecclesiastes',
-  'Song of Solomon','Song of Songs','Isaiah','Jeremiah','Lamentations',
+  'Ezra','Nehemiah','Esther','Job','Psalms','Proverbs','Ecclesiastes',
+  'Song of Solomon','Isaiah','Jeremiah','Lamentations',
   'Ezekiel','Daniel','Hosea','Joel','Amos','Obadiah','Jonah','Micah',
   'Nahum','Habakkuk','Zephaniah','Haggai','Zechariah','Malachi',
   'Matthew','Mark','Luke','John','Acts','Romans',
@@ -99,9 +101,92 @@ const BIBLE_BOOKS = [
   '1 John','2 John','3 John','Jude','Revelation',
 ]
 
-// Sorted longest first to avoid partial matches
+// Variantes e abreviações → nome canônico
+const BOOK_ALIASES = {
+  // Variantes de nome completo
+  'Psalm': 'Psalms', 'Song of Songs': 'Song of Solomon', 'Canticles': 'Song of Solomon',
+  // Abreviações AT (JFB, Barnes, Wesley usam estas)
+  'Ge': 'Genesis',  'Gen': 'Genesis',
+  'Ex': 'Exodus',   'Exo': 'Exodus',
+  'Le': 'Leviticus','Lev': 'Leviticus',
+  'Nu': 'Numbers',  'Num': 'Numbers',
+  'De': 'Deuteronomy','Deu': 'Deuteronomy','Dt': 'Deuteronomy',
+  'Jos': 'Joshua',  'Josh': 'Joshua',
+  'Jud': 'Judges',  'Judg': 'Judges', 'Jdg': 'Judges',
+  'Ru': 'Ruth',
+  '1Sa': '1 Samuel','1Sam': '1 Samuel',
+  '2Sa': '2 Samuel','2Sam': '2 Samuel',
+  '1Ki': '1 Kings', '1Kin': '1 Kings', '1Kgs': '1 Kings',
+  '2Ki': '2 Kings', '2Kin': '2 Kings', '2Kgs': '2 Kings',
+  '1Ch': '1 Chronicles','1Chr': '1 Chronicles','1Chron': '1 Chronicles',
+  '2Ch': '2 Chronicles','2Chr': '2 Chronicles','2Chron': '2 Chronicles',
+  'Ezr': 'Ezra',
+  'Ne': 'Nehemiah', 'Neh': 'Nehemiah',
+  'Es': 'Esther',   'Est': 'Esther',
+  'Ps': 'Psalms',   'Psa': 'Psalms',  'Psal': 'Psalms',
+  'Pr': 'Proverbs', 'Pro': 'Proverbs','Prov': 'Proverbs',
+  'Ec': 'Ecclesiastes','Ecc': 'Ecclesiastes','Eccl': 'Ecclesiastes','Qo': 'Ecclesiastes',
+  'So': 'Song of Solomon','Ca': 'Song of Solomon','Song': 'Song of Solomon',
+  'Isa': 'Isaiah',
+  'Jer': 'Jeremiah',
+  'La': 'Lamentations','Lam': 'Lamentations',
+  'Eze': 'Ezekiel', 'Ezek': 'Ezekiel',
+  'Da': 'Daniel',   'Dan': 'Daniel',
+  'Ho': 'Hosea',    'Hos': 'Hosea',
+  'Joe': 'Joel',    'Jl': 'Joel',
+  'Am': 'Amos',
+  'Ob': 'Obadiah',  'Oba': 'Obadiah',
+  'Jon': 'Jonah',
+  'Mi': 'Micah',    'Mic': 'Micah',
+  'Na': 'Nahum',    'Nah': 'Nahum',
+  'Hab': 'Habakkuk',
+  'Zep': 'Zephaniah','Zeph': 'Zephaniah','Zp': 'Zephaniah',
+  'Hag': 'Haggai',  'Hg': 'Haggai',
+  'Zec': 'Zechariah','Zech': 'Zechariah','Zc': 'Zechariah',
+  'Mal': 'Malachi',
+  // Abreviações NT
+  'Mt': 'Matthew',  'Matt': 'Matthew',
+  'Mk': 'Mark',     'Mr': 'Mark',
+  'Lk': 'Luke',
+  'Joh': 'John',    'Jn': 'John',
+  'Ac': 'Acts',     'Act': 'Acts',
+  'Ro': 'Romans',   'Rom': 'Romans',
+  '1Co': '1 Corinthians','1Cor': '1 Corinthians',
+  '2Co': '2 Corinthians','2Cor': '2 Corinthians',
+  'Ga': 'Galatians','Gal': 'Galatians',
+  'Ep': 'Ephesians','Eph': 'Ephesians',
+  'Ph': 'Philippians','Php': 'Philippians','Phil': 'Philippians',
+  'Col': 'Colossians',
+  '1Th': '1 Thessalonians','1The': '1 Thessalonians','1Thess': '1 Thessalonians',
+  '2Th': '2 Thessalonians','2The': '2 Thessalonians','2Thess': '2 Thessalonians',
+  '1Ti': '1 Timothy','1Tim': '1 Timothy',
+  '2Ti': '2 Timothy','2Tim': '2 Timothy',
+  'Tit': 'Titus',
+  'Phm': 'Philemon','Phile': 'Philemon','Phile': 'Philemon',
+  'Heb': 'Hebrews',
+  'Jas': 'James',   'Jm': 'James',
+  '1Pe': '1 Peter', '1Pet': '1 Peter',
+  '2Pe': '2 Peter', '2Pet': '2 Peter',
+  '1Jo': '1 John',  '1Jn': '1 John',  '1John': '1 John',
+  '2Jo': '2 John',  '2Jn': '2 John',  '2John': '2 John',
+  '3Jo': '3 John',  '3Jn': '3 John',  '3John': '3 John',
+  'Re': 'Revelation','Rev': 'Revelation','Ap': 'Revelation',
+}
+
+function normalizeBook(raw) {
+  // Tenta alias exato, depois canônico, senão retorna como está
+  return BOOK_ALIASES[raw] ?? (CANONICAL_BOOKS.includes(raw) ? raw : null)
+}
+
+// Regex combinado: nomes completos + aliases, ordenados do maior para o menor
+const ALL_FORMS = [
+  ...CANONICAL_BOOKS,
+  'Psalm','Song of Songs','Canticles',
+  ...Object.keys(BOOK_ALIASES),
+].sort((a, b) => b.length - a.length)
+
 const BOOKS_RE = new RegExp(
-  `\\b(${BIBLE_BOOKS.slice().sort((a,b) => b.length - a.length).map(b => b.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')).join('|')})\\s+(\\d+):(\\d+)(?:[–\\-](\\d+))?`,
+  `\\b(${ALL_FORMS.map(b => b.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')).join('|')})\\s+(\\d+)[:.](\\d+)(?:[–\\-](\\d+))?`,
   'gi'
 )
 
@@ -110,8 +195,10 @@ function extractBibleRefs(text) {
   const re = new RegExp(BOOKS_RE.source, BOOKS_RE.flags)
   let m
   while ((m = re.exec(text)) !== null) {
+    const book = normalizeBook(m[1])
+    if (!book) continue
     refs.push({
-      bible_book: m[1],
+      bible_book: book,
       chapter:    parseInt(m[2]),
       verse:      parseInt(m[3]),
       verse_end:  m[4] ? parseInt(m[4]) : null,
@@ -125,12 +212,14 @@ function detectPrimaryRef(text) {
   const re = new RegExp(BOOKS_RE.source, BOOKS_RE.flags)
   const m  = re.exec(text)
   if (!m) return {}
+  const book = normalizeBook(m[1])
+  if (!book) return {}
   return {
-    bible_book:        m[1],
+    bible_book:        book,
     bible_chapter:     parseInt(m[2]),
     bible_verse_start: parseInt(m[3]),
     bible_verse_end:   m[4] ? parseInt(m[4]) : null,
-    bible_ref:         `${m[1]} ${m[2]}:${m[3]}${m[4] ? '-' + m[4] : ''}`
+    bible_ref:         `${book} ${m[2]}:${m[3]}${m[4] ? '-' + m[4] : ''}`
   }
 }
 
