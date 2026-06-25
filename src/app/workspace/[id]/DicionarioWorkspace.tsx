@@ -89,6 +89,7 @@ interface Props {
   project: Project
   userId: string
   onAskAI: (prompt: string) => void
+  compact?: boolean
 }
 
 // ── TrustBadge ────────────────────────────────────────────────────────────────
@@ -267,7 +268,7 @@ function DictExpandModal({
 
 // ── Component ─────────────────────────────────────────────────────────────────
 
-export default function DicionarioWorkspace({ project, userId, onAskAI }: Props) {
+export default function DicionarioWorkspace({ project, userId, onAskAI, compact = false }: Props) {
   const supabase     = useMemo(() => createClient(), [])
   const aiBufferRef  = useRef('')
 
@@ -691,9 +692,10 @@ export default function DicionarioWorkspace({ project, userId, onAskAI }: Props)
 
           {/* ══ LEFT SIDEBAR — search + list ══ */}
           <div style={{
-            width: '288px', flexShrink: 0,
-            display: 'flex', flexDirection: 'column',
-            borderRight: '1px solid #E8ECF0',
+            width: compact ? '100%' : '288px', flexShrink: 0,
+            display: compact && panel !== 'list' ? 'none' : 'flex',
+            flexDirection: 'column',
+            borderRight: compact ? 'none' : '1px solid #E8ECF0',
             background: '#F6F8FA',
             overflow: 'hidden',
           }}>
@@ -857,7 +859,7 @@ export default function DicionarioWorkspace({ project, userId, onAskAI }: Props)
           </div>
 
           {/* ══ RIGHT MAIN — detail / ai-result / empty ══ */}
-          <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden', background: '#FFFFFF', minWidth: 0 }}>
+          <div style={{ flex: 1, display: compact && panel === 'list' ? 'none' : 'flex', flexDirection: 'column', overflow: 'hidden', background: '#FFFFFF', minWidth: 0 }}>
 
             {/* ── Detail / History ── */}
             {(panel === 'detail' || panel === 'history') && selected ? (
@@ -872,6 +874,15 @@ export default function DicionarioWorkspace({ project, userId, onAskAI }: Props)
                       onMouseLeave={e => { e.currentTarget.style.background = 'none'; e.currentTarget.style.color = '#64748B' }}
                     >
                       ← Voltar ao verbete
+                    </button>
+                  ) : compact ? (
+                    <button
+                      onClick={() => { setPanel('list'); setSelected(null) }}
+                      style={{ display: 'flex', alignItems: 'center', gap: '5px', background: 'none', border: 'none', cursor: 'pointer', color: '#64748B', fontFamily: 'inherit', fontSize: '0.8rem', fontWeight: 500, padding: '4px 8px', borderRadius: '6px' }}
+                      onMouseEnter={e => { e.currentTarget.style.background = '#F4F6F9'; e.currentTarget.style.color = '#1E293B' }}
+                      onMouseLeave={e => { e.currentTarget.style.background = 'none'; e.currentTarget.style.color = '#64748B' }}
+                    >
+                      ← Verbetes
                     </button>
                   ) : (
                     <div style={{ fontSize: '0.78rem', fontWeight: 600, color: '#94A3B8', letterSpacing: '-0.01em' }}>
@@ -1087,6 +1098,14 @@ export default function DicionarioWorkspace({ project, userId, onAskAI }: Props)
             ) : panel === 'ai-result' ? (
               // ── AI Result ──────────────────────────────────────────────────────
               <div style={{ flex: 1, overflowY: 'auto' }}>
+                {compact && (
+                  <button
+                    onClick={() => { setPanel('list'); setAiResult(''); setQuery('') }}
+                    style={{ display: 'flex', alignItems: 'center', gap: '5px', margin: '0.6rem 1rem 0', background: 'none', border: 'none', cursor: 'pointer', color: '#64748B', fontFamily: 'inherit', fontSize: '0.8rem', fontWeight: 500, padding: '4px 8px', borderRadius: '6px' }}
+                  >
+                    ← Verbetes
+                  </button>
+                )}
                 <div style={{ maxWidth: '680px', margin: '0 auto', padding: '2.75rem 2.5rem 5rem' }}>
                   <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '1.75rem', gap: '1rem' }}>
                     <div>

@@ -285,7 +285,7 @@ export default function WorkspaceLateralTabs({ project, userId, onAskAI }: Props
 
             <div style={{ flex: 1, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
               {leftTab === 'dicionario' && (
-                <DicionarioWorkspace project={project} userId={userId} onAskAI={onAskAI} />
+                <DicionarioWorkspace project={project} userId={userId} onAskAI={onAskAI} compact />
               )}
               {leftTab === 'referencias' && (
                 <CrossReferencesWorkspace project={project} onAskAI={onAskAI} />
