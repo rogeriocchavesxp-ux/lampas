@@ -785,7 +785,7 @@ export default function DicionarioWorkspace({ project, userId, onAskAI }: Props)
                     const isSelected = selected?.id === entry.id && (panel === 'detail' || panel === 'history')
                     const cat = CATEGORIES.find(c => c.key === entry.category)
                     const raw = entry.definition?.trim() ?? ''
-                    const excerpt = raw.length > 72 ? raw.slice(0, 72).replace(/\s\S*$/, '') + '…' : raw
+                    const excerpt = raw.length > 120 ? raw.slice(0, 120).replace(/\s\S*$/, '') + '…' : raw
 
                     return (
                       <button
@@ -805,30 +805,39 @@ export default function DicionarioWorkspace({ project, userId, onAskAI }: Props)
                         onMouseEnter={e => { if (!isSelected) e.currentTarget.style.background = '#F0F2F6' }}
                         onMouseLeave={e => { if (!isSelected) e.currentTarget.style.background = 'transparent' }}
                       >
-                        <div style={{ display: 'flex', alignItems: 'flex-start', gap: '10px' }}>
-                          <span style={{ fontSize: '1rem', lineHeight: 1.2, marginTop: '2px', flexShrink: 0, userSelect: 'none' }}>
+                        {/* Title row: icon + name */}
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '7px', marginBottom: excerpt ? '5px' : '5px' }}>
+                          <span style={{ fontSize: '0.92rem', flexShrink: 0, userSelect: 'none', lineHeight: 1 }}>
                             {cat?.icon ?? '📖'}
                           </span>
-                          <div style={{ minWidth: 0, flex: 1 }}>
-                            <div style={{
-                              fontSize: '0.875rem', fontWeight: 600,
-                              color: isSelected ? '#0F172A' : '#1E293B',
-                              marginBottom: excerpt ? '3px' : '5px',
-                              overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
-                            }}>
-                              {entry.title}
-                            </div>
-                            {excerpt && (
-                              <div style={{ fontSize: '0.74rem', color: '#64748B', lineHeight: 1.4, marginBottom: '6px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                                {excerpt}
-                              </div>
-                            )}
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                              <span style={{ fontSize: '0.64rem', color: '#94A3B8' }}>{cat?.label}</span>
-                              <span style={{ color: '#D1D5DB', fontSize: '0.7rem', lineHeight: 1 }}>·</span>
-                              <TrustBadge level={entry.trust_level} />
-                            </div>
+                          <div style={{
+                            fontSize: '0.875rem', fontWeight: 600,
+                            color: isSelected ? '#0F172A' : '#1E293B',
+                            overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+                          }}>
+                            {entry.title}
                           </div>
+                        </div>
+
+                        {/* Description — below, full width */}
+                        {excerpt && (
+                          <div style={{
+                            fontSize: '0.75rem', color: '#64748B', lineHeight: 1.5,
+                            marginBottom: '6px',
+                            display: '-webkit-box',
+                            WebkitLineClamp: 2,
+                            WebkitBoxOrient: 'vertical',
+                            overflow: 'hidden',
+                          }}>
+                            {excerpt}
+                          </div>
+                        )}
+
+                        {/* Meta row */}
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                          <span style={{ fontSize: '0.64rem', color: '#94A3B8' }}>{cat?.label}</span>
+                          <span style={{ color: '#D1D5DB', fontSize: '0.7rem', lineHeight: 1 }}>·</span>
+                          <TrustBadge level={entry.trust_level} />
                         </div>
                       </button>
                     )
