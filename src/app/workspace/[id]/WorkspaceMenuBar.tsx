@@ -37,12 +37,13 @@ export interface WorkspaceMenuBarProps {
   onEnviarSermao: () => void
   onEnviarDevocional: () => void
   onEnviarKB: () => void
+  onExportarPromptSlides: () => void
 }
 
 export default function WorkspaceMenuBar({
   bibleOpen, focusMode, sideBySide, aiOpen, checklistOpen,
   onToggleBible, onToggleFocus, onToggleSideBySide, onToggleAI, onToggleChecklist,
-  onEnviarSermao, onEnviarDevocional, onEnviarKB,
+  onEnviarSermao, onEnviarDevocional, onEnviarKB, onExportarPromptSlides,
 }: WorkspaceMenuBarProps) {
   const router = useRouter()
   const [openMenu, setOpenMenu] = useState<string | null>(null)
@@ -50,7 +51,6 @@ export default function WorkspaceMenuBar({
   const [isAdmin, setIsAdmin] = useState(false)
   const [showSearch, setShowSearch] = useState(false)
   const [searchVal, setSearchVal] = useState('')
-  const [showSlidePrompt, setShowSlidePrompt] = useState(false)
   const barRef = useRef<HTMLDivElement>(null)
   const searchInputRef = useRef<HTMLInputElement>(null)
 
@@ -129,7 +129,7 @@ export default function WorkspaceMenuBar({
         { label: 'Exportar PDF',          onClick: () => window.print() },
         { label: 'Exportar DOCX',         soon: true },
         { label: 'Exportar Slides',       soon: true },
-        { label: 'Exportar Prompt para Slides', onClick: () => { setOpenMenu(null); setShowSlidePrompt(true) } },
+        { label: 'Exportar Prompt para Slides', onClick: () => { setOpenMenu(null); onExportarPromptSlides() } },
         { label: 'Navegação', header: true, separator: true },
         { label: 'Início',                                onClick: () => router.push('/') },
       ],
@@ -369,7 +369,6 @@ export default function WorkspaceMenuBar({
   }
 
   return (
-    <>
     <header style={{
       height: '44px',
       flexShrink: 0,
@@ -549,175 +548,10 @@ export default function WorkspaceMenuBar({
       </div>
     </header>
 
-    {showSlidePrompt && <SlidePromptModal onClose={() => setShowSlidePrompt(false)} />}
-    </>
   )
 }
 
 // ── Sub-componentes ─────────────────────────────────────────────────────────
-
-const SLIDE_PROMPT = `Você é um especialista em comunicação pastoral e design de apresentações.
-
-Com base neste estudo bíblico, crie uma apresentação de slides completa para pregação ou aula:
-
-DIRETRIZES GERAIS:
-• Crie entre 8 e 15 slides
-• Linguagem clara, pastoral e acessível — teológico sem ser técnico
-• Cada slide deve conter no máximo 5 linhas de texto
-• Priorize afirmações curtas, memoráveis e progressivas
-
-ESTRUTURA SUGERIDA:
-1. Slide de título — passagem bíblica + título da mensagem
-2. Slide de introdução — gancho, pergunta ou situação real da vida
-3 a 8. Slides de desenvolvimento — um ponto central por slide
-9 a 11. Slides de aplicação — implicações práticas para a vida
-12. Slide de conclusão — chamado à resposta e versículo-chave
-
-FORMATO PARA CADA SLIDE:
-SLIDE [número]: [Título do slide]
-Subtítulo: [opcional]
-• [Ponto 1]
-• [Ponto 2]
-• [Ponto 3]
-Nota ao pregador: [transição ou observação]
-
----
-[COLE AQUI O CONTEÚDO DO SEU ESTUDO BÍBLICO]
----`
-
-function SlidePromptModal({ onClose }: { onClose: () => void }) {
-  const [copied, setCopied] = useState(false)
-
-  function handleCopy() {
-    navigator.clipboard.writeText(SLIDE_PROMPT).then(() => {
-      setCopied(true)
-      setTimeout(() => setCopied(false), 2000)
-    })
-  }
-
-  return (
-    <div
-      onClick={onClose}
-      style={{
-        position: 'fixed', inset: 0, zIndex: 9000,
-        background: 'rgba(15,23,42,0.45)',
-        display: 'flex', alignItems: 'center', justifyContent: 'center',
-        padding: '1.5rem',
-      }}
-    >
-      <div
-        onClick={e => e.stopPropagation()}
-        style={{
-          background: 'var(--surface)', borderRadius: '12px',
-          boxShadow: '0 24px 64px rgba(15,23,42,0.18), 0 4px 16px rgba(15,23,42,0.08)',
-          width: '100%', maxWidth: '640px',
-          display: 'flex', flexDirection: 'column',
-          maxHeight: '80vh', overflow: 'hidden',
-        }}
-      >
-        {/* Header */}
-        <div style={{
-          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-          padding: '1rem 1.25rem 0.75rem',
-          borderBottom: '1px solid var(--border-subtle)',
-        }}>
-          <div>
-            <div style={{ fontSize: '0.92rem', fontWeight: 700, color: 'var(--text-primary)', letterSpacing: '-0.01em' }}>
-              Exportar Prompt para Slides
-            </div>
-            <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)', marginTop: '0.18rem' }}>
-              Copie o prompt abaixo e cole no NotebookLM, ChatGPT ou outro sistema de IA
-            </div>
-          </div>
-          <button
-            onClick={onClose}
-            style={{
-              background: 'none', border: 'none', cursor: 'pointer',
-              color: 'var(--text-muted)', fontSize: '1.2rem', lineHeight: 1,
-              padding: '0.2rem 0.4rem', borderRadius: '5px',
-            }}
-            onMouseEnter={e => { e.currentTarget.style.background = 'var(--surface-2)' }}
-            onMouseLeave={e => { e.currentTarget.style.background = 'none' }}
-          >
-            ×
-          </button>
-        </div>
-
-        {/* Instruções */}
-        <div style={{
-          padding: '0.75rem 1.25rem 0.5rem',
-          display: 'flex', gap: '1.5rem',
-          borderBottom: '1px solid var(--border-subtle)',
-          flexShrink: 0,
-        }}>
-          {[
-            { n: '1', text: 'Copie o prompt abaixo' },
-            { n: '2', text: 'Cole no NotebookLM ou ChatGPT' },
-            { n: '3', text: 'Adicione o conteúdo do seu estudo ao final' },
-          ].map(step => (
-            <div key={step.n} style={{ display: 'flex', alignItems: 'flex-start', gap: '0.5rem' }}>
-              <span style={{
-                width: '18px', height: '18px', borderRadius: '50%',
-                background: 'var(--accent)', color: '#fff',
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                fontSize: '0.62rem', fontWeight: 700, flexShrink: 0, marginTop: '0.05rem',
-              }}>{step.n}</span>
-              <span style={{ fontSize: '0.72rem', color: 'var(--text-secondary)', lineHeight: 1.4 }}>{step.text}</span>
-            </div>
-          ))}
-        </div>
-
-        {/* Prompt */}
-        <div style={{ flex: 1, overflowY: 'auto', padding: '0.75rem 1.25rem' }}>
-          <pre style={{
-            margin: 0,
-            fontFamily: "'SF Mono', 'Fira Code', 'Consolas', monospace",
-            fontSize: '0.72rem', lineHeight: 1.65,
-            color: 'var(--text-secondary)',
-            background: 'var(--surface-2)',
-            borderRadius: '8px', padding: '1rem',
-            whiteSpace: 'pre-wrap', wordBreak: 'break-word',
-            border: '1px solid var(--border-subtle)',
-          }}>
-            {SLIDE_PROMPT}
-          </pre>
-        </div>
-
-        {/* Footer */}
-        <div style={{
-          padding: '0.75rem 1.25rem',
-          borderTop: '1px solid var(--border-subtle)',
-          display: 'flex', justifyContent: 'flex-end', gap: '0.5rem',
-        }}>
-          <button
-            onClick={onClose}
-            style={{
-              background: 'none', border: '1px solid var(--border)',
-              borderRadius: '7px', padding: '0.45rem 1rem',
-              fontSize: '0.78rem', cursor: 'pointer',
-              fontFamily: 'inherit', color: 'var(--text-secondary)',
-            }}
-          >
-            Fechar
-          </button>
-          <button
-            onClick={handleCopy}
-            style={{
-              background: copied ? '#10B981' : 'var(--accent)',
-              border: 'none', borderRadius: '7px',
-              padding: '0.45rem 1.1rem',
-              fontSize: '0.78rem', fontWeight: 650,
-              cursor: 'pointer', fontFamily: 'inherit', color: '#fff',
-              transition: 'background 0.2s',
-            }}
-          >
-            {copied ? '✓ Copiado!' : 'Copiar Prompt'}
-          </button>
-        </div>
-      </div>
-    </div>
-  )
-}
 
 function MenuLabel({ label, open, onClick, onHover }: {
   label: string; open: boolean; onClick: () => void; onHover: () => void

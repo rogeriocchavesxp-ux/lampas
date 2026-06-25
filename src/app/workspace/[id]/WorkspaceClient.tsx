@@ -212,6 +212,8 @@ export default function WorkspaceClient({ user, project, initialSections }: Prop
   const enviarDropdownRef = useRef<HTMLDivElement>(null)
   const [pilgrimOpen, setPilgrimOpen]       = useState(false)
   const [checklistOpen, setChecklistOpen]   = useState(false)
+  const [slidePromptOpen, setSlidePromptOpen] = useState(false)
+  const [slidePromptText, setSlidePromptText] = useState('')
 
   const sidebarWidthRef  = useRef(264)
   const referenceWidthRef = useRef(280)
@@ -543,6 +545,90 @@ export default function WorkspaceClient({ user, project, initialSections }: Prop
     })
   }
 
+  function buildSlidePrompt() {
+    function stripHtml(html: string) {
+      return html
+        .replace(/<br\s*\/?>/gi, '\n')
+        .replace(/<\/p>/gi, '\n')
+        .replace(/<\/h[1-6]>/gi, '\n')
+        .replace(/<\/li>/gi, '\n')
+        .replace(/<[^>]+>/g, '')
+        .replace(/&nbsp;/g, ' ')
+        .replace(/&amp;/g, '&')
+        .replace(/&lt;/g, '<')
+        .replace(/&gt;/g, '>')
+        .replace(/\n{3,}/g, '\n\n')
+        .trim()
+    }
+
+    const header = [
+      `TÍTULO: ${project.title}`,
+      project.passage_ref ? `PASSAGEM: ${project.passage_ref}` : '',
+      `MODO DE ESTUDO: ${modeConfig.name}`,
+    ].filter(Boolean).join('\n')
+
+    const filledSections = WORKSPACE_SECTIONS
+      .filter(def => {
+        const sec = sections.find(s => s.slug === def.slug)
+        if (!sec?.content) return false
+        const cards = (sec.content as { cards?: Record<string, string> }).cards ?? {}
+        return Object.values(cards).some(v => stripHtml(v ?? '').length > 10)
+      })
+      .sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
+
+    const body = filledSections.map(def => {
+      const sec = sections.find(s => s.slug === def.slug)!
+      const cards = (sec.content as { cards?: Record<string, string> }).cards ?? {}
+      const cardLines = def.cards
+        .filter(c => stripHtml(cards[c.id] ?? '').length > 10)
+        .map(c => {
+          const text = stripHtml(cards[c.id] ?? '')
+          return `  [${c.title}]\n  ${text.split('\n').join('\n  ')}`
+        })
+        .join('\n\n')
+      return `### ${def.title}\n${cardLines}`
+    }).join('\n\n---\n\n')
+
+    const instructions = `Você é um especialista em comunicação pastoral e design de apresentações.
+
+Com base no estudo bíblico abaixo, crie uma apresentação de slides completa:
+
+DIRETRIZES:
+• Crie entre 8 e 15 slides
+• Linguagem clara, pastoral e acessível — teológico sem ser técnico
+• Cada slide: máximo 5 linhas de texto
+• Priorize afirmações curtas, memoráveis e progressivas
+
+ESTRUTURA:
+1. Slide de título — passagem + título da mensagem
+2. Introdução — gancho, pergunta ou situação real
+3-8. Desenvolvimento — um ponto central por slide
+9-11. Aplicações práticas
+12. Conclusão — chamado e versículo-chave
+
+FORMATO POR SLIDE:
+SLIDE [n]: [Título]
+• [Ponto 1]
+• [Ponto 2]
+• [Ponto 3]
+Nota ao pregador: [transição]
+
+${'='.repeat(60)}
+ESTUDO BÍBLICO
+${'='.repeat(60)}
+
+${header}
+
+${body}`
+
+    return instructions
+  }
+
+  function handleExportarPromptSlides() {
+    setSlidePromptText(buildSlidePrompt())
+    setSlidePromptOpen(true)
+  }
+
   function navigate(slug: string) {
     setExpandedPhases(prev => new Set([...prev, getPhaseFor(slug)]))
     const c = getCanonFor(slug, navPhases)
@@ -600,6 +686,7 @@ export default function WorkspaceClient({ user, project, initialSections }: Prop
   }
 
   return (
+    <>
     <WorkspaceProvider
       user={user}
       project={project}
@@ -623,6 +710,7 @@ export default function WorkspaceClient({ user, project, initialSections }: Prop
         onEnviarSermao={() => { setEnviarTargetMode('sermao'); setEnviarParaSermaOpen(true) }}
         onEnviarDevocional={() => { setEnviarTargetMode('devocional'); setEnviarParaSermaOpen(true) }}
         onEnviarKB={() => window.dispatchEvent(new CustomEvent('lampas:kb-open-create'))}
+        onExportarPromptSlides={handleExportarPromptSlides}
       />
 
       <WorkspaceHeader
@@ -1946,6 +2034,128 @@ export default function WorkspaceClient({ user, project, initialSections }: Prop
 
     </div>
     </WorkspaceProvider>
+
+    {slidePromptOpen && (
+      <SlidePromptModal
+        prompt={slidePromptText}
+        onClose={() => setSlidePromptOpen(false)}
+      />
+    )}
+    </>
+  )
+}
+
+// ── SlidePromptModal ─────────────────────────────────────────────────────────
+
+function SlidePromptModal({ prompt, onClose }: { prompt: string; onClose: () => void }) {
+  const [copied, setCopied] = useState(false)
+
+  function handleCopy() {
+    navigator.clipboard.writeText(prompt).then(() => {
+      setCopied(true)
+      setTimeout(() => setCopied(false), 2000)
+    })
+  }
+
+  return (
+    <div
+      onClick={onClose}
+      style={{
+        position: 'fixed', inset: 0, zIndex: 9000,
+        background: 'rgba(15,23,42,0.45)',
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        padding: '1.5rem',
+      }}
+    >
+      <div
+        onClick={e => e.stopPropagation()}
+        style={{
+          background: 'var(--surface)', borderRadius: '12px',
+          boxShadow: '0 24px 64px rgba(15,23,42,0.18), 0 4px 16px rgba(15,23,42,0.08)',
+          width: '100%', maxWidth: '680px',
+          display: 'flex', flexDirection: 'column',
+          maxHeight: '82vh', overflow: 'hidden',
+        }}
+      >
+        {/* Header */}
+        <div style={{
+          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+          padding: '1rem 1.25rem 0.75rem',
+          borderBottom: '1px solid var(--border-subtle)',
+          flexShrink: 0,
+        }}>
+          <div>
+            <div style={{ fontSize: '0.92rem', fontWeight: 700, color: 'var(--text-primary)', letterSpacing: '-0.01em' }}>
+              Exportar Prompt para Slides
+            </div>
+            <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)', marginTop: '0.18rem' }}>
+              Copie e cole no NotebookLM, ChatGPT ou outro sistema de IA para gerar slides
+            </div>
+          </div>
+          <button
+            onClick={onClose}
+            style={{
+              background: 'none', border: 'none', cursor: 'pointer',
+              color: 'var(--text-muted)', fontSize: '1.2rem', lineHeight: 1,
+              padding: '0.2rem 0.4rem', borderRadius: '5px',
+            }}
+            onMouseEnter={e => { e.currentTarget.style.background = 'var(--surface-2)' }}
+            onMouseLeave={e => { e.currentTarget.style.background = 'none' }}
+          >
+            ×
+          </button>
+        </div>
+
+        {/* Prompt */}
+        <div style={{ flex: 1, overflowY: 'auto', padding: '0.85rem 1.25rem' }}>
+          <pre style={{
+            margin: 0,
+            fontFamily: "'SF Mono', 'Fira Code', 'Consolas', monospace",
+            fontSize: '0.71rem', lineHeight: 1.7,
+            color: 'var(--text-secondary)',
+            background: 'var(--surface-2)',
+            borderRadius: '8px', padding: '1rem',
+            whiteSpace: 'pre-wrap', wordBreak: 'break-word',
+            border: '1px solid var(--border-subtle)',
+          }}>
+            {prompt}
+          </pre>
+        </div>
+
+        {/* Footer */}
+        <div style={{
+          padding: '0.75rem 1.25rem',
+          borderTop: '1px solid var(--border-subtle)',
+          display: 'flex', justifyContent: 'flex-end', gap: '0.5rem',
+          flexShrink: 0,
+        }}>
+          <button
+            onClick={onClose}
+            style={{
+              background: 'none', border: '1px solid var(--border)',
+              borderRadius: '7px', padding: '0.45rem 1rem',
+              fontSize: '0.78rem', cursor: 'pointer',
+              fontFamily: 'inherit', color: 'var(--text-secondary)',
+            }}
+          >
+            Fechar
+          </button>
+          <button
+            onClick={handleCopy}
+            style={{
+              background: copied ? '#10B981' : 'var(--accent)',
+              border: 'none', borderRadius: '7px',
+              padding: '0.45rem 1.1rem',
+              fontSize: '0.78rem', fontWeight: 650,
+              cursor: 'pointer', fontFamily: 'inherit', color: '#fff',
+              transition: 'background 0.2s',
+            }}
+          >
+            {copied ? '✓ Copiado!' : 'Copiar Prompt'}
+          </button>
+        </div>
+      </div>
+    </div>
   )
 }
 
