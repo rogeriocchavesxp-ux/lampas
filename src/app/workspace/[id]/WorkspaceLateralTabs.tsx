@@ -3,19 +3,19 @@
 import { useState, useEffect, useCallback } from 'react'
 import type { Project } from '@/types/database'
 import {
-  BookOpen, BookMarked, Paperclip, Library, BookText, BookCopy,
+  BookMarked, Paperclip, Library, BookText, BookCopy, Archive,
   ChevronRight, ChevronLeft, X,
   type LucideIcon,
 } from 'lucide-react'
 import DicionarioWorkspace from './DicionarioWorkspace'
 import CrossReferencesWorkspace from './CrossReferencesWorkspace'
 import RecortesWorkspace from './RecortesWorkspace'
-import BibleFloatingWindow from './BibleFloatingWindow'
 import IntroducaoWorkspace from './IntroducaoWorkspace'
+import LibraryWorkspace from './LibraryWorkspace'
 import { TOOL_AREAS, type ToolArea } from '@/lib/tools-content'
 
 type LeftTab  = 'dicionario' | 'referencias' | 'recortes'
-type RightTab = 'biblia' | 'introducoes' | 'teologias'
+type RightTab = 'biblioteca' | 'introducoes' | 'teologias'
 
 interface Props {
   project: Project
@@ -38,7 +38,7 @@ const LEFT_TABS: TabConfig<LeftTab>[] = [
 ]
 
 const RIGHT_TABS: TabConfig<RightTab>[] = [
-  { id: 'biblia',      label: 'Texto Bíblico', Icon: BookOpen,  color: '#1D4ED8', bg: '#EFF6FF' },
+  { id: 'biblioteca',  label: 'Biblioteca',    Icon: Archive,   color: '#7C2D12', bg: '#FFF7ED' },
   { id: 'introducoes', label: 'Introduções',   Icon: Library,   color: '#B45309', bg: '#FFFBEB' },
   { id: 'teologias',   label: 'Teologias',     Icon: BookText,  color: '#9B2C2C', bg: '#FFF5F5' },
 ]
@@ -166,6 +166,7 @@ export default function WorkspaceLateralTabs({ project, userId, onAskAI }: Props
   const [leftTab,  setLeftTab]  = useState<LeftTab | null>(null)
   const [rightTab, setRightTab] = useState<RightTab | null>(null)
   const [teoSub,   setTeoSub]   = useState<'ferramentas_biblica' | 'ferramentas_sistematica'>('ferramentas_biblica')
+  // Memoizes the last open right panel so it keeps state when switching
 
   // Painéis laterais sempre iniciam fechados — só abrem por ação explícita do usuário
 
@@ -400,16 +401,10 @@ export default function WorkspaceLateralTabs({ project, userId, onAskAI }: Props
             )}
 
             <div style={{ flex: 1, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
-              {rightTab === 'biblia' && (
-                <BibleFloatingWindow
-                  book={project.book}
-                  passageRef={project.passage_ref}
-                  testament={project.testament}
-                  projectId={project.id}
-                  userId={userId}
-                  onClose={() => setRightTab(null)}
-                  sidebarMode
-                  studyMode={project.study_mode ?? undefined}
+              {rightTab === 'biblioteca' && (
+                <LibraryWorkspace
+                  project={project}
+                  onAskAI={onAskAI}
                 />
               )}
               {rightTab === 'introducoes' && (

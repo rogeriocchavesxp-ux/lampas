@@ -1,0 +1,937 @@
+{
+  "version": "1.0",
+  "description": "Catálogo da Biblioteca Teológica Reformada de Domínio Público — Lampas",
+  "authors": [
+    {
+      "id": "matthew_henry",
+      "name": "Matthew Henry",
+      "birth_year": 1662,
+      "death_year": 1714,
+      "tradition": "Reformed",
+      "nationality": "British"
+    },
+    {
+      "id": "jamieson_fausset_brown",
+      "name": "Robert Jamieson, A.R. Fausset, David Brown",
+      "birth_year": 1802,
+      "death_year": 1880,
+      "tradition": "Reformed",
+      "nationality": "British"
+    },
+    {
+      "id": "albert_barnes",
+      "name": "Albert Barnes",
+      "birth_year": 1798,
+      "death_year": 1870,
+      "tradition": "Presbyterian",
+      "nationality": "American"
+    },
+    {
+      "id": "keil_delitzsch",
+      "name": "Carl Friedrich Keil and Franz Delitzsch",
+      "birth_year": 1807,
+      "death_year": 1888,
+      "tradition": "Lutheran",
+      "nationality": "German"
+    },
+    {
+      "id": "spurgeon",
+      "name": "Charles Haddon Spurgeon",
+      "birth_year": 1834,
+      "death_year": 1892,
+      "tradition": "Reformed Baptist",
+      "nationality": "British"
+    },
+    {
+      "id": "john_calvin",
+      "name": "John Calvin",
+      "birth_year": 1509,
+      "death_year": 1564,
+      "tradition": "Reformed",
+      "nationality": "French"
+    },
+    {
+      "id": "john_wesley",
+      "name": "John Wesley",
+      "birth_year": 1703,
+      "death_year": 1791,
+      "tradition": "Methodist",
+      "nationality": "British"
+    },
+    {
+      "id": "charles_hodge",
+      "name": "Charles Hodge",
+      "birth_year": 1797,
+      "death_year": 1878,
+      "tradition": "Reformed",
+      "nationality": "American"
+    },
+    {
+      "id": "martin_luther",
+      "name": "Martin Luther",
+      "birth_year": 1483,
+      "death_year": 1546,
+      "tradition": "Lutheran",
+      "nationality": "German"
+    },
+    {
+      "id": "h_a_w_meyer",
+      "name": "Heinrich August Wilhelm Meyer",
+      "birth_year": 1800,
+      "death_year": 1873,
+      "tradition": "Lutheran",
+      "nationality": "German"
+    },
+    {
+      "id": "b_w_johnson",
+      "name": "Barton Warren Johnson",
+      "birth_year": 1833,
+      "death_year": 1894,
+      "tradition": "Christian Church",
+      "nationality": "American"
+    },
+    {
+      "id": "matthew_easton",
+      "name": "Matthew George Easton",
+      "birth_year": 1823,
+      "death_year": 1894,
+      "tradition": "Presbyterian",
+      "nationality": "British"
+    },
+    {
+      "id": "william_smith",
+      "name": "William Smith",
+      "birth_year": 1813,
+      "death_year": 1893,
+      "tradition": "Anglican",
+      "nationality": "British"
+    },
+    {
+      "id": "a_r_fausset",
+      "name": "Andrew Robert Fausset",
+      "birth_year": 1821,
+      "death_year": 1910,
+      "tradition": "Anglican",
+      "nationality": "British"
+    },
+    {
+      "id": "r_d_hitchcock",
+      "name": "Roswell Dwight Hitchcock",
+      "birth_year": 1817,
+      "death_year": 1887,
+      "tradition": "Presbyterian",
+      "nationality": "American"
+    },
+    {
+      "id": "o_j_nave",
+      "name": "Orville James Nave",
+      "birth_year": 1841,
+      "death_year": 1917,
+      "tradition": "Methodist",
+      "nationality": "American"
+    },
+    {
+      "id": "james_orr",
+      "name": "James Orr (ed.)",
+      "birth_year": 1844,
+      "death_year": 1913,
+      "tradition": "Reformed",
+      "nationality": "British"
+    },
+    {
+      "id": "mcclintock_strong",
+      "name": "John McClintock and James Strong",
+      "birth_year": 1814,
+      "death_year": 1894,
+      "tradition": "Methodist",
+      "nationality": "American"
+    },
+    {
+      "id": "francis_brown",
+      "name": "Francis Brown, S.R. Driver, Charles A. Briggs",
+      "birth_year": 1849,
+      "death_year": 1916,
+      "tradition": "Academic",
+      "nationality": "American"
+    },
+    {
+      "id": "gesenius",
+      "name": "Wilhelm Gesenius",
+      "birth_year": 1786,
+      "death_year": 1842,
+      "tradition": "Academic",
+      "nationality": "German"
+    },
+    {
+      "id": "thayer",
+      "name": "Joseph Henry Thayer",
+      "birth_year": 1828,
+      "death_year": 1901,
+      "tradition": "Academic",
+      "nationality": "American"
+    },
+    {
+      "id": "liddell_scott",
+      "name": "Henry George Liddell and Robert Scott",
+      "birth_year": 1811,
+      "death_year": 1898,
+      "tradition": "Academic",
+      "nationality": "British"
+    },
+    {
+      "id": "james_strong",
+      "name": "James Strong",
+      "birth_year": 1822,
+      "death_year": 1894,
+      "tradition": "Methodist",
+      "nationality": "American"
+    },
+    {
+      "id": "robert_young",
+      "name": "Robert Young",
+      "birth_year": 1822,
+      "death_year": 1888,
+      "tradition": "Reformed",
+      "nationality": "British"
+    },
+    {
+      "id": "alexander_cruden",
+      "name": "Alexander Cruden",
+      "birth_year": 1699,
+      "death_year": 1770,
+      "tradition": "Presbyterian",
+      "nationality": "British"
+    }
+  ],
+  "works": [
+    {
+      "id": "matthew_henry_mhc",
+      "title": "Commentary on the Whole Bible",
+      "author_id": "matthew_henry",
+      "year_published": 1706,
+      "language": "en",
+      "collection": "comentarios",
+      "work_type": "commentary",
+      "testament": "both",
+      "tradition": "Reformed",
+      "period": "Post-Reformation",
+      "keywords": ["devotional", "pastoral", "puritan", "application", "preaching"],
+      "public_domain": true,
+      "public_domain_status": "confirmed",
+      "public_domain_source": "Published 1706-1721. Well past copyright in all jurisdictions.",
+      "source_url": "https://www.ccel.org/ccel/henry/mhc.html",
+      "notes": "Um dos comentários devocionais mais influentes da história. Excelente para aplicação pastoral e sermões.",
+      "total_volumes": 6,
+      "volumes": [
+        {
+          "volume_number": 1,
+          "title": "Genesis to Deuteronomy",
+          "bible_book_start": "Genesis",
+          "bible_book_end": "Deuteronomy",
+          "sources": [
+            {"type": "ccel", "url": "https://www.ccel.org/ccel/henry/mhc1.html", "format": "html"},
+            {"type": "archive_org", "url": "https://archive.org/details/matthewhenryscex01henrrich", "format": "pdf"}
+          ]
+        },
+        {
+          "volume_number": 2,
+          "title": "Joshua to Esther",
+          "bible_book_start": "Joshua",
+          "bible_book_end": "Esther",
+          "sources": [
+            {"type": "ccel", "url": "https://www.ccel.org/ccel/henry/mhc2.html", "format": "html"},
+            {"type": "archive_org", "url": "https://archive.org/details/matthewhenryscex02henrrich", "format": "pdf"}
+          ]
+        },
+        {
+          "volume_number": 3,
+          "title": "Job to Song of Solomon",
+          "bible_book_start": "Job",
+          "bible_book_end": "Song of Solomon",
+          "sources": [
+            {"type": "ccel", "url": "https://www.ccel.org/ccel/henry/mhc3.html", "format": "html"},
+            {"type": "archive_org", "url": "https://archive.org/details/matthewhenryscex03henrrich", "format": "pdf"}
+          ]
+        },
+        {
+          "volume_number": 4,
+          "title": "Isaiah to Malachi",
+          "bible_book_start": "Isaiah",
+          "bible_book_end": "Malachi",
+          "sources": [
+            {"type": "ccel", "url": "https://www.ccel.org/ccel/henry/mhc4.html", "format": "html"},
+            {"type": "archive_org", "url": "https://archive.org/details/matthewhenryscex04henrrich", "format": "pdf"}
+          ]
+        },
+        {
+          "volume_number": 5,
+          "title": "Matthew to John",
+          "bible_book_start": "Matthew",
+          "bible_book_end": "John",
+          "sources": [
+            {"type": "ccel", "url": "https://www.ccel.org/ccel/henry/mhc5.html", "format": "html"},
+            {"type": "archive_org", "url": "https://archive.org/details/matthewhenryscex05henrrich", "format": "pdf"}
+          ]
+        },
+        {
+          "volume_number": 6,
+          "title": "Acts to Revelation",
+          "bible_book_start": "Acts",
+          "bible_book_end": "Revelation",
+          "sources": [
+            {"type": "ccel", "url": "https://www.ccel.org/ccel/henry/mhc6.html", "format": "html"},
+            {"type": "archive_org", "url": "https://archive.org/details/matthewhenryscex06henrrich", "format": "pdf"}
+          ]
+        }
+      ]
+    },
+    {
+      "id": "jfb_commentary",
+      "title": "Commentary Critical and Explanatory on the Whole Bible",
+      "author_id": "jamieson_fausset_brown",
+      "year_published": 1871,
+      "language": "en",
+      "collection": "comentarios",
+      "work_type": "commentary",
+      "testament": "both",
+      "tradition": "Reformed",
+      "period": "19th Century",
+      "keywords": ["critical", "exegesis", "history", "grammar", "context", "theology"],
+      "public_domain": true,
+      "public_domain_status": "confirmed",
+      "public_domain_source": "Published 1871. Public domain.",
+      "source_url": "https://www.ccel.org/ccel/jamieson/jfb.html",
+      "notes": "Excelente equilíbrio entre história, gramática, contexto e teologia. Muito utilizado até hoje.",
+      "total_volumes": 2,
+      "volumes": [
+        {
+          "volume_number": 1,
+          "title": "Old Testament",
+          "bible_book_start": "Genesis",
+          "bible_book_end": "Malachi",
+          "sources": [
+            {"type": "ccel", "url": "https://www.ccel.org/ccel/jamieson/jfb.i.html", "format": "html"},
+            {"type": "archive_org", "url": "https://archive.org/details/commentarycritica01jami", "format": "pdf"}
+          ]
+        },
+        {
+          "volume_number": 2,
+          "title": "New Testament",
+          "bible_book_start": "Matthew",
+          "bible_book_end": "Revelation",
+          "sources": [
+            {"type": "ccel", "url": "https://www.ccel.org/ccel/jamieson/jfb.ii.html", "format": "html"},
+            {"type": "archive_org", "url": "https://archive.org/details/commentarycritica02jami", "format": "pdf"}
+          ]
+        }
+      ]
+    },
+    {
+      "id": "albert_barnes_notes",
+      "title": "Notes on the Bible",
+      "author_id": "albert_barnes",
+      "year_published": 1832,
+      "language": "en",
+      "collection": "comentarios",
+      "work_type": "commentary",
+      "testament": "both",
+      "tradition": "Presbyterian",
+      "period": "19th Century",
+      "keywords": ["verse-by-verse", "pastoral", "clear", "accessible"],
+      "public_domain": true,
+      "public_domain_status": "confirmed",
+      "public_domain_source": "Published 1832-1851. Public domain.",
+      "source_url": "https://www.ccel.org/ccel/barnes/",
+      "notes": "Comentário versículo a versículo, claro e acessível. Muito utilizado por pastores.",
+      "total_volumes": 14,
+      "volumes": [
+        {"volume_number": 1, "title": "Genesis", "bible_book_start": "Genesis", "bible_book_end": "Genesis", "sources": [{"type": "archive_org", "url": "https://archive.org/details/notesexplanator06barngoog", "format": "pdf"}]},
+        {"volume_number": 2, "title": "Job", "bible_book_start": "Job", "bible_book_end": "Job", "sources": [{"type": "archive_org", "url": "https://archive.org/details/notesexplanator00barnrich", "format": "pdf"}]},
+        {"volume_number": 3, "title": "Psalms (3 vols)", "bible_book_start": "Psalms", "bible_book_end": "Psalms", "sources": [{"type": "archive_org", "url": "https://archive.org/details/notesexplanato01barnrich", "format": "pdf"}]},
+        {"volume_number": 4, "title": "Isaiah", "bible_book_start": "Isaiah", "bible_book_end": "Isaiah", "sources": [{"type": "archive_org", "url": "https://archive.org/details/notesexplanatory01barn", "format": "pdf"}]},
+        {"volume_number": 5, "title": "Daniel", "bible_book_start": "Daniel", "bible_book_end": "Daniel", "sources": [{"type": "archive_org", "url": "https://archive.org/details/notesexplanatory02barn", "format": "pdf"}]},
+        {"volume_number": 6, "title": "Matthew and Mark", "bible_book_start": "Matthew", "bible_book_end": "Mark", "sources": [{"type": "archive_org", "url": "https://archive.org/details/notesexplanatory00barnuoft", "format": "pdf"}]},
+        {"volume_number": 7, "title": "Luke and John", "bible_book_start": "Luke", "bible_book_end": "John", "sources": [{"type": "archive_org", "url": "https://archive.org/details/notesexplanatory01barnuoft", "format": "pdf"}]},
+        {"volume_number": 8, "title": "Acts", "bible_book_start": "Acts", "bible_book_end": "Acts", "sources": [{"type": "archive_org", "url": "https://archive.org/details/notesexplanatory02barnuoft", "format": "pdf"}]},
+        {"volume_number": 9, "title": "Romans", "bible_book_start": "Romans", "bible_book_end": "Romans", "sources": [{"type": "archive_org", "url": "https://archive.org/details/notesexplanatory03barnuoft", "format": "pdf"}]},
+        {"volume_number": 10, "title": "1 Corinthians", "bible_book_start": "1 Corinthians", "bible_book_end": "1 Corinthians", "sources": [{"type": "archive_org", "url": "https://archive.org/details/notesexplanatory04barnuoft", "format": "pdf"}]},
+        {"volume_number": 11, "title": "2 Corinthians, Galatians, Ephesians", "bible_book_start": "2 Corinthians", "bible_book_end": "Ephesians", "sources": [{"type": "archive_org", "url": "https://archive.org/details/notesexplanatory05barnuoft", "format": "pdf"}]},
+        {"volume_number": 12, "title": "Philippians to 2 Thessalonians", "bible_book_start": "Philippians", "bible_book_end": "2 Thessalonians", "sources": [{"type": "archive_org", "url": "https://archive.org/details/notesexplanatory06barnuoft", "format": "pdf"}]},
+        {"volume_number": 13, "title": "1 Timothy to Philemon", "bible_book_start": "1 Timothy", "bible_book_end": "Philemon", "sources": [{"type": "archive_org", "url": "https://archive.org/details/notesexplanatory07barnuoft", "format": "pdf"}]},
+        {"volume_number": 14, "title": "Hebrews to Jude and Revelation", "bible_book_start": "Hebrews", "bible_book_end": "Revelation", "sources": [{"type": "archive_org", "url": "https://archive.org/details/notesexplanatory08barnuoft", "format": "pdf"}]}
+      ]
+    },
+    {
+      "id": "keil_delitzsch_ot",
+      "title": "Biblical Commentary on the Old Testament",
+      "author_id": "keil_delitzsch",
+      "year_published": 1861,
+      "language": "en",
+      "collection": "comentarios",
+      "work_type": "commentary",
+      "testament": "OT",
+      "tradition": "Lutheran",
+      "period": "19th Century",
+      "keywords": ["hebrew", "exegesis", "culture", "historical-context", "grammar"],
+      "public_domain": true,
+      "public_domain_status": "confirmed",
+      "public_domain_source": "Published 1861-1875 (English translation). Public domain.",
+      "source_url": "https://www.ccel.org/ccel/keil/comm.html",
+      "notes": "Provavelmente o melhor comentário de domínio público do AT. Muito forte em hebraico, cultura e exegese.",
+      "total_volumes": 10,
+      "volumes": [
+        {"volume_number": 1, "title": "Pentateuch Vol. 1 (Genesis)", "bible_book_start": "Genesis", "bible_book_end": "Genesis", "sources": [{"type": "archive_org", "url": "https://archive.org/details/biblicalcommenon01keil", "format": "pdf"}]},
+        {"volume_number": 2, "title": "Pentateuch Vol. 2 (Exodus-Deuteronomy)", "bible_book_start": "Exodus", "bible_book_end": "Deuteronomy", "sources": [{"type": "archive_org", "url": "https://archive.org/details/biblicalcommenon02keil", "format": "pdf"}]},
+        {"volume_number": 3, "title": "Joshua, Judges, Ruth", "bible_book_start": "Joshua", "bible_book_end": "Ruth", "sources": [{"type": "archive_org", "url": "https://archive.org/details/biblicalcommenon03keil", "format": "pdf"}]},
+        {"volume_number": 4, "title": "Samuel", "bible_book_start": "1 Samuel", "bible_book_end": "2 Samuel", "sources": [{"type": "archive_org", "url": "https://archive.org/details/biblicalcommenon04keil", "format": "pdf"}]},
+        {"volume_number": 5, "title": "Kings and Chronicles", "bible_book_start": "1 Kings", "bible_book_end": "2 Chronicles", "sources": [{"type": "archive_org", "url": "https://archive.org/details/biblicalcommenon05keil", "format": "pdf"}]},
+        {"volume_number": 6, "title": "Ezra, Nehemiah, Esther", "bible_book_start": "Ezra", "bible_book_end": "Esther", "sources": [{"type": "archive_org", "url": "https://archive.org/details/biblicalcommenon06keil", "format": "pdf"}]},
+        {"volume_number": 7, "title": "Psalms", "bible_book_start": "Psalms", "bible_book_end": "Psalms", "sources": [{"type": "archive_org", "url": "https://archive.org/details/biblicalcommenon07keil", "format": "pdf"}]},
+        {"volume_number": 8, "title": "Isaiah", "bible_book_start": "Isaiah", "bible_book_end": "Isaiah", "sources": [{"type": "archive_org", "url": "https://archive.org/details/biblicalcommenon08keil", "format": "pdf"}]},
+        {"volume_number": 9, "title": "Jeremiah and Lamentations", "bible_book_start": "Jeremiah", "bible_book_end": "Lamentations", "sources": [{"type": "archive_org", "url": "https://archive.org/details/biblicalcommenon09keil", "format": "pdf"}]},
+        {"volume_number": 10, "title": "Ezekiel to Malachi", "bible_book_start": "Ezekiel", "bible_book_end": "Malachi", "sources": [{"type": "archive_org", "url": "https://archive.org/details/biblicalcommenon10keil", "format": "pdf"}]}
+      ]
+    },
+    {
+      "id": "treasury_of_david",
+      "title": "The Treasury of David",
+      "author_id": "spurgeon",
+      "year_published": 1869,
+      "language": "en",
+      "collection": "comentarios",
+      "work_type": "commentary",
+      "testament": "OT",
+      "tradition": "Reformed Baptist",
+      "period": "19th Century",
+      "keywords": ["psalms", "devotional", "preaching", "puritan-extracts", "homiletics"],
+      "public_domain": true,
+      "public_domain_status": "confirmed",
+      "public_domain_source": "Published 1869-1885. Public domain.",
+      "source_url": "https://www.ccel.org/ccel/spurgeon/treasury.html",
+      "notes": "Considerado um dos maiores comentários já escritos sobre os Salmos. 7 volumes.",
+      "total_volumes": 7,
+      "volumes": [
+        {"volume_number": 1, "title": "Psalms 1-26", "bible_book_start": "Psalms", "bible_book_end": "Psalms", "chapter_start": 1, "chapter_end": 26, "sources": [{"type": "ccel", "url": "https://www.ccel.org/ccel/spurgeon/treasury.i.html", "format": "html"}, {"type": "archive_org", "url": "https://archive.org/details/treasuryofdavid01spur", "format": "pdf"}]},
+        {"volume_number": 2, "title": "Psalms 27-52", "bible_book_start": "Psalms", "bible_book_end": "Psalms", "chapter_start": 27, "chapter_end": 52, "sources": [{"type": "archive_org", "url": "https://archive.org/details/treasuryofdavid02spur", "format": "pdf"}]},
+        {"volume_number": 3, "title": "Psalms 53-78", "bible_book_start": "Psalms", "bible_book_end": "Psalms", "chapter_start": 53, "chapter_end": 78, "sources": [{"type": "archive_org", "url": "https://archive.org/details/treasuryofdavid03spur", "format": "pdf"}]},
+        {"volume_number": 4, "title": "Psalms 79-103", "bible_book_start": "Psalms", "bible_book_end": "Psalms", "chapter_start": 79, "chapter_end": 103, "sources": [{"type": "archive_org", "url": "https://archive.org/details/treasuryofdavid04spur", "format": "pdf"}]},
+        {"volume_number": 5, "title": "Psalms 104-118", "bible_book_start": "Psalms", "bible_book_end": "Psalms", "chapter_start": 104, "chapter_end": 118, "sources": [{"type": "archive_org", "url": "https://archive.org/details/treasuryofdavid05spur", "format": "pdf"}]},
+        {"volume_number": 6, "title": "Psalms 119", "bible_book_start": "Psalms", "bible_book_end": "Psalms", "chapter_start": 119, "chapter_end": 119, "sources": [{"type": "archive_org", "url": "https://archive.org/details/treasuryofdavid06spur", "format": "pdf"}]},
+        {"volume_number": 7, "title": "Psalms 120-150", "bible_book_start": "Psalms", "bible_book_end": "Psalms", "chapter_start": 120, "chapter_end": 150, "sources": [{"type": "archive_org", "url": "https://archive.org/details/treasuryofdavid07spur", "format": "pdf"}]}
+      ]
+    },
+    {
+      "id": "john_wesley_notes",
+      "title": "Explanatory Notes Upon the Old and New Testament",
+      "author_id": "john_wesley",
+      "year_published": 1754,
+      "language": "en",
+      "collection": "comentarios",
+      "work_type": "commentary",
+      "testament": "both",
+      "tradition": "Methodist",
+      "period": "18th Century",
+      "keywords": ["concise", "pastoral", "devotional", "NT-focus"],
+      "public_domain": true,
+      "public_domain_status": "confirmed",
+      "public_domain_source": "Published 1754-1765. Public domain.",
+      "source_url": "https://www.ccel.org/ccel/wesley/notes.html",
+      "notes": "Comentário mais conciso. Forte preocupação pastoral. NT é a parte mais utilizada.",
+      "total_volumes": 3,
+      "volumes": [
+        {"volume_number": 1, "title": "Old Testament Vol. 1", "bible_book_start": "Genesis", "bible_book_end": "Job", "sources": [{"type": "archive_org", "url": "https://archive.org/details/explanatorynotes01wesl", "format": "pdf"}]},
+        {"volume_number": 2, "title": "Old Testament Vol. 2", "bible_book_start": "Psalms", "bible_book_end": "Malachi", "sources": [{"type": "archive_org", "url": "https://archive.org/details/explanatorynotes02wesl", "format": "pdf"}]},
+        {"volume_number": 3, "title": "New Testament", "bible_book_start": "Matthew", "bible_book_end": "Revelation", "sources": [{"type": "ccel", "url": "https://www.ccel.org/ccel/wesley/notes.html", "format": "html"}, {"type": "archive_org", "url": "https://archive.org/details/explanatorynotes00wesl", "format": "pdf"}]}
+      ]
+    },
+    {
+      "id": "pulpit_commentary",
+      "title": "The Pulpit Commentary",
+      "author_id": null,
+      "year_published": 1880,
+      "language": "en",
+      "collection": "comentarios",
+      "work_type": "commentary",
+      "testament": "both",
+      "tradition": "Anglican",
+      "period": "19th Century",
+      "keywords": ["expository", "homiletics", "illustration", "history", "application", "pastoral"],
+      "public_domain": true,
+      "public_domain_status": "confirmed",
+      "public_domain_source": "Published 1880-1919. Public domain.",
+      "source_url": "https://archive.org/search?query=Pulpit+Commentary",
+      "notes": "23 volumes. Rico em exposição pastoral, história e aplicações.",
+      "total_volumes": 23,
+      "volumes": [
+        {"volume_number": 1, "title": "Genesis", "bible_book_start": "Genesis", "bible_book_end": "Genesis", "sources": [{"type": "archive_org", "url": "https://archive.org/details/pulpitcommentary01exel", "format": "pdf"}]},
+        {"volume_number": 2, "title": "Exodus", "bible_book_start": "Exodus", "bible_book_end": "Exodus", "sources": [{"type": "archive_org", "url": "https://archive.org/details/pulpitcommentary02exel", "format": "pdf"}]},
+        {"volume_number": 3, "title": "Leviticus, Numbers", "bible_book_start": "Leviticus", "bible_book_end": "Numbers", "sources": [{"type": "archive_org", "url": "https://archive.org/details/pulpitcommentary03exel", "format": "pdf"}]},
+        {"volume_number": 4, "title": "Deuteronomy", "bible_book_start": "Deuteronomy", "bible_book_end": "Deuteronomy", "sources": [{"type": "archive_org", "url": "https://archive.org/details/pulpitcommentary04exel", "format": "pdf"}]},
+        {"volume_number": 5, "title": "Joshua, Judges, Ruth", "bible_book_start": "Joshua", "bible_book_end": "Ruth", "sources": [{"type": "archive_org", "url": "https://archive.org/details/pulpitcommentary05exel", "format": "pdf"}]},
+        {"volume_number": 6, "title": "1 Samuel", "bible_book_start": "1 Samuel", "bible_book_end": "1 Samuel", "sources": [{"type": "archive_org", "url": "https://archive.org/details/pulpitcommentary06exel", "format": "pdf"}]},
+        {"volume_number": 7, "title": "2 Samuel, 1 Chronicles", "bible_book_start": "2 Samuel", "bible_book_end": "1 Chronicles", "sources": [{"type": "archive_org", "url": "https://archive.org/details/pulpitcommentary07exel", "format": "pdf"}]},
+        {"volume_number": 8, "title": "Psalms", "bible_book_start": "Psalms", "bible_book_end": "Psalms", "sources": [{"type": "archive_org", "url": "https://archive.org/details/pulpitcommentary08exel", "format": "pdf"}]},
+        {"volume_number": 9, "title": "Isaiah", "bible_book_start": "Isaiah", "bible_book_end": "Isaiah", "sources": [{"type": "archive_org", "url": "https://archive.org/details/pulpitcommentary09exel", "format": "pdf"}]},
+        {"volume_number": 10, "title": "Jeremiah, Lamentations", "bible_book_start": "Jeremiah", "bible_book_end": "Lamentations", "sources": [{"type": "archive_org", "url": "https://archive.org/details/pulpitcommentary10exel", "format": "pdf"}]},
+        {"volume_number": 11, "title": "Matthew", "bible_book_start": "Matthew", "bible_book_end": "Matthew", "sources": [{"type": "archive_org", "url": "https://archive.org/details/pulpitcommentary11exel", "format": "pdf"}]},
+        {"volume_number": 12, "title": "Mark", "bible_book_start": "Mark", "bible_book_end": "Mark", "sources": [{"type": "archive_org", "url": "https://archive.org/details/pulpitcommentary12exel", "format": "pdf"}]},
+        {"volume_number": 13, "title": "Luke", "bible_book_start": "Luke", "bible_book_end": "Luke", "sources": [{"type": "archive_org", "url": "https://archive.org/details/pulpitcommentary13exel", "format": "pdf"}]},
+        {"volume_number": 14, "title": "John", "bible_book_start": "John", "bible_book_end": "John", "sources": [{"type": "archive_org", "url": "https://archive.org/details/pulpitcommentary14exel", "format": "pdf"}]},
+        {"volume_number": 15, "title": "Acts", "bible_book_start": "Acts", "bible_book_end": "Acts", "sources": [{"type": "archive_org", "url": "https://archive.org/details/pulpitcommentary15exel", "format": "pdf"}]},
+        {"volume_number": 16, "title": "Romans to Galatians", "bible_book_start": "Romans", "bible_book_end": "Galatians", "sources": [{"type": "archive_org", "url": "https://archive.org/details/pulpitcommentary16exel", "format": "pdf"}]},
+        {"volume_number": 17, "title": "Ephesians to Colossians", "bible_book_start": "Ephesians", "bible_book_end": "Colossians", "sources": [{"type": "archive_org", "url": "https://archive.org/details/pulpitcommentary17exel", "format": "pdf"}]},
+        {"volume_number": 18, "title": "Thessalonians to Philemon", "bible_book_start": "1 Thessalonians", "bible_book_end": "Philemon", "sources": [{"type": "archive_org", "url": "https://archive.org/details/pulpitcommentary18exel", "format": "pdf"}]},
+        {"volume_number": 19, "title": "Hebrews", "bible_book_start": "Hebrews", "bible_book_end": "Hebrews", "sources": [{"type": "archive_org", "url": "https://archive.org/details/pulpitcommentary19exel", "format": "pdf"}]},
+        {"volume_number": 20, "title": "James, Peter, John", "bible_book_start": "James", "bible_book_end": "3 John", "sources": [{"type": "archive_org", "url": "https://archive.org/details/pulpitcommentary20exel", "format": "pdf"}]},
+        {"volume_number": 21, "title": "Jude, Revelation", "bible_book_start": "Jude", "bible_book_end": "Revelation", "sources": [{"type": "archive_org", "url": "https://archive.org/details/pulpitcommentary21exel", "format": "pdf"}]}
+      ]
+    },
+    {
+      "id": "meyer_nt_commentary",
+      "title": "Critical and Exegetical Commentary on the New Testament",
+      "author_id": "h_a_w_meyer",
+      "year_published": 1873,
+      "language": "en",
+      "collection": "comentarios",
+      "work_type": "commentary",
+      "testament": "NT",
+      "tradition": "Lutheran",
+      "period": "19th Century",
+      "keywords": ["greek", "syntax", "exegesis", "technical", "critical"],
+      "public_domain": true,
+      "public_domain_status": "confirmed",
+      "public_domain_source": "English translation published 1873-1895. Public domain.",
+      "source_url": "https://archive.org/search?query=Meyer+Critical+Exegetical+New+Testament",
+      "notes": "Muito técnico. Excelente para grego, sintaxe e exegese do NT.",
+      "total_volumes": 11,
+      "volumes": [
+        {"volume_number": 1, "title": "Matthew", "bible_book_start": "Matthew", "bible_book_end": "Matthew", "sources": [{"type": "archive_org", "url": "https://archive.org/details/criticalexegetic01meye", "format": "pdf"}]},
+        {"volume_number": 2, "title": "Mark and Luke", "bible_book_start": "Mark", "bible_book_end": "Luke", "sources": [{"type": "archive_org", "url": "https://archive.org/details/criticalexegetic02meye", "format": "pdf"}]},
+        {"volume_number": 3, "title": "John", "bible_book_start": "John", "bible_book_end": "John", "sources": [{"type": "archive_org", "url": "https://archive.org/details/criticalexegetic03meye", "format": "pdf"}]},
+        {"volume_number": 4, "title": "Acts", "bible_book_start": "Acts", "bible_book_end": "Acts", "sources": [{"type": "archive_org", "url": "https://archive.org/details/criticalexegetic04meye", "format": "pdf"}]},
+        {"volume_number": 5, "title": "Romans", "bible_book_start": "Romans", "bible_book_end": "Romans", "sources": [{"type": "archive_org", "url": "https://archive.org/details/criticalexegetic05meye", "format": "pdf"}]},
+        {"volume_number": 6, "title": "1 and 2 Corinthians", "bible_book_start": "1 Corinthians", "bible_book_end": "2 Corinthians", "sources": [{"type": "archive_org", "url": "https://archive.org/details/criticalexegetic06meye", "format": "pdf"}]},
+        {"volume_number": 7, "title": "Galatians", "bible_book_start": "Galatians", "bible_book_end": "Galatians", "sources": [{"type": "archive_org", "url": "https://archive.org/details/criticalexegetic07meye", "format": "pdf"}]},
+        {"volume_number": 8, "title": "Ephesians and Philemon", "bible_book_start": "Ephesians", "bible_book_end": "Philemon", "sources": [{"type": "archive_org", "url": "https://archive.org/details/criticalexegetic08meye", "format": "pdf"}]},
+        {"volume_number": 9, "title": "Philippians and Colossians", "bible_book_start": "Philippians", "bible_book_end": "Colossians", "sources": [{"type": "archive_org", "url": "https://archive.org/details/criticalexegetic09meye", "format": "pdf"}]},
+        {"volume_number": 10, "title": "Thessalonians", "bible_book_start": "1 Thessalonians", "bible_book_end": "2 Thessalonians", "sources": [{"type": "archive_org", "url": "https://archive.org/details/criticalexegetic10meye", "format": "pdf"}]},
+        {"volume_number": 11, "title": "Hebrews to Revelation", "bible_book_start": "Hebrews", "bible_book_end": "Revelation", "sources": [{"type": "archive_org", "url": "https://archive.org/details/criticalexegetic11meye", "format": "pdf"}]}
+      ]
+    },
+    {
+      "id": "charles_hodge_romans",
+      "title": "Commentary on the Epistle to the Romans",
+      "author_id": "charles_hodge",
+      "year_published": 1835,
+      "language": "en",
+      "collection": "comentarios",
+      "work_type": "commentary",
+      "testament": "NT",
+      "tradition": "Reformed",
+      "period": "19th Century",
+      "keywords": ["systematic", "reformed", "justification", "imputation", "princeton"],
+      "public_domain": true,
+      "public_domain_status": "confirmed",
+      "public_domain_source": "Published 1835. Public domain.",
+      "source_url": "https://archive.org/details/commentaryonepi00hodggoog",
+      "notes": "Comentário reformado clássico sobre Romanos. Forte em teologia da justificação e imputação.",
+      "total_volumes": 1,
+      "volumes": [
+        {"volume_number": 1, "title": "Romans", "bible_book_start": "Romans", "bible_book_end": "Romans", "sources": [{"type": "archive_org", "url": "https://archive.org/details/commentaryonepi00hodggoog", "format": "pdf"}, {"type": "ccel", "url": "https://www.ccel.org/ccel/hodge/romans.html", "format": "html"}]}
+      ]
+    },
+    {
+      "id": "martin_luther_galatians",
+      "title": "Commentary on the Epistle to the Galatians",
+      "author_id": "martin_luther",
+      "year_published": 1535,
+      "language": "en",
+      "collection": "comentarios",
+      "work_type": "commentary",
+      "testament": "NT",
+      "tradition": "Lutheran",
+      "period": "Reformation",
+      "keywords": ["justification", "faith", "law", "grace", "reformation"],
+      "public_domain": true,
+      "public_domain_status": "confirmed",
+      "public_domain_source": "Original 1535. English translations pre-1929. Public domain.",
+      "source_url": "https://archive.org/details/commentaryonepis00luth",
+      "notes": "Obra fundamental da Reforma sobre a justificação pela fé. Luther chamava Gálatas de 'minha epístola'.",
+      "total_volumes": 1,
+      "volumes": [
+        {"volume_number": 1, "title": "Galatians", "bible_book_start": "Galatians", "bible_book_end": "Galatians", "sources": [{"type": "archive_org", "url": "https://archive.org/details/commentaryonepis00luth", "format": "pdf"}, {"type": "ccel", "url": "https://www.ccel.org/ccel/luther/galatians.html", "format": "html"}]}
+      ]
+    },
+    {
+      "id": "calvin_commentaries",
+      "title": "Commentaries",
+      "author_id": "john_calvin",
+      "year_published": 1544,
+      "language": "en",
+      "collection": "comentarios",
+      "work_type": "commentary",
+      "testament": "both",
+      "tradition": "Reformed",
+      "period": "Reformation",
+      "keywords": ["reformed", "exegesis", "theology", "reformation", "humanist"],
+      "public_domain": true,
+      "public_domain_status": "confirmed",
+      "public_domain_source": "Original 1540s-1560s. English translations (Calvin Translation Society, 1844-1856). Public domain.",
+      "source_url": "https://www.ccel.org/ccel/calvin/",
+      "notes": "22 volumes cobrindo grande parte do NT e vários livros do AT. Referência na tradição reformada.",
+      "total_volumes": 22,
+      "volumes": [
+        {"volume_number": 1, "title": "Genesis", "bible_book_start": "Genesis", "bible_book_end": "Genesis", "sources": [{"type": "ccel", "url": "https://www.ccel.org/ccel/calvin/calcom01.html", "format": "html"}, {"type": "archive_org", "url": "https://archive.org/details/commentariesofjo01calv", "format": "pdf"}]},
+        {"volume_number": 2, "title": "Exodus, Leviticus, Numbers, Deuteronomy", "bible_book_start": "Exodus", "bible_book_end": "Deuteronomy", "sources": [{"type": "ccel", "url": "https://www.ccel.org/ccel/calvin/calcom03.html", "format": "html"}]},
+        {"volume_number": 3, "title": "Psalms (3 vols)", "bible_book_start": "Psalms", "bible_book_end": "Psalms", "sources": [{"type": "ccel", "url": "https://www.ccel.org/ccel/calvin/calcom08.html", "format": "html"}, {"type": "archive_org", "url": "https://archive.org/details/commentariesofjo08calv", "format": "pdf"}]},
+        {"volume_number": 4, "title": "Isaiah", "bible_book_start": "Isaiah", "bible_book_end": "Isaiah", "sources": [{"type": "ccel", "url": "https://www.ccel.org/ccel/calvin/calcom13.html", "format": "html"}]},
+        {"volume_number": 5, "title": "Jeremiah and Lamentations", "bible_book_start": "Jeremiah", "bible_book_end": "Lamentations", "sources": [{"type": "ccel", "url": "https://www.ccel.org/ccel/calvin/calcom17.html", "format": "html"}]},
+        {"volume_number": 6, "title": "Daniel", "bible_book_start": "Daniel", "bible_book_end": "Daniel", "sources": [{"type": "ccel", "url": "https://www.ccel.org/ccel/calvin/calcom23.html", "format": "html"}]},
+        {"volume_number": 7, "title": "Minor Prophets", "bible_book_start": "Hosea", "bible_book_end": "Malachi", "sources": [{"type": "ccel", "url": "https://www.ccel.org/ccel/calvin/calcom26.html", "format": "html"}]},
+        {"volume_number": 8, "title": "Matthew, Mark, Luke (Harmony)", "bible_book_start": "Matthew", "bible_book_end": "Luke", "sources": [{"type": "ccel", "url": "https://www.ccel.org/ccel/calvin/calcom31.html", "format": "html"}, {"type": "archive_org", "url": "https://archive.org/details/commentariesofjo31calv", "format": "pdf"}]},
+        {"volume_number": 9, "title": "John", "bible_book_start": "John", "bible_book_end": "John", "sources": [{"type": "ccel", "url": "https://www.ccel.org/ccel/calvin/calcom34.html", "format": "html"}]},
+        {"volume_number": 10, "title": "Acts", "bible_book_start": "Acts", "bible_book_end": "Acts", "sources": [{"type": "ccel", "url": "https://www.ccel.org/ccel/calvin/calcom36.html", "format": "html"}]},
+        {"volume_number": 11, "title": "Romans", "bible_book_start": "Romans", "bible_book_end": "Romans", "sources": [{"type": "ccel", "url": "https://www.ccel.org/ccel/calvin/calcom38.html", "format": "html"}, {"type": "archive_org", "url": "https://archive.org/details/commentariesofjo38calv", "format": "pdf"}]},
+        {"volume_number": 12, "title": "1 and 2 Corinthians", "bible_book_start": "1 Corinthians", "bible_book_end": "2 Corinthians", "sources": [{"type": "ccel", "url": "https://www.ccel.org/ccel/calvin/calcom39.html", "format": "html"}]},
+        {"volume_number": 13, "title": "Galatians, Ephesians, Philippians, Colossians", "bible_book_start": "Galatians", "bible_book_end": "Colossians", "sources": [{"type": "ccel", "url": "https://www.ccel.org/ccel/calvin/calcom41.html", "format": "html"}, {"type": "archive_org", "url": "https://archive.org/details/commentariesofjo41calv", "format": "pdf"}]},
+        {"volume_number": 14, "title": "Thessalonians, Timothy, Titus, Philemon", "bible_book_start": "1 Thessalonians", "bible_book_end": "Philemon", "sources": [{"type": "ccel", "url": "https://www.ccel.org/ccel/calvin/calcom43.html", "format": "html"}]},
+        {"volume_number": 15, "title": "Hebrews, 1 Peter, 1 John", "bible_book_start": "Hebrews", "bible_book_end": "1 John", "sources": [{"type": "ccel", "url": "https://www.ccel.org/ccel/calvin/calcom44.html", "format": "html"}]}
+      ]
+    },
+    {
+      "id": "easton_bible_dictionary",
+      "title": "Easton's Bible Dictionary",
+      "author_id": "matthew_easton",
+      "year_published": 1897,
+      "language": "en",
+      "collection": "dicionarios",
+      "work_type": "dictionary",
+      "testament": "both",
+      "tradition": "Reformed",
+      "period": "19th Century",
+      "keywords": ["reference", "names", "places", "theology", "culture"],
+      "public_domain": true,
+      "public_domain_status": "confirmed",
+      "public_domain_source": "Published 1897. Public domain.",
+      "source_url": "https://www.ccel.org/ccel/easton/ebd.html",
+      "notes": "Dicionário bíblico clássico. Referência rápida para termos, lugares e conceitos bíblicos.",
+      "total_volumes": 1,
+      "volumes": [
+        {"volume_number": 1, "title": "Complete", "sources": [{"type": "ccel", "url": "https://www.ccel.org/ccel/easton/ebd.html", "format": "html"}, {"type": "archive_org", "url": "https://archive.org/details/eastonsbibledict00east", "format": "pdf"}]}
+      ]
+    },
+    {
+      "id": "smith_bible_dictionary",
+      "title": "Smith's Bible Dictionary",
+      "author_id": "william_smith",
+      "year_published": 1863,
+      "language": "en",
+      "collection": "dicionarios",
+      "work_type": "dictionary",
+      "testament": "both",
+      "tradition": "Anglican",
+      "period": "19th Century",
+      "keywords": ["reference", "names", "geography", "archaeology", "history"],
+      "public_domain": true,
+      "public_domain_status": "confirmed",
+      "public_domain_source": "Published 1863. Public domain.",
+      "source_url": "https://www.ccel.org/ccel/smith_w/bibledict.html",
+      "notes": "Dicionário clássico com forte componente de geografia, arqueologia e história.",
+      "total_volumes": 1,
+      "volumes": [
+        {"volume_number": 1, "title": "Complete", "sources": [{"type": "ccel", "url": "https://www.ccel.org/ccel/smith_w/bibledict.html", "format": "html"}, {"type": "archive_org", "url": "https://archive.org/details/smithsbibledicti00smit", "format": "pdf"}]}
+      ]
+    },
+    {
+      "id": "fausset_bible_dictionary",
+      "title": "Bible Encyclopaedia and Dictionary",
+      "author_id": "a_r_fausset",
+      "year_published": 1878,
+      "language": "en",
+      "collection": "dicionarios",
+      "work_type": "dictionary",
+      "testament": "both",
+      "tradition": "Anglican",
+      "period": "19th Century",
+      "keywords": ["reference", "names", "theology", "geography"],
+      "public_domain": true,
+      "public_domain_status": "confirmed",
+      "public_domain_source": "Published 1878. Public domain.",
+      "source_url": "https://archive.org/details/bibleencyclopaed00faus",
+      "notes": "Parte do mesmo autor do comentário JFB. Enciclopédia e dicionário bíblico.",
+      "total_volumes": 1,
+      "volumes": [
+        {"volume_number": 1, "title": "Complete", "sources": [{"type": "archive_org", "url": "https://archive.org/details/bibleencyclopaed00faus", "format": "pdf"}]}
+      ]
+    },
+    {
+      "id": "hitchcock_bible_names",
+      "title": "Hitchcock's New and Complete Analysis of the Holy Bible",
+      "author_id": "r_d_hitchcock",
+      "year_published": 1869,
+      "language": "en",
+      "collection": "dicionarios",
+      "work_type": "dictionary",
+      "testament": "both",
+      "tradition": "Presbyterian",
+      "period": "19th Century",
+      "keywords": ["names", "etymology", "hebrew", "greek", "proper-nouns"],
+      "public_domain": true,
+      "public_domain_status": "confirmed",
+      "public_domain_source": "Published 1869. Public domain.",
+      "source_url": "https://archive.org/details/hitchcocksnewanal",
+      "notes": "Dicionário especializado em nomes bíblicos com etimologias hebraica e grega.",
+      "total_volumes": 1,
+      "volumes": [
+        {"volume_number": 1, "title": "Complete", "sources": [{"type": "archive_org", "url": "https://archive.org/details/hitchcocksnewanal", "format": "pdf"}]}
+      ]
+    },
+    {
+      "id": "nave_topical_bible",
+      "title": "Nave's Topical Bible",
+      "author_id": "o_j_nave",
+      "year_published": 1896,
+      "language": "en",
+      "collection": "dicionarios",
+      "work_type": "concordance",
+      "testament": "both",
+      "tradition": "Methodist",
+      "period": "19th Century",
+      "keywords": ["topics", "themes", "cross-references", "preaching", "study"],
+      "public_domain": true,
+      "public_domain_status": "confirmed",
+      "public_domain_source": "Published 1896. Public domain.",
+      "source_url": "https://www.ccel.org/ccel/nave/",
+      "notes": "20.000 tópicos e subdivisões. Indispensável para pesquisa temática e preparação de sermões.",
+      "total_volumes": 1,
+      "volumes": [
+        {"volume_number": 1, "title": "Complete", "sources": [{"type": "ccel", "url": "https://www.ccel.org/ccel/nave/", "format": "html"}, {"type": "archive_org", "url": "https://archive.org/details/navestopicalbib00nave", "format": "pdf"}]}
+      ]
+    },
+    {
+      "id": "isbe_first_edition",
+      "title": "The International Standard Bible Encyclopaedia",
+      "author_id": "james_orr",
+      "year_published": 1915,
+      "language": "en",
+      "collection": "enciclopedias",
+      "work_type": "encyclopedia",
+      "testament": "both",
+      "tradition": "Reformed",
+      "period": "20th Century",
+      "keywords": ["history", "geography", "archaeology", "theology", "biography", "culture", "9000-entries"],
+      "public_domain": true,
+      "public_domain_status": "confirmed",
+      "public_domain_source": "First edition published 1915. Public domain.",
+      "source_url": "https://www.ccel.org/ccel/orr/",
+      "notes": "~9.000 verbetes, ~5.000 páginas. Cobre história, geografia, arqueologia, teologia, personagens e costumes.",
+      "total_volumes": 5,
+      "volumes": [
+        {"volume_number": 1, "title": "A - Clutch", "sources": [{"type": "ccel", "url": "https://www.ccel.org/ccel/orr/isbe.html", "format": "html"}, {"type": "archive_org", "url": "https://archive.org/details/internationalsta01orruoft", "format": "pdf"}]},
+        {"volume_number": 2, "title": "Cobrinus - Helez", "sources": [{"type": "archive_org", "url": "https://archive.org/details/internationalsta02orruoft", "format": "pdf"}]},
+        {"volume_number": 3, "title": "Heli - Lystra", "sources": [{"type": "archive_org", "url": "https://archive.org/details/internationalsta03orruoft", "format": "pdf"}]},
+        {"volume_number": 4, "title": "M - Pleiades", "sources": [{"type": "archive_org", "url": "https://archive.org/details/internationalsta04orruoft", "format": "pdf"}]},
+        {"volume_number": 5, "title": "Poetry - Zuzims", "sources": [{"type": "archive_org", "url": "https://archive.org/details/internationalsta05orruoft", "format": "pdf"}]}
+      ]
+    },
+    {
+      "id": "mcclintock_strong_cyclopaedia",
+      "title": "Cyclopaedia of Biblical, Theological, and Ecclesiastical Literature",
+      "author_id": "mcclintock_strong",
+      "year_published": 1867,
+      "language": "en",
+      "collection": "enciclopedias",
+      "work_type": "encyclopedia",
+      "testament": "both",
+      "tradition": "Methodist",
+      "period": "19th Century",
+      "keywords": ["theology", "church-history", "biblical", "ecclesiastical", "20000-entries"],
+      "public_domain": true,
+      "public_domain_status": "confirmed",
+      "public_domain_source": "Published 1867-1881. Public domain.",
+      "source_url": "https://archive.org/search?query=Cyclopaedia+Biblical+McClintock+Strong",
+      "notes": "12 volumes, 20.000+ verbetes. Uma das maiores enciclopédias bíblicas clássicas.",
+      "total_volumes": 12,
+      "volumes": [
+        {"volume_number": 1, "title": "A - Bib", "sources": [{"type": "archive_org", "url": "https://archive.org/details/cyclopaediaofbib01mcclrich", "format": "pdf"}]},
+        {"volume_number": 2, "title": "Bib - Cly", "sources": [{"type": "archive_org", "url": "https://archive.org/details/cyclopaediaofbib02mcclrich", "format": "pdf"}]},
+        {"volume_number": 3, "title": "Co - Dyn", "sources": [{"type": "archive_org", "url": "https://archive.org/details/cyclopaediaofbib03mcclrich", "format": "pdf"}]},
+        {"volume_number": 4, "title": "E - Gre", "sources": [{"type": "archive_org", "url": "https://archive.org/details/cyclopaediaofbib04mcclrich", "format": "pdf"}]},
+        {"volume_number": 5, "title": "Gre - Jes", "sources": [{"type": "archive_org", "url": "https://archive.org/details/cyclopaediaofbib05mcclrich", "format": "pdf"}]},
+        {"volume_number": 6, "title": "Jes - Lun", "sources": [{"type": "archive_org", "url": "https://archive.org/details/cyclopaediaofbib06mcclrich", "format": "pdf"}]},
+        {"volume_number": 7, "title": "Lup - Mor", "sources": [{"type": "archive_org", "url": "https://archive.org/details/cyclopaediaofbib07mcclrich", "format": "pdf"}]},
+        {"volume_number": 8, "title": "Mos - Pae", "sources": [{"type": "archive_org", "url": "https://archive.org/details/cyclopaediaofbib08mcclrich", "format": "pdf"}]},
+        {"volume_number": 9, "title": "Paf - Psy", "sources": [{"type": "archive_org", "url": "https://archive.org/details/cyclopaediaofbib09mcclrich", "format": "pdf"}]},
+        {"volume_number": 10, "title": "Q - Shu", "sources": [{"type": "archive_org", "url": "https://archive.org/details/cyclopaediaofbib10mcclrich", "format": "pdf"}]},
+        {"volume_number": 11, "title": "Si - Zyg", "sources": [{"type": "archive_org", "url": "https://archive.org/details/cyclopaediaofbib11mcclrich", "format": "pdf"}]},
+        {"volume_number": 12, "title": "Supplement", "sources": [{"type": "archive_org", "url": "https://archive.org/details/cyclopaediaofbib12mcclrich", "format": "pdf"}]}
+      ]
+    },
+    {
+      "id": "bdb_hebrew_lexicon",
+      "title": "A Hebrew and English Lexicon of the Old Testament",
+      "author_id": "francis_brown",
+      "year_published": 1906,
+      "language": "en",
+      "collection": "lexicos",
+      "work_type": "lexicon",
+      "testament": "OT",
+      "tradition": "Academic",
+      "period": "19th Century",
+      "keywords": ["hebrew", "aramaic", "etymology", "definition", "occurrences", "exegesis"],
+      "public_domain": true,
+      "public_domain_status": "confirmed",
+      "public_domain_source": "Published 1906. Public domain.",
+      "source_url": "https://archive.org/details/hebrewenglishlex00brow",
+      "notes": "O léxico hebraico clássico. BDB. Inclui definição, raiz, etimologia, ocorrências e uso bíblico.",
+      "total_volumes": 1,
+      "volumes": [
+        {"volume_number": 1, "title": "Complete", "sources": [{"type": "archive_org", "url": "https://archive.org/details/hebrewenglishlex00brow", "format": "pdf"}]}
+      ]
+    },
+    {
+      "id": "gesenius_hebrew_lexicon",
+      "title": "Gesenius's Hebrew and Chaldee Lexicon to the Old Testament Scriptures",
+      "author_id": "gesenius",
+      "year_published": 1847,
+      "language": "en",
+      "collection": "lexicos",
+      "work_type": "lexicon",
+      "testament": "OT",
+      "tradition": "Academic",
+      "period": "19th Century",
+      "keywords": ["hebrew", "aramaic", "etymology", "grammar", "classical"],
+      "public_domain": true,
+      "public_domain_status": "confirmed",
+      "public_domain_source": "English translation by Tregelles, 1847. Public domain.",
+      "source_url": "https://archive.org/details/geseniushebrewch00geseuoft",
+      "notes": "Clássico indispensável. O léxico hebraico que formou gerações de exegetas.",
+      "total_volumes": 1,
+      "volumes": [
+        {"volume_number": 1, "title": "Complete", "sources": [{"type": "archive_org", "url": "https://archive.org/details/geseniushebrewch00geseuoft", "format": "pdf"}]}
+      ]
+    },
+    {
+      "id": "thayer_greek_lexicon",
+      "title": "A Greek-English Lexicon of the New Testament",
+      "author_id": "thayer",
+      "year_published": 1889,
+      "language": "en",
+      "collection": "lexicos",
+      "work_type": "lexicon",
+      "testament": "NT",
+      "tradition": "Academic",
+      "period": "19th Century",
+      "keywords": ["greek", "new-testament", "definition", "etymology", "classical"],
+      "public_domain": true,
+      "public_domain_status": "confirmed",
+      "public_domain_source": "Published 1889. Public domain.",
+      "source_url": "https://archive.org/details/greekenglishire00unkngoog",
+      "notes": "Principal léxico grego de domínio público para o NT.",
+      "total_volumes": 1,
+      "volumes": [
+        {"volume_number": 1, "title": "Complete", "sources": [{"type": "archive_org", "url": "https://archive.org/details/greekenglishire00unkngoog", "format": "pdf"}]}
+      ]
+    },
+    {
+      "id": "lsj_greek_lexicon",
+      "title": "A Greek-English Lexicon",
+      "author_id": "liddell_scott",
+      "year_published": 1843,
+      "language": "en",
+      "collection": "lexicos",
+      "work_type": "lexicon",
+      "testament": "both",
+      "tradition": "Academic",
+      "period": "19th Century",
+      "keywords": ["greek", "classical", "koine", "etymology", "comprehensive"],
+      "public_domain": true,
+      "public_domain_status": "confirmed",
+      "public_domain_source": "8th edition (1897) and earlier. Public domain.",
+      "source_url": "https://archive.org/details/greekenglishlexic00lidd",
+      "notes": "LSJ — o maior léxico de grego clássico. Muito útil para contexto linguístico do NT e LXX.",
+      "total_volumes": 1,
+      "volumes": [
+        {"volume_number": 1, "title": "Complete", "sources": [{"type": "archive_org", "url": "https://archive.org/details/greekenglishlexic00lidd", "format": "pdf"}]}
+      ]
+    },
+    {
+      "id": "strongs_concordance",
+      "title": "Strong's Exhaustive Concordance of the Bible",
+      "author_id": "james_strong",
+      "year_published": 1890,
+      "language": "en",
+      "collection": "concordancias",
+      "work_type": "concordance",
+      "testament": "both",
+      "tradition": "Methodist",
+      "period": "19th Century",
+      "keywords": ["concordance", "strong-numbers", "hebrew", "greek", "every-word", "index"],
+      "public_domain": true,
+      "public_domain_status": "confirmed",
+      "public_domain_source": "Published 1890. Public domain.",
+      "source_url": "https://archive.org/details/exhaustiveconco00stro",
+      "notes": "Inclui todas as palavras da Bíblia, números Strong, dicionário hebraico e grego. Referência essencial.",
+      "total_volumes": 1,
+      "volumes": [
+        {"volume_number": 1, "title": "Complete", "sources": [{"type": "archive_org", "url": "https://archive.org/details/exhaustiveconco00stro", "format": "pdf"}]}
+      ]
+    },
+    {
+      "id": "young_analytical_concordance",
+      "title": "Young's Analytical Concordance to the Bible",
+      "author_id": "robert_young",
+      "year_published": 1879,
+      "language": "en",
+      "collection": "concordancias",
+      "work_type": "concordance",
+      "testament": "both",
+      "tradition": "Reformed",
+      "period": "19th Century",
+      "keywords": ["concordance", "analytical", "hebrew", "greek", "word-study"],
+      "public_domain": true,
+      "public_domain_status": "confirmed",
+      "public_domain_source": "Published 1879. Public domain.",
+      "source_url": "https://archive.org/details/youngsanalytical00youn",
+      "notes": "Excelente complemento ao Strong. Agrupa por palavra original e tradução inglesa.",
+      "total_volumes": 1,
+      "volumes": [
+        {"volume_number": 1, "title": "Complete", "sources": [{"type": "archive_org", "url": "https://archive.org/details/youngsanalytical00youn", "format": "pdf"}]}
+      ]
+    },
+    {
+      "id": "cruden_concordance",
+      "title": "Cruden's Complete Concordance",
+      "author_id": "alexander_cruden",
+      "year_published": 1737,
+      "language": "en",
+      "collection": "concordancias",
+      "work_type": "concordance",
+      "testament": "both",
+      "tradition": "Presbyterian",
+      "period": "18th Century",
+      "keywords": ["concordance", "index", "classic", "kjv", "every-word"],
+      "public_domain": true,
+      "public_domain_status": "confirmed",
+      "public_domain_source": "Published 1737. Public domain.",
+      "source_url": "https://archive.org/details/crudenscompletec00crud",
+      "notes": "A concordância clássica da KJV. Publicada originalmente em 1737.",
+      "total_volumes": 1,
+      "volumes": [
+        {"volume_number": 1, "title": "Complete", "sources": [{"type": "archive_org", "url": "https://archive.org/details/crudenscompletec00crud", "format": "pdf"}]}
+      ]
+    }
+  ],
+  "stats": {
+    "total_works": 22,
+    "total_volumes_approx": 140,
+    "collections": {
+      "comentarios": 10,
+      "dicionarios": 5,
+      "enciclopedias": 2,
+      "lexicos": 4,
+      "concordancias": 3
+    },
+    "authors": 25
+  }
+}

@@ -1,0 +1,844 @@
+{
+  "matthew_henry_mhc": {
+    "title": "Commentary on the Whole Bible",
+    "timestamp": "2026-06-24T23:38:05.071Z",
+    "results": [
+      {
+        "volume": 1,
+        "error": "HTTP 503 Service Unavailable — https://archive.org/download/matthewhenryscex01henrrich/matthewhenryscex01henrrich.pdf",
+        "url": "https://archive.org/download/matthewhenryscex01henrrich/matthewhenryscex01henrrich.pdf"
+      },
+      {
+        "volume": 2,
+        "error": "HTTP 503 Service Unavailable — https://archive.org/download/matthewhenryscex02henrrich/matthewhenryscex02henrrich.pdf",
+        "url": "https://archive.org/download/matthewhenryscex02henrrich/matthewhenryscex02henrrich.pdf"
+      },
+      {
+        "volume": 3,
+        "error": "HTTP 503 Service Unavailable — https://archive.org/download/matthewhenryscex03henrrich/matthewhenryscex03henrrich.pdf",
+        "url": "https://archive.org/download/matthewhenryscex03henrrich/matthewhenryscex03henrrich.pdf"
+      },
+      {
+        "volume": 4,
+        "error": "HTTP 503 Service Unavailable — https://archive.org/download/matthewhenryscex04henrrich/matthewhenryscex04henrrich.pdf",
+        "url": "https://archive.org/download/matthewhenryscex04henrrich/matthewhenryscex04henrrich.pdf"
+      },
+      {
+        "volume": 5,
+        "error": "HTTP 503 Service Unavailable — https://archive.org/download/matthewhenryscex05henrrich/matthewhenryscex05henrrich.pdf",
+        "url": "https://archive.org/download/matthewhenryscex05henrrich/matthewhenryscex05henrrich.pdf"
+      },
+      {
+        "volume": 6,
+        "error": "HTTP 503 Service Unavailable — https://archive.org/download/matthewhenryscex06henrrich/matthewhenryscex06henrrich.pdf",
+        "url": "https://archive.org/download/matthewhenryscex06henrrich/matthewhenryscex06henrrich.pdf"
+      }
+    ]
+  },
+  "jfb_commentary": {
+    "title": "Commentary Critical and Explanatory on the Whole Bible",
+    "timestamp": "2026-06-24T23:38:11.540Z",
+    "results": [
+      {
+        "volume": 1,
+        "error": "HTTP 503 Service Unavailable — https://archive.org/download/commentarycritica01jami/commentarycritica01jami.pdf",
+        "url": "https://archive.org/download/commentarycritica01jami/commentarycritica01jami.pdf"
+      },
+      {
+        "volume": 2,
+        "error": "HTTP 503 Service Unavailable — https://archive.org/download/commentarycritica02jami/commentarycritica02jami.pdf",
+        "url": "https://archive.org/download/commentarycritica02jami/commentarycritica02jami.pdf"
+      }
+    ]
+  },
+  "albert_barnes_notes": {
+    "title": "Notes on the Bible",
+    "timestamp": "2026-06-24T23:39:27.593Z",
+    "results": [
+      {
+        "volume": 1,
+        "type": "pdf_original",
+        "source": "archive_org",
+        "url": "https://archive.org/download/notesexplanator06barngoog/notesexplanator06barngoog.pdf",
+        "path": "/Users/air/Desktop/desenvolvimento/Lampas/lampas/biblioteca/comentarios/albert_barnes_notes/vol_01.pdf",
+        "hash": "064ea1d28770f4c7b5aee6972138e5e72e9160077671f242b9dcfe48b1a65db8",
+        "size": 25454983
+      },
+      {
+        "volume": 2,
+        "error": "HTTP 503 Service Unavailable — https://archive.org/download/notesexplanator00barnrich/notesexplanator00barnrich.pdf",
+        "url": "https://archive.org/download/notesexplanator00barnrich/notesexplanator00barnrich.pdf"
+      },
+      {
+        "volume": 3,
+        "error": "HTTP 503 Service Unavailable — https://archive.org/download/notesexplanato01barnrich/notesexplanato01barnrich.pdf",
+        "url": "https://archive.org/download/notesexplanato01barnrich/notesexplanato01barnrich.pdf"
+      },
+      {
+        "volume": 4,
+        "type": "pdf_original",
+        "source": "archive_org",
+        "url": "https://archive.org/download/notesexplanatory01barn/notesexplanatory01barn.pdf",
+        "path": "/Users/air/Desktop/desenvolvimento/Lampas/lampas/biblioteca/comentarios/albert_barnes_notes/vol_04.pdf",
+        "hash": "3541073c214cf6b7e1ea5aef829d8c5c8dbad359a081815ace0face14beb57df",
+        "size": 27770760
+      },
+      {
+        "volume": 5,
+        "type": "pdf_original",
+        "source": "archive_org",
+        "url": "https://archive.org/download/notesexplanatory02barn/notesexplanatory02barn.pdf",
+        "path": "/Users/air/Desktop/desenvolvimento/Lampas/lampas/biblioteca/comentarios/albert_barnes_notes/vol_05.pdf",
+        "hash": "4619f23312fa6ca7bddfc5ee4e5e67f7284a677cf96f9bfd18e9ce632f9c40c9",
+        "size": 26516163
+      },
+      {
+        "volume": 6,
+        "type": "pdf_original",
+        "source": "archive_org",
+        "url": "https://archive.org/download/notesexplanatory00barnuoft/notesexplanatory00barnuoft.pdf",
+        "path": "/Users/air/Desktop/desenvolvimento/Lampas/lampas/biblioteca/comentarios/albert_barnes_notes/vol_06.pdf",
+        "hash": "ee5dd613afa261ebce602cccc3010ad5d2e57b832c4e614330937b22a75a54a7",
+        "size": 29794485
+      },
+      {
+        "volume": 7,
+        "error": "HTTP 503 Service Unavailable — https://archive.org/download/notesexplanatory01barnuoft/notesexplanatory01barnuoft.pdf",
+        "url": "https://archive.org/download/notesexplanatory01barnuoft/notesexplanatory01barnuoft.pdf"
+      },
+      {
+        "volume": 8,
+        "error": "HTTP 503 Service Unavailable — https://archive.org/download/notesexplanatory02barnuoft/notesexplanatory02barnuoft.pdf",
+        "url": "https://archive.org/download/notesexplanatory02barnuoft/notesexplanatory02barnuoft.pdf"
+      },
+      {
+        "volume": 9,
+        "error": "HTTP 503 Service Unavailable — https://archive.org/download/notesexplanatory03barnuoft/notesexplanatory03barnuoft.pdf",
+        "url": "https://archive.org/download/notesexplanatory03barnuoft/notesexplanatory03barnuoft.pdf"
+      },
+      {
+        "volume": 10,
+        "error": "HTTP 503 Service Unavailable — https://archive.org/download/notesexplanatory04barnuoft/notesexplanatory04barnuoft.pdf",
+        "url": "https://archive.org/download/notesexplanatory04barnuoft/notesexplanatory04barnuoft.pdf"
+      },
+      {
+        "volume": 11,
+        "error": "HTTP 503 Service Unavailable — https://archive.org/download/notesexplanatory05barnuoft/notesexplanatory05barnuoft.pdf",
+        "url": "https://archive.org/download/notesexplanatory05barnuoft/notesexplanatory05barnuoft.pdf"
+      },
+      {
+        "volume": 12,
+        "error": "HTTP 503 Service Unavailable — https://archive.org/download/notesexplanatory06barnuoft/notesexplanatory06barnuoft.pdf",
+        "url": "https://archive.org/download/notesexplanatory06barnuoft/notesexplanatory06barnuoft.pdf"
+      },
+      {
+        "volume": 13,
+        "error": "HTTP 503 Service Unavailable — https://archive.org/download/notesexplanatory07barnuoft/notesexplanatory07barnuoft.pdf",
+        "url": "https://archive.org/download/notesexplanatory07barnuoft/notesexplanatory07barnuoft.pdf"
+      },
+      {
+        "volume": 14,
+        "error": "HTTP 503 Service Unavailable — https://archive.org/download/notesexplanatory08barnuoft/notesexplanatory08barnuoft.pdf",
+        "url": "https://archive.org/download/notesexplanatory08barnuoft/notesexplanatory08barnuoft.pdf"
+      }
+    ]
+  },
+  "keil_delitzsch_ot": {
+    "title": "Biblical Commentary on the Old Testament",
+    "timestamp": "2026-06-24T23:39:59.368Z",
+    "results": [
+      {
+        "volume": 1,
+        "error": "HTTP 503 Service Unavailable — https://archive.org/download/biblicalcommenon01keil/biblicalcommenon01keil.pdf",
+        "url": "https://archive.org/download/biblicalcommenon01keil/biblicalcommenon01keil.pdf"
+      },
+      {
+        "volume": 2,
+        "error": "HTTP 503 Service Unavailable — https://archive.org/download/biblicalcommenon02keil/biblicalcommenon02keil.pdf",
+        "url": "https://archive.org/download/biblicalcommenon02keil/biblicalcommenon02keil.pdf"
+      },
+      {
+        "volume": 3,
+        "error": "HTTP 503 Service Unavailable — https://archive.org/download/biblicalcommenon03keil/biblicalcommenon03keil.pdf",
+        "url": "https://archive.org/download/biblicalcommenon03keil/biblicalcommenon03keil.pdf"
+      },
+      {
+        "volume": 4,
+        "error": "HTTP 503 Service Unavailable — https://archive.org/download/biblicalcommenon04keil/biblicalcommenon04keil.pdf",
+        "url": "https://archive.org/download/biblicalcommenon04keil/biblicalcommenon04keil.pdf"
+      },
+      {
+        "volume": 5,
+        "error": "HTTP 503 Service Unavailable — https://archive.org/download/biblicalcommenon05keil/biblicalcommenon05keil.pdf",
+        "url": "https://archive.org/download/biblicalcommenon05keil/biblicalcommenon05keil.pdf"
+      },
+      {
+        "volume": 6,
+        "error": "HTTP 503 Service Unavailable — https://archive.org/download/biblicalcommenon06keil/biblicalcommenon06keil.pdf",
+        "url": "https://archive.org/download/biblicalcommenon06keil/biblicalcommenon06keil.pdf"
+      },
+      {
+        "volume": 7,
+        "error": "HTTP 503 Service Unavailable — https://archive.org/download/biblicalcommenon07keil/biblicalcommenon07keil.pdf",
+        "url": "https://archive.org/download/biblicalcommenon07keil/biblicalcommenon07keil.pdf"
+      },
+      {
+        "volume": 8,
+        "error": "HTTP 503 Service Unavailable — https://archive.org/download/biblicalcommenon08keil/biblicalcommenon08keil.pdf",
+        "url": "https://archive.org/download/biblicalcommenon08keil/biblicalcommenon08keil.pdf"
+      },
+      {
+        "volume": 9,
+        "error": "HTTP 503 Service Unavailable — https://archive.org/download/biblicalcommenon09keil/biblicalcommenon09keil.pdf",
+        "url": "https://archive.org/download/biblicalcommenon09keil/biblicalcommenon09keil.pdf"
+      },
+      {
+        "volume": 10,
+        "error": "HTTP 503 Service Unavailable — https://archive.org/download/biblicalcommenon10keil/biblicalcommenon10keil.pdf",
+        "url": "https://archive.org/download/biblicalcommenon10keil/biblicalcommenon10keil.pdf"
+      }
+    ]
+  },
+  "treasury_of_david": {
+    "title": "The Treasury of David",
+    "timestamp": "2026-06-24T23:40:21.433Z",
+    "results": [
+      {
+        "volume": 1,
+        "error": "HTTP 503 Service Unavailable — https://archive.org/download/treasuryofdavid01spur/treasuryofdavid01spur.pdf",
+        "url": "https://archive.org/download/treasuryofdavid01spur/treasuryofdavid01spur.pdf"
+      },
+      {
+        "volume": 2,
+        "error": "HTTP 503 Service Unavailable — https://archive.org/download/treasuryofdavid02spur/treasuryofdavid02spur.pdf",
+        "url": "https://archive.org/download/treasuryofdavid02spur/treasuryofdavid02spur.pdf"
+      },
+      {
+        "volume": 3,
+        "error": "HTTP 503 Service Unavailable — https://archive.org/download/treasuryofdavid03spur/treasuryofdavid03spur.pdf",
+        "url": "https://archive.org/download/treasuryofdavid03spur/treasuryofdavid03spur.pdf"
+      },
+      {
+        "volume": 4,
+        "error": "HTTP 503 Service Unavailable — https://archive.org/download/treasuryofdavid04spur/treasuryofdavid04spur.pdf",
+        "url": "https://archive.org/download/treasuryofdavid04spur/treasuryofdavid04spur.pdf"
+      },
+      {
+        "volume": 5,
+        "error": "HTTP 503 Service Unavailable — https://archive.org/download/treasuryofdavid05spur/treasuryofdavid05spur.pdf",
+        "url": "https://archive.org/download/treasuryofdavid05spur/treasuryofdavid05spur.pdf"
+      },
+      {
+        "volume": 6,
+        "error": "HTTP 503 Service Unavailable — https://archive.org/download/treasuryofdavid06spur/treasuryofdavid06spur.pdf",
+        "url": "https://archive.org/download/treasuryofdavid06spur/treasuryofdavid06spur.pdf"
+      },
+      {
+        "volume": 7,
+        "error": "HTTP 503 Service Unavailable — https://archive.org/download/treasuryofdavid07spur/treasuryofdavid07spur.pdf",
+        "url": "https://archive.org/download/treasuryofdavid07spur/treasuryofdavid07spur.pdf"
+      }
+    ]
+  },
+  "john_wesley_notes": {
+    "title": "Explanatory Notes Upon the Old and New Testament",
+    "timestamp": "2026-06-24T23:40:50.570Z",
+    "results": [
+      {
+        "volume": 1,
+        "error": "HTTP 503 Service Unavailable — https://archive.org/download/explanatorynotes01wesl/explanatorynotes01wesl.pdf",
+        "url": "https://archive.org/download/explanatorynotes01wesl/explanatorynotes01wesl.pdf"
+      },
+      {
+        "volume": 2,
+        "error": "HTTP 503 Service Unavailable — https://archive.org/download/explanatorynotes02wesl/explanatorynotes02wesl.pdf",
+        "url": "https://archive.org/download/explanatorynotes02wesl/explanatorynotes02wesl.pdf"
+      },
+      {
+        "volume": 3,
+        "type": "pdf_original",
+        "source": "archive_org",
+        "url": "https://archive.org/download/explanatorynotes00wesl/explanatorynotes00wesl.pdf",
+        "path": "/Users/air/Desktop/desenvolvimento/Lampas/lampas/biblioteca/comentarios/john_wesley_notes/vol_03.pdf",
+        "hash": "5888d223a9b6f333659cb9ccaccc4ab52fe902354b708bc46fe45f63e3ee2977",
+        "size": 59674361
+      }
+    ]
+  },
+  "pulpit_commentary": {
+    "title": "The Pulpit Commentary",
+    "timestamp": "2026-06-24T23:41:58.091Z",
+    "results": [
+      {
+        "volume": 1,
+        "error": "HTTP 503 Service Unavailable — https://archive.org/download/pulpitcommentary01exel/pulpitcommentary01exel.pdf",
+        "url": "https://archive.org/download/pulpitcommentary01exel/pulpitcommentary01exel.pdf"
+      },
+      {
+        "volume": 2,
+        "error": "HTTP 503 Service Unavailable — https://archive.org/download/pulpitcommentary02exel/pulpitcommentary02exel.pdf",
+        "url": "https://archive.org/download/pulpitcommentary02exel/pulpitcommentary02exel.pdf"
+      },
+      {
+        "volume": 3,
+        "error": "HTTP 503 Service Unavailable — https://archive.org/download/pulpitcommentary03exel/pulpitcommentary03exel.pdf",
+        "url": "https://archive.org/download/pulpitcommentary03exel/pulpitcommentary03exel.pdf"
+      },
+      {
+        "volume": 4,
+        "error": "HTTP 503 Service Unavailable — https://archive.org/download/pulpitcommentary04exel/pulpitcommentary04exel.pdf",
+        "url": "https://archive.org/download/pulpitcommentary04exel/pulpitcommentary04exel.pdf"
+      },
+      {
+        "volume": 5,
+        "error": "HTTP 503 Service Unavailable — https://archive.org/download/pulpitcommentary05exel/pulpitcommentary05exel.pdf",
+        "url": "https://archive.org/download/pulpitcommentary05exel/pulpitcommentary05exel.pdf"
+      },
+      {
+        "volume": 6,
+        "error": "HTTP 503 Service Unavailable — https://archive.org/download/pulpitcommentary06exel/pulpitcommentary06exel.pdf",
+        "url": "https://archive.org/download/pulpitcommentary06exel/pulpitcommentary06exel.pdf"
+      },
+      {
+        "volume": 7,
+        "error": "HTTP 503 Service Unavailable — https://archive.org/download/pulpitcommentary07exel/pulpitcommentary07exel.pdf",
+        "url": "https://archive.org/download/pulpitcommentary07exel/pulpitcommentary07exel.pdf"
+      },
+      {
+        "volume": 8,
+        "error": "HTTP 503 Service Unavailable — https://archive.org/download/pulpitcommentary08exel/pulpitcommentary08exel.pdf",
+        "url": "https://archive.org/download/pulpitcommentary08exel/pulpitcommentary08exel.pdf"
+      },
+      {
+        "volume": 9,
+        "error": "HTTP 503 Service Unavailable — https://archive.org/download/pulpitcommentary09exel/pulpitcommentary09exel.pdf",
+        "url": "https://archive.org/download/pulpitcommentary09exel/pulpitcommentary09exel.pdf"
+      },
+      {
+        "volume": 10,
+        "error": "HTTP 503 Service Unavailable — https://archive.org/download/pulpitcommentary10exel/pulpitcommentary10exel.pdf",
+        "url": "https://archive.org/download/pulpitcommentary10exel/pulpitcommentary10exel.pdf"
+      },
+      {
+        "volume": 11,
+        "error": "HTTP 503 Service Unavailable — https://archive.org/download/pulpitcommentary11exel/pulpitcommentary11exel.pdf",
+        "url": "https://archive.org/download/pulpitcommentary11exel/pulpitcommentary11exel.pdf"
+      },
+      {
+        "volume": 12,
+        "error": "HTTP 503 Service Unavailable — https://archive.org/download/pulpitcommentary12exel/pulpitcommentary12exel.pdf",
+        "url": "https://archive.org/download/pulpitcommentary12exel/pulpitcommentary12exel.pdf"
+      },
+      {
+        "volume": 13,
+        "error": "HTTP 503 Service Unavailable — https://archive.org/download/pulpitcommentary13exel/pulpitcommentary13exel.pdf",
+        "url": "https://archive.org/download/pulpitcommentary13exel/pulpitcommentary13exel.pdf"
+      },
+      {
+        "volume": 14,
+        "error": "HTTP 503 Service Unavailable — https://archive.org/download/pulpitcommentary14exel/pulpitcommentary14exel.pdf",
+        "url": "https://archive.org/download/pulpitcommentary14exel/pulpitcommentary14exel.pdf"
+      },
+      {
+        "volume": 15,
+        "error": "HTTP 503 Service Unavailable — https://archive.org/download/pulpitcommentary15exel/pulpitcommentary15exel.pdf",
+        "url": "https://archive.org/download/pulpitcommentary15exel/pulpitcommentary15exel.pdf"
+      },
+      {
+        "volume": 16,
+        "error": "HTTP 503 Service Unavailable — https://archive.org/download/pulpitcommentary16exel/pulpitcommentary16exel.pdf",
+        "url": "https://archive.org/download/pulpitcommentary16exel/pulpitcommentary16exel.pdf"
+      },
+      {
+        "volume": 17,
+        "error": "HTTP 503 Service Unavailable — https://archive.org/download/pulpitcommentary17exel/pulpitcommentary17exel.pdf",
+        "url": "https://archive.org/download/pulpitcommentary17exel/pulpitcommentary17exel.pdf"
+      },
+      {
+        "volume": 18,
+        "error": "HTTP 503 Service Unavailable — https://archive.org/download/pulpitcommentary18exel/pulpitcommentary18exel.pdf",
+        "url": "https://archive.org/download/pulpitcommentary18exel/pulpitcommentary18exel.pdf"
+      },
+      {
+        "volume": 19,
+        "error": "HTTP 503 Service Unavailable — https://archive.org/download/pulpitcommentary19exel/pulpitcommentary19exel.pdf",
+        "url": "https://archive.org/download/pulpitcommentary19exel/pulpitcommentary19exel.pdf"
+      },
+      {
+        "volume": 20,
+        "error": "HTTP 503 Service Unavailable — https://archive.org/download/pulpitcommentary20exel/pulpitcommentary20exel.pdf",
+        "url": "https://archive.org/download/pulpitcommentary20exel/pulpitcommentary20exel.pdf"
+      },
+      {
+        "volume": 21,
+        "error": "HTTP 503 Service Unavailable — https://archive.org/download/pulpitcommentary21exel/pulpitcommentary21exel.pdf",
+        "url": "https://archive.org/download/pulpitcommentary21exel/pulpitcommentary21exel.pdf"
+      }
+    ]
+  },
+  "meyer_nt_commentary": {
+    "title": "Critical and Exegetical Commentary on the New Testament",
+    "timestamp": "2026-06-24T23:44:48.700Z",
+    "results": [
+      {
+        "volume": 1,
+        "type": "pdf_original",
+        "source": "archive_org",
+        "url": "https://archive.org/download/criticalexegetic01meye/criticalexegetic01meye.pdf",
+        "path": "/Users/air/Desktop/desenvolvimento/Lampas/lampas/biblioteca/comentarios/meyer_nt_commentary/vol_01.pdf",
+        "hash": "a126db1e0681257a8390172d1b366998b0ae5b8acdfb68c4ae66203f95d29ac8",
+        "size": 45008499
+      },
+      {
+        "volume": 2,
+        "type": "pdf_original",
+        "source": "archive_org",
+        "url": "https://archive.org/download/criticalexegetic02meye/criticalexegetic02meye.pdf",
+        "path": "/Users/air/Desktop/desenvolvimento/Lampas/lampas/biblioteca/comentarios/meyer_nt_commentary/vol_02.pdf",
+        "hash": "53a4d494ede73d7efbbca4462b8b28fd45cd33ee3204d969c6fb699c5845bdc5",
+        "size": 43816250
+      },
+      {
+        "volume": 3,
+        "error": "HTTP 503 Service Unavailable — https://archive.org/download/criticalexegetic03meye/criticalexegetic03meye.pdf",
+        "url": "https://archive.org/download/criticalexegetic03meye/criticalexegetic03meye.pdf"
+      },
+      {
+        "volume": 4,
+        "type": "pdf_original",
+        "source": "archive_org",
+        "url": "https://archive.org/download/criticalexegetic04meye/criticalexegetic04meye.pdf",
+        "path": "/Users/air/Desktop/desenvolvimento/Lampas/lampas/biblioteca/comentarios/meyer_nt_commentary/vol_04.pdf",
+        "hash": "6f53cf7c4ab0505b13267857c39954072c90e139b90273dbad3fed1832b23de0",
+        "size": 44704264
+      },
+      {
+        "volume": 5,
+        "type": "pdf_original",
+        "source": "archive_org",
+        "url": "https://archive.org/download/criticalexegetic05meye/criticalexegetic05meye.pdf",
+        "path": "/Users/air/Desktop/desenvolvimento/Lampas/lampas/biblioteca/comentarios/meyer_nt_commentary/vol_05.pdf",
+        "hash": "2abad4911fa5e75cbc44e06f6bf3d58db0713f568450547ee13cc024c25e6891",
+        "size": 37269798
+      },
+      {
+        "volume": 6,
+        "type": "pdf_original",
+        "source": "archive_org",
+        "url": "https://archive.org/download/criticalexegetic06meye/criticalexegetic06meye.pdf",
+        "path": "/Users/air/Desktop/desenvolvimento/Lampas/lampas/biblioteca/comentarios/meyer_nt_commentary/vol_06.pdf",
+        "hash": "4383169b0cf804c780d9a0a1eef2899eddab9233a18353deae43f5701caad05c",
+        "size": 47305438
+      },
+      {
+        "volume": 7,
+        "type": "pdf_original",
+        "source": "archive_org",
+        "url": "https://archive.org/download/criticalexegetic07meye/criticalexegetic07meye.pdf",
+        "path": "/Users/air/Desktop/desenvolvimento/Lampas/lampas/biblioteca/comentarios/meyer_nt_commentary/vol_07.pdf",
+        "hash": "fb9d2c27b0f4044d5dc838f635b98c25cfa52429dcc50129bdd36a8dd438e683",
+        "size": 56148697
+      },
+      {
+        "volume": 8,
+        "error": "HTTP 503 Service Unavailable — https://archive.org/download/criticalexegetic08meye/criticalexegetic08meye.pdf",
+        "url": "https://archive.org/download/criticalexegetic08meye/criticalexegetic08meye.pdf"
+      },
+      {
+        "volume": 9,
+        "type": "pdf_original",
+        "source": "archive_org",
+        "url": "https://archive.org/download/criticalexegetic09meye/criticalexegetic09meye.pdf",
+        "path": "/Users/air/Desktop/desenvolvimento/Lampas/lampas/biblioteca/comentarios/meyer_nt_commentary/vol_09.pdf",
+        "hash": "54821acad60034ecc307f4c87386caa2114765e7cef9f793f39c7a61ddcde6c7",
+        "size": 45111740
+      },
+      {
+        "volume": 10,
+        "type": "pdf_original",
+        "source": "archive_org",
+        "url": "https://archive.org/download/criticalexegetic10meye/criticalexegetic10meye.pdf",
+        "path": "/Users/air/Desktop/desenvolvimento/Lampas/lampas/biblioteca/comentarios/meyer_nt_commentary/vol_10.pdf",
+        "hash": "56b6837d2b5e9e1bb5c690ee3ec8715e133ba295172ef0c65ced93ef722e8f40",
+        "size": 24034584
+      },
+      {
+        "volume": 11,
+        "type": "pdf_original",
+        "source": "archive_org",
+        "url": "https://archive.org/download/criticalexegetic11meye/criticalexegetic11meye.pdf",
+        "path": "/Users/air/Desktop/desenvolvimento/Lampas/lampas/biblioteca/comentarios/meyer_nt_commentary/vol_11.pdf",
+        "hash": "c9bf91bbe44d8b6137701959cc0939bb6e6d573fc3926c950a33b2ec198e93ac",
+        "size": 44903567
+      }
+    ]
+  },
+  "charles_hodge_romans": {
+    "title": "Commentary on the Epistle to the Romans",
+    "timestamp": "2026-06-24T23:44:56.179Z",
+    "results": [
+      {
+        "volume": 1,
+        "type": "pdf_original",
+        "source": "archive_org",
+        "url": "https://archive.org/download/commentaryonepi00hodggoog/commentaryonepi00hodggoog.pdf",
+        "path": "/Users/air/Desktop/desenvolvimento/Lampas/lampas/biblioteca/comentarios/charles_hodge_romans/vol_01.pdf",
+        "hash": "d2146c0e98e880b750409051dfda63c6093cbb720876cf9b167853783e43605d",
+        "size": 23699665
+      }
+    ]
+  },
+  "martin_luther_galatians": {
+    "title": "Commentary on the Epistle to the Galatians",
+    "timestamp": "2026-06-24T23:44:59.334Z",
+    "results": [
+      {
+        "volume": 1,
+        "error": "HTTP 503 Service Unavailable — https://archive.org/download/commentaryonepis00luth/commentaryonepis00luth.pdf",
+        "url": "https://archive.org/download/commentaryonepis00luth/commentaryonepis00luth.pdf"
+      }
+    ]
+  },
+  "calvin_commentaries": {
+    "title": "Commentaries",
+    "timestamp": "2026-06-24T23:45:15.171Z",
+    "results": [
+      {
+        "volume": 1,
+        "error": "HTTP 503 Service Unavailable — https://archive.org/download/commentariesofjo01calv/commentariesofjo01calv.pdf",
+        "url": "https://archive.org/download/commentariesofjo01calv/commentariesofjo01calv.pdf"
+      },
+      {
+        "volume": 2,
+        "type": "html",
+        "source": "ccel",
+        "url": "https://www.ccel.org/ccel/calvin/calcom03.html",
+        "needs_html_extraction": true
+      },
+      {
+        "volume": 3,
+        "error": "HTTP 503 Service Unavailable — https://archive.org/download/commentariesofjo08calv/commentariesofjo08calv.pdf",
+        "url": "https://archive.org/download/commentariesofjo08calv/commentariesofjo08calv.pdf"
+      },
+      {
+        "volume": 4,
+        "type": "html",
+        "source": "ccel",
+        "url": "https://www.ccel.org/ccel/calvin/calcom13.html",
+        "needs_html_extraction": true
+      },
+      {
+        "volume": 5,
+        "type": "html",
+        "source": "ccel",
+        "url": "https://www.ccel.org/ccel/calvin/calcom17.html",
+        "needs_html_extraction": true
+      },
+      {
+        "volume": 6,
+        "type": "html",
+        "source": "ccel",
+        "url": "https://www.ccel.org/ccel/calvin/calcom23.html",
+        "needs_html_extraction": true
+      },
+      {
+        "volume": 7,
+        "type": "html",
+        "source": "ccel",
+        "url": "https://www.ccel.org/ccel/calvin/calcom26.html",
+        "needs_html_extraction": true
+      },
+      {
+        "volume": 8,
+        "error": "HTTP 503 Service Unavailable — https://archive.org/download/commentariesofjo31calv/commentariesofjo31calv.pdf",
+        "url": "https://archive.org/download/commentariesofjo31calv/commentariesofjo31calv.pdf"
+      },
+      {
+        "volume": 9,
+        "type": "html",
+        "source": "ccel",
+        "url": "https://www.ccel.org/ccel/calvin/calcom34.html",
+        "needs_html_extraction": true
+      },
+      {
+        "volume": 10,
+        "type": "html",
+        "source": "ccel",
+        "url": "https://www.ccel.org/ccel/calvin/calcom36.html",
+        "needs_html_extraction": true
+      },
+      {
+        "volume": 11,
+        "error": "HTTP 503 Service Unavailable — https://archive.org/download/commentariesofjo38calv/commentariesofjo38calv.pdf",
+        "url": "https://archive.org/download/commentariesofjo38calv/commentariesofjo38calv.pdf"
+      },
+      {
+        "volume": 12,
+        "type": "html",
+        "source": "ccel",
+        "url": "https://www.ccel.org/ccel/calvin/calcom39.html",
+        "needs_html_extraction": true
+      },
+      {
+        "volume": 13,
+        "error": "HTTP 503 Service Unavailable — https://archive.org/download/commentariesofjo41calv/commentariesofjo41calv.pdf",
+        "url": "https://archive.org/download/commentariesofjo41calv/commentariesofjo41calv.pdf"
+      },
+      {
+        "volume": 14,
+        "type": "html",
+        "source": "ccel",
+        "url": "https://www.ccel.org/ccel/calvin/calcom43.html",
+        "needs_html_extraction": true
+      },
+      {
+        "volume": 15,
+        "type": "html",
+        "source": "ccel",
+        "url": "https://www.ccel.org/ccel/calvin/calcom44.html",
+        "needs_html_extraction": true
+      }
+    ]
+  },
+  "easton_bible_dictionary": {
+    "title": "Easton's Bible Dictionary",
+    "timestamp": "2026-06-24T23:45:23.606Z",
+    "results": [
+      {
+        "volume": 1,
+        "type": "pdf_original",
+        "source": "archive_org",
+        "url": "https://archive.org/download/eastonsbibledict00east/eastonsbibledict00east.pdf",
+        "path": "/Users/air/Desktop/desenvolvimento/Lampas/lampas/biblioteca/dicionarios/easton_bible_dictionary/vol_01.pdf",
+        "hash": "3596ca802832e48f0e4b1bff425da83a2f6c18deba571f983e3aa6ffc6ca338b",
+        "size": 3526250
+      }
+    ]
+  },
+  "smith_bible_dictionary": {
+    "title": "Smith's Bible Dictionary",
+    "timestamp": "2026-06-24T23:45:27.577Z",
+    "results": [
+      {
+        "volume": 1,
+        "error": "HTTP 401 Unauthorized — https://archive.org/download/smithsbibledicti00smit/smithsbibledicti00smit.pdf",
+        "url": "https://archive.org/download/smithsbibledicti00smit/smithsbibledicti00smit.pdf"
+      }
+    ]
+  },
+  "fausset_bible_dictionary": {
+    "title": "Bible Encyclopaedia and Dictionary",
+    "timestamp": "2026-06-24T23:45:30.441Z",
+    "results": [
+      {
+        "volume": 1,
+        "error": "HTTP 503 Service Unavailable — https://archive.org/download/bibleencyclopaed00faus/bibleencyclopaed00faus.pdf",
+        "url": "https://archive.org/download/bibleencyclopaed00faus/bibleencyclopaed00faus.pdf"
+      }
+    ]
+  },
+  "hitchcock_bible_names": {
+    "title": "Hitchcock's New and Complete Analysis of the Holy Bible",
+    "timestamp": "2026-06-24T23:45:33.406Z",
+    "results": [
+      {
+        "volume": 1,
+        "error": "HTTP 503 Service Unavailable — https://archive.org/download/hitchcocksnewanal/hitchcocksnewanal.pdf",
+        "url": "https://archive.org/download/hitchcocksnewanal/hitchcocksnewanal.pdf"
+      }
+    ]
+  },
+  "nave_topical_bible": {
+    "title": "Nave's Topical Bible",
+    "timestamp": "2026-06-24T23:45:36.702Z",
+    "results": [
+      {
+        "volume": 1,
+        "error": "HTTP 503 Service Unavailable — https://archive.org/download/navestopicalbib00nave/navestopicalbib00nave.pdf",
+        "url": "https://archive.org/download/navestopicalbib00nave/navestopicalbib00nave.pdf"
+      }
+    ]
+  },
+  "isbe_first_edition": {
+    "title": "The International Standard Bible Encyclopaedia",
+    "timestamp": "2026-06-24T23:45:52.877Z",
+    "results": [
+      {
+        "volume": 1,
+        "error": "HTTP 503 Service Unavailable — https://archive.org/download/internationalsta01orruoft/internationalsta01orruoft.pdf",
+        "url": "https://archive.org/download/internationalsta01orruoft/internationalsta01orruoft.pdf"
+      },
+      {
+        "volume": 2,
+        "error": "HTTP 503 Service Unavailable — https://archive.org/download/internationalsta02orruoft/internationalsta02orruoft.pdf",
+        "url": "https://archive.org/download/internationalsta02orruoft/internationalsta02orruoft.pdf"
+      },
+      {
+        "volume": 3,
+        "error": "HTTP 503 Service Unavailable — https://archive.org/download/internationalsta03orruoft/internationalsta03orruoft.pdf",
+        "url": "https://archive.org/download/internationalsta03orruoft/internationalsta03orruoft.pdf"
+      },
+      {
+        "volume": 4,
+        "error": "HTTP 503 Service Unavailable — https://archive.org/download/internationalsta04orruoft/internationalsta04orruoft.pdf",
+        "url": "https://archive.org/download/internationalsta04orruoft/internationalsta04orruoft.pdf"
+      },
+      {
+        "volume": 5,
+        "error": "HTTP 503 Service Unavailable — https://archive.org/download/internationalsta05orruoft/internationalsta05orruoft.pdf",
+        "url": "https://archive.org/download/internationalsta05orruoft/internationalsta05orruoft.pdf"
+      }
+    ]
+  },
+  "mcclintock_strong_cyclopaedia": {
+    "title": "Cyclopaedia of Biblical, Theological, and Ecclesiastical Literature",
+    "timestamp": "2026-06-24T23:46:30.978Z",
+    "results": [
+      {
+        "volume": 1,
+        "error": "HTTP 503 Service Unavailable — https://archive.org/download/cyclopaediaofbib01mcclrich/cyclopaediaofbib01mcclrich.pdf",
+        "url": "https://archive.org/download/cyclopaediaofbib01mcclrich/cyclopaediaofbib01mcclrich.pdf"
+      },
+      {
+        "volume": 2,
+        "error": "HTTP 503 Service Unavailable — https://archive.org/download/cyclopaediaofbib02mcclrich/cyclopaediaofbib02mcclrich.pdf",
+        "url": "https://archive.org/download/cyclopaediaofbib02mcclrich/cyclopaediaofbib02mcclrich.pdf"
+      },
+      {
+        "volume": 3,
+        "error": "HTTP 503 Service Unavailable — https://archive.org/download/cyclopaediaofbib03mcclrich/cyclopaediaofbib03mcclrich.pdf",
+        "url": "https://archive.org/download/cyclopaediaofbib03mcclrich/cyclopaediaofbib03mcclrich.pdf"
+      },
+      {
+        "volume": 4,
+        "error": "HTTP 503 Service Unavailable — https://archive.org/download/cyclopaediaofbib04mcclrich/cyclopaediaofbib04mcclrich.pdf",
+        "url": "https://archive.org/download/cyclopaediaofbib04mcclrich/cyclopaediaofbib04mcclrich.pdf"
+      },
+      {
+        "volume": 5,
+        "error": "HTTP 503 Service Unavailable — https://archive.org/download/cyclopaediaofbib05mcclrich/cyclopaediaofbib05mcclrich.pdf",
+        "url": "https://archive.org/download/cyclopaediaofbib05mcclrich/cyclopaediaofbib05mcclrich.pdf"
+      },
+      {
+        "volume": 6,
+        "error": "HTTP 503 Service Unavailable — https://archive.org/download/cyclopaediaofbib06mcclrich/cyclopaediaofbib06mcclrich.pdf",
+        "url": "https://archive.org/download/cyclopaediaofbib06mcclrich/cyclopaediaofbib06mcclrich.pdf"
+      },
+      {
+        "volume": 7,
+        "error": "HTTP 503 Service Unavailable — https://archive.org/download/cyclopaediaofbib07mcclrich/cyclopaediaofbib07mcclrich.pdf",
+        "url": "https://archive.org/download/cyclopaediaofbib07mcclrich/cyclopaediaofbib07mcclrich.pdf"
+      },
+      {
+        "volume": 8,
+        "error": "HTTP 503 Service Unavailable — https://archive.org/download/cyclopaediaofbib08mcclrich/cyclopaediaofbib08mcclrich.pdf",
+        "url": "https://archive.org/download/cyclopaediaofbib08mcclrich/cyclopaediaofbib08mcclrich.pdf"
+      },
+      {
+        "volume": 9,
+        "error": "HTTP 503 Service Unavailable — https://archive.org/download/cyclopaediaofbib09mcclrich/cyclopaediaofbib09mcclrich.pdf",
+        "url": "https://archive.org/download/cyclopaediaofbib09mcclrich/cyclopaediaofbib09mcclrich.pdf"
+      },
+      {
+        "volume": 10,
+        "error": "HTTP 503 Service Unavailable — https://archive.org/download/cyclopaediaofbib10mcclrich/cyclopaediaofbib10mcclrich.pdf",
+        "url": "https://archive.org/download/cyclopaediaofbib10mcclrich/cyclopaediaofbib10mcclrich.pdf"
+      },
+      {
+        "volume": 11,
+        "error": "HTTP 503 Service Unavailable — https://archive.org/download/cyclopaediaofbib11mcclrich/cyclopaediaofbib11mcclrich.pdf",
+        "url": "https://archive.org/download/cyclopaediaofbib11mcclrich/cyclopaediaofbib11mcclrich.pdf"
+      },
+      {
+        "volume": 12,
+        "error": "HTTP 503 Service Unavailable — https://archive.org/download/cyclopaediaofbib12mcclrich/cyclopaediaofbib12mcclrich.pdf",
+        "url": "https://archive.org/download/cyclopaediaofbib12mcclrich/cyclopaediaofbib12mcclrich.pdf"
+      }
+    ]
+  },
+  "bdb_hebrew_lexicon": {
+    "title": "A Hebrew and English Lexicon of the Old Testament",
+    "timestamp": "2026-06-24T23:47:56.857Z",
+    "results": [
+      {
+        "volume": 1,
+        "type": "pdf_original",
+        "source": "archive_org",
+        "url": "https://archive.org/download/hebrewenglishlex00brow/hebrewenglishlex00brow.pdf",
+        "path": "/Users/air/Desktop/desenvolvimento/Lampas/lampas/biblioteca/lexicos/bdb_hebrew_lexicon/vol_01.pdf",
+        "hash": "3cbf524fb3dd113ed1848b17fac942f31e4f5138c338cdaa465df2601414e079",
+        "size": 116863562
+      }
+    ]
+  },
+  "gesenius_hebrew_lexicon": {
+    "title": "Gesenius's Hebrew and Chaldee Lexicon to the Old Testament Scriptures",
+    "timestamp": "2026-06-24T23:48:00.109Z",
+    "results": [
+      {
+        "volume": 1,
+        "error": "HTTP 503 Service Unavailable — https://archive.org/download/geseniushebrewch00geseuoft/geseniushebrewch00geseuoft.pdf",
+        "url": "https://archive.org/download/geseniushebrewch00geseuoft/geseniushebrewch00geseuoft.pdf"
+      }
+    ]
+  },
+  "thayer_greek_lexicon": {
+    "title": "A Greek-English Lexicon of the New Testament",
+    "timestamp": "2026-06-24T23:48:03.269Z",
+    "results": [
+      {
+        "volume": 1,
+        "error": "HTTP 503 Service Unavailable — https://archive.org/download/greekenglishire00unkngoog/greekenglishire00unkngoog.pdf",
+        "url": "https://archive.org/download/greekenglishire00unkngoog/greekenglishire00unkngoog.pdf"
+      }
+    ]
+  },
+  "lsj_greek_lexicon": {
+    "title": "A Greek-English Lexicon",
+    "timestamp": "2026-06-24T23:48:06.501Z",
+    "results": [
+      {
+        "volume": 1,
+        "error": "HTTP 503 Service Unavailable — https://archive.org/download/greekenglishlexic00lidd/greekenglishlexic00lidd.pdf",
+        "url": "https://archive.org/download/greekenglishlexic00lidd/greekenglishlexic00lidd.pdf"
+      }
+    ]
+  },
+  "strongs_concordance": {
+    "title": "Strong's Exhaustive Concordance of the Bible",
+    "timestamp": "2026-06-24T23:48:09.811Z",
+    "results": [
+      {
+        "volume": 1,
+        "error": "HTTP 503 Service Unavailable — https://archive.org/download/exhaustiveconco00stro/exhaustiveconco00stro.pdf",
+        "url": "https://archive.org/download/exhaustiveconco00stro/exhaustiveconco00stro.pdf"
+      }
+    ]
+  },
+  "young_analytical_concordance": {
+    "title": "Young's Analytical Concordance to the Bible",
+    "timestamp": "2026-06-24T23:48:12.490Z",
+    "results": [
+      {
+        "volume": 1,
+        "error": "HTTP 401 Unauthorized — https://archive.org/download/youngsanalytical00youn/youngsanalytical00youn.pdf",
+        "url": "https://archive.org/download/youngsanalytical00youn/youngsanalytical00youn.pdf"
+      }
+    ]
+  },
+  "cruden_concordance": {
+    "title": "Cruden's Complete Concordance",
+    "timestamp": "2026-06-24T23:48:28.537Z",
+    "results": [
+      {
+        "volume": 1,
+        "type": "pdf_original",
+        "source": "archive_org",
+        "url": "https://archive.org/download/crudenscompletec00crud/crudenscompletec00crud.pdf",
+        "path": "/Users/air/Desktop/desenvolvimento/Lampas/lampas/biblioteca/concordancias/cruden_concordance/vol_01.pdf",
+        "hash": "6962204e20852e237474213b95f33c815e105226c5cf5a8433bf5c1d6f7adf8d",
+        "size": 116910049
+      }
+    ]
+  }
+}
