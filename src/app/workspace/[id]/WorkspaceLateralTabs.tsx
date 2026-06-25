@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from 'react'
 import type { Project } from '@/types/database'
 import {
   BookMarked, Paperclip, Library, BookText, BookCopy, Archive,
-  ChevronRight, ChevronLeft, X,
+  ChevronRight, ChevronLeft, X, Pin, PinOff,
   type LucideIcon,
 } from 'lucide-react'
 import DicionarioWorkspace from './DicionarioWorkspace'
@@ -163,16 +163,16 @@ function TeologiaPainel({ area, project, onAskAI }: { area: ToolArea; project: P
 }
 
 export default function WorkspaceLateralTabs({ project, userId, onAskAI }: Props) {
-  const [leftTab,  setLeftTab]  = useState<LeftTab | null>(null)
-  const [rightTab, setRightTab] = useState<RightTab | null>(null)
-  const [teoSub,   setTeoSub]   = useState<'ferramentas_biblica' | 'ferramentas_sistematica'>('ferramentas_biblica')
-  // Memoizes the last open right panel so it keeps state when switching
-
-  // Painéis laterais sempre iniciam fechados — só abrem por ação explícita do usuário
+  const [leftTab,    setLeftTab]    = useState<LeftTab | null>(null)
+  const [rightTab,   setRightTab]   = useState<RightTab | null>(null)
+  const [teoSub,     setTeoSub]     = useState<'ferramentas_biblica' | 'ferramentas_sistematica'>('ferramentas_biblica')
+  const [leftPinned, setLeftPinned] = useState(false)
 
   const toggleLeft = useCallback((id: LeftTab) => {
+    if (leftTab === id && leftPinned) return
+    if (leftTab !== id) setLeftPinned(false)
     setLeftTab(prev => prev === id ? null : id)
-  }, [])
+  }, [leftTab, leftPinned])
 
   const toggleRight = useCallback((id: RightTab) => {
     setRightTab(prev => prev === id ? null : id)
@@ -254,7 +254,22 @@ export default function WorkspaceLateralTabs({ project, userId, onAskAI }: Props
                 {tab.label}
               </span>
               <button
-                onClick={() => setLeftTab(null)}
+                onClick={() => setLeftPinned(p => !p)}
+                title={leftPinned ? 'Desafixar painel' : 'Fixar painel'}
+                style={{
+                  background: leftPinned ? `${tab.color}18` : 'none',
+                  border: `1px solid ${leftPinned ? tab.color + '60' : 'transparent'}`,
+                  cursor: 'pointer', color: tab.color,
+                  opacity: leftPinned ? 1 : 0.45, padding: '0.15rem 0.2rem',
+                  borderRadius: '4px', display: 'flex', transition: 'all 0.12s',
+                }}
+                onMouseEnter={e => { e.currentTarget.style.opacity = '1' }}
+                onMouseLeave={e => { if (!leftPinned) e.currentTarget.style.opacity = '0.45' }}
+              >
+                {leftPinned ? <PinOff size={11} /> : <Pin size={11} />}
+              </button>
+              <button
+                onClick={() => { setLeftPinned(false); setLeftTab(null) }}
                 title="Fechar"
                 style={{
                   background: 'none', border: 'none', cursor: 'pointer',
