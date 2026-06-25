@@ -25,6 +25,37 @@ interface Props {
 const COLOR = '#7C2D12'
 const BG    = '#FFF7ED'
 
+// Mapeamento português → inglês para os nomes dos livros bíblicos
+const PT_TO_EN: Record<string, string> = {
+  'Gênesis': 'Genesis', 'Êxodo': 'Exodus', 'Levítico': 'Leviticus',
+  'Números': 'Numbers', 'Deuteronômio': 'Deuteronomy', 'Josué': 'Joshua',
+  'Juízes': 'Judges', 'Rute': 'Ruth', '1 Samuel': '1 Samuel', '2 Samuel': '2 Samuel',
+  '1 Reis': '1 Kings', '2 Reis': '2 Kings', '1 Crônicas': '1 Chronicles',
+  '2 Crônicas': '2 Chronicles', 'Esdras': 'Ezra', 'Neemias': 'Nehemiah',
+  'Ester': 'Esther', 'Jó': 'Job', 'Salmos': 'Psalms', 'Provérbios': 'Proverbs',
+  'Eclesiastes': 'Ecclesiastes', 'Cânticos': 'Song of Solomon',
+  'Cântico dos Cânticos': 'Song of Solomon', 'Isaías': 'Isaiah',
+  'Jeremias': 'Jeremiah', 'Lamentações': 'Lamentations', 'Ezequiel': 'Ezekiel',
+  'Daniel': 'Daniel', 'Oséias': 'Hosea', 'Joel': 'Joel', 'Amós': 'Amos',
+  'Obadias': 'Obadiah', 'Jonas': 'Jonah', 'Miquéias': 'Micah', 'Naum': 'Nahum',
+  'Habacuque': 'Habakkuk', 'Sofonias': 'Zephaniah', 'Ageu': 'Haggai',
+  'Zacarias': 'Zechariah', 'Malaquias': 'Malachi',
+  'Mateus': 'Matthew', 'Marcos': 'Mark', 'Lucas': 'Luke', 'João': 'John',
+  'Atos': 'Acts', 'Romanos': 'Romans', '1 Coríntios': '1 Corinthians',
+  '2 Coríntios': '2 Corinthians', 'Gálatas': 'Galatians', 'Efésios': 'Ephesians',
+  'Filipenses': 'Philippians', 'Colossenses': 'Colossians',
+  '1 Tessalonicenses': '1 Thessalonians', '2 Tessalonicenses': '2 Thessalonians',
+  '1 Timóteo': '1 Timothy', '2 Timóteo': '2 Timothy', 'Tito': 'Titus',
+  'Filemom': 'Philemon', 'Hebreus': 'Hebrews', 'Tiago': 'James',
+  '1 Pedro': '1 Peter', '2 Pedro': '2 Peter', '1 João': '1 John',
+  '2 João': '2 John', '3 João': '3 John', 'Judas': 'Jude',
+  'Apocalipse': 'Revelation',
+}
+
+function toEnBook(ptBook: string): string {
+  return PT_TO_EN[ptBook] ?? ptBook
+}
+
 function parsePassage(ref: string): { chapter: number; verse: number | null } {
   const m = ref.trim().match(/^(\d+)(?:[.:](\d+))?/)
   if (!m) return { chapter: 1, verse: null }
@@ -156,9 +187,9 @@ export default function LibraryWorkspace({ project, onAskAI }: Props) {
     setLoading(true)
     setSearched(false)
     const { data } = await supabase.rpc('lib_get_commentaries', {
-      p_bible_book: project.book,
+      p_bible_book: toEnBook(project.book),
       p_chapter:    chapter,
-      p_verse:      verse,
+      p_verse:      null,
     })
     setEntries((data ?? []) as LibEntry[])
     setLoading(false)
