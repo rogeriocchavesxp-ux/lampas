@@ -3,7 +3,7 @@
 import { useState, useEffect, useMemo, useRef, useCallback } from 'react'
 import type { Project } from '@/types/database'
 import { createClient } from '@/lib/supabase/client'
-import { Search, Plus, BookOpen, Sparkles, ChevronRight, X, Check, Edit2, Trash2, Clock, Eye } from 'lucide-react'
+import { Search, Plus, BookOpen, Sparkles, X, Check, Edit2, Trash2, Clock, Eye } from 'lucide-react'
 
 // ── Types ──────────────────────────────────────────────────────────────────────
 
@@ -91,28 +91,29 @@ interface Props {
   onAskAI: (prompt: string) => void
 }
 
-// ── Helpers ───────────────────────────────────────────────────────────────────
+// ── TrustBadge ────────────────────────────────────────────────────────────────
 
 function TrustBadge({ level }: { level: TrustLevel }) {
   const t = TRUST[level]
   return (
-    <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', fontSize: '0.6rem', fontWeight: 700, color: t.color, background: t.bg, borderRadius: '6px', padding: '2px 6px' }}>
+    <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', fontSize: '0.63rem', color: t.color, fontWeight: 500 }}>
       <span style={{ width: '5px', height: '5px', borderRadius: '50%', background: t.dot, flexShrink: 0 }} />
       {t.label}
     </span>
   )
 }
 
+// ── Field ─────────────────────────────────────────────────────────────────────
+
 function Field({ label, value, onExpand }: { label: string; value: string | null | undefined; onExpand?: () => void }) {
   if (!value?.trim()) return null
   return (
-    <div style={{ marginBottom: '1rem' }}>
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '4px' }}>
-        <div style={{ fontSize: '0.64rem', fontWeight: 700, color: '#94A3B8', textTransform: 'uppercase', letterSpacing: '0.08em' }}>{label}</div>
+    <div style={{ marginBottom: '1.75rem' }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
+        <div style={{ fontSize: '0.62rem', fontWeight: 700, color: '#94A3B8', textTransform: 'uppercase', letterSpacing: '0.1em' }}>{label}</div>
         {onExpand && (
           <button
             onClick={onExpand}
-            title={`Expandir ${label}`}
             style={{
               background: 'none', border: 'none', cursor: 'pointer',
               color: '#CBD5E1', padding: '2px 4px', lineHeight: 1,
@@ -129,12 +130,12 @@ function Field({ label, value, onExpand }: { label: string; value: string | null
           </button>
         )}
       </div>
-      <div style={{ fontSize: '0.88rem', color: '#1E293B', lineHeight: 1.65, whiteSpace: 'pre-wrap' }}>{value}</div>
+      <div style={{ fontSize: '0.92rem', color: '#1E293B', lineHeight: 1.8, whiteSpace: 'pre-wrap' }}>{value}</div>
     </div>
   )
 }
 
-// ── Dict Expand Modal ─────────────────────────────────────────────────────
+// ── Dict Expand Modal ─────────────────────────────────────────────────────────
 
 function DictExpandModal({
   label, termTitle, content, onSave, onClose,
@@ -153,7 +154,7 @@ function DictExpandModal({
       onClick={e => { if (e.target === e.currentTarget) onClose() }}
       style={{
         position: 'fixed', inset: 0, zIndex: 1000,
-        background: 'rgba(0,0,0,0.5)',
+        background: 'rgba(0,0,0,0.45)',
         display: 'flex', alignItems: 'center', justifyContent: 'center',
         padding: '1rem',
       }}
@@ -167,7 +168,6 @@ function DictExpandModal({
         overflow: 'hidden',
         boxShadow: '0 24px 64px rgba(0,0,0,0.18)',
       }}>
-        {/* Header */}
         <div style={{
           padding: '1rem 1.4rem',
           borderBottom: '1px solid #F1F5F9',
@@ -175,7 +175,7 @@ function DictExpandModal({
           flexShrink: 0,
         }}>
           <div>
-            <div style={{ fontSize: '0.6rem', fontWeight: 700, color: '#94A3B8', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '0.3rem' }}>
+            <div style={{ fontSize: '0.6rem', fontWeight: 700, color: '#94A3B8', textTransform: 'uppercase', letterSpacing: '0.09em', marginBottom: '0.3rem' }}>
               {label}
             </div>
             <div style={{ fontSize: '1.15rem', fontWeight: 700, color: '#0F172A', letterSpacing: '-0.02em' }}>
@@ -205,7 +205,6 @@ function DictExpandModal({
           </div>
         </div>
 
-        {/* Content */}
         <div style={{ flex: 1, overflowY: 'auto', padding: '1.75rem 2rem' }}>
           {mode === 'view' ? (
             content.trim() ? (
@@ -236,7 +235,6 @@ function DictExpandModal({
           )}
         </div>
 
-        {/* Footer */}
         {mode === 'edit' && (
           <div style={{
             padding: '0.85rem 1.4rem',
@@ -273,20 +271,20 @@ export default function DicionarioWorkspace({ project, userId, onAskAI }: Props)
   const supabase     = useMemo(() => createClient(), [])
   const aiBufferRef  = useRef('')
 
-  const [entries,      setEntries]      = useState<DictionaryEntry[]>([])
-  const [query,        setQuery]        = useState('')
-  const [catFilter,    setCatFilter]    = useState<Category | 'all'>('all')
-  const [loading,      setLoading]      = useState(true)
-  const [panel,        setPanel]        = useState<PanelState>('list')
-  const [selected,     setSelected]     = useState<DictionaryEntry | null>(null)
-  const [draft,        setDraft]        = useState({ ...EMPTY_DRAFT })
-  const [saving,       setSaving]       = useState(false)
-  const [aiLoading,    setAiLoading]    = useState(false)
-  const [aiResult,     setAiResult]     = useState('')
-  const [savedToast,   setSavedToast]   = useState(false)
-  const [deleteConfirm,setDeleteConfirm]= useState(false)
-  const [expandModal,  setExpandModal]  = useState<{ label: string; content: string; onSave: (v: string) => void } | null>(null)
-  const [versions,     setVersions]     = useState<DictionaryVersion[]>([])
+  const [entries,         setEntries]         = useState<DictionaryEntry[]>([])
+  const [query,           setQuery]           = useState('')
+  const [catFilter,       setCatFilter]       = useState<Category | 'all'>('all')
+  const [loading,         setLoading]         = useState(true)
+  const [panel,           setPanel]           = useState<PanelState>('list')
+  const [selected,        setSelected]        = useState<DictionaryEntry | null>(null)
+  const [draft,           setDraft]           = useState({ ...EMPTY_DRAFT })
+  const [saving,          setSaving]          = useState(false)
+  const [aiLoading,       setAiLoading]       = useState(false)
+  const [aiResult,        setAiResult]        = useState('')
+  const [savedToast,      setSavedToast]      = useState(false)
+  const [deleteConfirm,   setDeleteConfirm]   = useState(false)
+  const [expandModal,     setExpandModal]     = useState<{ label: string; content: string; onSave: (v: string) => void } | null>(null)
+  const [versions,        setVersions]        = useState<DictionaryVersion[]>([])
   const [versionsLoading, setVersionsLoading] = useState(false)
 
   // ── Load entries ────────────────────────────────────────────────────────────
@@ -356,11 +354,11 @@ export default function DicionarioWorkspace({ project, userId, onAskAI }: Props)
     }
 
     const langText = sections['línguas originais'] ?? sections['linguas originais'] ?? ''
-    const hebrewMatch     = langText.match(/[Hh]ebraico[:\s*]+([^\n]+)/)
-    const greekMatch      = langText.match(/[Gg]rego[:\s*]+([^\n]+)/)
-    const aramMatch       = langText.match(/[Aa]ramaico[:\s*]+([^\n]+)/)
-    const translitMatch   = langText.match(/[Tt]ranslit[^:]*:\s*([^\n]+)/)
-    const pronuncMatch    = langText.match(/[Pp]ronúncia[:\s*]+([^\n]+)/)
+    const hebrewMatch   = langText.match(/[Hh]ebraico[:\s*]+([^\n]+)/)
+    const greekMatch    = langText.match(/[Gg]rego[:\s*]+([^\n]+)/)
+    const aramMatch     = langText.match(/[Aa]ramaico[:\s*]+([^\n]+)/)
+    const translitMatch = langText.match(/[Tt]ranslit[^:]*:\s*([^\n]+)/)
+    const pronuncMatch  = langText.match(/[Pp]ronúncia[:\s*]+([^\n]+)/)
 
     const refText = sections['referências cruzadas'] ?? sections['referencias cruzadas'] ?? ''
     const refMatches = refText.match(/\b(?:[A-ZÁÉÍÓÚÀÃÕ][a-záéíóúàãõ]+\.?\s+\d+[:.]\d+(?:[–\-]\d+)?)/g) ?? []
@@ -524,7 +522,7 @@ export default function DicionarioWorkspace({ project, userId, onAskAI }: Props)
     setDeleteConfirm(false)
   }
 
-  // ── Update a single field directly (from expand modal in detail view) ──────
+  // ── Update a single field directly (from expand modal in detail view) ────────
   async function updateFieldDirectly(key: string, value: string) {
     if (!selected) return
     const updated = { ...selected, [key]: value } as DictionaryEntry
@@ -573,9 +571,9 @@ export default function DicionarioWorkspace({ project, userId, onAskAI }: Props)
     const val = (draft[key] as string) ?? ''
     const canExpand = rows >= 2
     return (
-      <div style={{ marginBottom: '12px' }}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '4px' }}>
-          <label style={{ fontSize: '0.66rem', fontWeight: 700, color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.06em' }}>{label}</label>
+      <div style={{ marginBottom: '14px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '5px' }}>
+          <label style={{ fontSize: '0.66rem', fontWeight: 700, color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.07em' }}>{label}</label>
           {canExpand && (
             <button
               type="button"
@@ -606,7 +604,7 @@ export default function DicionarioWorkspace({ project, userId, onAskAI }: Props)
           />
         ) : (
           <textarea value={val} rows={rows} onChange={e => setDraft(p => ({ ...p, [key]: e.target.value }))}
-            style={{ width: '100%', boxSizing: 'border-box', resize: 'vertical', background: '#FAFAFA', border: '1px solid #E2E8F0', borderRadius: '7px', padding: '7px 10px', fontSize: '0.84rem', fontFamily: 'inherit', outline: 'none', color: '#1E293B', lineHeight: 1.6 }}
+            style={{ width: '100%', boxSizing: 'border-box', resize: 'vertical', background: '#FAFAFA', border: '1px solid #E2E8F0', borderRadius: '7px', padding: '7px 10px', fontSize: '0.84rem', fontFamily: 'inherit', outline: 'none', color: '#1E293B', lineHeight: 1.65 }}
           />
         )}
       </div>
@@ -616,16 +614,16 @@ export default function DicionarioWorkspace({ project, userId, onAskAI }: Props)
   // ── Render ─────────────────────────────────────────────────────────────────
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', height: '100%', overflow: 'hidden', background: '#F8FAFC' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', height: '100%', overflow: 'hidden', fontFamily: 'inherit' }}>
 
-      {/* ── Toast ── */}
+      {/* Toast */}
       {savedToast && (
         <div style={{ position: 'fixed', bottom: '1.5rem', right: '1.5rem', zIndex: 9999, background: '#18181B', color: '#FFF', padding: '0.65rem 1.1rem', borderRadius: '10px', fontSize: '0.82rem', fontWeight: 500, boxShadow: '0 8px 24px rgba(0,0,0,0.2)', display: 'flex', alignItems: 'center', gap: '6px' }}>
           <Check size={13} strokeWidth={2} style={{ color: '#4ADE80' }} /> Salvo no Dicionário Lampas
         </div>
       )}
 
-      {/* ══ CREATE / EDIT — full overlay when creating ══ */}
+      {/* ── CREATE / EDIT — full overlay ── */}
       {panel === 'create' ? (
         <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden', background: '#FFFFFF' }}>
           <div style={{ padding: '14px 24px', borderBottom: '1px solid #F1F5F9', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0 }}>
@@ -643,18 +641,18 @@ export default function DicionarioWorkspace({ project, userId, onAskAI }: Props)
               </button>
             </div>
           </div>
-          <div style={{ flex: 1, overflowY: 'auto', padding: '24px 2rem' }}>
+          <div style={{ flex: 1, overflowY: 'auto', padding: '2rem 2rem' }}>
             <div style={{ maxWidth: '680px', margin: '0 auto' }}>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '12px' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '14px' }}>
                 <div>
-                  <label style={{ display: 'block', fontSize: '0.66rem', fontWeight: 700, color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '4px' }}>Título *</label>
+                  <label style={{ display: 'block', fontSize: '0.66rem', fontWeight: 700, color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: '5px' }}>Título *</label>
                   <input value={draft.title} onChange={e => setDraft(p => ({ ...p, title: e.target.value }))}
                     placeholder="Ex: צלח / prosperava / Logos"
                     style={{ width: '100%', boxSizing: 'border-box', background: '#FAFAFA', border: '1px solid #E2E8F0', borderRadius: '7px', padding: '7px 10px', fontSize: '0.84rem', fontFamily: 'inherit', outline: 'none', color: '#1E293B' }}
                   />
                 </div>
                 <div>
-                  <label style={{ display: 'block', fontSize: '0.66rem', fontWeight: 700, color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '4px' }}>Categoria</label>
+                  <label style={{ display: 'block', fontSize: '0.66rem', fontWeight: 700, color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: '5px' }}>Categoria</label>
                   <select value={draft.category} onChange={e => setDraft(p => ({ ...p, category: e.target.value as Category }))}
                     style={{ width: '100%', boxSizing: 'border-box', background: '#FAFAFA', border: '1px solid #E2E8F0', borderRadius: '7px', padding: '7px 10px', fontSize: '0.84rem', fontFamily: 'inherit', outline: 'none', color: '#1E293B' }}>
                     {CATEGORIES.map(c => <option key={c.key} value={c.key}>{c.icon} {c.label}</option>)}
@@ -663,7 +661,7 @@ export default function DicionarioWorkspace({ project, userId, onAskAI }: Props)
               </div>
               {df('definition', 'Definição', 5)}
               {df('etymology', 'Etimologia', 2)}
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '10px', marginBottom: '12px' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '10px', marginBottom: '14px' }}>
                 {(['lang_hebrew', 'lang_greek', 'lang_aramaic'] as const).map(k => df(k, k === 'lang_hebrew' ? 'Hebraico' : k === 'lang_greek' ? 'Grego' : 'Aramaico', 1))}
               </div>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
@@ -678,7 +676,7 @@ export default function DicionarioWorkspace({ project, userId, onAskAI }: Props)
               {df('bibliography', 'Bibliografia', 2)}
               {df('notes', 'Notas Pessoais', 2)}
               <div>
-                <label style={{ display: 'block', fontSize: '0.66rem', fontWeight: 700, color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '4px' }}>Tags (separadas por vírgula)</label>
+                <label style={{ display: 'block', fontSize: '0.66rem', fontWeight: 700, color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: '5px' }}>Tags (separadas por vírgula)</label>
                 <input value={draft.tags.join(', ')} onChange={e => setDraft(p => ({ ...p, tags: e.target.value.split(',').map(t => t.trim()).filter(Boolean) }))}
                   style={{ width: '100%', boxSizing: 'border-box', background: '#FAFAFA', border: '1px solid #E2E8F0', borderRadius: '7px', padding: '7px 10px', fontSize: '0.84rem', fontFamily: 'inherit', outline: 'none', color: '#1E293B' }}
                 />
@@ -686,366 +684,466 @@ export default function DicionarioWorkspace({ project, userId, onAskAI }: Props)
             </div>
           </div>
         </div>
-      ) : (panel === 'detail' || panel === 'history') && selected ? (
-
-        // ── Entry-focused layout: verbete ocupa tela inteira ────────────────────────────
-
-        <>
-          {/* Back bar */}
-          <div style={{ flexShrink: 0, height: '48px', padding: '0 1.5rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '1px solid #F1F5F9', background: '#FFFFFF' }}>
-
-            {/* Back button */}
-            {panel === 'detail' ? (
-              <button
-                onClick={() => setPanel('list')}
-                style={{ display: 'flex', alignItems: 'center', gap: '6px', background: 'none', border: 'none', cursor: 'pointer', color: '#64748B', fontFamily: 'inherit', fontSize: '0.8rem', fontWeight: 500, padding: '4px 8px', borderRadius: '6px' }}
-                onMouseEnter={e => { e.currentTarget.style.background = '#F1F5F9'; e.currentTarget.style.color = '#1E293B' }}
-                onMouseLeave={e => { e.currentTarget.style.background = 'none'; e.currentTarget.style.color = '#64748B' }}
-              >
-                ← Voltar aos resultados
-              </button>
-            ) : (
-              <button
-                onClick={() => setPanel('detail')}
-                style={{ display: 'flex', alignItems: 'center', gap: '6px', background: 'none', border: 'none', cursor: 'pointer', color: '#64748B', fontFamily: 'inherit', fontSize: '0.8rem', fontWeight: 500, padding: '4px 8px', borderRadius: '6px' }}
-                onMouseEnter={e => { e.currentTarget.style.background = '#F1F5F9'; e.currentTarget.style.color = '#1E293B' }}
-                onMouseLeave={e => { e.currentTarget.style.background = 'none'; e.currentTarget.style.color = '#64748B' }}
-              >
-                ← Voltar ao verbete
-              </button>
-            )}
-
-            {/* Entry actions (only in detail) */}
-            {panel === 'detail' && (
-              <div style={{ display: 'flex', gap: '5px' }}>
-                <button onClick={() => openHistory(selected)}
-                  style={{ display: 'flex', alignItems: 'center', gap: '4px', background: 'none', border: '1px solid #E2E8F0', borderRadius: '7px', padding: '4px 9px', fontSize: '0.7rem', color: '#64748B', cursor: 'pointer', fontFamily: 'inherit' }}>
-                  <Clock size={11} /> Histórico
-                </button>
-                <button onClick={() => { setDraft({ title: selected.title, slug: selected.slug, category: selected.category, trust_level: selected.trust_level, is_shared: selected.is_shared, definition: selected.definition ?? '', etymology: selected.etymology ?? '', notes: selected.notes ?? '', lang_hebrew: selected.lang_hebrew ?? '', lang_aramaic: selected.lang_aramaic ?? '', lang_greek: selected.lang_greek ?? '', transliteration: selected.transliteration ?? '', pronunciation: selected.pronunciation ?? '', occurrences: selected.occurrences ?? '', main_texts: selected.main_texts ?? '', theological_biblical: selected.theological_biblical ?? '', theological_systematic: selected.theological_systematic ?? '', applications: selected.applications ?? '', cross_references: selected.cross_references, bibliography: selected.bibliography ?? '', related_terms: selected.related_terms, tags: selected.tags, sources: selected.sources }); setPanel('create') }}
-                  style={{ display: 'flex', alignItems: 'center', gap: '4px', background: 'none', border: '1px solid #E2E8F0', borderRadius: '7px', padding: '4px 9px', fontSize: '0.7rem', color: '#64748B', cursor: 'pointer', fontFamily: 'inherit' }}>
-                  <Edit2 size={11} /> Editar
-                </button>
-                {deleteConfirm ? (
-                  <>
-                    <button onClick={deleteEntry} style={{ background: '#EF4444', border: 'none', borderRadius: '7px', padding: '4px 9px', fontSize: '0.7rem', fontWeight: 600, color: '#FFF', cursor: 'pointer', fontFamily: 'inherit' }}>Confirmar</button>
-                    <button onClick={() => setDeleteConfirm(false)} style={{ background: 'none', border: '1px solid #E2E8F0', borderRadius: '7px', padding: '4px 9px', fontSize: '0.7rem', color: '#64748B', cursor: 'pointer', fontFamily: 'inherit' }}>Cancelar</button>
-                  </>
-                ) : (
-                  <button onClick={() => setDeleteConfirm(true)} style={{ display: 'flex', alignItems: 'center', background: 'none', border: '1px solid #FEE2E2', borderRadius: '7px', padding: '4px 7px', cursor: 'pointer', color: '#EF4444' }}>
-                    <Trash2 size={12} />
-                  </button>
-                )}
-              </div>
-            )}
-          </div>
-
-          {/* Scrollable entry content — starts at the top */}
-          <div style={{ flex: 1, overflowY: 'auto', background: '#FFFFFF' }}>
-
-            {/* Detail */}
-            {panel === 'detail' && (
-              <div style={{ maxWidth: '720px', margin: '0 auto', padding: '2rem 2rem 4rem' }}>
-                <div style={{ marginBottom: '1.75rem' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '0.6rem' }}>
-                    <span style={{ fontSize: '1.1rem' }}>{CATEGORIES.find(c => c.key === selected.category)?.icon ?? '📖'}</span>
-                    <TrustBadge level={selected.trust_level} />
-                    <span style={{ fontSize: '0.62rem', color: '#CBD5E1', display: 'flex', alignItems: 'center', gap: '3px' }}><Eye size={10} /> {selected.query_count}</span>
-                    <span style={{ fontSize: '0.62rem', color: '#CBD5E1', display: 'flex', alignItems: 'center', gap: '3px' }}><Clock size={10} /> {new Date(selected.updated_at).toLocaleDateString('pt-BR')}</span>
-                  </div>
-                  <h1 style={{ fontSize: '1.9rem', fontWeight: 700, color: '#0F172A', letterSpacing: '-0.035em', margin: '0 0 0.25rem', lineHeight: 1.05 }}>
-                    {selected.title}
-                  </h1>
-                  {selected.transliteration && (
-                    <div style={{ fontSize: '0.9rem', color: '#64748B', fontStyle: 'italic' }}>{selected.transliteration}</div>
-                  )}
-                  {selected.tags?.length > 0 && (
-                    <div style={{ display: 'flex', gap: '5px', flexWrap: 'wrap', marginTop: '0.6rem' }}>
-                      {selected.tags.map(t => (
-                        <span key={t} style={{ fontSize: '0.65rem', background: '#F1F5F9', color: '#64748B', borderRadius: '4px', padding: '2px 7px' }}>#{t}</span>
-                      ))}
-                    </div>
-                  )}
-                </div>
-
-                <Field label="Definição" value={selected.definition}
-                  onExpand={() => setExpandModal({ label: 'Definição', content: selected.definition ?? '', onSave: (v) => { updateFieldDirectly('definition', v); setExpandModal(null) } })}
-                />
-                {(selected.lang_hebrew || selected.lang_greek || selected.lang_aramaic) && (
-                  <div style={{ marginBottom: '1.25rem', padding: '1rem 1.1rem', background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '10px' }}>
-                    <div style={{ fontSize: '0.64rem', fontWeight: 700, color: '#94A3B8', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '10px' }}>Línguas Originais</div>
-                    <div style={{ display: 'flex', gap: '2rem', flexWrap: 'wrap' }}>
-                      {selected.lang_hebrew && <div><div style={{ fontSize: '0.62rem', color: '#94A3B8', marginBottom: '3px' }}>Hebraico</div><div style={{ fontSize: '1rem', fontFamily: 'serif', direction: 'rtl' }}>{selected.lang_hebrew}</div></div>}
-                      {selected.lang_greek && <div><div style={{ fontSize: '0.62rem', color: '#94A3B8', marginBottom: '3px' }}>Grego</div><div style={{ fontSize: '1rem', fontFamily: 'serif' }}>{selected.lang_greek}</div></div>}
-                      {selected.lang_aramaic && <div><div style={{ fontSize: '0.62rem', color: '#94A3B8', marginBottom: '3px' }}>Aramaico</div><div style={{ fontSize: '1rem', fontFamily: 'serif' }}>{selected.lang_aramaic}</div></div>}
-                      {selected.pronunciation && <div><div style={{ fontSize: '0.62rem', color: '#94A3B8', marginBottom: '3px' }}>Pronúncia</div><div style={{ fontSize: '0.88rem', color: '#475569' }}>{selected.pronunciation}</div></div>}
-                    </div>
-                  </div>
-                )}
-                <Field label="Etimologia" value={selected.etymology}
-                  onExpand={() => setExpandModal({ label: 'Etimologia', content: selected.etymology ?? '', onSave: (v) => { updateFieldDirectly('etymology', v); setExpandModal(null) } })}
-                />
-                <Field label="Uso Bíblico" value={[selected.occurrences, selected.main_texts].filter(Boolean).join('\n\n')}
-                  onExpand={() => setExpandModal({ label: 'Uso Bíblico', content: [selected.occurrences, selected.main_texts].filter(Boolean).join('\n\n'), onSave: (v) => { updateFieldDirectly('main_texts', v); setExpandModal(null) } })}
-                />
-                <Field label="Teologia Bíblica" value={selected.theological_biblical}
-                  onExpand={() => setExpandModal({ label: 'Teologia Bíblica', content: selected.theological_biblical ?? '', onSave: (v) => { updateFieldDirectly('theological_biblical', v); setExpandModal(null) } })}
-                />
-                <Field label="Teologia Sistemática" value={selected.theological_systematic}
-                  onExpand={() => setExpandModal({ label: 'Teologia Sistemática', content: selected.theological_systematic ?? '', onSave: (v) => { updateFieldDirectly('theological_systematic', v); setExpandModal(null) } })}
-                />
-                <Field label="Aplicações Pastorais" value={selected.applications}
-                  onExpand={() => setExpandModal({ label: 'Aplicações Pastorais', content: selected.applications ?? '', onSave: (v) => { updateFieldDirectly('applications', v); setExpandModal(null) } })}
-                />
-                {selected.cross_references?.length > 0 && (
-                  <div style={{ marginBottom: '1.25rem' }}>
-                    <div style={{ fontSize: '0.64rem', fontWeight: 700, color: '#94A3B8', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '8px' }}>Referências Cruzadas</div>
-                    <div style={{ display: 'flex', gap: '5px', flexWrap: 'wrap' }}>
-                      {selected.cross_references.map(r => (
-                        <span key={r} style={{ fontSize: '0.76rem', background: '#EEF3FA', color: '#163A6B', borderRadius: '5px', padding: '3px 9px', border: '1px solid #BFDBFE' }}>{r}</span>
-                      ))}
-                    </div>
-                  </div>
-                )}
-                <Field label="Bibliografia" value={selected.bibliography}
-                  onExpand={() => setExpandModal({ label: 'Bibliografia', content: selected.bibliography ?? '', onSave: (v) => { updateFieldDirectly('bibliography', v); setExpandModal(null) } })}
-                />
-                <Field label="Notas Pessoais" value={selected.notes}
-                  onExpand={() => setExpandModal({ label: 'Notas Pessoais', content: selected.notes ?? '', onSave: (v) => { updateFieldDirectly('notes', v); setExpandModal(null) } })}
-                />
-                <div style={{ marginTop: '2rem', paddingTop: '1rem', borderTop: '1px solid #F1F5F9', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '0.75rem' }}>
-                  <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
-                    <span style={{ fontSize: '0.67rem', color: '#CBD5E1' }}>Fontes: {selected.sources?.join(', ') ?? 'IA'}</span>
-                    <span style={{ fontSize: '0.67rem', color: '#CBD5E1' }}>Categoria: {CATEGORIES.find(c => c.key === selected.category)?.label}</span>
-                    <span style={{ fontSize: '0.67rem', color: '#CBD5E1' }}>Criado: {new Date(selected.created_at).toLocaleDateString('pt-BR')}</span>
-                  </div>
-                  <button onClick={() => onAskAI(`Com base no verbete "${selected.title}" do Dicionário Lampas e na passagem ${project.book} ${project.passage_ref}, aprofunde a análise: relações com o contexto imediato, implicações para a exegese da perícope e aplicações pastorais adicionais.`)}
-                    style={{ display: 'inline-flex', alignItems: 'center', gap: '5px', background: 'transparent', border: '1px solid #E2E8F0', borderRadius: '7px', padding: '6px 12px', fontSize: '0.76rem', color: '#64748B', cursor: 'pointer', fontFamily: 'inherit', transition: 'all 0.12s' }}
-                    onMouseEnter={e => { e.currentTarget.style.borderColor = '#8B5CF6'; e.currentTarget.style.color = '#7C3AED' }}
-                    onMouseLeave={e => { e.currentTarget.style.borderColor = '#E2E8F0'; e.currentTarget.style.color = '#64748B' }}
-                  >
-                    <Sparkles size={12} strokeWidth={1.75} /> Aprofundar com IA
-                  </button>
-                </div>
-              </div>
-            )}
-
-            {/* History */}
-            {panel === 'history' && (
-              <div style={{ maxWidth: '720px', margin: '0 auto', padding: '2rem 2rem 4rem' }}>
-                <div style={{ marginBottom: '1.5rem' }}>
-                  <div style={{ fontSize: '0.67rem', fontWeight: 700, color: '#94A3B8', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '3px' }}>Histórico de versões</div>
-                  <div style={{ fontSize: '1.1rem', fontWeight: 700, color: '#1E293B' }}>{selected.title}</div>
-                </div>
-                {versionsLoading ? (
-                  <div style={{ color: '#94A3B8', fontSize: '0.84rem' }}>Carregando histórico…</div>
-                ) : versions.length === 0 ? (
-                  <div style={{ color: '#94A3B8', fontSize: '0.84rem', fontStyle: 'italic' }}>Nenhuma versão anterior registrada.</div>
-                ) : (
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                    {versions.map((v, i) => (
-                      <div key={v.id} style={{ border: '1px solid #E2E8F0', borderRadius: '10px', overflow: 'hidden' }}>
-                        <div style={{ padding: '10px 14px', background: '#F8FAFC', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                          <div>
-                            <span style={{ fontSize: '0.78rem', fontWeight: 600, color: '#1E293B' }}>Versão {versions.length - i}</span>
-                            <span style={{ fontSize: '0.7rem', color: '#94A3B8', marginLeft: '8px' }}>{new Date(v.edited_at).toLocaleString('pt-BR')}</span>
-                          </div>
-                          <button onClick={() => restoreVersion(v)}
-                            style={{ background: '#1E293B', border: 'none', borderRadius: '6px', padding: '4px 10px', fontSize: '0.7rem', fontWeight: 600, color: '#FFF', cursor: 'pointer', fontFamily: 'inherit' }}>
-                            Restaurar
-                          </button>
-                        </div>
-                        {v.snapshot.definition && (
-                          <div style={{ padding: '10px 14px' }}>
-                            <div style={{ fontSize: '0.62rem', fontWeight: 700, color: '#94A3B8', textTransform: 'uppercase', marginBottom: '4px' }}>Definição</div>
-                            <div style={{ fontSize: '0.84rem', color: '#475569', lineHeight: 1.6, maxHeight: '80px', overflow: 'hidden', WebkitMaskImage: 'linear-gradient(to bottom, black 60%, transparent)' }}>
-                              {v.snapshot.definition}
-                            </div>
-                          </div>
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-            )}
-          </div>
-        </>
 
       ) : (
-        // ── Search / list layout ─────────────────────────────────────────────────────────
+        // ── Two-column library layout ─────────────────────────────────────────
+        <div style={{ flex: 1, display: 'flex', overflow: 'hidden' }}>
 
-        <>
-          {/* ══ TOP — Search + list ══ */}
-          <div style={{ flexShrink: 0, background: '#FFFFFF', borderBottom: '1px solid #E2E8F0' }}>
+          {/* ══ LEFT SIDEBAR — search + list ══ */}
+          <div style={{
+            width: '288px', flexShrink: 0,
+            display: 'flex', flexDirection: 'column',
+            borderRight: '1px solid #E8ECF0',
+            background: '#F6F8FA',
+            overflow: 'hidden',
+          }}>
 
-            {/* Header row */}
-            <div style={{ padding: '1rem 1.5rem 0.75rem', display: 'flex', alignItems: 'center', gap: '1rem' }}>
-              <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ fontSize: '0.95rem', fontWeight: 700, color: '#1E293B', letterSpacing: '-0.01em' }}>
-                  Dicionário Lampas
+            {/* Sidebar header */}
+            <div style={{ padding: '1.25rem 1.25rem 0', flexShrink: 0 }}>
+              <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '1rem' }}>
+                <div>
+                  <div style={{ fontSize: '1rem', fontWeight: 700, color: '#0F172A', letterSpacing: '-0.02em', lineHeight: 1.2 }}>
+                    Dicionário
+                  </div>
+                  <div style={{ fontSize: '0.72rem', color: '#94A3B8', marginTop: '2px' }}>
+                    {loading ? '…' : `${entries.length} verbete${entries.length !== 1 ? 's' : ''}`}
+                  </div>
                 </div>
-                <div style={{ fontSize: '0.67rem', color: '#94A3B8', marginTop: '1px' }}>
-                  {entries.length} verbete{entries.length !== 1 ? 's' : ''}
-                </div>
+                <button
+                  onClick={() => { setDraft({ ...EMPTY_DRAFT }); setSelected(null); setPanel('create') }}
+                  style={{ display: 'flex', alignItems: 'center', gap: '4px', background: '#1E293B', border: 'none', borderRadius: '7px', padding: '6px 12px', fontSize: '0.73rem', fontWeight: 600, color: '#FFF', cursor: 'pointer', fontFamily: 'inherit', flexShrink: 0 }}
+                >
+                  <Plus size={11} strokeWidth={2.5} /> Novo
+                </button>
               </div>
 
               {/* Search */}
-              <div style={{ position: 'relative', flex: 1, maxWidth: '420px' }}>
-                <Search size={14} strokeWidth={1.75} style={{ position: 'absolute', left: '10px', top: '50%', transform: 'translateY(-50%)', color: '#94A3B8', pointerEvents: 'none' }} />
+              <div style={{ position: 'relative', marginBottom: '0.75rem' }}>
+                <Search size={13} strokeWidth={1.75} style={{ position: 'absolute', left: '10px', top: '50%', transform: 'translateY(-50%)', color: '#94A3B8', pointerEvents: 'none' }} />
                 <input
                   value={query}
                   onChange={e => { setQuery(e.target.value); if (panel === 'ai-result') setPanel('list') }}
                   onKeyDown={e => { if (e.key === 'Enter' && query.trim() && filtered.length === 0) searchWithAI() }}
-                  placeholder="Buscar termo, palavra, conceito…"
-                  style={{ width: '100%', boxSizing: 'border-box', paddingLeft: '34px', paddingRight: query ? '32px' : '12px', paddingTop: '8px', paddingBottom: '8px', background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '8px', fontSize: '0.84rem', fontFamily: 'inherit', outline: 'none', color: '#1E293B' }}
+                  placeholder="Buscar termos…"
+                  style={{ width: '100%', boxSizing: 'border-box', paddingLeft: '32px', paddingRight: query ? '28px' : '10px', paddingTop: '8px', paddingBottom: '8px', background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: '8px', fontSize: '0.83rem', fontFamily: 'inherit', outline: 'none', color: '#1E293B' }}
                   onFocus={e => (e.target.style.borderColor = '#94A3B8')}
                   onBlur={e => (e.target.style.borderColor = '#E2E8F0')}
                 />
                 {query && (
-                  <button onClick={() => { setQuery(''); setPanel('list') }} style={{ position: 'absolute', right: '8px', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: '#CBD5E1', padding: '2px', display: 'flex' }}>
-                    <X size={13} />
+                  <button onClick={() => { setQuery(''); setPanel('list') }} style={{ position: 'absolute', right: '7px', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: '#CBD5E1', padding: '2px', display: 'flex' }}>
+                    <X size={12} />
                   </button>
                 )}
               </div>
 
-              <button onClick={() => { setDraft({ ...EMPTY_DRAFT }); setSelected(null); setPanel('create') }}
-                style={{ display: 'flex', alignItems: 'center', gap: '5px', background: '#1E293B', border: 'none', borderRadius: '7px', padding: '7px 14px', fontSize: '0.76rem', fontWeight: 600, color: '#FFF', cursor: 'pointer', fontFamily: 'inherit', flexShrink: 0 }}>
-                <Plus size={12} strokeWidth={2.5} /> Novo
-              </button>
-            </div>
-
-            {/* Category filters */}
-            <div style={{ padding: '0 1.5rem 0.75rem', display: 'flex', gap: '5px', flexWrap: 'wrap' }}>
-              <button onClick={() => setCatFilter('all')}
-                style={{ fontSize: '0.67rem', fontWeight: 600, padding: '3px 10px', borderRadius: '6px', border: `1px solid ${catFilter === 'all' ? '#1E293B' : '#E2E8F0'}`, background: catFilter === 'all' ? '#1E293B' : 'transparent', color: catFilter === 'all' ? '#FFF' : '#64748B', cursor: 'pointer', fontFamily: 'inherit' }}>
-                Todos
-              </button>
-              {CATEGORIES.map(c => (
-                <button key={c.key} onClick={() => setCatFilter(c.key === catFilter ? 'all' : c.key)}
-                  style={{ fontSize: '0.67rem', fontWeight: 600, padding: '3px 10px', borderRadius: '6px', border: `1px solid ${catFilter === c.key ? '#1E293B' : '#E2E8F0'}`, background: catFilter === c.key ? '#1E293B' : 'transparent', color: catFilter === c.key ? '#FFF' : '#64748B', cursor: 'pointer', fontFamily: 'inherit', display: 'flex', alignItems: 'center', gap: '4px' }}>
-                  {c.icon} {c.label}
+              {/* Category filters */}
+              <div style={{ display: 'flex', gap: '4px', overflowX: 'auto', paddingBottom: '0.875rem', scrollbarWidth: 'none' }}>
+                <button onClick={() => setCatFilter('all')}
+                  style={{ fontSize: '0.68rem', fontWeight: catFilter === 'all' ? 600 : 500, padding: '3px 10px', borderRadius: '20px', border: 'none', background: catFilter === 'all' ? '#1E293B' : '#EAEDF1', color: catFilter === 'all' ? '#FFF' : '#475569', cursor: 'pointer', fontFamily: 'inherit', whiteSpace: 'nowrap', flexShrink: 0 }}>
+                  Todos
                 </button>
-              ))}
-            </div>
-
-            {/* Results list */}
-            {loading ? (
-              <div style={{ padding: '1rem 1.5rem', color: '#94A3B8', fontSize: '0.82rem' }}>Carregando…</div>
-            ) : entries.length === 0 && !query ? (
-              <div style={{ padding: '1rem 1.5rem', color: '#94A3B8', fontSize: '0.82rem' }}>
-                Nenhum verbete ainda. Use o campo de busca para pesquisar com IA.
-              </div>
-            ) : filtered.length === 0 && query.trim() ? (
-              /* No results — offer AI */
-              <div style={{ padding: '0.75rem 1.5rem', display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                <span style={{ fontSize: '0.84rem', color: '#64748B' }}>
-                  Nenhum resultado para <strong style={{ color: '#1E293B' }}>"{query}"</strong> no dicionário.
-                </span>
-                <button onClick={searchWithAI}
-                  style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', background: '#7C3AED', border: 'none', borderRadius: '7px', padding: '7px 14px', fontSize: '0.76rem', fontWeight: 600, color: '#FFF', cursor: 'pointer', fontFamily: 'inherit', flexShrink: 0 }}>
-                  <Sparkles size={12} strokeWidth={1.75} /> Pesquisar com IA
-                </button>
-              </div>
-            ) : (
-              <div style={{ padding: '0 1.5rem 0.75rem', display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
-                {filtered.map(entry => (
-                  <button key={entry.id} onClick={() => openEntry(entry)}
-                    style={{
-                      display: 'flex', alignItems: 'center', gap: '6px',
-                      background: selected?.id === entry.id ? '#1E293B' : '#F8FAFC',
-                      border: `1px solid ${selected?.id === entry.id ? '#1E293B' : '#E2E8F0'}`,
-                      borderRadius: '8px', padding: '6px 12px', cursor: 'pointer', fontFamily: 'inherit',
-                      transition: 'all 0.1s',
-                    }}
-                    onMouseEnter={e => { if (selected?.id !== entry.id) { e.currentTarget.style.background = '#F1F5F9'; e.currentTarget.style.borderColor = '#CBD5E1' } }}
-                    onMouseLeave={e => { if (selected?.id !== entry.id) { e.currentTarget.style.background = '#F8FAFC'; e.currentTarget.style.borderColor = '#E2E8F0' } }}
-                  >
-                    <span style={{ fontSize: '0.82rem' }}>{CATEGORIES.find(c => c.key === entry.category)?.icon ?? '📖'}</span>
-                    <span style={{ fontSize: '0.82rem', fontWeight: 600, color: selected?.id === entry.id ? '#FFF' : '#1E293B', whiteSpace: 'nowrap' }}>
-                      {entry.title}
-                    </span>
-                    <TrustBadge level={entry.trust_level} />
+                {CATEGORIES.map(c => (
+                  <button key={c.key} onClick={() => setCatFilter(c.key === catFilter ? 'all' : c.key)}
+                    style={{ fontSize: '0.68rem', fontWeight: catFilter === c.key ? 600 : 500, padding: '3px 10px', borderRadius: '20px', border: 'none', background: catFilter === c.key ? '#1E293B' : '#EAEDF1', color: catFilter === c.key ? '#FFF' : '#475569', cursor: 'pointer', fontFamily: 'inherit', whiteSpace: 'nowrap', flexShrink: 0 }}>
+                    {c.label}
                   </button>
                 ))}
-                {/* Offer AI when results are partial (no exact match) */}
-                {query.trim() && filtered.length > 0 && !exactMatch && (
-                  <button onClick={searchWithAI}
-                    style={{ display: 'flex', alignItems: 'center', gap: '5px', background: 'transparent', border: '1px dashed #C4B5FD', borderRadius: '8px', padding: '6px 12px', fontSize: '0.76rem', color: '#7C3AED', cursor: 'pointer', fontFamily: 'inherit', fontWeight: 500 }}>
-                    <Sparkles size={11} strokeWidth={1.75} /> Buscar exato com IA
-                  </button>
-                )}
               </div>
-            )}
+            </div>
+
+            {/* Divider */}
+            <div style={{ height: '1px', background: '#E8ECF0', flexShrink: 0 }} />
+
+            {/* Entry list */}
+            <div style={{ flex: 1, overflowY: 'auto' }}>
+              {loading ? (
+                <div style={{ padding: '1.25rem', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                  {[1, 2, 3, 4].map(i => (
+                    <div key={i} style={{ height: '60px', borderRadius: '8px', background: '#EAEDF1', opacity: 1 - (i - 1) * 0.2 }} />
+                  ))}
+                </div>
+              ) : entries.length === 0 && !query ? (
+                <div style={{ padding: '2rem 1.25rem', textAlign: 'center' }}>
+                  <BookOpen size={28} strokeWidth={1} style={{ color: '#CBD5E1', marginBottom: '0.75rem' }} />
+                  <div style={{ fontSize: '0.82rem', color: '#94A3B8', lineHeight: 1.6 }}>
+                    Nenhum verbete ainda.<br />Pesquise para gerar com IA.
+                  </div>
+                </div>
+              ) : filtered.length === 0 && query.trim() ? (
+                <div style={{ padding: '1.5rem 1.25rem' }}>
+                  <div style={{ fontSize: '0.82rem', color: '#64748B', marginBottom: '1rem', lineHeight: 1.5 }}>
+                    Nenhum resultado para <strong style={{ color: '#1E293B' }}>&ldquo;{query}&rdquo;</strong>
+                  </div>
+                  <button onClick={searchWithAI}
+                    style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', background: '#7C3AED', border: 'none', borderRadius: '8px', padding: '9px 14px', fontSize: '0.77rem', fontWeight: 600, color: '#FFF', cursor: 'pointer', fontFamily: 'inherit', width: '100%', boxSizing: 'border-box' }}>
+                    <Sparkles size={12} strokeWidth={1.75} /> Pesquisar com IA
+                  </button>
+                </div>
+              ) : (
+                <>
+                  {filtered.map(entry => {
+                    const isSelected = selected?.id === entry.id && (panel === 'detail' || panel === 'history')
+                    const cat = CATEGORIES.find(c => c.key === entry.category)
+                    const raw = entry.definition?.trim() ?? ''
+                    const excerpt = raw.length > 72 ? raw.slice(0, 72).replace(/\s\S*$/, '') + '…' : raw
+
+                    return (
+                      <button
+                        key={entry.id}
+                        onClick={() => openEntry(entry)}
+                        style={{
+                          display: 'block', width: '100%', textAlign: 'left',
+                          padding: '12px 16px',
+                          background: isSelected ? '#ECEEF3' : 'transparent',
+                          border: 'none',
+                          borderLeft: `2px solid ${isSelected ? '#1E293B' : 'transparent'}`,
+                          borderBottom: '1px solid #EEF0F4',
+                          cursor: 'pointer', fontFamily: 'inherit',
+                          transition: 'background 0.1s',
+                          boxSizing: 'border-box',
+                        }}
+                        onMouseEnter={e => { if (!isSelected) e.currentTarget.style.background = '#F0F2F6' }}
+                        onMouseLeave={e => { if (!isSelected) e.currentTarget.style.background = 'transparent' }}
+                      >
+                        <div style={{ display: 'flex', alignItems: 'flex-start', gap: '10px' }}>
+                          <span style={{ fontSize: '1rem', lineHeight: 1.2, marginTop: '2px', flexShrink: 0, userSelect: 'none' }}>
+                            {cat?.icon ?? '📖'}
+                          </span>
+                          <div style={{ minWidth: 0, flex: 1 }}>
+                            <div style={{
+                              fontSize: '0.875rem', fontWeight: 600,
+                              color: isSelected ? '#0F172A' : '#1E293B',
+                              marginBottom: excerpt ? '3px' : '5px',
+                              overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+                            }}>
+                              {entry.title}
+                            </div>
+                            {excerpt && (
+                              <div style={{ fontSize: '0.74rem', color: '#64748B', lineHeight: 1.4, marginBottom: '6px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                                {excerpt}
+                              </div>
+                            )}
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                              <span style={{ fontSize: '0.64rem', color: '#94A3B8' }}>{cat?.label}</span>
+                              <span style={{ color: '#D1D5DB', fontSize: '0.7rem', lineHeight: 1 }}>·</span>
+                              <TrustBadge level={entry.trust_level} />
+                            </div>
+                          </div>
+                        </div>
+                      </button>
+                    )
+                  })}
+
+                  {query.trim() && filtered.length > 0 && !exactMatch && (
+                    <div style={{ padding: '10px 16px' }}>
+                      <button onClick={searchWithAI}
+                        style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', background: 'transparent', border: '1px dashed #C4B5FD', borderRadius: '7px', padding: '8px 12px', fontSize: '0.75rem', color: '#7C3AED', cursor: 'pointer', fontFamily: 'inherit', fontWeight: 500, width: '100%', boxSizing: 'border-box' }}>
+                        <Sparkles size={11} strokeWidth={1.75} /> Buscar exato com IA
+                      </button>
+                    </div>
+                  )}
+                </>
+              )}
+            </div>
           </div>
 
-          {/* ══ BOTTOM — Entry detail / AI result / empty state ══ */}
-          <div style={{ flex: 1, overflowY: 'auto', background: '#FFFFFF' }}>
+          {/* ══ RIGHT MAIN — detail / ai-result / empty ══ */}
+          <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden', background: '#FFFFFF', minWidth: 0 }}>
 
-            {/* Empty state */}
-            {panel === 'list' && (
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', gap: '10px', height: '100%', color: '#94A3B8' }}>
-                <BookOpen size={36} strokeWidth={1} style={{ opacity: 0.2 }} />
-                <div style={{ fontSize: '0.88rem', color: '#94A3B8' }}>
-                  {entries.length > 0 ? 'Selecione um verbete acima' : 'Pesquise um termo para começar'}
-                </div>
-              </div>
-            )}
-
-            {/* AI Result */}
-            {panel === 'ai-result' && (
-              <div style={{ maxWidth: '720px', margin: '0 auto', padding: '2rem 2rem 4rem' }}>
-                <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '1.5rem', gap: '1rem' }}>
-                  <div>
-                    <div style={{ fontSize: '0.67rem', fontWeight: 700, color: '#8B5CF6', textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: '4px' }}>
-                      Resultado da IA
-                    </div>
-                    <h1 style={{ fontSize: '1.6rem', fontWeight: 700, color: '#0F172A', letterSpacing: '-0.03em', margin: 0, lineHeight: 1.1 }}>
-                      {query}
-                    </h1>
-                  </div>
-                  {!aiLoading && aiResult && (
-                    <button onClick={saveAiResult} disabled={saving}
-                      style={{ display: 'flex', alignItems: 'center', gap: '5px', background: '#1E293B', border: 'none', borderRadius: '8px', padding: '8px 16px', fontSize: '0.78rem', fontWeight: 600, color: '#FFF', cursor: saving ? 'wait' : 'pointer', fontFamily: 'inherit', flexShrink: 0 }}>
-                      <Check size={13} strokeWidth={2} /> {saving ? 'Salvando…' : 'Salvar no Dicionário'}
+            {/* ── Detail / History ── */}
+            {(panel === 'detail' || panel === 'history') && selected ? (
+              <>
+                {/* Action bar */}
+                <div style={{ flexShrink: 0, padding: '0 1.75rem', height: '50px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '1px solid #F0F2F5' }}>
+                  {panel === 'history' ? (
+                    <button
+                      onClick={() => setPanel('detail')}
+                      style={{ display: 'flex', alignItems: 'center', gap: '5px', background: 'none', border: 'none', cursor: 'pointer', color: '#64748B', fontFamily: 'inherit', fontSize: '0.8rem', fontWeight: 500, padding: '4px 8px', borderRadius: '6px' }}
+                      onMouseEnter={e => { e.currentTarget.style.background = '#F4F6F9'; e.currentTarget.style.color = '#1E293B' }}
+                      onMouseLeave={e => { e.currentTarget.style.background = 'none'; e.currentTarget.style.color = '#64748B' }}
+                    >
+                      ← Voltar ao verbete
                     </button>
+                  ) : (
+                    <div style={{ fontSize: '0.78rem', fontWeight: 600, color: '#94A3B8', letterSpacing: '-0.01em' }}>
+                      {CATEGORIES.find(c => c.key === selected.category)?.label ?? 'Verbete'}
+                    </div>
+                  )}
+
+                  {panel === 'detail' && (
+                    <div style={{ display: 'flex', gap: '5px' }}>
+                      <button onClick={() => openHistory(selected)}
+                        style={{ display: 'flex', alignItems: 'center', gap: '4px', background: 'none', border: '1px solid #E8ECF0', borderRadius: '7px', padding: '5px 10px', fontSize: '0.71rem', color: '#64748B', cursor: 'pointer', fontFamily: 'inherit' }}>
+                        <Clock size={11} /> Histórico
+                      </button>
+                      <button onClick={() => {
+                        setDraft({
+                          title: selected.title, slug: selected.slug, category: selected.category,
+                          trust_level: selected.trust_level, is_shared: selected.is_shared,
+                          definition: selected.definition ?? '', etymology: selected.etymology ?? '',
+                          notes: selected.notes ?? '', lang_hebrew: selected.lang_hebrew ?? '',
+                          lang_aramaic: selected.lang_aramaic ?? '', lang_greek: selected.lang_greek ?? '',
+                          transliteration: selected.transliteration ?? '', pronunciation: selected.pronunciation ?? '',
+                          occurrences: selected.occurrences ?? '', main_texts: selected.main_texts ?? '',
+                          theological_biblical: selected.theological_biblical ?? '',
+                          theological_systematic: selected.theological_systematic ?? '',
+                          applications: selected.applications ?? '', cross_references: selected.cross_references,
+                          bibliography: selected.bibliography ?? '', related_terms: selected.related_terms,
+                          tags: selected.tags, sources: selected.sources,
+                        })
+                        setPanel('create')
+                      }}
+                        style={{ display: 'flex', alignItems: 'center', gap: '4px', background: 'none', border: '1px solid #E8ECF0', borderRadius: '7px', padding: '5px 10px', fontSize: '0.71rem', color: '#64748B', cursor: 'pointer', fontFamily: 'inherit' }}>
+                        <Edit2 size={11} /> Editar
+                      </button>
+                      {deleteConfirm ? (
+                        <>
+                          <button onClick={deleteEntry} style={{ background: '#EF4444', border: 'none', borderRadius: '7px', padding: '5px 10px', fontSize: '0.71rem', fontWeight: 600, color: '#FFF', cursor: 'pointer', fontFamily: 'inherit' }}>Confirmar</button>
+                          <button onClick={() => setDeleteConfirm(false)} style={{ background: 'none', border: '1px solid #E8ECF0', borderRadius: '7px', padding: '5px 10px', fontSize: '0.71rem', color: '#64748B', cursor: 'pointer', fontFamily: 'inherit' }}>Cancelar</button>
+                        </>
+                      ) : (
+                        <button onClick={() => setDeleteConfirm(true)} style={{ display: 'flex', alignItems: 'center', background: 'none', border: '1px solid #FEE2E2', borderRadius: '7px', padding: '5px 8px', cursor: 'pointer', color: '#EF4444' }}>
+                          <Trash2 size={12} />
+                        </button>
+                      )}
+                    </div>
                   )}
                 </div>
 
-                {aiLoading ? (
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#8B5CF6', fontSize: '0.84rem' }}>
-                      <Sparkles size={15} strokeWidth={1.75} />
-                      Consultando a IA…
-                    </div>
-                    {[85, 70, 90, 60, 80].map((w, i) => (
-                      <div key={i} style={{ height: '13px', borderRadius: '4px', background: '#F1F5F9', width: `${w}%` }} />
-                    ))}
-                  </div>
-                ) : (
-                  <>
-                    <div style={{ fontSize: '0.92rem', lineHeight: 1.8, color: '#334155', whiteSpace: 'pre-wrap', fontFamily: 'inherit' }}>
-                      {aiResult}
-                    </div>
-                    {aiResult && (
-                      <div style={{ marginTop: '2rem', padding: '1rem 1.25rem', background: '#FEFCE8', border: '1px solid #FDE68A', borderRadius: '10px', display: 'flex', alignItems: 'center', gap: '12px' }}>
-                        <Sparkles size={15} strokeWidth={1.75} style={{ color: '#D97706', flexShrink: 0 }} />
-                        <span style={{ fontSize: '0.8rem', color: '#92400E', flex: 1 }}>
-                          Salve para consultar nas próximas vezes sem usar créditos de IA.
-                        </span>
-                        <button onClick={saveAiResult} disabled={saving}
-                          style={{ flexShrink: 0, background: '#D97706', border: 'none', borderRadius: '7px', padding: '6px 14px', fontSize: '0.76rem', fontWeight: 600, color: '#FFF', cursor: saving ? 'wait' : 'pointer', fontFamily: 'inherit' }}>
-                          {saving ? 'Salvando…' : 'Salvar'}
+                {/* Scrollable content */}
+                <div style={{ flex: 1, overflowY: 'auto' }}>
+
+                  {panel === 'detail' && (
+                    <div style={{ maxWidth: '680px', margin: '0 auto', padding: '2.75rem 2.5rem 5rem' }}>
+
+                      {/* Entry header */}
+                      <div style={{ marginBottom: '2.25rem', paddingBottom: '2rem', borderBottom: '1px solid #F0F2F5' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '1rem', flexWrap: 'wrap' }}>
+                          <TrustBadge level={selected.trust_level} />
+                          <span style={{ color: '#E2E8F0', fontSize: '0.8rem' }}>·</span>
+                          <span style={{ fontSize: '0.63rem', color: '#94A3B8', display: 'flex', alignItems: 'center', gap: '3px' }}>
+                            <Eye size={10} /> {selected.query_count}
+                          </span>
+                          <span style={{ fontSize: '0.63rem', color: '#94A3B8' }}>
+                            {new Date(selected.updated_at).toLocaleDateString('pt-BR')}
+                          </span>
+                        </div>
+
+                        <h1 style={{ fontSize: '2.4rem', fontWeight: 700, color: '#0F172A', letterSpacing: '-0.04em', margin: '0 0 0.5rem', lineHeight: 1.05 }}>
+                          {selected.title}
+                        </h1>
+
+                        {(selected.transliteration || selected.pronunciation) && (
+                          <div style={{ fontSize: '1rem', color: '#64748B', fontStyle: 'italic', marginBottom: '0.75rem', letterSpacing: '0.01em' }}>
+                            {selected.transliteration}
+                            {selected.pronunciation && (
+                              <span style={{ fontStyle: 'normal', fontSize: '0.82rem', color: '#94A3B8', marginLeft: '0.5rem' }}>
+                                [{selected.pronunciation}]
+                              </span>
+                            )}
+                          </div>
+                        )}
+
+                        {selected.tags?.length > 0 && (
+                          <div style={{ display: 'flex', gap: '5px', flexWrap: 'wrap', marginTop: '0.75rem' }}>
+                            {selected.tags.map(t => (
+                              <span key={t} style={{ fontSize: '0.67rem', background: '#F1F5F9', color: '#64748B', borderRadius: '4px', padding: '2px 8px' }}>#{t}</span>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+
+                      <Field label="Definição" value={selected.definition}
+                        onExpand={() => setExpandModal({ label: 'Definição', content: selected.definition ?? '', onSave: (v) => { updateFieldDirectly('definition', v); setExpandModal(null) } })}
+                      />
+
+                      {(selected.lang_hebrew || selected.lang_greek || selected.lang_aramaic) && (
+                        <div style={{ marginBottom: '1.75rem', padding: '1.25rem 1.5rem', background: '#F8FAFC', borderRadius: '10px', border: '1px solid #EEF0F4' }}>
+                          <div style={{ fontSize: '0.62rem', fontWeight: 700, color: '#94A3B8', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '1rem' }}>Línguas Originais</div>
+                          <div style={{ display: 'flex', gap: '2.5rem', flexWrap: 'wrap' }}>
+                            {selected.lang_hebrew && (
+                              <div>
+                                <div style={{ fontSize: '0.62rem', color: '#94A3B8', marginBottom: '4px', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Hebraico</div>
+                                <div style={{ fontSize: '1.15rem', fontFamily: 'serif', direction: 'rtl', color: '#1E293B' }}>{selected.lang_hebrew}</div>
+                              </div>
+                            )}
+                            {selected.lang_greek && (
+                              <div>
+                                <div style={{ fontSize: '0.62rem', color: '#94A3B8', marginBottom: '4px', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Grego</div>
+                                <div style={{ fontSize: '1.15rem', fontFamily: 'serif', color: '#1E293B' }}>{selected.lang_greek}</div>
+                              </div>
+                            )}
+                            {selected.lang_aramaic && (
+                              <div>
+                                <div style={{ fontSize: '0.62rem', color: '#94A3B8', marginBottom: '4px', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Aramaico</div>
+                                <div style={{ fontSize: '1.15rem', fontFamily: 'serif', direction: 'rtl', color: '#1E293B' }}>{selected.lang_aramaic}</div>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      )}
+
+                      <Field label="Etimologia" value={selected.etymology}
+                        onExpand={() => setExpandModal({ label: 'Etimologia', content: selected.etymology ?? '', onSave: (v) => { updateFieldDirectly('etymology', v); setExpandModal(null) } })}
+                      />
+                      <Field label="Uso Bíblico" value={[selected.occurrences, selected.main_texts].filter(Boolean).join('\n\n')}
+                        onExpand={() => setExpandModal({ label: 'Uso Bíblico', content: [selected.occurrences, selected.main_texts].filter(Boolean).join('\n\n'), onSave: (v) => { updateFieldDirectly('main_texts', v); setExpandModal(null) } })}
+                      />
+                      <Field label="Teologia Bíblica" value={selected.theological_biblical}
+                        onExpand={() => setExpandModal({ label: 'Teologia Bíblica', content: selected.theological_biblical ?? '', onSave: (v) => { updateFieldDirectly('theological_biblical', v); setExpandModal(null) } })}
+                      />
+                      <Field label="Teologia Sistemática" value={selected.theological_systematic}
+                        onExpand={() => setExpandModal({ label: 'Teologia Sistemática', content: selected.theological_systematic ?? '', onSave: (v) => { updateFieldDirectly('theological_systematic', v); setExpandModal(null) } })}
+                      />
+                      <Field label="Aplicações Pastorais" value={selected.applications}
+                        onExpand={() => setExpandModal({ label: 'Aplicações Pastorais', content: selected.applications ?? '', onSave: (v) => { updateFieldDirectly('applications', v); setExpandModal(null) } })}
+                      />
+
+                      {selected.cross_references?.length > 0 && (
+                        <div style={{ marginBottom: '1.75rem' }}>
+                          <div style={{ fontSize: '0.62rem', fontWeight: 700, color: '#94A3B8', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '0.75rem' }}>Referências Cruzadas</div>
+                          <div style={{ display: 'flex', gap: '5px', flexWrap: 'wrap' }}>
+                            {selected.cross_references.map(r => (
+                              <span key={r} style={{ fontSize: '0.76rem', background: '#EEF3FA', color: '#163A6B', borderRadius: '5px', padding: '3px 9px', border: '1px solid #DBEAFE' }}>{r}</span>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
+                      <Field label="Bibliografia" value={selected.bibliography}
+                        onExpand={() => setExpandModal({ label: 'Bibliografia', content: selected.bibliography ?? '', onSave: (v) => { updateFieldDirectly('bibliography', v); setExpandModal(null) } })}
+                      />
+                      <Field label="Notas Pessoais" value={selected.notes}
+                        onExpand={() => setExpandModal({ label: 'Notas Pessoais', content: selected.notes ?? '', onSave: (v) => { updateFieldDirectly('notes', v); setExpandModal(null) } })}
+                      />
+
+                      <div style={{ marginTop: '2.5rem', paddingTop: '1.25rem', borderTop: '1px solid #F0F2F5', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '0.75rem' }}>
+                        <div style={{ display: 'flex', gap: '1.25rem', flexWrap: 'wrap' }}>
+                          <span style={{ fontSize: '0.67rem', color: '#CBD5E1' }}>Fonte: {selected.sources?.join(', ') ?? 'IA'}</span>
+                          <span style={{ fontSize: '0.67rem', color: '#CBD5E1' }}>Criado: {new Date(selected.created_at).toLocaleDateString('pt-BR')}</span>
+                        </div>
+                        <button
+                          onClick={() => onAskAI(`Com base no verbete "${selected.title}" do Dicionário Lampas e na passagem ${project.book} ${project.passage_ref}, aprofunde a análise: relações com o contexto imediato, implicações para a exegese da perícope e aplicações pastorais adicionais.`)}
+                          style={{ display: 'inline-flex', alignItems: 'center', gap: '5px', background: 'transparent', border: '1px solid #E2E8F0', borderRadius: '7px', padding: '6px 12px', fontSize: '0.76rem', color: '#64748B', cursor: 'pointer', fontFamily: 'inherit', transition: 'all 0.12s' }}
+                          onMouseEnter={e => { e.currentTarget.style.borderColor = '#8B5CF6'; e.currentTarget.style.color = '#7C3AED' }}
+                          onMouseLeave={e => { e.currentTarget.style.borderColor = '#E2E8F0'; e.currentTarget.style.color = '#64748B' }}
+                        >
+                          <Sparkles size={12} strokeWidth={1.75} /> Aprofundar com IA
                         </button>
                       </div>
+                    </div>
+                  )}
+
+                  {panel === 'history' && (
+                    <div style={{ maxWidth: '680px', margin: '0 auto', padding: '2.75rem 2.5rem 5rem' }}>
+                      <div style={{ marginBottom: '2rem' }}>
+                        <div style={{ fontSize: '0.62rem', fontWeight: 700, color: '#94A3B8', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '0.4rem' }}>Histórico de versões</div>
+                        <div style={{ fontSize: '1.3rem', fontWeight: 700, color: '#1E293B', letterSpacing: '-0.02em' }}>{selected.title}</div>
+                      </div>
+                      {versionsLoading ? (
+                        <div style={{ color: '#94A3B8', fontSize: '0.84rem' }}>Carregando histórico…</div>
+                      ) : versions.length === 0 ? (
+                        <div style={{ color: '#94A3B8', fontSize: '0.84rem', fontStyle: 'italic' }}>Nenhuma versão anterior registrada.</div>
+                      ) : (
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                          {versions.map((v, i) => (
+                            <div key={v.id} style={{ border: '1px solid #EEF0F4', borderRadius: '10px', overflow: 'hidden' }}>
+                              <div style={{ padding: '10px 14px', background: '#F8FAFC', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                                <div>
+                                  <span style={{ fontSize: '0.78rem', fontWeight: 600, color: '#1E293B' }}>Versão {versions.length - i}</span>
+                                  <span style={{ fontSize: '0.7rem', color: '#94A3B8', marginLeft: '10px' }}>{new Date(v.edited_at).toLocaleString('pt-BR')}</span>
+                                </div>
+                                <button onClick={() => restoreVersion(v)}
+                                  style={{ background: '#1E293B', border: 'none', borderRadius: '6px', padding: '4px 10px', fontSize: '0.7rem', fontWeight: 600, color: '#FFF', cursor: 'pointer', fontFamily: 'inherit' }}>
+                                  Restaurar
+                                </button>
+                              </div>
+                              {v.snapshot.definition && (
+                                <div style={{ padding: '10px 14px' }}>
+                                  <div style={{ fontSize: '0.62rem', fontWeight: 700, color: '#94A3B8', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '5px' }}>Definição</div>
+                                  <div style={{ fontSize: '0.84rem', color: '#475569', lineHeight: 1.65, maxHeight: '80px', overflow: 'hidden', WebkitMaskImage: 'linear-gradient(to bottom, black 60%, transparent)' }}>
+                                    {v.snapshot.definition}
+                                  </div>
+                                </div>
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+              </>
+
+            ) : panel === 'ai-result' ? (
+              // ── AI Result ──────────────────────────────────────────────────────
+              <div style={{ flex: 1, overflowY: 'auto' }}>
+                <div style={{ maxWidth: '680px', margin: '0 auto', padding: '2.75rem 2.5rem 5rem' }}>
+                  <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '1.75rem', gap: '1rem' }}>
+                    <div>
+                      <div style={{ fontSize: '0.62rem', fontWeight: 700, color: '#8B5CF6', textTransform: 'uppercase', letterSpacing: '0.09em', marginBottom: '0.5rem' }}>
+                        Resultado da IA
+                      </div>
+                      <h1 style={{ fontSize: '2.2rem', fontWeight: 700, color: '#0F172A', letterSpacing: '-0.04em', margin: 0, lineHeight: 1.1 }}>
+                        {query}
+                      </h1>
+                    </div>
+                    {!aiLoading && aiResult && (
+                      <button onClick={saveAiResult} disabled={saving}
+                        style={{ display: 'flex', alignItems: 'center', gap: '5px', background: '#1E293B', border: 'none', borderRadius: '8px', padding: '9px 16px', fontSize: '0.78rem', fontWeight: 600, color: '#FFF', cursor: saving ? 'wait' : 'pointer', fontFamily: 'inherit', flexShrink: 0 }}>
+                        <Check size={13} strokeWidth={2} /> {saving ? 'Salvando…' : 'Salvar no Dicionário'}
+                      </button>
                     )}
-                  </>
-                )}
+                  </div>
+
+                  {aiLoading ? (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#8B5CF6', fontSize: '0.84rem' }}>
+                        <Sparkles size={15} strokeWidth={1.75} />
+                        Consultando a IA…
+                      </div>
+                      {[85, 70, 90, 60, 80].map((w, i) => (
+                        <div key={i} style={{ height: '13px', borderRadius: '4px', background: '#F1F5F9', width: `${w}%` }} />
+                      ))}
+                    </div>
+                  ) : (
+                    <>
+                      <div style={{ fontSize: '0.92rem', lineHeight: 1.82, color: '#334155', whiteSpace: 'pre-wrap', fontFamily: 'inherit' }}>
+                        {aiResult}
+                      </div>
+                      {aiResult && (
+                        <div style={{ marginTop: '2rem', padding: '1rem 1.25rem', background: '#FEFCE8', border: '1px solid #FDE68A', borderRadius: '10px', display: 'flex', alignItems: 'center', gap: '12px' }}>
+                          <Sparkles size={15} strokeWidth={1.75} style={{ color: '#D97706', flexShrink: 0 }} />
+                          <span style={{ fontSize: '0.8rem', color: '#92400E', flex: 1 }}>
+                            Salve para consultar nas próximas vezes sem usar créditos de IA.
+                          </span>
+                          <button onClick={saveAiResult} disabled={saving}
+                            style={{ flexShrink: 0, background: '#D97706', border: 'none', borderRadius: '7px', padding: '6px 14px', fontSize: '0.76rem', fontWeight: 600, color: '#FFF', cursor: saving ? 'wait' : 'pointer', fontFamily: 'inherit' }}>
+                            {saving ? 'Salvando…' : 'Salvar'}
+                          </button>
+                        </div>
+                      )}
+                    </>
+                  )}
+                </div>
+              </div>
+
+            ) : (
+              // ── Empty state ─────────────────────────────────────────────────────
+              <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', gap: '14px', padding: '2rem' }}>
+                <BookOpen size={44} strokeWidth={0.9} style={{ color: '#CBD5E1' }} />
+                <div style={{ textAlign: 'center' }}>
+                  <div style={{ fontSize: '0.95rem', fontWeight: 600, color: '#94A3B8', marginBottom: '4px' }}>
+                    {entries.length > 0 ? 'Selecione um verbete' : 'Biblioteca vazia'}
+                  </div>
+                  <div style={{ fontSize: '0.8rem', color: '#CBD5E1' }}>
+                    {entries.length > 0 ? 'Escolha um termo na lista à esquerda' : 'Pesquise um termo para gerar com IA'}
+                  </div>
+                </div>
               </div>
             )}
-
           </div>
-        </>
+        </div>
       )}
 
       {expandModal && (
