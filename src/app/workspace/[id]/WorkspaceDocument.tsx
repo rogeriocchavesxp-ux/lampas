@@ -800,7 +800,7 @@ export default function WorkspaceDocument({
         {!!ed && renderToolbar(0)}
 
         {/* Desk — gray background behind the paper */}
-        <div style={{ flex: 1, background: '#ECEEF1', padding: '2.5rem 2rem 8rem' }}>
+        <div style={{ flex: 1, background: '#D8DBE2', padding: '2.5rem 2rem 8rem' }}>
 
           {/* Paper sheet — white card with shadow */}
           <div style={{
