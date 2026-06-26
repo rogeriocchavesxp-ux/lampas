@@ -156,24 +156,14 @@ export default function WorkspaceClient({ user, project, initialSections }: Prop
   const [sections, setSections] = useState<Section[]>(initialSections)
   const [activeSlug, setActiveSlug] = useState(() => {
     const fromUrl = searchParams.get('section')
-    if (fromUrl) return fromUrl
-    try {
-      const saved = localStorage.getItem(`lampas_section_${project.id}`)
-      if (saved) return saved
-    } catch {}
-    return modeConfig.defaultSection
+    return fromUrl ?? modeConfig.defaultSection
   })
   const [expandedPhases, setExpandedPhases] = useState<Set<string>>(() => new Set(modeConfig.defaultExpandedPhases))
   const [expandedCanons, setExpandedCanons] = useState<Set<string>>(() => new Set(modeConfig.defaultExpandedCanons))
   const [expandedGroups, setExpandedGroups] = useState<Set<string>>(() => new Set(modeConfig.defaultExpandedGroups))
   const [expandedSectionCards, setExpandedSectionCards] = useState<Set<string>>(() => {
     const fromUrl = searchParams.get('section')
-    if (fromUrl) return new Set([fromUrl])
-    try {
-      const saved = localStorage.getItem(`lampas_section_${project.id}`)
-      if (saved) return new Set([saved])
-    } catch {}
-    return new Set([modeConfig.defaultSection])
+    return fromUrl ? new Set([fromUrl]) : new Set([modeConfig.defaultSection])
   })
   const [aiOpen, setAiOpen] = useState(false)
   const [aiPrompt, setAiPrompt] = useState('')
@@ -234,6 +224,15 @@ export default function WorkspaceClient({ user, project, initialSections }: Prop
       const wm = localStorage.getItem(`lampas_workmode_${project.id}`)
       if (wm) setWorkModeMap(JSON.parse(wm))
     } catch {}
+    if (!searchParams.get('section')) {
+      try {
+        const saved = localStorage.getItem(`lampas_section_${project.id}`)
+        if (saved) {
+          setActiveSlug(saved)
+          setExpandedSectionCards(new Set([saved]))
+        }
+      } catch {}
+    }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
