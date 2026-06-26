@@ -166,7 +166,8 @@ export default function WorkspaceLateralTabs({ project, userId, onAskAI }: Props
   const [leftTab,    setLeftTab]    = useState<LeftTab | null>(null)
   const [rightTab,   setRightTab]   = useState<RightTab | null>(null)
   const [teoSub,     setTeoSub]     = useState<'ferramentas_biblica' | 'ferramentas_sistematica'>('ferramentas_biblica')
-  const [leftPinned, setLeftPinned] = useState(false)
+  const [leftPinned,  setLeftPinned]  = useState(false)
+  const [rightPinned, setRightPinned] = useState(false)
 
   const toggleLeft = useCallback((id: LeftTab) => {
     if (leftTab === id && leftPinned) return
@@ -175,8 +176,10 @@ export default function WorkspaceLateralTabs({ project, userId, onAskAI }: Props
   }, [leftTab, leftPinned])
 
   const toggleRight = useCallback((id: RightTab) => {
+    if (rightTab === id && rightPinned) return
+    if (rightTab !== id) setRightPinned(false)
     setRightTab(prev => prev === id ? null : id)
-  }, [])
+  }, [rightTab, rightPinned])
 
   return (
     <>
@@ -368,7 +371,7 @@ export default function WorkspaceLateralTabs({ project, userId, onAskAI }: Props
               borderBottom: `1px solid ${tab.color}22`,
             }}>
               <button
-                onClick={() => setRightTab(null)}
+                onClick={() => { setRightPinned(false); setRightTab(null) }}
                 title="Fechar"
                 style={{
                   background: 'none', border: 'none', cursor: 'pointer',
@@ -379,6 +382,21 @@ export default function WorkspaceLateralTabs({ project, userId, onAskAI }: Props
                 onMouseLeave={e => { e.currentTarget.style.opacity = '0.6' }}
               >
                 <X size={12} />
+              </button>
+              <button
+                onClick={() => setRightPinned(p => !p)}
+                title={rightPinned ? 'Desafixar painel' : 'Fixar painel'}
+                style={{
+                  background: rightPinned ? `${tab.color}18` : 'none',
+                  border: `1px solid ${rightPinned ? tab.color + '60' : 'transparent'}`,
+                  cursor: 'pointer', color: tab.color,
+                  opacity: rightPinned ? 1 : 0.45, padding: '0.15rem 0.2rem',
+                  borderRadius: '4px', display: 'flex', transition: 'all 0.12s',
+                }}
+                onMouseEnter={e => { e.currentTarget.style.opacity = '1' }}
+                onMouseLeave={e => { if (!rightPinned) e.currentTarget.style.opacity = '0.45' }}
+              >
+                {rightPinned ? <PinOff size={11} /> : <Pin size={11} />}
               </button>
               <span style={{ fontSize: '0.75rem', fontWeight: 700, color: tab.color, flex: 1, textAlign: 'right' }}>
                 {tab.label}
