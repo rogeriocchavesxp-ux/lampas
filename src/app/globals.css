@@ -186,3 +186,9 @@ a:hover { color: var(--accent-hover); }
 .rich-content-display h2:first-child,
 .rich-content-display h3:first-child { margin-top: 0; }
 .rich-content-display mark { border-radius: 2px; padding: 0.05em 0.15em; }
+
+/* WorkspaceHeader responsive chips */
+.wh-bible    { display: inline-flex; }
+.wh-progress { display: inline-flex; }
+@media (max-width: 1280px) { .wh-progress { display: none !important; } }
+@media (max-width: 1200px) { .wh-bible    { display: none !important; } }

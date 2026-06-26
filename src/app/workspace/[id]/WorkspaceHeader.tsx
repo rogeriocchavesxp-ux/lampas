@@ -144,16 +144,7 @@ export default function WorkspaceHeader({
   bibleOpen, onToggleBible,
 }: WorkspaceHeaderProps) {
   return (
-    <>
-      {/* Responsive: chips collapse at smaller viewports — never wrap, never break */}
-      <style>{`
-        .wh-bible    { display: inline-flex; }
-        .wh-progress { display: inline-flex; }
-        @media (max-width: 1280px) { .wh-progress { display: none !important; } }
-        @media (max-width: 1200px) { .wh-bible    { display: none !important; } }
-      `}</style>
-
-      <div style={{
+    <div style={{
         height: HEADER_HEIGHT,
         flexShrink: 0,
         display: 'grid',
@@ -221,7 +212,6 @@ export default function WorkspaceHeader({
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end' }}>
           <BibleToggle open={bibleOpen} onClick={onToggleBible} />
         </div>
-      </div>
-    </>
+    </div>
   )
 }
