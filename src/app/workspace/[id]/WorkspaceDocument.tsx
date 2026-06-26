@@ -773,28 +773,12 @@ export default function WorkspaceDocument({
 
   // ── Render ────────────────────────────────────────────────────────────────
 
-  const editorStyles = `
-    .ws-doc-section .rich-editor .ProseMirror {
-      border: none;
-      border-radius: 0;
-      background: transparent;
-      box-shadow: none;
-      padding: 0.4rem 0 0.6rem;
-      min-height: 72px;
-    }
-    .ws-doc-section .rich-editor .ProseMirror:focus {
-      box-shadow: none;
-      border: none;
-    }
-    .ws-doc-section .rich-editor .ProseMirror p:first-child { margin-top: 0; }
-  `
-
   // ── Free mode — single continuous document (no accordion, no cards) ────
 
   if (!guided) {
     return (
       <div style={{ display: 'flex', flexDirection: 'column', flex: 1 }}>
-        <style>{editorStyles}</style>
+
 
         {/* Toolbar — sticky at viewport top, only while writing */}
         {!!ed && renderToolbar(0)}
@@ -933,8 +917,6 @@ export default function WorkspaceDocument({
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', flex: 1 }}>
-
-      <style>{editorStyles}</style>
 
       {/* ── Chapters ─────────────────────────────────────────────────────── */}
       <div style={{ flex: 1, maxWidth: '700px', margin: '0 auto', width: '100%', padding: '1.25rem 1.25rem 4rem' }}>

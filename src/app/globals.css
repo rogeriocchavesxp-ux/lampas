@@ -187,6 +187,21 @@ a:hover { color: var(--accent-hover); }
 .rich-content-display h3:first-child { margin-top: 0; }
 .rich-content-display mark { border-radius: 2px; padding: 0.05em 0.15em; }
 
+/* WorkspaceDocument editor overrides */
+.ws-doc-section .rich-editor .ProseMirror {
+  border: none;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  padding: 0.4rem 0 0.6rem;
+  min-height: 72px;
+}
+.ws-doc-section .rich-editor .ProseMirror:focus {
+  box-shadow: none;
+  border: none;
+}
+.ws-doc-section .rich-editor .ProseMirror p:first-child { margin-top: 0; }
+
 /* WorkspaceHeader responsive chips */
 .wh-bible    { display: inline-flex; }
 .wh-progress { display: inline-flex; }

@@ -179,12 +179,7 @@ export default function WorkspaceClient({ user, project, initialSections }: Prop
   const [aiPrompt, setAiPrompt] = useState('')
 
   // Work mode (guided / free) per phase — persisted per project
-  const [workModeMap, setWorkModeMap] = useState<Partial<Record<string, 'guided' | 'free'>>>(() => {
-    try {
-      const saved = localStorage.getItem(`lampas_workmode_${project.id}`)
-      return saved ? JSON.parse(saved) as Partial<Record<string, 'guided' | 'free'>> : {}
-    } catch { return {} }
-  })
+  const [workModeMap, setWorkModeMap] = useState<Partial<Record<string, 'guided' | 'free'>>>({})
 
   function setWorkMode(phaseId: string, mode: 'guided' | 'free') {
     setWorkModeMap(prev => {
@@ -235,6 +230,11 @@ export default function WorkspaceClient({ user, project, initialSections }: Prop
     if (aw) setAiWidth(Number(aw))
     if (bw) setBiblePanelWidth(Number(bw))
     if (sc) setSidebarCollapsed(sc === '1')
+    try {
+      const wm = localStorage.getItem(`lampas_workmode_${project.id}`)
+      if (wm) setWorkModeMap(JSON.parse(wm))
+    } catch {}
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   // Fecha dropdown "Enviar" ao clicar fora
