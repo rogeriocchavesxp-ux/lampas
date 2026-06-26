@@ -4,6 +4,59 @@ import { useState, useEffect, useMemo, useRef, useCallback } from 'react'
 import type { Project } from '@/types/database'
 import { createClient } from '@/lib/supabase/client'
 import { Search, Plus, BookOpen, Sparkles, X, Check, Edit2, Trash2, Clock, Eye } from 'lucide-react'
+import ReactMarkdown from 'react-markdown'
+import remarkGfm from 'remark-gfm'
+import type { Components } from 'react-markdown'
+
+// ── Markdown renderer ─────────────────────────────────────────────────────────
+
+const MD: Components = {
+  h1: ({ children }) => <h1 style={{ fontSize: '1.3rem', fontWeight: 700, color: '#0F172A', margin: '2rem 0 0.7rem', letterSpacing: '-0.025em', lineHeight: 1.25, paddingBottom: '0.55rem', borderBottom: '1px solid #E8ECF0' }}>{children}</h1>,
+  h2: ({ children }) => <h2 style={{ fontSize: '1rem', fontWeight: 700, color: '#0F172A', margin: '1.6rem 0 0.5rem', letterSpacing: '-0.015em', lineHeight: 1.3 }}>{children}</h2>,
+  h3: ({ children }) => <h3 style={{ fontSize: '0.91rem', fontWeight: 700, color: '#1E293B', margin: '1.2rem 0 0.4rem', lineHeight: 1.3 }}>{children}</h3>,
+  h4: ({ children }) => <h4 style={{ fontSize: '0.87rem', fontWeight: 700, color: '#334155', margin: '0.9rem 0 0.35rem' }}>{children}</h4>,
+  p:  ({ children }) => <p  style={{ fontSize: '0.93rem', color: '#334155', lineHeight: 1.85, margin: '0 0 0.95rem' }}>{children}</p>,
+  strong: ({ children }) => <strong style={{ fontWeight: 700, color: '#0F172A' }}>{children}</strong>,
+  em:     ({ children }) => <em     style={{ fontStyle: 'italic', color: '#475569' }}>{children}</em>,
+  ul: ({ children }) => <ul style={{ paddingLeft: '1.45rem', margin: '0.4rem 0 0.95rem', listStyleType: 'disc' }}>{children}</ul>,
+  ol: ({ children }) => <ol style={{ paddingLeft: '1.45rem', margin: '0.4rem 0 0.95rem', listStyleType: 'decimal' }}>{children}</ol>,
+  li: ({ children }) => <li style={{ fontSize: '0.93rem', color: '#334155', lineHeight: 1.75, marginBottom: '0.3rem' }}>{children}</li>,
+  blockquote: ({ children }) => (
+    <blockquote style={{ borderLeft: '3px solid #CBD5E1', margin: '0.85rem 0', padding: '0.6rem 1rem', background: '#F8FAFC', borderRadius: '0 6px 6px 0', color: '#475569', fontStyle: 'italic' }}>
+      {children}
+    </blockquote>
+  ),
+  hr: () => <hr style={{ border: 'none', borderTop: '1px solid #E8ECF0', margin: '1.4rem 0' }} />,
+  table: ({ children }) => (
+    <div style={{ overflowX: 'auto', marginBottom: '0.95rem' }}>
+      <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.88rem' }}>{children}</table>
+    </div>
+  ),
+  thead: ({ children }) => <thead style={{ background: '#F8FAFC' }}>{children}</thead>,
+  tr:    ({ children }) => <tr    style={{ borderBottom: '1px solid #F1F5F9' }}>{children}</tr>,
+  th: ({ children }) => <th style={{ padding: '0.5rem 0.8rem', textAlign: 'left', fontWeight: 700, color: '#1E293B', borderBottom: '2px solid #E2E8F0', fontSize: '0.77rem', textTransform: 'uppercase' as const, letterSpacing: '0.05em' }}>{children}</th>,
+  td: ({ children }) => <td style={{ padding: '0.5rem 0.8rem', color: '#334155', verticalAlign: 'top', lineHeight: 1.6 }}>{children}</td>,
+  pre: ({ children }) => (
+    <pre style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '8px', padding: '0.85rem 1.1rem', overflowX: 'auto', margin: '0.5rem 0 0.95rem', lineHeight: 1.6 }}>
+      {children}
+    </pre>
+  ),
+  code: ({ children, className }) => (
+    className
+      ? <code style={{ fontFamily: 'ui-monospace, monospace', fontSize: '0.82rem', color: '#334155' }}>{children}</code>
+      : <code style={{ background: '#F1F5F9', borderRadius: '4px', padding: '2px 5px', fontSize: '0.85em', color: '#7C3AED', fontFamily: 'ui-monospace, monospace' }}>{children}</code>
+  ),
+}
+
+function MarkdownContent({ content, compact: small }: { content: string; compact?: boolean }) {
+  return (
+    <div style={{ fontSize: small ? '0.85rem' : '0.93rem' }}>
+      <ReactMarkdown remarkPlugins={[remarkGfm]} components={MD}>
+        {content}
+      </ReactMarkdown>
+    </div>
+  )
+}
 
 // ── Types ──────────────────────────────────────────────────────────────────────
 
@@ -131,7 +184,7 @@ function Field({ label, value, onExpand }: { label: string; value: string | null
           </button>
         )}
       </div>
-      <div style={{ fontSize: '0.92rem', color: '#1E293B', lineHeight: 1.8, whiteSpace: 'pre-wrap' }}>{value}</div>
+      <MarkdownContent content={value} />
     </div>
   )
 }
@@ -209,9 +262,7 @@ function DictExpandModal({
         <div style={{ flex: 1, overflowY: 'auto', padding: '1.75rem 2rem' }}>
           {mode === 'view' ? (
             content.trim() ? (
-              <div style={{ fontSize: '0.91rem', color: '#334155', lineHeight: 1.82, whiteSpace: 'pre-wrap', fontFamily: 'inherit' }}>
-                {content}
-              </div>
+              <MarkdownContent content={content} />
             ) : (
               <p style={{ color: '#94A3B8', fontStyle: 'italic', fontSize: '0.88rem' }}>
                 Campo vazio. Alterne para &ldquo;Editar&rdquo; para adicionar conteúdo.
@@ -1081,8 +1132,8 @@ export default function DicionarioWorkspace({ project, userId, onAskAI, compact 
                               {v.snapshot.definition && (
                                 <div style={{ padding: '10px 14px' }}>
                                   <div style={{ fontSize: '0.62rem', fontWeight: 700, color: '#94A3B8', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '5px' }}>Definição</div>
-                                  <div style={{ fontSize: '0.84rem', color: '#475569', lineHeight: 1.65, maxHeight: '80px', overflow: 'hidden', WebkitMaskImage: 'linear-gradient(to bottom, black 60%, transparent)' }}>
-                                    {v.snapshot.definition}
+                                  <div style={{ maxHeight: '80px', overflow: 'hidden', WebkitMaskImage: 'linear-gradient(to bottom, black 60%, transparent)' }}>
+                                    <MarkdownContent content={v.snapshot.definition} compact />
                                   </div>
                                 </div>
                               )}
