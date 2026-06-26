@@ -154,17 +154,11 @@ export default function WorkspaceClient({ user, project, initialSections }: Prop
   )
 
   const [sections, setSections] = useState<Section[]>(initialSections)
-  const [activeSlug, setActiveSlug] = useState(() => {
-    const fromUrl = searchParams.get('section')
-    return fromUrl ?? modeConfig.defaultSection
-  })
+  const [activeSlug, setActiveSlug] = useState(modeConfig.defaultSection)
   const [expandedPhases, setExpandedPhases] = useState<Set<string>>(() => new Set(modeConfig.defaultExpandedPhases))
   const [expandedCanons, setExpandedCanons] = useState<Set<string>>(() => new Set(modeConfig.defaultExpandedCanons))
   const [expandedGroups, setExpandedGroups] = useState<Set<string>>(() => new Set(modeConfig.defaultExpandedGroups))
-  const [expandedSectionCards, setExpandedSectionCards] = useState<Set<string>>(() => {
-    const fromUrl = searchParams.get('section')
-    return fromUrl ? new Set([fromUrl]) : new Set([modeConfig.defaultSection])
-  })
+  const [expandedSectionCards, setExpandedSectionCards] = useState<Set<string>>(() => new Set([modeConfig.defaultSection]))
   const [aiOpen, setAiOpen] = useState(false)
   const [aiPrompt, setAiPrompt] = useState('')
 
@@ -224,7 +218,11 @@ export default function WorkspaceClient({ user, project, initialSections }: Prop
       const wm = localStorage.getItem(`lampas_workmode_${project.id}`)
       if (wm) setWorkModeMap(JSON.parse(wm))
     } catch {}
-    if (!searchParams.get('section')) {
+    const fromUrl = searchParams.get('section')
+    if (fromUrl) {
+      setActiveSlug(fromUrl)
+      setExpandedSectionCards(new Set([fromUrl]))
+    } else {
       try {
         const saved = localStorage.getItem(`lampas_section_${project.id}`)
         if (saved) {
