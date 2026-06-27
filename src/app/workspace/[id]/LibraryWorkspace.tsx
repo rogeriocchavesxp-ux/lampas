@@ -219,8 +219,8 @@ export default function LibraryWorkspace({ project, onAskAI }: Props) {
         p_bible_chapter: null,
         p_limit:         20,
       })
-      if (error) {
-        // lib_search requer content_vector indexado — fallback para passagem atual
+      if (error || (data ?? []).length === 0) {
+        // sem erro mas sem resultados: mostra comentários da passagem atual
         return loadCommentaries()
       }
       setEntries((data ?? []) as LibEntry[])
