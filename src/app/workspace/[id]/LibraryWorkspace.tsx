@@ -8,13 +8,14 @@ import type { Project } from '@/types/database'
 type Tab = 'comentarios' | 'dicionario'
 
 interface LibEntry {
-  entry_id:      string
-  heading:       string | null
-  content:       string
-  work_title:    string
-  author_name:   string | null
-  year_published: number | null
-  bible_ref:     string | null
+  entry_id:        string
+  heading:         string | null
+  content:         string | null
+  content_excerpt?: string | null
+  work_title:      string | null
+  author_name:     string | null
+  year_published:  number | null
+  bible_ref:       string | null
 }
 
 interface Props {
@@ -87,8 +88,9 @@ function EntryCard({
   entry: LibEntry; onSend: () => void; expanded: boolean; onToggle: () => void
 }) {
   const PREVIEW = 320
-  const snippet = entry.content.slice(0, PREVIEW)
-  const hasMore = entry.content.length > PREVIEW
+  const text    = entry.content ?? entry.content_excerpt ?? ''
+  const snippet = text.slice(0, PREVIEW)
+  const hasMore = text.length > PREVIEW
   const src = [entry.author_name, entry.year_published ? `(${entry.year_published})` : null].filter(Boolean).join(' ')
 
   return (
@@ -116,8 +118,10 @@ function EntryCard({
           </div>
         )}
         <div style={{ fontSize: '0.77rem', color: 'var(--text-secondary)', lineHeight: 1.65 }}>
-          {expanded ? entry.content : snippet}
-          {!expanded && hasMore && '…'}
+          {text
+            ? (expanded ? text : snippet) + (!expanded && hasMore ? '…' : '')
+            : <span style={{ color: 'var(--text-muted)', fontStyle: 'italic' }}>Conteúdo não disponível</span>
+          }
         </div>
 
         <div style={{ display: 'flex', alignItems: 'center', marginTop: '0.5rem', gap: '0.4rem' }}>
@@ -182,6 +186,8 @@ export default function LibraryWorkspace({ project, onAskAI }: Props) {
       setRpcError(error.message ?? 'Erro ao buscar comentários')
       setStatus('error')
     } else {
+      // eslint-disable-next-line no-console
+      console.log('[LibraryWorkspace] data[0]:', (data as unknown[])?.[0])
       setEntries((data ?? []) as LibEntry[])
       setStatus('loaded')
     }
@@ -216,8 +222,13 @@ export default function LibraryWorkspace({ project, onAskAI }: Props) {
         p_bible_chapter: null,
         p_limit:         20,
       })
-      if (error) { setRpcError(error.message ?? 'Erro na busca'); setStatus('error') }
-      else { setEntries((data ?? []) as LibEntry[]); setStatus('loaded') }
+      if (error) {
+        // lib_search requer content_vector indexado — fallback para passagem atual
+        await loadCommentaries()
+      } else {
+        setEntries((data ?? []) as LibEntry[])
+        setStatus('loaded')
+      }
     }
 
     setLoading(false)
@@ -261,7 +272,7 @@ export default function LibraryWorkspace({ project, onAskAI }: Props) {
       `Passagem em estudo: ${passageLabel}`,
       '',
       entry.heading ? `### ${entry.heading}` : '',
-      entry.content.slice(0, 2500),
+      (entry.content ?? entry.content_excerpt ?? '').slice(0, 2500),
       '',
       `Com base neste comentário clássico, analise sua relevância para a exegese e pregação de ${passageLabel}. Destaque os principais insights teológicos e aplicações pastorais.`,
     ].filter(Boolean).join('\n'))
