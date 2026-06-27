@@ -186,8 +186,6 @@ export default function LibraryWorkspace({ project, onAskAI }: Props) {
       setRpcError(error.message ?? 'Erro ao buscar comentários')
       setStatus('error')
     } else {
-      // eslint-disable-next-line no-console
-      console.log('[LibraryWorkspace] data[0]:', (data as unknown[])?.[0])
       setEntries((data ?? []) as LibEntry[])
       setStatus('loaded')
     }
