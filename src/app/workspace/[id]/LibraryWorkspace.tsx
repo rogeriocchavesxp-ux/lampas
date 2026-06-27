@@ -182,7 +182,6 @@ export default function LibraryWorkspace({ project, onAskAI }: Props) {
     })
 
     if (error) {
-      console.error('[LibraryWorkspace] lib_get_commentaries:', error)
       setRpcError(error.message ?? 'Erro ao buscar comentários')
       setStatus('error')
     } else {
@@ -222,11 +221,10 @@ export default function LibraryWorkspace({ project, onAskAI }: Props) {
       })
       if (error) {
         // lib_search requer content_vector indexado — fallback para passagem atual
-        await loadCommentaries()
-      } else {
-        setEntries((data ?? []) as LibEntry[])
-        setStatus('loaded')
+        return loadCommentaries()
       }
+      setEntries((data ?? []) as LibEntry[])
+      setStatus('loaded')
     }
 
     setLoading(false)
