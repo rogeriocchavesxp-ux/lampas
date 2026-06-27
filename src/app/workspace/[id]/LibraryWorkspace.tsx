@@ -175,11 +175,15 @@ export default function LibraryWorkspace({ project, onAskAI }: Props) {
     setRpcError(null)
     setEntries([])
 
+    // eslint-disable-next-line no-console
+    console.log('[LW] call', { book: project.book, enBook: toEnBook(project.book), chapter })
     const { data, error } = await supabase.rpc('lib_get_commentaries', {
       p_bible_book: toEnBook(project.book),
       p_chapter:    chapter,
       p_verse:      null,
     })
+    // eslint-disable-next-line no-console
+    console.log('[LW] result', { rows: (data ?? []).length, error: error?.message ?? null, sample: (data as unknown[])?.[0] ?? null })
 
     if (error) {
       setRpcError(error.message ?? 'Erro ao buscar comentários')
