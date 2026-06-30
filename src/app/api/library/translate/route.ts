@@ -41,7 +41,7 @@ export async function POST(req: Request) {
   try {
     const response = await anthropic.messages.create({
       model: 'claude-haiku-4-5-20251001',
-      max_tokens: 1800,
+      max_tokens: 4096,
       system: `Você é um tradutor teológico especializado. Traduza o texto abaixo do inglês para o português do Brasil.
 
 Regras:
