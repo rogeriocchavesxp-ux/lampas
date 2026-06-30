@@ -34,7 +34,7 @@ const NAV: NavItem[] = [
     id: 'base', label: 'Base de Conhecimento',
     items: [
       { sep: true, label: 'Repositório' },
-      { label: 'Biblioteca',           href: '/knowledge' },
+      { label: 'Biblioteca',           href: '/library' },
       { label: 'Sistemática',          href: '/knowledge' },
       { label: 'Bíblica',              href: '/knowledge' },
       { sep: true, label: 'Referência' },
@@ -59,7 +59,7 @@ const NAV: NavItem[] = [
     items: [
       { label: 'Texto Original',        href: '/knowledge' },
       { label: 'Dicionário Lampas',    href: '/knowledge' },
-      { label: 'Biblioteca',           href: '/knowledge' },
+      { label: 'Biblioteca',           href: '/library' },
       { label: 'Referências Cruzadas', href: '/knowledge' },
       { label: 'Colagens',             href: '/knowledge' },
       { sep: true, label: 'Introdução Bíblica' },
@@ -84,7 +84,7 @@ const NAV: NavItem[] = [
 ]
 
 const ACTIVE_BASE: Record<string, string> = {
-  painel: '/dashboard', agenda: '/agenda', base: '/knowledge',
+  painel: '/dashboard', agenda: '/agenda', base: '/library',
   projetos: '/dashboard', ferramentas: '/knowledge', publicacoes: '/publicacoes',
 }
 
@@ -170,6 +170,7 @@ export default function TopNav() {
     const base = ACTIVE_BASE[item.id]
     if (!base) return false
     if (item.id === 'painel' || item.id === 'projetos') return pathname === '/dashboard'
+    if (item.id === 'base') return (pathname?.startsWith('/library') || pathname?.startsWith('/knowledge')) ?? false
     return pathname?.startsWith(base) ?? false
   }
 
