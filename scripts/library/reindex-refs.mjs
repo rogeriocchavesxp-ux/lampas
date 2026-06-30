@@ -262,6 +262,15 @@ async function main() {
     'martin_luther_galatians',
     'albert_barnes_notes',
     'calvin_commentaries',
+    // Padres da Igreja (NPNF)
+    'augustine_psalms',
+    'chrysostom_matthew',
+    'chrysostom_acts_romans',
+    'chrysostom_corinthians',
+    'chrysostom_galatians_thess',
+    'chrysostom_john',
+    'augustine_john',
+    'augustine_sermon_mount',
   ]
 
   const works = WORK_ARG ? [WORK_ARG] : COMMENTARY_WORKS

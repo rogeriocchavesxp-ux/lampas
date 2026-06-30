@@ -36,6 +36,31 @@ async function fetchText(url) {
 
 // ─── Catálogo de fontes CCEL (texto plano) ────────────────────────────────────
 const SOURCES = {
+  // Padres da Igreja — Coleção NPNF (Nicene & Post-Nicene Fathers, ed. Schaff)
+  chrysostom_matthew: [
+    { vol: 1, url: '/ccel/schaff/npnf110/cache/npnf110.txt', book_start: 'Matthew', book_end: 'Matthew' },
+  ],
+  chrysostom_acts_romans: [
+    { vol: 1, url: '/ccel/schaff/npnf111/cache/npnf111.txt', book_start: 'Acts', book_end: 'Romans' },
+  ],
+  chrysostom_corinthians: [
+    { vol: 1, url: '/ccel/schaff/npnf112/cache/npnf112.txt', book_start: '1 Corinthians', book_end: '2 Corinthians' },
+  ],
+  chrysostom_galatians_thess: [
+    { vol: 1, url: '/ccel/schaff/npnf113/cache/npnf113.txt', book_start: 'Galatians', book_end: 'Philemon' },
+  ],
+  chrysostom_john: [
+    { vol: 1, url: '/ccel/schaff/npnf114/cache/npnf114.txt', book_start: 'John', book_end: 'Hebrews' },
+  ],
+  augustine_psalms: [
+    { vol: 1, url: '/ccel/schaff/npnf108/cache/npnf108.txt', book_start: 'Psalms', book_end: 'Psalms' },
+  ],
+  augustine_john: [
+    { vol: 1, url: '/ccel/schaff/npnf107/cache/npnf107.txt', book_start: 'John', book_end: '1 John' },
+  ],
+  augustine_sermon_mount: [
+    { vol: 1, url: '/ccel/schaff/npnf106/cache/npnf106.txt', book_start: 'Matthew', book_end: 'Matthew' },
+  ],
   matthew_henry_mhc: [
     { vol: 1, url: '/ccel/h/henry/mhc1/cache/mhc1.txt', book_start: 'Genesis',   book_end: 'Deuteronomy' },
     { vol: 2, url: '/ccel/h/henry/mhc2/cache/mhc2.txt', book_start: 'Joshua',    book_end: 'Esther'      },
@@ -223,6 +248,173 @@ function detectPrimaryRef(text) {
   }
 }
 
+// ─── Conversão de algarismos romanos ─────────────────────────────────────────
+function romanToInt(roman) {
+  if (!roman) return null
+  const s = roman.toUpperCase()
+  const vals = { M:1000,CM:900,D:500,CD:400,C:100,XC:90,L:50,XL:40,X:10,IX:9,V:5,IV:4,I:1 }
+  let result = 0, i = 0
+  for (const [k,v] of Object.entries(vals)) {
+    while (s.startsWith(k,i)) { result += v; i += k.length }
+  }
+  return result > 0 ? result : null
+}
+
+// Regex para detectar referência bíblica patrística (numerais romanos no capítulo)
+// Exemplos: "Matt. I. 1.", "1 Cor. i. 1-3", "Ephesians iv. 4", "Psalm xcii."
+const PATRISTIC_REF_RE = /^([1-3]?\s?[A-Za-z.]{2,15})\.?\s+([IVXLCDMivxlcdm]+)\.?\s*(\d+)?/
+
+// Mapa de abreviações patrísticas
+const PATRISTIC_ABBR = {
+  'Matt': 'Matthew', 'Mt': 'Matthew',
+  'Mk': 'Mark', 'Mar': 'Mark',
+  'Lk': 'Luke',
+  'Jn': 'John', 'Joh': 'John',
+  'Acts': 'Acts', 'Act': 'Acts',
+  'Rom': 'Romans', 'Ro': 'Romans',
+  '1 Cor': '1 Corinthians', '1 Co': '1 Corinthians',
+  '2 Cor': '2 Corinthians', '2 Co': '2 Corinthians',
+  'Gal': 'Galatians', 'Ga': 'Galatians',
+  'Eph': 'Ephesians', 'Ep': 'Ephesians',
+  'Phil': 'Philippians', 'Php': 'Philippians',
+  'Col': 'Colossians',
+  '1 Thess': '1 Thessalonians', '1 Th': '1 Thessalonians',
+  '2 Thess': '2 Thessalonians', '2 Th': '2 Thessalonians',
+  '1 Tim': '1 Timothy', '1 Ti': '1 Timothy',
+  '2 Tim': '2 Timothy', '2 Ti': '2 Timothy',
+  'Tit': 'Titus',
+  'Phile': 'Philemon', 'Phm': 'Philemon',
+  'Heb': 'Hebrews',
+  'Jas': 'James',
+  '1 Pet': '1 Peter', '1 Pe': '1 Peter',
+  '2 Pet': '2 Peter', '2 Pe': '2 Peter',
+  '1 Jn': '1 John', '1 Jo': '1 John', '1 John': '1 John',
+  '2 Jn': '2 John', '2 Jo': '2 John', '2 John': '2 John',
+  '3 Jn': '3 John', '3 Jo': '3 John', '3 John': '3 John',
+  'Jude': 'Jude',
+  'Rev': 'Revelation', 'Re': 'Revelation',
+  'Ps': 'Psalms', 'Psalm': 'Psalms',
+  'Gen': 'Genesis', 'Ge': 'Genesis',
+  'Ex': 'Exodus', 'Exo': 'Exodus',
+  'Lev': 'Leviticus', 'Le': 'Leviticus',
+  'Num': 'Numbers', 'Nu': 'Numbers',
+  'Deut': 'Deuteronomy', 'De': 'Deuteronomy',
+  'Prov': 'Proverbs', 'Pro': 'Proverbs', 'Pr': 'Proverbs',
+  'Isa': 'Isaiah', 'Jer': 'Jeremiah',
+  'Ezek': 'Ezekiel', 'Eze': 'Ezekiel',
+  'Dan': 'Daniel', 'Da': 'Daniel',
+}
+
+function resolvePatristicBook(raw) {
+  const trimmed = raw.trim().replace(/\.$/, '')
+  return PATRISTIC_ABBR[trimmed]
+    ?? BOOK_ALIASES[trimmed]
+    ?? (CANONICAL_BOOKS.includes(trimmed) ? trimmed : null)
+}
+
+function detectPatristicRef(firstLines) {
+  // firstLines = primeiras ~5 linhas de content após o heading
+  for (const line of firstLines.slice(0, 5)) {
+    const t = line.trim()
+    if (!t || t.length > 80) continue
+    const m = PATRISTIC_REF_RE.exec(t)
+    if (!m) continue
+    const book = resolvePatristicBook(m[1])
+    if (!book) continue
+    const chapter = romanToInt(m[2])
+    if (!chapter) continue
+    const verse = m[3] ? parseInt(m[3]) : null
+    return {
+      bible_book:        book,
+      bible_chapter:     chapter,
+      bible_verse_start: verse,
+      bible_verse_end:   null,
+      bible_ref:         `${book} ${chapter}${verse ? ':' + verse : ''}`,
+    }
+  }
+  return null
+}
+
+// ─── Parser: PATRÍSTICO ──────────────────────────────────────────────────────
+// Formato NPNF/ANF (Schaff ed.): Homily I., Homily II., Psalm I. como cabeçalhos
+// Seguidos de referência bíblica em formato romano (Matt. I. 1.)
+function parsePatristic(text, volumeDefault = {}) {
+  const lines   = text.split('\n')
+  const entries = []
+  let heading   = null
+  let content   = []
+  let seq       = 0
+
+  let start = 0
+  for (let i = 0; i < Math.min(80, lines.length); i++) {
+    if (lines[i].match(/_{10,}/) && i > 10) { start = i + 1; break }
+  }
+
+  // Detecta Homily/Psalm/Tractate/Discourse/Chapter headings + variantes
+  // Exige Roman numerals ou numerais arábicos para evitar falsos positivos
+  const HOMILY_RE = /^(Homily|Psalm|Tractate|Discourse|Chapter|Sermon|Treatise|Oration|Exposition)\s+([IVXLCDM]+|\d+)[\s.[\]]/i
+  // Tractate sem numeral (ex: "Introduction.", "Argument.")
+  const SECTION_RE = /^(Introduction|Argument|Preface|Prologue|Epilogue|Conclusion|Summary|Dissertation|Note)\s*\.?$/i
+
+  const isPatristicHeading = (line) => {
+    const t = line.trim()
+    const indent = line.length - line.trimStart().length
+    if (indent > 6 || t.length < 4 || t.length > 100) return false
+    return HOMILY_RE.test(t) || SECTION_RE.test(t)
+  }
+
+  const flush = () => {
+    if (!heading && content.length === 0) return
+    const h   = heading || ''
+    const txt = content.join(' ').replace(/\s+/g, ' ').trim()
+    if (txt.length < 80) return
+
+    let primary = null
+
+    // 1. Cabeçalho do tipo "Psalm I." — o capítulo está no próprio heading
+    const psalmHeading = h.match(/^Psalm\s+([IVXLCDMivxlcdm]+)\.?/i)
+    if (psalmHeading) {
+      const ch = romanToInt(psalmHeading[1])
+      if (ch) primary = { bible_book: 'Psalms', bible_chapter: ch, bible_verse_start: null, bible_verse_end: null, bible_ref: `Psalms ${ch}` }
+    }
+
+    // 2. Linha de referência patrística após Homily/Tractate header (ex: "Matt. I. 1.")
+    if (!primary) primary = detectPatristicRef(content)
+
+    // 3. Refs normais (Arabic numerals) no texto
+    if (!primary) {
+      const r = detectPrimaryRef(h + ' ' + txt.slice(0, 300))
+      if (r?.bible_book) primary = r
+    }
+
+    // 4. Fallback para default do volume
+    if (!primary?.bible_book) primary = volumeDefault
+
+    entries.push({
+      heading:    h || null,
+      content:    txt,
+      sequence:   seq++,
+      bible_refs: extractBibleRefs(txt),
+      ...(primary || {}),
+    })
+  }
+
+  for (let i = start; i < lines.length; i++) {
+    const line = lines[i]
+    if (isPatristicHeading(line)) {
+      flush()
+      heading = line.trim()
+      content = []
+    } else {
+      const t = line.trim()
+      if (t) content.push(t)
+    }
+  }
+  flush()
+
+  return entries
+}
+
 // ─── Parser: DICIONÁRIO ───────────────────────────────────────────────────────
 // Formato Easton's/Smith's:
 //    EntryName
@@ -363,7 +555,15 @@ async function processVolume(workId, vol) {
 
   // Decide parser pelo tipo de obra
   const dictWorks = ['easton_bible_dictionary','smith_bible_dictionary','fausset_bible_dictionary','hitchcock_bible_names','nave_topical_bible']
-  const entries = dictWorks.includes(workId) ? parseDictionary(text) : parseCommentary(text)
+  const patristicWorks = ['chrysostom_matthew','chrysostom_acts_romans','chrysostom_corinthians','chrysostom_galatians_thess','chrysostom_john','augustine_psalms','augustine_john','augustine_sermon_mount']
+  const volumeDefault = vol.book_start
+    ? { bible_book: vol.book_start, bible_chapter: null, bible_verse_start: null, bible_verse_end: null, bible_ref: null }
+    : {}
+  const entries = dictWorks.includes(workId)
+    ? parseDictionary(text)
+    : patristicWorks.includes(workId)
+      ? parsePatristic(text, volumeDefault)
+      : parseCommentary(text)
 
   writeFileSync(outFile, JSON.stringify(entries, null, 2))
   console.log(`    💾 ${entries.length} entradas → ${outFile.replace(ROOT, '.')}`)
@@ -390,15 +590,24 @@ function showStatus() {
 
 // ─── Main ─────────────────────────────────────────────────────────────────────
 const PRIORITY = [
+  // Já importados
   'easton_bible_dictionary',
   'smith_bible_dictionary',
   'john_wesley_notes',
   'martin_luther_galatians',
-  'treasury_of_david',
   'jfb_commentary',
   'albert_barnes_notes',
   'matthew_henry_mhc',
   'calvin_commentaries',
+  // Padres da Igreja (NPNF) — novos
+  'augustine_psalms',
+  'chrysostom_matthew',
+  'chrysostom_acts_romans',
+  'chrysostom_corinthians',
+  'chrysostom_galatians_thess',
+  'chrysostom_john',
+  'augustine_john',
+  'augustine_sermon_mount',
 ]
 
 async function main() {

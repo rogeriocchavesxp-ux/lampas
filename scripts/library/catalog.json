@@ -91,6 +91,22 @@
       "nationality": "American"
     },
     {
+      "id": "john_chrysostom",
+      "name": "John Chrysostom",
+      "birth_year": 347,
+      "death_year": 407,
+      "tradition": "Eastern Orthodox",
+      "nationality": "Greek"
+    },
+    {
+      "id": "augustine_of_hippo",
+      "name": "Augustine of Hippo",
+      "birth_year": 354,
+      "death_year": 430,
+      "tradition": "Catholic/Protestant Heritage",
+      "nationality": "North African"
+    },
+    {
       "id": "matthew_easton",
       "name": "Matthew George Easton",
       "birth_year": 1823,
@@ -596,6 +612,182 @@
         {"volume_number": 13, "title": "Galatians, Ephesians, Philippians, Colossians", "bible_book_start": "Galatians", "bible_book_end": "Colossians", "sources": [{"type": "ccel", "url": "https://www.ccel.org/ccel/calvin/calcom41.html", "format": "html"}, {"type": "archive_org", "url": "https://archive.org/details/commentariesofjo41calv", "format": "pdf"}]},
         {"volume_number": 14, "title": "Thessalonians, Timothy, Titus, Philemon", "bible_book_start": "1 Thessalonians", "bible_book_end": "Philemon", "sources": [{"type": "ccel", "url": "https://www.ccel.org/ccel/calvin/calcom43.html", "format": "html"}]},
         {"volume_number": 15, "title": "Hebrews, 1 Peter, 1 John", "bible_book_start": "Hebrews", "bible_book_end": "1 John", "sources": [{"type": "ccel", "url": "https://www.ccel.org/ccel/calvin/calcom44.html", "format": "html"}]}
+      ]
+    },
+    {
+      "id": "augustine_psalms",
+      "title": "Exposition on the Book of Psalms",
+      "author_id": "augustine_of_hippo",
+      "year_published": 1886,
+      "language": "en",
+      "collection": "comentarios",
+      "work_type": "commentary",
+      "testament": "OT",
+      "tradition": "Patristic",
+      "period": "Early Church",
+      "keywords": ["psalms", "patristic", "allegorical", "devotional", "early-church"],
+      "public_domain": true,
+      "public_domain_status": "confirmed",
+      "public_domain_source": "NPNF1-08, ed. Philip Schaff, 1886. Public domain.",
+      "source_url": "https://ccel.org/ccel/schaff/npnf108.html",
+      "notes": "Abridged from 6 volumes of the Oxford translation. Covers ~149 Psalms. Altíssima qualidade patrística (séc. IV-V).",
+      "total_volumes": 1,
+      "volumes": [
+        {"volume_number": 1, "title": "Psalms 1-150", "bible_book_start": "Psalms", "bible_book_end": "Psalms", "sources": [{"type": "ccel", "url": "https://ccel.org/ccel/schaff/npnf108.html", "format": "html"}]}
+      ]
+    },
+    {
+      "id": "chrysostom_matthew",
+      "title": "Homilies on the Gospel of Saint Matthew",
+      "author_id": "john_chrysostom",
+      "year_published": 1888,
+      "language": "en",
+      "collection": "comentarios",
+      "work_type": "commentary",
+      "testament": "NT",
+      "tradition": "Patristic",
+      "period": "Early Church",
+      "keywords": ["matthew", "homilies", "patristic", "greek", "moral", "allegorical"],
+      "public_domain": true,
+      "public_domain_status": "confirmed",
+      "public_domain_source": "NPNF1-10, ed. Philip Schaff, 1888. Public domain.",
+      "source_url": "https://ccel.org/ccel/schaff/npnf110.html",
+      "notes": "90 homilias sobre Mateus. Crisóstomo é o maior comentarista patrístico do NT.",
+      "total_volumes": 1,
+      "volumes": [
+        {"volume_number": 1, "title": "Matthew", "bible_book_start": "Matthew", "bible_book_end": "Matthew", "sources": [{"type": "ccel", "url": "https://ccel.org/ccel/schaff/npnf110.html", "format": "html"}]}
+      ]
+    },
+    {
+      "id": "chrysostom_acts_romans",
+      "title": "Homilies on the Acts of the Apostles and Romans",
+      "author_id": "john_chrysostom",
+      "year_published": 1889,
+      "language": "en",
+      "collection": "comentarios",
+      "work_type": "commentary",
+      "testament": "NT",
+      "tradition": "Patristic",
+      "period": "Early Church",
+      "keywords": ["acts", "romans", "homilies", "patristic", "greek"],
+      "public_domain": true,
+      "public_domain_status": "confirmed",
+      "public_domain_source": "NPNF1-11, ed. Philip Schaff, 1889. Public domain.",
+      "source_url": "https://ccel.org/ccel/schaff/npnf111.html",
+      "notes": "55 homilias sobre Atos + 32 homilias sobre Romanos.",
+      "total_volumes": 1,
+      "volumes": [
+        {"volume_number": 1, "title": "Acts and Romans", "bible_book_start": "Acts", "bible_book_end": "Romans", "sources": [{"type": "ccel", "url": "https://ccel.org/ccel/schaff/npnf111.html", "format": "html"}]}
+      ]
+    },
+    {
+      "id": "chrysostom_corinthians",
+      "title": "Homilies on the Epistles of Paul to the Corinthians",
+      "author_id": "john_chrysostom",
+      "year_published": 1889,
+      "language": "en",
+      "collection": "comentarios",
+      "work_type": "commentary",
+      "testament": "NT",
+      "tradition": "Patristic",
+      "period": "Early Church",
+      "keywords": ["corinthians", "homilies", "patristic", "greek", "church-order"],
+      "public_domain": true,
+      "public_domain_status": "confirmed",
+      "public_domain_source": "NPNF1-12, ed. Philip Schaff, 1889. Public domain.",
+      "source_url": "https://ccel.org/ccel/schaff/npnf112.html",
+      "notes": "44 homilias sobre 1 Coríntios + 30 sobre 2 Coríntios.",
+      "total_volumes": 1,
+      "volumes": [
+        {"volume_number": 1, "title": "1 and 2 Corinthians", "bible_book_start": "1 Corinthians", "bible_book_end": "2 Corinthians", "sources": [{"type": "ccel", "url": "https://ccel.org/ccel/schaff/npnf112.html", "format": "html"}]}
+      ]
+    },
+    {
+      "id": "chrysostom_galatians_thess",
+      "title": "Homilies on Galatians, Ephesians, Philippians, Colossians, Thessalonians, Timothy, Titus, Philemon",
+      "author_id": "john_chrysostom",
+      "year_published": 1889,
+      "language": "en",
+      "collection": "comentarios",
+      "work_type": "commentary",
+      "testament": "NT",
+      "tradition": "Patristic",
+      "period": "Early Church",
+      "keywords": ["galatians", "ephesians", "pauline", "homilies", "patristic", "greek"],
+      "public_domain": true,
+      "public_domain_status": "confirmed",
+      "public_domain_source": "NPNF1-13, ed. Philip Schaff, 1889. Public domain.",
+      "source_url": "https://ccel.org/ccel/schaff/npnf113.html",
+      "notes": "Cobre todas as cartas paulinas da Gálatas a Filemon.",
+      "total_volumes": 1,
+      "volumes": [
+        {"volume_number": 1, "title": "Galatians to Philemon", "bible_book_start": "Galatians", "bible_book_end": "Philemon", "sources": [{"type": "ccel", "url": "https://ccel.org/ccel/schaff/npnf113.html", "format": "html"}]}
+      ]
+    },
+    {
+      "id": "chrysostom_john",
+      "title": "Homilies on the Gospel of St. John and the Epistle to the Hebrews",
+      "author_id": "john_chrysostom",
+      "year_published": 1889,
+      "language": "en",
+      "collection": "comentarios",
+      "work_type": "commentary",
+      "testament": "NT",
+      "tradition": "Patristic",
+      "period": "Early Church",
+      "keywords": ["john", "hebrews", "homilies", "patristic", "greek"],
+      "public_domain": true,
+      "public_domain_status": "confirmed",
+      "public_domain_source": "NPNF1-14, ed. Philip Schaff, 1889. Public domain.",
+      "source_url": "https://ccel.org/ccel/schaff/npnf114.html",
+      "notes": "88 homilias sobre João + 34 sobre Hebreus.",
+      "total_volumes": 1,
+      "volumes": [
+        {"volume_number": 1, "title": "John and Hebrews", "bible_book_start": "John", "bible_book_end": "Hebrews", "sources": [{"type": "ccel", "url": "https://ccel.org/ccel/schaff/npnf114.html", "format": "html"}]}
+      ]
+    },
+    {
+      "id": "augustine_john",
+      "title": "Homilies on the Gospel of John and First Epistle of John",
+      "author_id": "augustine_of_hippo",
+      "year_published": 1888,
+      "language": "en",
+      "collection": "comentarios",
+      "work_type": "commentary",
+      "testament": "NT",
+      "tradition": "Patristic",
+      "period": "Early Church",
+      "keywords": ["john", "homilies", "patristic", "latin", "love", "trinity"],
+      "public_domain": true,
+      "public_domain_status": "confirmed",
+      "public_domain_source": "NPNF1-07, ed. Philip Schaff, 1888. Public domain.",
+      "source_url": "https://ccel.org/ccel/schaff/npnf107.html",
+      "notes": "124 tratados sobre o Evangelho de João + 10 sobre 1 João. Teologia profunda sobre o amor de Deus.",
+      "total_volumes": 1,
+      "volumes": [
+        {"volume_number": 1, "title": "John and 1 John", "bible_book_start": "John", "bible_book_end": "1 John", "sources": [{"type": "ccel", "url": "https://ccel.org/ccel/schaff/npnf107.html", "format": "html"}]}
+      ]
+    },
+    {
+      "id": "augustine_sermon_mount",
+      "title": "Our Lord's Sermon on the Mount and Harmony of the Gospels",
+      "author_id": "augustine_of_hippo",
+      "year_published": 1888,
+      "language": "en",
+      "collection": "comentarios",
+      "work_type": "commentary",
+      "testament": "NT",
+      "tradition": "Patristic",
+      "period": "Early Church",
+      "keywords": ["sermon-on-mount", "matthew", "beatitudes", "harmony", "patristic"],
+      "public_domain": true,
+      "public_domain_status": "confirmed",
+      "public_domain_source": "NPNF1-06, ed. Philip Schaff, 1888. Public domain.",
+      "source_url": "https://ccel.org/ccel/schaff/npnf106.html",
+      "notes": "Comentário clássico ao Sermão do Monte (Mt 5-7) + Harmonia dos Evangelhos. Excelente para Mateus.",
+      "total_volumes": 1,
+      "volumes": [
+        {"volume_number": 1, "title": "Matthew (Sermon on the Mount)", "bible_book_start": "Matthew", "bible_book_end": "Matthew", "sources": [{"type": "ccel", "url": "https://ccel.org/ccel/schaff/npnf106.html", "format": "html"}]}
       ]
     },
     {
