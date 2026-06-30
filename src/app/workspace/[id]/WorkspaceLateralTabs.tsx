@@ -169,6 +169,13 @@ export default function WorkspaceLateralTabs({ project, userId, onAskAI }: Props
   const [leftPinned,  setLeftPinned]  = useState(false)
   const [rightPinned, setRightPinned] = useState(false)
 
+  // Fecha painel direito quando o painel de IA abre
+  useEffect(() => {
+    function handler() { setRightPinned(false); setRightTab(null) }
+    window.addEventListener('workspace:ai-open', handler)
+    return () => window.removeEventListener('workspace:ai-open', handler)
+  }, [])
+
   const toggleLeft = useCallback((id: LeftTab) => {
     if (leftTab === id && leftPinned) return
     if (leftTab !== id) setLeftPinned(false)
@@ -178,7 +185,11 @@ export default function WorkspaceLateralTabs({ project, userId, onAskAI }: Props
   const toggleRight = useCallback((id: RightTab) => {
     if (rightTab === id && rightPinned) return
     if (rightTab !== id) setRightPinned(false)
-    setRightTab(prev => prev === id ? null : id)
+    setRightTab(prev => {
+      const next = prev === id ? null : id
+      if (next) window.dispatchEvent(new CustomEvent('workspace:lateral-right-open'))
+      return next
+    })
   }, [rightTab, rightPinned])
 
   return (

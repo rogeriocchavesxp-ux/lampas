@@ -272,6 +272,13 @@ export default function WorkspaceClient({ user, project, initialSections }: Prop
     return () => window.removeEventListener('lampas:open-checklist', handler)
   }, [])
 
+  // Fecha IA quando um painel lateral direito (Biblioteca/Introduções/Teologias) abre
+  useEffect(() => {
+    function handler() { setAiOpen(false) }
+    window.addEventListener('workspace:lateral-right-open', handler)
+    return () => window.removeEventListener('workspace:lateral-right-open', handler)
+  }, [])
+
   // Persiste contexto do workspace para o painel global da Base de Conhecimento
   useEffect(() => {
     try {
@@ -501,6 +508,7 @@ export default function WorkspaceClient({ user, project, initialSections }: Prop
   }, [sections, project, user, supabase])
 
   const handleAskAI = useCallback((prompt: string) => {
+    window.dispatchEvent(new CustomEvent('workspace:ai-open'))
     setAiPrompt(prompt)
     setAiOpen(true)
   }, [])
@@ -702,7 +710,10 @@ ${body}`
         onToggleBible={() => setBibleOpen(o => !o)}
         onToggleFocus={() => setFocusMode(o => !o)}
         onToggleSideBySide={() => setSideBySide(o => !o)}
-        onToggleAI={() => setAiOpen(o => !o)}
+        onToggleAI={() => setAiOpen(o => {
+          if (!o) window.dispatchEvent(new CustomEvent('workspace:ai-open'))
+          return !o
+        })}
         onToggleChecklist={() => setChecklistOpen(o => !o)}
         onEnviarSermao={() => { setEnviarTargetMode('sermao'); setEnviarParaSermaOpen(true) }}
         onEnviarDevocional={() => { setEnviarTargetMode('devocional'); setEnviarParaSermaOpen(true) }}
