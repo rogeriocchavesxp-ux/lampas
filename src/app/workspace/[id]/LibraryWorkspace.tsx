@@ -80,18 +80,32 @@ function Skeleton() {
   )
 }
 
+interface Translation { heading: string | null; content: string }
+
 // ── EntryCard ─────────────────────────────────────────────────────────────────
 
 function EntryCard({
-  entry, onSend, onTranslate, expanded, onToggle,
+  entry, onSend, onTranslate, expanded, onToggle, translation, translating, showPT, onToggleLang,
 }: {
-  entry: LibEntry; onSend: () => void; onTranslate: () => void; expanded: boolean; onToggle: () => void
+  entry:        LibEntry
+  onSend:       () => void
+  onTranslate:  () => void
+  expanded:     boolean
+  onToggle:     () => void
+  translation:  Translation | null
+  translating:  boolean
+  showPT:       boolean
+  onToggleLang: () => void
 }) {
   const PREVIEW = 320
-  const text    = entry.content ?? entry.content_excerpt ?? ''
-  const snippet = text.slice(0, PREVIEW)
-  const hasMore = text.length > PREVIEW
+  const rawText  = entry.content ?? entry.content_excerpt ?? ''
+  const dispHead = showPT && translation ? translation.heading : entry.heading
+  const dispText = showPT && translation ? translation.content : rawText
+  const snippet  = dispText.slice(0, PREVIEW)
+  const hasMore  = dispText.length > PREVIEW
   const src = [entry.author_name, entry.year_published ? `(${entry.year_published})` : null].filter(Boolean).join(' ')
+
+  const ptActive = showPT && !!translation
 
   return (
     <div style={{ border: '1px solid var(--border-subtle)', borderRadius: '8px', overflow: 'hidden', background: 'var(--surface)', flexShrink: 0 }}>
@@ -112,35 +126,57 @@ function EntryCard({
 
       {/* Body */}
       <div style={{ padding: '0.55rem 0.7rem' }}>
-        {entry.heading && (
+        {dispHead && (
           <div style={{ fontSize: '0.74rem', fontWeight: 700, color: 'var(--text-primary)', marginBottom: '0.3rem', lineHeight: 1.3 }}>
-            {entry.heading}
+            {dispHead}
           </div>
         )}
-        <div style={{ fontSize: '0.77rem', color: 'var(--text-secondary)', lineHeight: 1.65 }}>
-          {text
-            ? (expanded ? text : snippet) + (!expanded && hasMore ? '…' : '')
-            : <span style={{ color: 'var(--text-muted)', fontStyle: 'italic' }}>Conteúdo não disponível</span>
-          }
-        </div>
+
+        {translating && (
+          <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)', fontStyle: 'italic', padding: '0.3rem 0' }}>
+            Traduzindo…
+          </div>
+        )}
+
+        {!translating && (
+          <div style={{ fontSize: '0.77rem', color: 'var(--text-secondary)', lineHeight: 1.65 }}>
+            {dispText
+              ? (expanded ? dispText : snippet) + (!expanded && hasMore ? '…' : '')
+              : <span style={{ color: 'var(--text-muted)', fontStyle: 'italic' }}>Conteúdo não disponível</span>
+            }
+          </div>
+        )}
 
         <div style={{ display: 'flex', alignItems: 'center', marginTop: '0.5rem', gap: '0.4rem', flexWrap: 'wrap' }}>
-          {hasMore && (
+          {hasMore && !translating && (
             <button onClick={onToggle} style={{ display: 'flex', alignItems: 'center', gap: '3px', background: 'none', border: 'none', cursor: 'pointer', fontSize: '0.63rem', color: 'var(--text-muted)', padding: 0, fontFamily: 'inherit' }}>
               {expanded ? <ChevronUp size={10} /> : <ChevronDown size={10} />}
               {expanded ? 'Recolher' : 'Ver mais'}
             </button>
           )}
-          <div style={{ marginLeft: 'auto', display: 'flex', gap: '0.3rem' }}>
+          <div style={{ marginLeft: 'auto', display: 'flex', gap: '0.3rem', alignItems: 'center' }}>
+
+            {/* PT/EN toggle */}
             <button
-              onClick={onTranslate}
-              style={{ display: 'flex', alignItems: 'center', gap: '4px', background: 'transparent', border: '1px solid #94A3B840', borderRadius: '5px', padding: '0.22rem 0.5rem', fontSize: '0.63rem', fontWeight: 700, color: 'var(--text-muted)', cursor: 'pointer', fontFamily: 'inherit', transition: 'all 0.12s' }}
-              onMouseEnter={e => { e.currentTarget.style.background = 'var(--surface-2)'; e.currentTarget.style.borderColor = '#94A3B8' }}
-              onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.borderColor = '#94A3B840' }}
-              title="Traduzir para português"
+              onClick={ptActive ? onToggleLang : (translation ? onToggleLang : onTranslate)}
+              disabled={translating}
+              style={{
+                display: 'flex', alignItems: 'center', gap: '3px',
+                background: ptActive ? '#1E40AF10' : 'transparent',
+                border: `1px solid ${ptActive ? '#1E40AF50' : '#94A3B840'}`,
+                borderRadius: '5px', padding: '0.22rem 0.5rem',
+                fontSize: '0.63rem', fontWeight: 700,
+                color: ptActive ? '#1E40AF' : 'var(--text-muted)',
+                cursor: translating ? 'not-allowed' : 'pointer',
+                fontFamily: 'inherit', opacity: translating ? 0.5 : 1,
+                transition: 'all 0.12s',
+              }}
+              title={ptActive ? 'Mostrar original em inglês' : 'Traduzir para português'}
             >
-              PT
+              {ptActive ? 'EN' : 'PT'}
             </button>
+
+            {/* Enviar ao Claude */}
             <button
               onClick={onSend}
               style={{ display: 'flex', alignItems: 'center', gap: '4px', background: 'transparent', border: `1px solid ${COLOR}40`, borderRadius: '5px', padding: '0.22rem 0.5rem', fontSize: '0.63rem', fontWeight: 700, color: COLOR, cursor: 'pointer', fontFamily: 'inherit', transition: 'all 0.12s' }}
@@ -162,13 +198,16 @@ function EntryCard({
 export default function LibraryWorkspace({ project, onAskAI }: Props) {
   const supabase = useMemo(() => createClient(), [])
 
-  const [tab,      setTab]      = useState<Tab>('comentarios')
-  const [query,    setQuery]    = useState('')
-  const [entries,  setEntries]  = useState<LibEntry[]>([])
-  const [loading,  setLoading]  = useState(false)
-  const [status,   setStatus]   = useState<'idle' | 'loaded' | 'error'>('idle')
-  const [rpcError, setRpcError] = useState<string | null>(null)
-  const [expanded, setExpanded] = useState<Set<string>>(new Set())
+  const [tab,          setTab]          = useState<Tab>('comentarios')
+  const [query,        setQuery]        = useState('')
+  const [entries,      setEntries]      = useState<LibEntry[]>([])
+  const [loading,      setLoading]      = useState(false)
+  const [status,       setStatus]       = useState<'idle' | 'loaded' | 'error'>('idle')
+  const [rpcError,     setRpcError]     = useState<string | null>(null)
+  const [expanded,     setExpanded]     = useState<Set<string>>(new Set())
+  const [translations, setTranslations] = useState<Map<string, Translation>>(new Map())
+  const [translating,  setTranslating]  = useState<Set<string>>(new Set())
+  const [showingPT,    setShowingPT]    = useState<Set<string>>(new Set())
 
   const { chapter } = useMemo(() => parsePassage(project.passage_ref ?? ''), [project.passage_ref])
   const passageLabel = `${project.book ?? ''} ${project.passage_ref ?? ''}`.trim()
@@ -285,16 +324,42 @@ export default function LibraryWorkspace({ project, onAskAI }: Props) {
     ].filter(Boolean).join('\n'))
   }
 
-  function translateInAI(entry: LibEntry) {
-    const src = [entry.author_name, entry.year_published ? `(${entry.year_published})` : null, `— ${entry.work_title}`].filter(Boolean).join(' ')
-    const ref = entry.bible_ref ? ` [${entry.bible_ref}]` : ''
-    onAskAI([
-      `Traduza para o português do Brasil o seguinte comentário bíblico clássico, preservando a precisão teológica e os termos técnicos:`,
-      '',
-      `${src}${ref}`,
-      entry.heading ? `### ${entry.heading}` : '',
-      (entry.content ?? entry.content_excerpt ?? '').slice(0, 3000),
-    ].filter(Boolean).join('\n'))
+  async function handleTranslate(entry: LibEntry) {
+    const id = entry.entry_id
+    // Se já tem tradução, apenas alterna o idioma exibido
+    if (translations.has(id)) {
+      setShowingPT(prev => { const s = new Set(prev); s.has(id) ? s.delete(id) : s.add(id); return s })
+      return
+    }
+    // Inicia tradução
+    setTranslating(prev => new Set(prev).add(id))
+    setShowingPT(prev => new Set(prev).add(id))
+    try {
+      const res = await fetch('/api/library/translate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          entry_id: id,
+          heading:  entry.heading ?? null,
+          content:  (entry.content ?? entry.content_excerpt ?? '').slice(0, 3000),
+        }),
+      })
+      if (res.ok) {
+        const data = await res.json() as Translation
+        setTranslations(prev => new Map(prev).set(id, data))
+      } else {
+        // em caso de erro, volta para inglês
+        setShowingPT(prev => { const s = new Set(prev); s.delete(id); return s })
+      }
+    } catch {
+      setShowingPT(prev => { const s = new Set(prev); s.delete(id); return s })
+    } finally {
+      setTranslating(prev => { const s = new Set(prev); s.delete(id); return s })
+    }
+  }
+
+  function toggleLang(id: string) {
+    setShowingPT(prev => { const s = new Set(prev); s.has(id) ? s.delete(id) : s.add(id); return s })
   }
 
   function toggleExpand(id: string) {
@@ -501,7 +566,11 @@ export default function LibraryWorkspace({ project, onAskAI }: Props) {
                 expanded={expanded.has(entry.entry_id)}
                 onToggle={() => toggleExpand(entry.entry_id)}
                 onSend={() => sendToAI(entry)}
-                onTranslate={() => translateInAI(entry)}
+                onTranslate={() => handleTranslate(entry)}
+                translation={translations.get(entry.entry_id) ?? null}
+                translating={translating.has(entry.entry_id)}
+                showPT={showingPT.has(entry.entry_id)}
+                onToggleLang={() => toggleLang(entry.entry_id)}
               />
             ))}
           </>
