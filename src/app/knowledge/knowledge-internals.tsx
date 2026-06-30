@@ -1476,30 +1476,51 @@ function TagGroup({ label, values }: { label: string; values: string[] }) {
 
 // ── Library Home ─────────────────────────────────────────────────────────────
 
+export type DimensionFilterType = 'doctrine' | 'theme' | 'bible_ref' | 'author'
+
+const DIMENSION_META: Record<DimensionFilterType, { label: string; icon: string; color: string; bg: string }> = {
+  bible_ref: { label: 'Livros Bíblicos', icon: '✝', color: '#B45309', bg: '#FEF3C7' },
+  doctrine:  { label: 'Doutrinas',       icon: '📖', color: '#163A6B', bg: '#EEF3FA' },
+  author:    { label: 'Autores',          icon: '✍', color: '#0F766E', bg: '#F0FDFA' },
+  theme:     { label: 'Temas',            icon: '🏷', color: '#7C3AED', bg: '#F5F3FF' },
+}
+
 export function LibraryHome({
   items,
   counts,
   totalChildren,
   topAuthors,
+  topDoctrines = [],
+  topThemes = [],
+  topRefs = [],
   onSelectType,
   onSelectItem,
+  onSelectDimension,
 }: {
   items: KnowledgeItem[]
   counts: Record<KnowledgeItemType, number>
   totalChildren: number
   topAuthors: Array<{ name: string; count: number }>
+  topDoctrines?: Array<{ name: string; count: number }>
+  topThemes?: Array<{ name: string; count: number }>
+  topRefs?: Array<{ name: string; count: number }>
   onSelectType: (type: KnowledgeItemType) => void
   onSelectItem: (item: KnowledgeItem) => void
+  onSelectDimension?: (type: DimensionFilterType, value: string) => void
 }) {
-  const roots = items.filter(i => !i.parent_id)
-  const recentItems = [...roots]
-    .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
-    .slice(0, 6)
-  const mostQueried = [...roots]
-    .filter(i => i.query_count > 0)
-    .sort((a, b) => b.query_count - a.query_count)
-    .slice(0, 4)
-  const totalItems = roots.length
+  const roots       = items.filter(i => !i.parent_id)
+  const recentItems = [...roots].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()).slice(0, 6)
+  const mostQueried = [...roots].filter(i => i.query_count > 0).sort((a, b) => b.query_count - a.query_count).slice(0, 4)
+  const totalItems  = roots.length
+
+  const dimensions: Array<{ id: DimensionFilterType; items: Array<{ name: string; count: number }> }> = [
+    { id: 'bible_ref', items: topRefs },
+    { id: 'doctrine',  items: topDoctrines },
+    { id: 'author',    items: topAuthors },
+    { id: 'theme',     items: topThemes },
+  ]
+
+  const hasDimensions = dimensions.some(d => d.items.length > 0)
 
   const sectionLabel: React.CSSProperties = {
     fontSize: '0.6rem', fontWeight: 900, color: '#94A3B8',
@@ -1508,71 +1529,120 @@ export function LibraryHome({
 
   return (
     <div style={{ flex: 1, overflowY: 'auto', padding: '1.75rem 2rem 4rem', background: '#F8FAFF' }}>
+
       {/* Header */}
-      <div style={{ marginBottom: '1.5rem' }}>
+      <div style={{ marginBottom: '1.75rem' }}>
         <div style={{ fontSize: '0.62rem', fontWeight: 900, color: '#B45309', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '0.15rem' }}>
           Base de Conhecimento
         </div>
         <h1 style={{ margin: '0 0 0.15rem', fontSize: '1.5rem', fontWeight: 850, color: '#0F172A', letterSpacing: '-0.025em' }}>
-          Biblioteca Inteligente
+          Biblioteca Teológica
         </h1>
         <p style={{ margin: 0, fontSize: '0.83rem', color: '#64748B' }}>
-          Segundo cérebro teológico e ministerial
+          {totalItems > 0
+            ? `${totalItems} ${totalItems === 1 ? 'obra' : 'obras'}${totalChildren > 0 ? ` · ${totalChildren} conteúdos` : ''}${topAuthors.length > 0 ? ` · ${topAuthors.length} ${topAuthors.length === 1 ? 'autor' : 'autores'}` : ''}`
+            : 'Segundo cérebro teológico e ministerial'}
         </p>
       </div>
 
-      {/* Stats */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '0.6rem', marginBottom: '1.75rem' }}>
-        {([
-          { label: 'Entidades', value: totalItems, icon: '📦' },
-          { label: 'Conteúdos', value: totalChildren, icon: '📄' },
-          { label: 'Autores', value: topAuthors.length, icon: '✍' },
-          { label: 'Consultados', value: mostQueried.length, icon: '🔥' },
-        ] as const).map(({ label, value, icon }) => (
-          <div key={label} style={{ border: '1px solid #E2E8F0', background: '#FFFFFF', borderRadius: '8px', padding: '0.7rem 0.85rem' }}>
-            <div style={{ fontSize: '1rem', lineHeight: 1, marginBottom: '0.35rem' }}>{icon}</div>
-            <div style={{ fontSize: '1.2rem', fontWeight: 900, color: '#0F172A', lineHeight: 1 }}>{value}</div>
-            <div style={{ fontSize: '0.62rem', color: '#64748B', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', marginTop: '0.2rem' }}>{label}</div>
+      {/* Dimension Exploration */}
+      {hasDimensions && (
+        <div style={{ marginBottom: '1.75rem' }}>
+          <div style={sectionLabel}>Explorar por dimensão</div>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '0.65rem' }}>
+            {dimensions.map(dim => {
+              const meta = DIMENSION_META[dim.id]
+              return (
+                <div
+                  key={dim.id}
+                  style={{
+                    border: `1px solid ${meta.color}20`,
+                    background: '#FFFFFF',
+                    borderRadius: '10px',
+                    padding: '0.85rem',
+                    minHeight: '130px',
+                  }}
+                >
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.38rem', marginBottom: '0.65rem' }}>
+                    <span style={{ fontSize: '0.8rem', lineHeight: 1 }}>{meta.icon}</span>
+                    <span style={{ fontSize: '0.68rem', fontWeight: 850, color: meta.color, letterSpacing: '-0.01em' }}>{meta.label}</span>
+                  </div>
+                  {dim.items.length === 0 ? (
+                    <div style={{ fontSize: '0.67rem', color: '#CBD5E1', lineHeight: 1.45 }}>
+                      Nenhum registrado ainda.
+                    </div>
+                  ) : (
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.28rem' }}>
+                      {dim.items.slice(0, 8).map(({ name, count }) => (
+                        <button
+                          key={name}
+                          onClick={() => onSelectDimension?.(dim.id, name)}
+                          title={`${count} ${count === 1 ? 'item' : 'itens'}`}
+                          style={{
+                            border: `1px solid ${meta.color}35`,
+                            background: meta.bg,
+                            color: meta.color,
+                            borderRadius: '999px',
+                            padding: '0.18rem 0.55rem',
+                            fontSize: '0.67rem',
+                            fontWeight: 700,
+                            cursor: onSelectDimension ? 'pointer' : 'default',
+                            fontFamily: 'inherit',
+                            transition: 'all 0.12s',
+                          }}
+                          onMouseEnter={e => { if (onSelectDimension) { e.currentTarget.style.borderColor = meta.color; e.currentTarget.style.boxShadow = `0 2px 6px ${meta.color}22` } }}
+                          onMouseLeave={e => { e.currentTarget.style.borderColor = meta.color + '35'; e.currentTarget.style.boxShadow = 'none' }}
+                        >
+                          {name}
+                          {count > 1 && <span style={{ fontSize: '0.57rem', opacity: 0.65, marginLeft: '0.22rem' }}>{count}</span>}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )
+            })}
           </div>
-        ))}
-      </div>
+        </div>
+      )}
 
-      {/* Type cards */}
+      {/* Compact type strip */}
       <div style={{ marginBottom: '1.75rem' }}>
-        <div style={sectionLabel}>Navegar por tipo</div>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '0.65rem' }}>
+        <div style={sectionLabel}>Acervo por tipo</div>
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.45rem' }}>
           {TYPE_ORDER.map(type => {
-            const cfg = KNOWLEDGE_TYPES[type]
+            const cfg   = KNOWLEDGE_TYPES[type]
             const count = counts[type] ?? 0
             return (
               <button
                 key={type}
                 onClick={() => { if (count > 0) onSelectType(type) }}
                 style={{
-                  display: 'flex', flexDirection: 'column', gap: '0.5rem',
-                  border: `1.5px solid ${cfg.color}22`, background: cfg.bg,
-                  borderRadius: '10px', padding: '0.9rem 0.85rem',
-                  cursor: count > 0 ? 'pointer' : 'default', fontFamily: 'inherit',
-                  textAlign: 'left', transition: 'all 0.14s', opacity: count === 0 ? 0.4 : 1,
+                  display: 'inline-flex', alignItems: 'center', gap: '0.38rem',
+                  border: `1px solid ${count > 0 ? cfg.color + '40' : '#E2E8F0'}`,
+                  background: count > 0 ? cfg.bg : '#F8FAFC',
+                  borderRadius: '999px',
+                  padding: '0.3rem 0.75rem',
+                  cursor: count > 0 ? 'pointer' : 'default',
+                  fontFamily: 'inherit',
+                  opacity: count === 0 ? 0.38 : 1,
+                  transition: 'all 0.12s',
                 }}
-                onMouseEnter={e => { if (count > 0) { e.currentTarget.style.borderColor = cfg.color + '60'; e.currentTarget.style.boxShadow = `0 2px 10px ${cfg.color}1A` } }}
-                onMouseLeave={e => { e.currentTarget.style.borderColor = cfg.color + '22'; e.currentTarget.style.boxShadow = 'none' }}
+                onMouseEnter={e => { if (count > 0) { e.currentTarget.style.borderColor = cfg.color; e.currentTarget.style.boxShadow = `0 2px 8px ${cfg.color}18` } }}
+                onMouseLeave={e => { if (count > 0) { e.currentTarget.style.borderColor = cfg.color + '40'; e.currentTarget.style.boxShadow = 'none' } }}
               >
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                  <span style={{ fontSize: '1.25rem', lineHeight: 1 }}>{cfg.icon}</span>
-                  <span style={{ fontSize: '1.15rem', fontWeight: 900, color: cfg.color, lineHeight: 1 }}>{count}</span>
-                </div>
-                <div style={{ fontSize: '0.82rem', fontWeight: 800, color: cfg.color }}>{cfg.label}</div>
-                <div style={{ fontSize: '0.67rem', color: '#64748B', lineHeight: 1.4, overflow: 'hidden', maxHeight: '2.8em' }}>{TYPE_DESCRIPTIONS[type]}</div>
+                <span style={{ fontSize: '0.88rem', lineHeight: 1 }}>{cfg.icon}</span>
+                <span style={{ fontSize: '0.78rem', fontWeight: 750, color: count > 0 ? cfg.color : '#94A3B8' }}>{cfg.label}</span>
+                <span style={{ fontSize: '0.72rem', fontWeight: 900, color: count > 0 ? cfg.color : '#CBD5E1' }}>{count}</span>
               </button>
             )
           })}
         </div>
       </div>
 
-      {/* Bottom grid: Recent + Most queried */}
+      {/* Recent + Most queried */}
       <div style={{ display: 'grid', gridTemplateColumns: mostQueried.length > 0 ? '1.6fr 1fr' : '1fr', gap: '1.5rem', alignItems: 'start' }}>
-        {/* Recent */}
+
         <div>
           <div style={sectionLabel}>Adicionados recentemente</div>
           {recentItems.length === 0 ? (
@@ -1580,7 +1650,7 @@ export function LibraryHome({
           ) : (
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '0.6rem' }}>
               {recentItems.map(item => {
-                const cfg = KNOWLEDGE_TYPES[item.item_type]
+                const cfg       = KNOWLEDGE_TYPES[item.item_type]
                 const contextual = getItemContextualSubtitle(item)
                 return (
                   <button
@@ -1606,7 +1676,6 @@ export function LibraryHome({
           )}
         </div>
 
-        {/* Most queried */}
         {mostQueried.length > 0 && (
           <div>
             <div style={sectionLabel}>Mais consultados</div>
@@ -1641,6 +1710,79 @@ export function LibraryHome({
           </div>
         )}
       </div>
+    </div>
+  )
+}
+
+export function DimensionView({
+  filteredItems,
+  dimensionFilter,
+  onSelectItem,
+  onClear,
+}: {
+  filteredItems: KnowledgeItem[]
+  dimensionFilter: { type: DimensionFilterType; value: string }
+  onSelectItem: (item: KnowledgeItem) => void
+  onClear: () => void
+}) {
+  const meta = DIMENSION_META[dimensionFilter.type]
+
+  return (
+    <div style={{ flex: 1, overflowY: 'auto', padding: '1.75rem 2rem 4rem', background: '#F8FAFF' }}>
+
+      {/* Header */}
+      <div style={{ marginBottom: '1.75rem', display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '1rem' }}>
+        <div>
+          <div style={{ fontSize: '0.62rem', fontWeight: 900, color: meta.color, textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '0.1rem' }}>
+            {meta.label}
+          </div>
+          <h1 style={{ margin: '0 0 0.12rem', fontSize: '1.5rem', fontWeight: 850, color: '#0F172A', letterSpacing: '-0.025em' }}>
+            {dimensionFilter.value}
+          </h1>
+          <p style={{ margin: 0, fontSize: '0.83rem', color: '#64748B' }}>
+            {filteredItems.length} {filteredItems.length === 1 ? 'item' : 'itens'} no seu acervo
+          </p>
+        </div>
+        <button
+          onClick={onClear}
+          style={{ flexShrink: 0, border: '1px solid #E2E8F0', background: '#FFFFFF', borderRadius: '8px', padding: '0.45rem 0.85rem', cursor: 'pointer', fontFamily: 'inherit', fontSize: '0.78rem', color: '#64748B', marginTop: '0.2rem' }}
+          onMouseEnter={e => { e.currentTarget.style.borderColor = '#CBD5E1'; e.currentTarget.style.background = '#F8FAFC' }}
+          onMouseLeave={e => { e.currentTarget.style.borderColor = '#E2E8F0'; e.currentTarget.style.background = '#FFFFFF' }}
+        >
+          Voltar
+        </button>
+      </div>
+
+      {filteredItems.length === 0 ? (
+        <div style={{ color: '#94A3B8', fontSize: '0.85rem', padding: '1.5rem 0' }}>Nenhum item encontrado para este filtro.</div>
+      ) : (
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '0.75rem' }}>
+          {filteredItems.map(item => {
+            const cfg        = KNOWLEDGE_TYPES[item.item_type]
+            const contextual = getItemContextualSubtitle(item)
+            return (
+              <button
+                key={item.id}
+                onClick={() => onSelectItem(item)}
+                style={{
+                  display: 'flex', flexDirection: 'column', gap: '0.45rem',
+                  border: '1px solid #E2E8F0', background: '#FFFFFF',
+                  borderRadius: '8px', padding: '0.85rem',
+                  cursor: 'pointer', fontFamily: 'inherit', textAlign: 'left',
+                  transition: 'border-color 0.12s, background 0.12s',
+                }}
+                onMouseEnter={e => { e.currentTarget.style.borderColor = cfg.color + '55'; e.currentTarget.style.background = cfg.bg }}
+                onMouseLeave={e => { e.currentTarget.style.borderColor = '#E2E8F0'; e.currentTarget.style.background = '#FFFFFF' }}
+              >
+                <Badge color={cfg.color} bg={cfg.bg}>{cfg.icon} {cfg.label}</Badge>
+                <div style={{ fontSize: '0.85rem', fontWeight: 750, color: '#0F172A', lineHeight: 1.35 }}>{item.title}</div>
+                {contextual && <div style={{ fontSize: '0.7rem', color: '#64748B', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{contextual}</div>}
+                {item.authors[0] && <div style={{ fontSize: '0.67rem', color: '#94A3B8' }}>{item.authors[0]}</div>}
+              </button>
+            )
+          })}
+        </div>
+      )}
     </div>
   )
 }

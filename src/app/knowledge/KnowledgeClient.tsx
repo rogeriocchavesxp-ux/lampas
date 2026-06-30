@@ -8,8 +8,8 @@ import { ArrowLeft, Brain, Check, ChevronDown, ChevronLeft, ChevronRight, Link2,
 import RichEditor from '@/components/RichEditorLazy'
 import type { InsertMenuItem } from '@/components/RichEditor'
 
-import type { KnowledgeItem, Props } from './knowledge-internals'
-import { getItemContextualSubtitle, Badge, TYPE_ORDER, TYPE_DESCRIPTIONS, KB_INSERT_MENU, TYPE_SECTION_LABELS, EMPTY_ITEM, filterChip, Field, ListField, SectionTitle, CourseModulesEditor, CourseContentEditor, DetailView, LibraryHome, labelStyle, inputStyle, COURSE_GENERAL_BLOCKS } from './knowledge-internals'
+import type { KnowledgeItem, Props, DimensionFilterType } from './knowledge-internals'
+import { getItemContextualSubtitle, Badge, TYPE_ORDER, TYPE_DESCRIPTIONS, KB_INSERT_MENU, TYPE_SECTION_LABELS, EMPTY_ITEM, filterChip, Field, ListField, SectionTitle, CourseModulesEditor, CourseContentEditor, DetailView, LibraryHome, DimensionView, labelStyle, inputStyle, COURSE_GENERAL_BLOCKS } from './knowledge-internals'
 
 export default function KnowledgeClient({ userId, initialItems, initialDashboard }: Props) {
   const supabase = useMemo(() => createClient(), [])
@@ -36,6 +36,7 @@ export default function KnowledgeClient({ userId, initialItems, initialDashboard
   })
   const [groupBy,            setGroupBy]            = useState<'none' | 'type' | 'author' | 'category' | 'status'>('type')
   const [collapsedGroups,    setCollapsedGroups]    = useState<Set<string>>(new Set())
+  const [dimensionFilter,    setDimensionFilter]    = useState<{ type: DimensionFilterType; value: string } | null>(null)
 
   const selected = items.find(item => item.id === selectedId) ?? null
   const currentDraftType = KNOWLEDGE_TYPES[draft.item_type]
@@ -75,15 +76,22 @@ export default function KnowledgeClient({ userId, initialItems, initialDashboard
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase()
     return items.filter(item => {
-      if (item.parent_id) return false  // filhos aparecem dentro do contêiner
+      if (item.parent_id) return false
       if (typeFilter !== 'all' && item.item_type !== typeFilter) return false
+      if (dimensionFilter) {
+        const { type, value } = dimensionFilter
+        if (type === 'doctrine'  && !item.doctrines.includes(value))        return false
+        if (type === 'theme'     && !item.themes.includes(value))           return false
+        if (type === 'bible_ref' && !item.bible_references.includes(value)) return false
+        if (type === 'author'    && !item.authors.includes(value))          return false
+      }
       if (!q) return true
       return [
         item.title, item.subtitle, item.summary, item.category,
         ...item.tags, ...item.authors, ...item.themes, ...item.doctrines, ...item.bible_references,
-      ].filter(Boolean).some(value => String(value).toLowerCase().includes(q))
+      ].filter(Boolean).some(v => String(v).toLowerCase().includes(q))
     })
-  }, [items, query, typeFilter])
+  }, [items, query, typeFilter, dimensionFilter])
 
   const groupedFiltered = useMemo(() => {
     if (groupBy === 'none') return null
@@ -724,18 +732,35 @@ export default function KnowledgeClient({ userId, initialItems, initialDashboard
       onAddChild={() => openCreate(selected.item_type, selected)}
       onBackToParent={selected.parent_id ? () => setSelectedId(selected.parent_id!) : undefined}
     />
+  ) : dimensionFilter ? (
+    <DimensionView
+      filteredItems={filtered}
+      dimensionFilter={dimensionFilter}
+      onSelectItem={item => { setSelectedId(item.id); setEditing(false); void supabase.rpc('increment_knowledge_item_query_count', { p_id: item.id }) }}
+      onClear={() => { setDimensionFilter(null); setSelectedId('') }}
+    />
   ) : (
     <LibraryHome
       items={items}
       counts={dashboard.counts}
       totalChildren={dashboard.totalChildren}
       topAuthors={dashboard.authors}
+      topDoctrines={dashboard.doctrines}
+      topThemes={dashboard.themes}
+      topRefs={dashboard.refs}
       onSelectType={type => {
         setTypeFilter(type)
+        setDimensionFilter(null)
         const first = items.find(i => !i.parent_id && i.item_type === type)
         if (first) { setSelectedId(first.id); setEditing(false) }
       }}
       onSelectItem={item => { setSelectedId(item.id); setEditing(false); void supabase.rpc('increment_knowledge_item_query_count', { p_id: item.id }) }}
+      onSelectDimension={(dimType, value) => {
+        setDimensionFilter({ type: dimType, value })
+        setTypeFilter('all')
+        setSelectedId('')
+        setEditing(false)
+      }}
     />
   )
 
@@ -811,7 +836,24 @@ export default function KnowledgeClient({ userId, initialItems, initialDashboard
                 </div>
               </div>
 
-              {/* Type chips + groupBy */}
+              {/* Dimension filter chip */}
+              {dimensionFilter && (
+                <div style={{ padding: '0.28rem 0.6rem 0', display: 'flex', alignItems: 'center', gap: '0.35rem', flexWrap: 'wrap' }}>
+                  <span style={{ fontSize: '0.62rem', color: '#94A3B8', fontWeight: 700 }}>
+                    {dimensionFilter.type === 'doctrine'  ? 'Doutrina' :
+                     dimensionFilter.type === 'theme'     ? 'Tema' :
+                     dimensionFilter.type === 'bible_ref' ? 'Texto' : 'Autor'}:
+                  </span>
+                  <button
+                    onClick={() => { setDimensionFilter(null); setSelectedId('') }}
+                    style={{ display: 'inline-flex', alignItems: 'center', gap: '0.25rem', border: '1px solid #B4530960', background: '#FEF3C7', color: '#B45309', borderRadius: '999px', padding: '0.15rem 0.5rem', fontSize: '0.67rem', fontWeight: 750, cursor: 'pointer', fontFamily: 'inherit' }}
+                  >
+                    {dimensionFilter.value} <X size={9} strokeWidth={2.5} />
+                  </button>
+                </div>
+              )}
+
+              {/* Type chips */}
               <div style={{ padding: '0.42rem 0.6rem', borderBottom: '1px solid #F1F5F9' }}>
                 <div style={{ display: 'flex', gap: '0.22rem', overflowX: 'auto', paddingBottom: '0.08rem', scrollbarWidth: 'none' }}>
                   <button onClick={() => setTypeFilter('all')} style={filterChip(typeFilter === 'all')}>Todos</button>
