@@ -128,13 +128,16 @@ function DiscussionBox({ data, color }: { data: DiscussionPositions; color: stri
 
 function Field({ label, value, color }: { label: string; value: string | null | undefined; color: string }) {
   if (!value) return null
+  const paragraphs = value.split(/\n\n+/).filter(Boolean)
   return (
     <div style={{ marginBottom: '1.1rem' }}>
       <div style={{ fontSize: '0.67rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.07em', color: `${color}BB`, marginBottom: '0.3rem' }}>
         {label}
       </div>
-      <div style={{ fontSize: '0.82rem', color: '#1e293b', lineHeight: 1.7 }}>
-        {value}
+      <div style={{ fontSize: '0.82rem', color: '#1e293b', lineHeight: 1.7, display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
+        {paragraphs.map((p, i) => (
+          <p key={i} style={{ margin: 0, whiteSpace: 'pre-wrap' }}>{p}</p>
+        ))}
       </div>
     </div>
   )
@@ -220,12 +223,18 @@ function IntroDetail({ intro, onBack, onAskAI, color }: {
 
       {intro.summary && (
         <div style={{
-          fontSize: '0.85rem', color: '#475569', lineHeight: 1.7,
-          marginBottom: '1.2rem', padding: '0.85rem 1rem',
+          marginBottom: '1.5rem', padding: '0.85rem 1rem',
           background: `${color}06`, border: `1px solid ${color}20`,
           borderRadius: '8px',
         }}>
-          {intro.summary}
+          <div style={{ fontSize: '0.6rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: `${color}99`, marginBottom: '0.55rem' }}>
+            Resumo Executivo
+          </div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.65rem' }}>
+            {intro.summary.split(/\n\n+/).filter(Boolean).map((p, i) => (
+              <p key={i} style={{ margin: 0, fontSize: '0.84rem', color: '#374151', lineHeight: 1.7, whiteSpace: 'pre-wrap' }}>{p}</p>
+            ))}
+          </div>
         </div>
       )}
 
@@ -256,77 +265,100 @@ function IntroDetail({ intro, onBack, onAskAI, color }: {
       </div>
 
       {/* ── AUTORIA ── */}
-      <SectionDivider label="Autoria" color={color} />
-      <Field label="Autor / Autoria tradicional" value={intro.author} color={color} />
-      {hasPositions(intro.author_discussion) && (
+      {(intro.author || hasPositions(intro.author_discussion)) && (
         <>
-          <div style={{ fontSize: '0.67rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.07em', color: `${color}BB`, marginBottom: '0.3rem' }}>
-            Discussão sobre autoria
-          </div>
-          <DiscussionBox data={intro.author_discussion} color={color} />
+          <SectionDivider label="Autoria" color={color} />
+          <Field label="Autor / Autoria tradicional" value={intro.author} color={color} />
+          {hasPositions(intro.author_discussion) && (
+            <>
+              <div style={{ fontSize: '0.67rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.07em', color: `${color}BB`, marginBottom: '0.3rem' }}>
+                Discussão sobre autoria
+              </div>
+              <DiscussionBox data={intro.author_discussion} color={color} />
+            </>
+          )}
         </>
       )}
 
       {/* ── DATA ── */}
-      <SectionDivider label="Data e Composição" color={color} />
-      <Field label="Data provável" value={intro.date_estimate} color={color} />
-      {hasPositions(intro.date_discussion) && (
+      {(intro.date_estimate || hasPositions(intro.date_discussion)) && (
         <>
-          <div style={{ fontSize: '0.67rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.07em', color: `${color}BB`, marginBottom: '0.3rem' }}>
-            Discussão sobre data
-          </div>
-          <DiscussionBox data={intro.date_discussion} color={color} />
+          <SectionDivider label="Data e Composição" color={color} />
+          <Field label="Data provável" value={intro.date_estimate} color={color} />
+          {hasPositions(intro.date_discussion) && (
+            <>
+              <div style={{ fontSize: '0.67rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.07em', color: `${color}BB`, marginBottom: '0.3rem' }}>
+                Discussão sobre data
+              </div>
+              <DiscussionBox data={intro.date_discussion} color={color} />
+            </>
+          )}
         </>
       )}
 
       {/* ── CONTEXTO ── */}
-      <SectionDivider label="Contexto" color={color} />
-      <Field label="Destinatários originais" value={intro.recipients} color={color} />
-      <Field label="Contexto histórico" value={intro.historical_context} color={color} />
-      <Field label="Contexto cultural" value={intro.cultural_context} color={color} />
+      {(intro.recipients || intro.historical_context || intro.cultural_context) && (
+        <>
+          <SectionDivider label="Contexto" color={color} />
+          <Field label="Destinatários originais" value={intro.recipients} color={color} />
+          <Field label="Contexto histórico" value={intro.historical_context} color={color} />
+          <Field label="Contexto cultural" value={intro.cultural_context} color={color} />
+        </>
+      )}
 
       {/* ── PROPÓSITO ── */}
-      <SectionDivider label="Propósito e Tema" color={color} />
-      <Field label="Propósito do livro" value={intro.purpose} color={color} />
-      <Field label="Tema central" value={intro.central_theme} color={color} />
+      {(intro.purpose || intro.central_theme) && (
+        <>
+          <SectionDivider label="Propósito e Tema" color={color} />
+          <Field label="Propósito do livro" value={intro.purpose} color={color} />
+          <Field label="Tema central" value={intro.central_theme} color={color} />
+        </>
+      )}
 
       {/* ── ESTRUTURA ── */}
-      <SectionDivider label="Estrutura" color={color} />
-      <Field label="Estrutura geral" value={intro.structure} color={color} />
-
-      {intro.main_divisions.length > 0 && (
-        <div style={{ marginBottom: '1.1rem' }}>
-          <div style={{ fontSize: '0.67rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.07em', color: `${color}BB`, marginBottom: '0.5rem' }}>
-            Principais divisões
-          </div>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-            {intro.main_divisions.map((d, i) => (
-              <div key={i} style={{
-                padding: '0.55rem 0.8rem',
-                borderTop: `1px solid ${color}18`,
-                borderRight: `1px solid ${color}18`,
-                borderBottom: `1px solid ${color}18`,
-                borderLeft: `3px solid ${color}`,
-                borderRadius: '6px',
-                background: `${color}04`,
-              }}>
-                <div style={{ fontSize: '0.77rem', fontWeight: 700, color: '#1e293b', marginBottom: d.description ? '0.2rem' : 0 }}>
-                  {d.title}
-                </div>
-                {d.description && (
-                  <div style={{ fontSize: '0.73rem', color: '#64748b', lineHeight: 1.5 }}>{d.description}</div>
-                )}
+      {(intro.structure || intro.main_divisions.length > 0) && (
+        <>
+          <SectionDivider label="Estrutura" color={color} />
+          <Field label="Estrutura geral" value={intro.structure} color={color} />
+          {intro.main_divisions.length > 0 && (
+            <div style={{ marginBottom: '1.1rem' }}>
+              <div style={{ fontSize: '0.67rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.07em', color: `${color}BB`, marginBottom: '0.5rem' }}>
+                Principais divisões
               </div>
-            ))}
-          </div>
-        </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                {intro.main_divisions.map((d, i) => (
+                  <div key={i} style={{
+                    padding: '0.55rem 0.8rem',
+                    borderTop: `1px solid ${color}18`,
+                    borderRight: `1px solid ${color}18`,
+                    borderBottom: `1px solid ${color}18`,
+                    borderLeft: `3px solid ${color}`,
+                    borderRadius: '6px',
+                    background: `${color}04`,
+                  }}>
+                    <div style={{ fontSize: '0.77rem', fontWeight: 700, color: '#1e293b', marginBottom: d.description ? '0.2rem' : 0 }}>
+                      {d.title}
+                    </div>
+                    {d.description && (
+                      <div style={{ fontSize: '0.73rem', color: '#64748b', lineHeight: 1.5, whiteSpace: 'pre-wrap' }}>{d.description}</div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </>
       )}
 
       {/* ── TEOLOGIA ── */}
-      <SectionDivider label="Teologia" color={color} />
-      <Field label="Ênfases teológicas" value={intro.theological_emphases} color={color} />
-      <Field label="Relação com a história da redenção" value={intro.redemptive_history} color={color} />
-      <Field label="Relação com Cristo" value={intro.christ_relation} color={color} />
+      {(intro.theological_emphases || intro.redemptive_history || intro.christ_relation) && (
+        <>
+          <SectionDivider label="Teologia" color={color} />
+          <Field label="Ênfases teológicas" value={intro.theological_emphases} color={color} />
+          <Field label="Relação com a história da redenção" value={intro.redemptive_history} color={color} />
+          <Field label="Relação com Cristo" value={intro.christ_relation} color={color} />
+        </>
+      )}
 
       {/* ── QUESTÕES INTERPRETATIVAS ── */}
       {intro.interpretive_issues.length > 0 && (
@@ -357,7 +389,7 @@ function IntroDetail({ intro, onBack, onAskAI, color }: {
             borderBottom: `1px solid ${color}25`,
             borderLeft: `4px solid ${color}`,
             borderRadius: '8px',
-            fontSize: '0.82rem', color: '#1e293b', lineHeight: 1.7,
+            fontSize: '0.82rem', color: '#1e293b', lineHeight: 1.7, whiteSpace: 'pre-wrap',
           }}>
             {intro.conservative_position}
           </div>
@@ -368,7 +400,7 @@ function IntroDetail({ intro, onBack, onAskAI, color }: {
       {intro.pastoral_observations && (
         <>
           <SectionDivider label="Observações Pastorais" color={color} />
-          <div style={{ fontSize: '0.82rem', color: '#1e293b', lineHeight: 1.7 }}>
+          <div style={{ fontSize: '0.82rem', color: '#1e293b', lineHeight: 1.7, whiteSpace: 'pre-wrap' }}>
             {intro.pastoral_observations}
           </div>
         </>
