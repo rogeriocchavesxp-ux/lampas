@@ -808,105 +808,112 @@ export default function KnowledgeClient({ userId, initialItems, initialDashboard
             </div>
           ) : (
             <>
-              {/* Compact stats + search */}
-              <div style={{ padding: '0.6rem 0.75rem', borderBottom: '1px solid #F1F5F9' }}>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
-                  <div style={{ display: 'flex', gap: '0.85rem', alignItems: 'baseline' }}>
-                    <span style={{ fontSize: '0.7rem', color: '#64748B' }}>
-                      <span style={{ fontWeight: 800, color: '#0F172A', fontSize: '0.88rem', marginRight: '0.18rem' }}>{dashboard.total}</span>entidades
-                    </span>
-                    {dashboard.totalChildren > 0 && (
-                      <span style={{ fontSize: '0.7rem', color: '#64748B' }}>
-                        <span style={{ fontWeight: 800, color: '#0F172A', fontSize: '0.88rem', marginRight: '0.18rem' }}>{dashboard.totalChildren}</span>conteúdos
-                      </span>
-                    )}
-                  </div>
+              {/* Search */}
+              <div style={{ padding: '0.55rem 0.7rem', borderBottom: '1px solid #F1F5F9' }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.42rem' }}>
+                  <span style={{ fontSize: '0.65rem', fontWeight: 600, color: '#94A3B8' }}>
+                    {filtered.length} {filtered.length === 1 ? 'item' : 'itens'}
+                    {dimensionFilter ? ` · ${dimensionFilter.value}` : ''}
+                  </span>
                   <button
                     onClick={() => setSidebarCollapsed(true)}
-                    title="Recolher menu"
-                    style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '24px', height: '24px', border: '1px solid #E2E8F0', borderRadius: '6px', background: 'transparent', color: '#94A3B8', cursor: 'pointer', flexShrink: 0 }}
+                    title="Recolher"
+                    style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '22px', height: '22px', border: '1px solid #E2E8F0', borderRadius: '5px', background: 'transparent', color: '#94A3B8', cursor: 'pointer', flexShrink: 0 }}
                   >
-                    <ChevronLeft size={12} />
+                    <ChevronLeft size={11} />
                   </button>
                 </div>
                 <div style={{ position: 'relative' }}>
-                  <Search size={13} style={{ position: 'absolute', left: '0.6rem', top: '50%', transform: 'translateY(-50%)', color: '#94A3B8' }} />
-                  <input value={query} onChange={e => setQuery(e.target.value)} placeholder="Título, autor, tema, doutrina…" style={{ ...inputStyle, paddingLeft: '1.85rem', fontSize: '0.78rem', padding: '0.42rem 0.6rem 0.42rem 1.85rem' }} />
-                  {query && <button onClick={() => setQuery('')} style={{ position: 'absolute', right: '0.4rem', top: '50%', transform: 'translateY(-50%)', border: 'none', background: 'transparent', color: '#94A3B8', cursor: 'pointer', display: 'flex', padding: 0 }}><X size={12} /></button>}
+                  <Search size={12} style={{ position: 'absolute', left: '0.55rem', top: '50%', transform: 'translateY(-50%)', color: '#94A3B8' }} />
+                  <input value={query} onChange={e => setQuery(e.target.value)} placeholder="Buscar…" style={{ ...inputStyle, fontSize: '0.77rem', padding: '0.38rem 0.55rem 0.38rem 1.72rem' }} />
+                  {query && <button onClick={() => setQuery('')} style={{ position: 'absolute', right: '0.38rem', top: '50%', transform: 'translateY(-50%)', border: 'none', background: 'transparent', color: '#94A3B8', cursor: 'pointer', display: 'flex', padding: 0 }}><X size={11} /></button>}
                 </div>
               </div>
 
-              {/* Dimension filter chip */}
+              {/* Dimension chip */}
               {dimensionFilter && (
-                <div style={{ padding: '0.28rem 0.6rem 0', display: 'flex', alignItems: 'center', gap: '0.35rem', flexWrap: 'wrap' }}>
-                  <span style={{ fontSize: '0.62rem', color: '#94A3B8', fontWeight: 700 }}>
+                <div style={{ padding: '0.3rem 0.65rem', borderBottom: '1px solid #F1F5F9', display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+                  <span style={{ fontSize: '0.6rem', color: '#94A3B8' }}>
                     {dimensionFilter.type === 'doctrine'  ? 'Doutrina' :
                      dimensionFilter.type === 'theme'     ? 'Tema' :
                      dimensionFilter.type === 'bible_ref' ? 'Texto' : 'Autor'}:
                   </span>
                   <button
                     onClick={() => { setDimensionFilter(null); setSelectedId('') }}
-                    style={{ display: 'inline-flex', alignItems: 'center', gap: '0.25rem', border: '1px solid #B4530960', background: '#FEF3C7', color: '#B45309', borderRadius: '999px', padding: '0.15rem 0.5rem', fontSize: '0.67rem', fontWeight: 750, cursor: 'pointer', fontFamily: 'inherit' }}
+                    style={{ display: 'inline-flex', alignItems: 'center', gap: '0.22rem', border: '1px solid #B4530960', background: '#FEF3C7', color: '#B45309', borderRadius: '999px', padding: '0.13rem 0.45rem', fontSize: '0.66rem', fontWeight: 750, cursor: 'pointer', fontFamily: 'inherit' }}
                   >
                     {dimensionFilter.value} <X size={9} strokeWidth={2.5} />
                   </button>
                 </div>
               )}
 
-              {/* Type chips */}
-              <div style={{ padding: '0.42rem 0.6rem', borderBottom: '1px solid #F1F5F9' }}>
-                <div style={{ display: 'flex', gap: '0.22rem', overflowX: 'auto', paddingBottom: '0.08rem', scrollbarWidth: 'none' }}>
-                  <button onClick={() => setTypeFilter('all')} style={filterChip(typeFilter === 'all')}>Todos</button>
-                  {TYPE_ORDER.map(type => {
-                    const cfg = KNOWLEDGE_TYPES[type]
-                    const active = typeFilter === type
-                    return (
-                      <button key={type} onClick={() => setTypeFilter(active ? 'all' : type)} style={filterChip(active, cfg.color, cfg.bg)}>
-                        {cfg.icon} {cfg.label}
+              {/* Library tree */}
+              <div style={{ flex: 1, overflowY: 'auto' }}>
+                {(groupedFiltered ?? []).map(([groupKey, groupItems]) => {
+                  const typeCfg        = TYPE_ORDER.map(t => KNOWLEDGE_TYPES[t]).find(c => c.label === groupKey)
+                  const isCollapsed    = collapsedGroups.has(groupKey)
+                  if (groupItems.length === 0) return null
+                  return (
+                    <div key={groupKey}>
+                      <button
+                        onClick={() => setCollapsedGroups(prev => { const n = new Set(prev); n.has(groupKey) ? n.delete(groupKey) : n.add(groupKey); return n })}
+                        style={{
+                          width: '100%', display: 'flex', alignItems: 'center', gap: '0.4rem',
+                          padding: '0.48rem 0.6rem',
+                          border: 'none', background: 'transparent', borderBottom: '1px solid #F8FAFC',
+                          cursor: 'pointer', fontFamily: 'inherit',
+                        }}
+                        onMouseEnter={e => { e.currentTarget.style.background = '#F8FAFC' }}
+                        onMouseLeave={e => { e.currentTarget.style.background = 'transparent' }}
+                      >
+                        {typeCfg && <span style={{ fontSize: '0.82rem', lineHeight: 1, flexShrink: 0 }}>{typeCfg.icon}</span>}
+                        <span style={{ flex: 1, fontSize: '0.73rem', fontWeight: 700, color: '#475569', textAlign: 'left' }}>{groupKey}</span>
+                        <span style={{ fontSize: '0.65rem', color: '#CBD5E1', marginRight: '0.1rem' }}>{groupItems.length}</span>
+                        {isCollapsed
+                          ? <ChevronRight size={11} strokeWidth={2} style={{ color: '#CBD5E1', flexShrink: 0 }} />
+                          : <ChevronDown  size={11} strokeWidth={2} style={{ color: '#CBD5E1', flexShrink: 0 }} />}
                       </button>
-                    )
-                  })}
-                </div>
-              </div>
-
-              <div style={{ flex: 1, overflowY: 'auto', padding: '0.3rem' }}>
-                {groupBy !== 'none' && groupedFiltered ? (
-                  groupedFiltered.map(([groupKey, groupItems]) => {
-                    const typeCfg = TYPE_ORDER.map(t => KNOWLEDGE_TYPES[t]).find(c => c.label === groupKey) ?? null
-                    const isGroupCollapsed = collapsedGroups.has(groupKey)
-                    const groupColor = typeCfg?.color ?? '#64748B'
-                    const groupBg    = typeCfg?.bg    ?? '#F1F5F9'
-                    return (
-                      <div key={groupKey} style={{ marginBottom: '0.08rem' }}>
-                        <button
-                          onClick={() => setCollapsedGroups(prev => { const n = new Set(prev); n.has(groupKey) ? n.delete(groupKey) : n.add(groupKey); return n })}
-                          style={{
-                            width: '100%', display: 'flex', alignItems: 'center', gap: '0.35rem',
-                            padding: '0.28rem 0.45rem 0.28rem 0.5rem', background: isGroupCollapsed ? 'transparent' : groupBg + 'CC',
-                            borderTop: 'none', borderRight: 'none', borderBottom: 'none', borderLeft: `3px solid ${isGroupCollapsed ? 'transparent' : groupColor}`,
-                            cursor: 'pointer', fontFamily: 'inherit', transition: 'all 0.14s',
-                          }}
-                          onMouseEnter={e => { if (isGroupCollapsed) { e.currentTarget.style.borderLeftColor = groupColor + '50'; e.currentTarget.style.background = groupBg + '70' } }}
-                          onMouseLeave={e => { if (isGroupCollapsed) { e.currentTarget.style.borderLeftColor = 'transparent'; e.currentTarget.style.background = 'transparent' } }}
-                        >
-                          {typeCfg && <span style={{ fontSize: '0.82rem', lineHeight: 1, flexShrink: 0 }}>{typeCfg.icon}</span>}
-                          <span style={{ fontSize: '0.7rem', fontWeight: 800, color: isGroupCollapsed ? '#64748B' : groupColor, flex: 1, textAlign: 'left', letterSpacing: '-0.01em' }}>{groupKey}</span>
-                          <span style={{ fontSize: '0.58rem', fontWeight: 800, color: groupColor, background: isGroupCollapsed ? '#F1F5F9' : groupBg, padding: '0.07rem 0.38rem', borderRadius: '999px', flexShrink: 0, border: `1px solid ${groupColor}30` }}>{groupItems.length}</span>
-                          <span style={{ color: '#CBD5E1', fontSize: '0.5rem', flexShrink: 0 }}>{isGroupCollapsed ? '▶' : '▼'}</span>
-                        </button>
-                        {!isGroupCollapsed && (
-                          <div style={{ paddingLeft: '0.1rem' }}>
-                            {groupItems.map(item => renderSidebarItem(item))}
-                          </div>
-                        )}
-                      </div>
-                    )
-                  })
-                ) : (
-                  filtered.map(item => renderSidebarItem(item))
-                )}
+                      {!isCollapsed && (
+                        <div style={{ paddingBottom: '0.2rem' }}>
+                          {groupItems.map(item => {
+                            const active = selectedId === item.id && !editing
+                            const author = item.authors[0] || item.metadata['author']
+                            return (
+                              <button
+                                key={item.id}
+                                onClick={() => { setSelectedId(item.id); setEditing(false); void supabase.rpc('increment_knowledge_item_query_count', { p_id: item.id }) }}
+                                style={{
+                                  width: '100%', textAlign: 'left',
+                                  border: 'none',
+                                  borderLeft: `2px solid ${active ? '#B45309' : 'transparent'}`,
+                                  background: active ? '#FFFBF5' : 'transparent',
+                                  padding: '0.3rem 0.6rem 0.3rem 1.3rem',
+                                  cursor: 'pointer', fontFamily: 'inherit',
+                                  transition: 'background 0.08s',
+                                }}
+                                onMouseEnter={e => { if (!active) e.currentTarget.style.background = '#F8FAFC' }}
+                                onMouseLeave={e => { if (!active) e.currentTarget.style.background = 'transparent' }}
+                              >
+                                <div style={{ fontSize: '0.79rem', fontWeight: active ? 700 : 500, color: active ? '#92400E' : '#334155', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', lineHeight: 1.3 }}>
+                                  {item.title}
+                                </div>
+                                {author && (
+                                  <div style={{ fontSize: '0.66rem', color: active ? '#D97706' : '#94A3B8', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', marginTop: '0.05rem' }}>
+                                    {author}
+                                  </div>
+                                )}
+                              </button>
+                            )
+                          })}
+                        </div>
+                      )}
+                    </div>
+                  )
+                })}
                 {filtered.length === 0 && (
-                  <div style={{ padding: '2rem 1rem', textAlign: 'center', color: '#94A3B8', fontSize: '0.82rem' }}>Nenhum item encontrado.</div>
+                  <div style={{ padding: '2rem 1rem', textAlign: 'center', color: '#94A3B8', fontSize: '0.8rem' }}>
+                    Nenhum item encontrado.
+                  </div>
                 )}
               </div>
             </>
