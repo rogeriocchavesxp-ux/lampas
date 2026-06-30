@@ -83,9 +83,9 @@ function Skeleton() {
 // ── EntryCard ─────────────────────────────────────────────────────────────────
 
 function EntryCard({
-  entry, onSend, expanded, onToggle,
+  entry, onSend, onTranslate, expanded, onToggle,
 }: {
-  entry: LibEntry; onSend: () => void; expanded: boolean; onToggle: () => void
+  entry: LibEntry; onSend: () => void; onTranslate: () => void; expanded: boolean; onToggle: () => void
 }) {
   const PREVIEW = 320
   const text    = entry.content ?? entry.content_excerpt ?? ''
@@ -124,22 +124,33 @@ function EntryCard({
           }
         </div>
 
-        <div style={{ display: 'flex', alignItems: 'center', marginTop: '0.5rem', gap: '0.4rem' }}>
+        <div style={{ display: 'flex', alignItems: 'center', marginTop: '0.5rem', gap: '0.4rem', flexWrap: 'wrap' }}>
           {hasMore && (
             <button onClick={onToggle} style={{ display: 'flex', alignItems: 'center', gap: '3px', background: 'none', border: 'none', cursor: 'pointer', fontSize: '0.63rem', color: 'var(--text-muted)', padding: 0, fontFamily: 'inherit' }}>
               {expanded ? <ChevronUp size={10} /> : <ChevronDown size={10} />}
               {expanded ? 'Recolher' : 'Ver mais'}
             </button>
           )}
-          <button
-            onClick={onSend}
-            style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: '4px', background: 'transparent', border: `1px solid ${COLOR}40`, borderRadius: '5px', padding: '0.22rem 0.5rem', fontSize: '0.63rem', fontWeight: 700, color: COLOR, cursor: 'pointer', fontFamily: 'inherit', transition: 'all 0.12s' }}
-            onMouseEnter={e => { e.currentTarget.style.background = BG; e.currentTarget.style.borderColor = COLOR }}
-            onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.borderColor = `${COLOR}40` }}
-          >
-            <Sparkles size={10} strokeWidth={1.75} />
-            Enviar ao Claude
-          </button>
+          <div style={{ marginLeft: 'auto', display: 'flex', gap: '0.3rem' }}>
+            <button
+              onClick={onTranslate}
+              style={{ display: 'flex', alignItems: 'center', gap: '4px', background: 'transparent', border: '1px solid #94A3B840', borderRadius: '5px', padding: '0.22rem 0.5rem', fontSize: '0.63rem', fontWeight: 700, color: 'var(--text-muted)', cursor: 'pointer', fontFamily: 'inherit', transition: 'all 0.12s' }}
+              onMouseEnter={e => { e.currentTarget.style.background = 'var(--surface-2)'; e.currentTarget.style.borderColor = '#94A3B8' }}
+              onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.borderColor = '#94A3B840' }}
+              title="Traduzir para português"
+            >
+              PT
+            </button>
+            <button
+              onClick={onSend}
+              style={{ display: 'flex', alignItems: 'center', gap: '4px', background: 'transparent', border: `1px solid ${COLOR}40`, borderRadius: '5px', padding: '0.22rem 0.5rem', fontSize: '0.63rem', fontWeight: 700, color: COLOR, cursor: 'pointer', fontFamily: 'inherit', transition: 'all 0.12s' }}
+              onMouseEnter={e => { e.currentTarget.style.background = BG; e.currentTarget.style.borderColor = COLOR }}
+              onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.borderColor = `${COLOR}40` }}
+            >
+              <Sparkles size={10} strokeWidth={1.75} />
+              Enviar ao Claude
+            </button>
+          </div>
         </div>
       </div>
     </div>
@@ -271,6 +282,18 @@ export default function LibraryWorkspace({ project, onAskAI }: Props) {
       (entry.content ?? entry.content_excerpt ?? '').slice(0, 2500),
       '',
       `Com base neste comentário clássico, analise sua relevância para a exegese e pregação de ${passageLabel}. Destaque os principais insights teológicos e aplicações pastorais.`,
+    ].filter(Boolean).join('\n'))
+  }
+
+  function translateInAI(entry: LibEntry) {
+    const src = [entry.author_name, entry.year_published ? `(${entry.year_published})` : null, `— ${entry.work_title}`].filter(Boolean).join(' ')
+    const ref = entry.bible_ref ? ` [${entry.bible_ref}]` : ''
+    onAskAI([
+      `Traduza para o português do Brasil o seguinte comentário bíblico clássico, preservando a precisão teológica e os termos técnicos:`,
+      '',
+      `${src}${ref}`,
+      entry.heading ? `### ${entry.heading}` : '',
+      (entry.content ?? entry.content_excerpt ?? '').slice(0, 3000),
     ].filter(Boolean).join('\n'))
   }
 
@@ -478,6 +501,7 @@ export default function LibraryWorkspace({ project, onAskAI }: Props) {
                 expanded={expanded.has(entry.entry_id)}
                 onToggle={() => toggleExpand(entry.entry_id)}
                 onSend={() => sendToAI(entry)}
+                onTranslate={() => translateInAI(entry)}
               />
             ))}
           </>
