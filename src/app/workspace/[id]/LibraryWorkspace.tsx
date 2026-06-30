@@ -94,7 +94,7 @@ function EntryCard({
   const src = [entry.author_name, entry.year_published ? `(${entry.year_published})` : null].filter(Boolean).join(' ')
 
   return (
-    <div style={{ border: '1px solid var(--border-subtle)', borderRadius: '8px', overflow: 'hidden', background: 'var(--surface)' }}>
+    <div style={{ border: '1px solid var(--border-subtle)', borderRadius: '8px', overflow: 'hidden', background: 'var(--surface)', flexShrink: 0 }}>
       {/* Header */}
       <div style={{ padding: '0.5rem 0.7rem 0.4rem', borderBottom: '1px solid var(--border-subtle)', background: BG }}>
         <div style={{ fontSize: '0.69rem', fontWeight: 700, color: COLOR, lineHeight: 1.25 }}>
