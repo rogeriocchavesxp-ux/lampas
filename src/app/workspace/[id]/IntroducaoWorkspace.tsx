@@ -146,14 +146,15 @@ function Field({ label, value, color }: { label: string; value: string | null | 
 function SectionDivider({ label, color }: { label: string; color: string }) {
   return (
     <div style={{
-      display: 'flex', alignItems: 'center', gap: '0.6rem',
-      margin: '1.8rem 0 1.1rem',
+      display: 'flex', alignItems: 'center', gap: '0.55rem',
+      margin: '1.8rem 0 0.9rem',
+      paddingBottom: '0.45rem',
+      borderBottom: `1px solid ${color}20`,
     }}>
-      <div style={{ width: '3px', height: '16px', borderRadius: '2px', background: color, flexShrink: 0 }} />
-      <div style={{ fontSize: '0.72rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.08em', color }} >
+      <div style={{ width: '3px', height: '18px', borderRadius: '2px', background: color, flexShrink: 0 }} />
+      <div style={{ fontSize: '0.88rem', fontWeight: 700, color: '#0f172a', letterSpacing: '-0.01em' }}>
         {label}
       </div>
-      <div style={{ flex: 1, height: '1px', background: `${color}20` }} />
     </div>
   )
 }
@@ -194,6 +195,7 @@ function IntroDetail({ intro, onBack, onAskAI, color }: {
   color: string
 }) {
   return (
+    <div style={{ flex: 1, overflowY: 'auto', height: '100%' }}>
     <div style={{ padding: '1.5rem 1.75rem 3rem', maxWidth: '820px' }}>
       {/* Header */}
       <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', marginBottom: '1.5rem' }}>
@@ -422,6 +424,7 @@ function IntroDetail({ intro, onBack, onAskAI, color }: {
         </>
       )}
     </div>
+    </div>
   )
 }
 
@@ -500,6 +503,7 @@ export default function IntroducaoWorkspace({ testament, project, onAskAI }: Pro
   // ── List view ─────────────────────────────────────────────────────────────
 
   return (
+    <div style={{ flex: 1, overflowY: 'auto', height: '100%' }}>
     <div style={{ padding: '1.75rem 1.75rem 3rem', maxWidth: '900px' }}>
       {/* Header */}
       <div style={{ marginBottom: '1.5rem' }}>
@@ -613,6 +617,7 @@ export default function IntroducaoWorkspace({ testament, project, onAskAI }: Pro
           })}
         </div>
       )}
+    </div>
     </div>
   )
 }
