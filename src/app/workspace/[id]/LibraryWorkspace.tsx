@@ -2,10 +2,17 @@
 
 import { useState, useEffect, useCallback, useMemo } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import { Search, Sparkles, X, ChevronDown, ChevronUp, BookOpen, RefreshCw, AlertCircle } from 'lucide-react'
+import { Search, Sparkles, X, ChevronDown, ChevronUp, BookOpen, RefreshCw, AlertCircle, ChevronLeft } from 'lucide-react'
 import type { Project } from '@/types/database'
 
 type Tab = 'comentarios' | 'dicionario'
+
+interface LibWork {
+  id:             string
+  title:          string
+  author_name:    string | null
+  year_published: number | null
+}
 
 interface LibEntry {
   entry_id:        string
@@ -209,6 +216,20 @@ export default function LibraryWorkspace({ project, onAskAI }: Props) {
   const [translating,  setTranslating]  = useState<Set<string>>(new Set())
   const [showingPT,    setShowingPT]    = useState<Set<string>>(new Set())
 
+  // ── Library browser (aba Dicionários) ─────────────────────────────────────
+  const [libWorks,       setLibWorks]       = useState<LibWork[]>([])
+  const [libWorksLoaded, setLibWorksLoaded] = useState(false)
+  const [libWorksLoading,setLibWorksLoading]= useState(false)
+  const [selectedLib,    setSelectedLib]    = useState<LibWork | null>(null)
+  const [libEntries,     setLibEntries]     = useState<LibEntry[]>([])
+  const [libLoading,     setLibLoading]     = useState(false)
+  const [libQuery,       setLibQuery]       = useState('')
+  const [libDraft,       setLibDraft]       = useState('')
+  const [libPage,        setLibPage]        = useState(0)
+  const [libHasMore,     setLibHasMore]     = useState(false)
+  const [libTotal,       setLibTotal]       = useState<number | null>(null)
+  const [libExpanded,    setLibExpanded]    = useState<Set<string>>(new Set())
+
   const { chapter } = useMemo(() => parsePassage(project.passage_ref ?? ''), [project.passage_ref])
   const passageLabel = `${project.book ?? ''} ${project.passage_ref ?? ''}`.trim()
 
@@ -366,6 +387,74 @@ export default function LibraryWorkspace({ project, onAskAI }: Props) {
     setExpanded(prev => { const s = new Set(prev); s.has(id) ? s.delete(id) : s.add(id); return s })
   }
 
+  // ── Library browser functions ─────────────────────────────────────────────
+
+  const loadLibWorks = useCallback(async () => {
+    if (libWorksLoaded) return
+    setLibWorksLoading(true)
+    const { data: worksData } = await supabase
+      .from('lib_works')
+      .select('id, title, year_published, lib_authors(name)')
+      .order('title')
+    const mapped: LibWork[] = (worksData ?? []).map((w: { id: string; title: string; year_published: number | null; lib_authors: { name: string }[] | { name: string } | null }) => {
+      const aut = Array.isArray(w.lib_authors) ? w.lib_authors[0] : w.lib_authors
+      return { id: w.id, title: w.title, year_published: w.year_published, author_name: aut?.name ?? null }
+    })
+    setLibWorks(mapped)
+    setLibWorksLoaded(true)
+    setLibWorksLoading(false)
+  }, [supabase, libWorksLoaded])
+
+  const loadLibEntries = useCallback(async (work: LibWork, pageNum: number, append: boolean, q = '') => {
+    setLibLoading(true)
+    const params = new URLSearchParams({ work_id: work.id, page: String(pageNum) })
+    if (q) params.set('q', q)
+    const res = await fetch(`/api/library/browse?${params}`)
+    if (!res.ok) { setLibLoading(false); return }
+    const data = await res.json() as { entries: { id: string; heading: string | null; content_excerpt: string | null; bible_ref: string | null }[]; hasMore: boolean; total: number }
+    const mapped: LibEntry[] = (data.entries ?? []).map(e => ({
+      entry_id:        e.id,
+      heading:         e.heading,
+      content:         e.content_excerpt,
+      content_excerpt: e.content_excerpt,
+      work_title:      work.title,
+      author_name:     work.author_name,
+      year_published:  work.year_published,
+      bible_ref:       e.bible_ref,
+    }))
+    if (append) setLibEntries(prev => [...prev, ...mapped])
+    else        setLibEntries(mapped)
+    setLibHasMore(data.hasMore ?? false)
+    setLibTotal(data.total ?? null)
+    setLibPage(pageNum)
+    setLibLoading(false)
+  }, [])
+
+  useEffect(() => {
+    if (tab === 'dicionario') loadLibWorks()
+  }, [tab, loadLibWorks])
+
+  function selectLibWork(work: LibWork) {
+    setSelectedLib(work)
+    setLibEntries([])
+    setLibExpanded(new Set())
+    setLibPage(0)
+    setLibHasMore(false)
+    setLibTotal(null)
+    setLibDraft('')
+    setLibQuery('')
+    void loadLibEntries(work, 0, false, '')
+  }
+
+  function libSearch() {
+    if (!selectedLib) return
+    setLibEntries([])
+    setLibExpanded(new Set())
+    setLibPage(0)
+    setLibQuery(libDraft)
+    void loadLibEntries(selectedLib, 0, false, libDraft)
+  }
+
   // ── Render ────────────────────────────────────────────────────────────────
 
   const isComments = tab === 'comentarios'
@@ -399,183 +488,287 @@ export default function LibraryWorkspace({ project, onAskAI }: Props) {
         })}
       </div>
 
-      {/* Passage context (comentários only) */}
+      {/* ── Aba Comentários ────────────────────────────────────────────── */}
       {isComments && (
-        <div style={{
-          padding: '0.5rem 0.65rem',
-          borderBottom: '1px solid var(--border-subtle)',
-          background: BG,
-          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-          flexShrink: 0,
-        }}>
-          <div>
-            <div style={{ fontSize: '0.58rem', fontWeight: 700, color: '#92400E', textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: '1px' }}>
-              Passagem atual
-            </div>
-            <div style={{ fontSize: '0.78rem', fontWeight: 700, color: COLOR, lineHeight: 1.2 }}>
-              {passageLabel || 'Nenhuma passagem selecionada'}
-            </div>
-          </div>
-          <button
-            onClick={loadCommentaries}
-            title="Recarregar"
-            style={{ background: 'none', border: 'none', cursor: 'pointer', color: COLOR, opacity: 0.5, padding: '4px', display: 'flex', borderRadius: '4px' }}
-            onMouseEnter={e => { e.currentTarget.style.opacity = '1' }}
-            onMouseLeave={e => { e.currentTarget.style.opacity = '0.5' }}
-          >
-            <RefreshCw size={12} />
-          </button>
-        </div>
-      )}
-
-      {/* Search bar */}
-      <div style={{ padding: '0.5rem 0.55rem', borderBottom: '1px solid var(--border-subtle)', flexShrink: 0 }}>
-        <div style={{ display: 'flex', gap: '0.35rem' }}>
-          <div style={{ position: 'relative', flex: 1 }}>
-            <Search size={11} strokeWidth={2} style={{ position: 'absolute', left: '8px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)', pointerEvents: 'none' }} />
-            <input
-              value={query}
-              onChange={e => setQuery(e.target.value)}
-              onKeyDown={e => { if (e.key === 'Enter') search() }}
-              placeholder={isComments ? 'Buscar nos comentários…' : 'Buscar no dicionário…'}
-              style={{
-                width: '100%', boxSizing: 'border-box',
-                paddingLeft: '26px', paddingRight: query ? '26px' : '8px',
-                paddingTop: '6px', paddingBottom: '6px',
-                background: 'var(--surface-2)', border: '1px solid var(--border)',
-                borderRadius: '6px', color: 'var(--text-primary)',
-                fontFamily: 'inherit', fontSize: '0.77rem', outline: 'none',
-              }}
-              onFocus={e => (e.target.style.borderColor = COLOR)}
-              onBlur={e => (e.target.style.borderColor = 'var(--border)')}
-            />
-            {query && (
-              <button
-                onClick={() => { setQuery(''); if (isComments) loadCommentaries(); else { setEntries([]); setStatus('idle') } }}
-                style={{ position: 'absolute', right: '7px', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)', padding: '2px', display: 'flex' }}
-              >
-                <X size={10} />
-              </button>
-            )}
-          </div>
-          <button
-            onClick={search}
-            style={{ background: COLOR, border: 'none', borderRadius: '6px', color: '#FFF', cursor: 'pointer', fontFamily: 'inherit', fontSize: '0.71rem', fontWeight: 700, padding: '0 0.55rem', flexShrink: 0 }}
-          >
-            Buscar
-          </button>
-        </div>
-      </div>
-
-      {/* Results area */}
-      <div style={{ flex: 1, overflowY: 'auto', padding: '0.5rem 0.55rem', display: 'flex', flexDirection: 'column', gap: '0.45rem' }}>
-
-        {/* Loading */}
-        {loading && (
-          <>
-            <div style={{ fontSize: '0.69rem', color: 'var(--text-muted)', textAlign: 'center', paddingTop: '0.25rem' }}>
-              {isComments ? `Buscando comentários de ${passageLabel}…` : 'Buscando…'}
-            </div>
-            <Skeleton />
-          </>
-        )}
-
-        {/* Error */}
-        {!loading && status === 'error' && (
-          <div style={{ padding: '0.75rem', borderRadius: '8px', background: '#FFF1F1', border: '1px solid #FEE2E2' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '6px' }}>
-              <AlertCircle size={13} color="#B91C1C" />
-              <span style={{ fontSize: '0.73rem', fontWeight: 600, color: '#B91C1C' }}>
-                Erro ao carregar
-              </span>
-            </div>
-            <div style={{ fontSize: '0.68rem', color: '#7F1D1D', lineHeight: 1.5, marginBottom: '8px', wordBreak: 'break-all' }}>
-              {rpcError}
+        <>
+          {/* Passage context */}
+          <div style={{
+            padding: '0.5rem 0.65rem',
+            borderBottom: '1px solid var(--border-subtle)',
+            background: BG,
+            display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+            flexShrink: 0,
+          }}>
+            <div>
+              <div style={{ fontSize: '0.58rem', fontWeight: 700, color: '#92400E', textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: '1px' }}>
+                Passagem atual
+              </div>
+              <div style={{ fontSize: '0.78rem', fontWeight: 700, color: COLOR, lineHeight: 1.2 }}>
+                {passageLabel || 'Nenhuma passagem selecionada'}
+              </div>
             </div>
             <button
-              onClick={() => isComments ? loadCommentaries() : search()}
-              style={{ background: '#B91C1C', border: 'none', borderRadius: '5px', padding: '4px 10px', fontSize: '0.68rem', fontWeight: 600, color: '#FFF', cursor: 'pointer', fontFamily: 'inherit' }}
+              onClick={loadCommentaries}
+              title="Recarregar"
+              style={{ background: 'none', border: 'none', cursor: 'pointer', color: COLOR, opacity: 0.5, padding: '4px', display: 'flex', borderRadius: '4px' }}
+              onMouseEnter={e => { e.currentTarget.style.opacity = '1' }}
+              onMouseLeave={e => { e.currentTarget.style.opacity = '0.5' }}
             >
-              Tentar novamente
+              <RefreshCw size={12} />
             </button>
           </div>
-        )}
 
-        {/* Empty — dicionario: instrução */}
-        {!loading && status === 'idle' && tab === 'dicionario' && (
-          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '8px', flex: 1, color: 'var(--text-muted)', padding: '1rem' }}>
-            <BookOpen size={28} strokeWidth={1} style={{ opacity: 0.2 }} />
-            <span style={{ fontSize: '0.78rem', textAlign: 'center' }}>Digite um termo para buscar no dicionário</span>
-          </div>
-        )}
-
-        {/* Empty — comentarios: nenhum resultado na biblioteca + fallback IA */}
-        {!loading && status === 'loaded' && isEmpty && (
-          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '12px', padding: '1.25rem 0.75rem' }}>
-            <BookOpen size={28} strokeWidth={1} style={{ opacity: 0.15 }} />
-            <div style={{ textAlign: 'center' }}>
-              <div style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '4px' }}>
-                {isComments && passageLabel
-                  ? `Nenhum comentário encontrado para ${passageLabel}`
-                  : 'Nenhum resultado encontrado'}
+          {/* Search bar */}
+          <div style={{ padding: '0.5rem 0.55rem', borderBottom: '1px solid var(--border-subtle)', flexShrink: 0 }}>
+            <div style={{ display: 'flex', gap: '0.35rem' }}>
+              <div style={{ position: 'relative', flex: 1 }}>
+                <Search size={11} strokeWidth={2} style={{ position: 'absolute', left: '8px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)', pointerEvents: 'none' }} />
+                <input
+                  value={query}
+                  onChange={e => setQuery(e.target.value)}
+                  onKeyDown={e => { if (e.key === 'Enter') search() }}
+                  placeholder="Buscar nos comentários…"
+                  style={{
+                    width: '100%', boxSizing: 'border-box',
+                    paddingLeft: '26px', paddingRight: query ? '26px' : '8px',
+                    paddingTop: '6px', paddingBottom: '6px',
+                    background: 'var(--surface-2)', border: '1px solid var(--border)',
+                    borderRadius: '6px', color: 'var(--text-primary)',
+                    fontFamily: 'inherit', fontSize: '0.77rem', outline: 'none',
+                  }}
+                  onFocus={e => (e.target.style.borderColor = COLOR)}
+                  onBlur={e => (e.target.style.borderColor = 'var(--border)')}
+                />
+                {query && (
+                  <button
+                    onClick={() => { setQuery(''); loadCommentaries() }}
+                    style={{ position: 'absolute', right: '7px', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)', padding: '2px', display: 'flex' }}
+                  >
+                    <X size={10} />
+                  </button>
+                )}
               </div>
-              <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)', lineHeight: 1.5 }}>
-                {isComments
-                  ? 'A biblioteca ainda não possui comentários para esta passagem.'
-                  : 'Tente outro termo de pesquisa.'}
-              </div>
-            </div>
-
-            {/* AI fallback — only for comentarios */}
-            {isComments && passageLabel && (
               <button
-                onClick={askAICommentary}
-                style={{
-                  display: 'flex', alignItems: 'center', gap: '6px',
-                  background: '#7C3AED', border: 'none', borderRadius: '7px',
-                  padding: '0.5rem 0.9rem', fontSize: '0.75rem', fontWeight: 700,
-                  color: '#FFF', cursor: 'pointer', fontFamily: 'inherit',
-                  boxShadow: '0 1px 6px rgba(124,58,237,0.3)',
-                }}
+                onClick={search}
+                style={{ background: COLOR, border: 'none', borderRadius: '6px', color: '#FFF', cursor: 'pointer', fontFamily: 'inherit', fontSize: '0.71rem', fontWeight: 700, padding: '0 0.55rem', flexShrink: 0 }}
               >
-                <Sparkles size={12} strokeWidth={1.75} />
-                Pedir ao Claude comentário de {passageLabel}
+                Buscar
               </button>
+            </div>
+          </div>
+
+          {/* Results */}
+          <div style={{ flex: 1, overflowY: 'auto', padding: '0.5rem 0.55rem', display: 'flex', flexDirection: 'column', gap: '0.45rem' }}>
+            {loading && (
+              <>
+                <div style={{ fontSize: '0.69rem', color: 'var(--text-muted)', textAlign: 'center', paddingTop: '0.25rem' }}>
+                  {`Buscando comentários de ${passageLabel}…`}
+                </div>
+                <Skeleton />
+              </>
+            )}
+            {!loading && status === 'error' && (
+              <div style={{ padding: '0.75rem', borderRadius: '8px', background: '#FFF1F1', border: '1px solid #FEE2E2' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '6px' }}>
+                  <AlertCircle size={13} color="#B91C1C" />
+                  <span style={{ fontSize: '0.73rem', fontWeight: 600, color: '#B91C1C' }}>Erro ao carregar</span>
+                </div>
+                <div style={{ fontSize: '0.68rem', color: '#7F1D1D', lineHeight: 1.5, marginBottom: '8px', wordBreak: 'break-all' }}>{rpcError}</div>
+                <button onClick={loadCommentaries} style={{ background: '#B91C1C', border: 'none', borderRadius: '5px', padding: '4px 10px', fontSize: '0.68rem', fontWeight: 600, color: '#FFF', cursor: 'pointer', fontFamily: 'inherit' }}>
+                  Tentar novamente
+                </button>
+              </div>
+            )}
+            {!loading && status === 'loaded' && isEmpty && (
+              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '12px', padding: '1.25rem 0.75rem' }}>
+                <BookOpen size={28} strokeWidth={1} style={{ opacity: 0.15 }} />
+                <div style={{ textAlign: 'center' }}>
+                  <div style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '4px' }}>
+                    {passageLabel ? `Nenhum comentário encontrado para ${passageLabel}` : 'Nenhum resultado encontrado'}
+                  </div>
+                  <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)', lineHeight: 1.5 }}>
+                    {passageLabel ? 'A biblioteca ainda não possui comentários para esta passagem.' : 'Abra um projeto com passagem bíblica.'}
+                  </div>
+                </div>
+                {passageLabel && (
+                  <button onClick={askAICommentary} style={{ display: 'flex', alignItems: 'center', gap: '6px', background: '#7C3AED', border: 'none', borderRadius: '7px', padding: '0.5rem 0.9rem', fontSize: '0.75rem', fontWeight: 700, color: '#FFF', cursor: 'pointer', fontFamily: 'inherit', boxShadow: '0 1px 6px rgba(124,58,237,0.3)' }}>
+                    <Sparkles size={12} strokeWidth={1.75} />
+                    Pedir ao Claude comentário de {passageLabel}
+                  </button>
+                )}
+              </div>
+            )}
+            {!loading && entries.length > 0 && (
+              <>
+                <div style={{ fontSize: '0.64rem', color: 'var(--text-muted)', padding: '0 0.1rem' }}>
+                  {entries.length} resultado{entries.length !== 1 ? 's' : ''}{passageLabel ? ` para ${passageLabel}` : ''}
+                </div>
+                {entries.map(entry => (
+                  <EntryCard
+                    key={entry.entry_id}
+                    entry={entry}
+                    expanded={expanded.has(entry.entry_id)}
+                    onToggle={() => toggleExpand(entry.entry_id)}
+                    onSend={() => sendToAI(entry)}
+                    onTranslate={() => handleTranslate(entry)}
+                    translation={translations.get(entry.entry_id) ?? null}
+                    translating={translating.has(entry.entry_id)}
+                    showPT={showingPT.has(entry.entry_id)}
+                    onToggleLang={() => toggleLang(entry.entry_id)}
+                  />
+                ))}
+              </>
             )}
           </div>
-        )}
+        </>
+      )}
 
-        {/* No passage set */}
-        {!loading && status === 'loaded' && isEmpty && isComments && !passageLabel && (
-          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px', flex: 1, color: 'var(--text-muted)', padding: '1rem', textAlign: 'center' }}>
-            <BookOpen size={28} strokeWidth={1} style={{ opacity: 0.2 }} />
-            <span style={{ fontSize: '0.78rem' }}>Abra um projeto com passagem bíblica para consultar comentários.</span>
-          </div>
-        )}
-
-        {/* Results */}
-        {!loading && entries.length > 0 && (
-          <>
-            <div style={{ fontSize: '0.64rem', color: 'var(--text-muted)', padding: '0 0.1rem' }}>
-              {entries.length} resultado{entries.length !== 1 ? 's' : ''}{isComments && passageLabel ? ` para ${passageLabel}` : ''}
+      {/* ── Aba Dicionários → browser da Biblioteca ─────────────────────── */}
+      {!isComments && (
+        <>
+          {/* Works list ou header da obra selecionada */}
+          {!selectedLib ? (
+            <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+              <div style={{ padding: '0.5rem 0.55rem', borderBottom: '1px solid var(--border-subtle)', flexShrink: 0 }}>
+                <div style={{ fontSize: '0.6rem', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: '0.3rem' }}>
+                  Obras disponíveis
+                </div>
+              </div>
+              <div style={{ flex: 1, overflowY: 'auto', padding: '0.35rem 0.4rem' }}>
+                {libWorksLoading && (
+                  <div style={{ padding: '1rem', textAlign: 'center', fontSize: '0.75rem', color: 'var(--text-muted)' }}>Carregando obras…</div>
+                )}
+                {!libWorksLoading && libWorks.map(work => (
+                  <button
+                    key={work.id}
+                    onClick={() => selectLibWork(work)}
+                    style={{
+                      display: 'block', width: '100%', textAlign: 'left',
+                      padding: '0.45rem 0.6rem', marginBottom: '2px',
+                      background: 'none', border: 'none', borderRadius: '6px',
+                      cursor: 'pointer', fontFamily: 'inherit',
+                      transition: 'background 0.1s',
+                    }}
+                    onMouseEnter={e => { e.currentTarget.style.background = 'var(--surface-2)' }}
+                    onMouseLeave={e => { e.currentTarget.style.background = 'none' }}
+                  >
+                    <div style={{ fontSize: '0.77rem', fontWeight: 500, color: 'var(--text-primary)', lineHeight: 1.3 }}>
+                      {work.title.length > 48 ? work.title.slice(0, 45) + '…' : work.title}
+                    </div>
+                    {work.author_name && (
+                      <div style={{ fontSize: '0.64rem', color: 'var(--text-muted)', marginTop: '1px' }}>
+                        {work.author_name}{work.year_published ? ` · ${work.year_published}` : ''}
+                      </div>
+                    )}
+                  </button>
+                ))}
+              </div>
             </div>
-            {entries.map(entry => (
-              <EntryCard
-                key={entry.entry_id}
-                entry={entry}
-                expanded={expanded.has(entry.entry_id)}
-                onToggle={() => toggleExpand(entry.entry_id)}
-                onSend={() => sendToAI(entry)}
-                onTranslate={() => handleTranslate(entry)}
-                translation={translations.get(entry.entry_id) ?? null}
-                translating={translating.has(entry.entry_id)}
-                showPT={showingPT.has(entry.entry_id)}
-                onToggleLang={() => toggleLang(entry.entry_id)}
-              />
-            ))}
-          </>
-        )}
-      </div>
+          ) : (
+            <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+              {/* Header da obra */}
+              <div style={{ padding: '0.5rem 0.55rem', borderBottom: '1px solid var(--border-subtle)', flexShrink: 0, background: BG }}>
+                <div style={{ display: 'flex', alignItems: 'flex-start', gap: '6px' }}>
+                  <button
+                    onClick={() => { setSelectedLib(null); setLibEntries([]); setLibQuery(''); setLibDraft('') }}
+                    style={{ background: 'none', border: 'none', cursor: 'pointer', color: COLOR, padding: '1px', display: 'flex', flexShrink: 0, marginTop: '2px' }}
+                    title="Voltar"
+                  >
+                    <ChevronLeft size={13} />
+                  </button>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ fontSize: '0.72rem', fontWeight: 700, color: COLOR, lineHeight: 1.25, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                      {selectedLib.title}
+                    </div>
+                    {selectedLib.author_name && (
+                      <div style={{ fontSize: '0.61rem', color: '#9A6846', marginTop: '1px' }}>
+                        {selectedLib.author_name}{selectedLib.year_published ? ` · ${selectedLib.year_published}` : ''}
+                        {libTotal !== null && <span style={{ marginLeft: '0.4rem', color: COLOR, fontWeight: 600 }}>{libTotal.toLocaleString('pt-BR')} entradas</span>}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              {/* Search */}
+              <div style={{ padding: '0.4rem 0.5rem', borderBottom: '1px solid var(--border-subtle)', flexShrink: 0 }}>
+                <div style={{ display: 'flex', gap: '0.3rem' }}>
+                  <div style={{ position: 'relative', flex: 1 }}>
+                    <Search size={10} strokeWidth={2} style={{ position: 'absolute', left: '7px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)', pointerEvents: 'none' }} />
+                    <input
+                      value={libDraft}
+                      onChange={e => setLibDraft(e.target.value)}
+                      onKeyDown={e => { if (e.key === 'Enter') libSearch() }}
+                      placeholder="Buscar nesta obra…"
+                      style={{
+                        width: '100%', boxSizing: 'border-box',
+                        paddingLeft: '24px', paddingRight: libDraft ? '24px' : '7px',
+                        paddingTop: '5px', paddingBottom: '5px',
+                        background: 'var(--surface-2)', border: '1px solid var(--border)',
+                        borderRadius: '6px', color: 'var(--text-primary)',
+                        fontFamily: 'inherit', fontSize: '0.74rem', outline: 'none',
+                      }}
+                      onFocus={e => (e.target.style.borderColor = COLOR)}
+                      onBlur={e => (e.target.style.borderColor = 'var(--border)')}
+                    />
+                    {libDraft && (
+                      <button
+                        onClick={() => { setLibDraft(''); setLibQuery(''); if (selectedLib) void loadLibEntries(selectedLib, 0, false, '') }}
+                        style={{ position: 'absolute', right: '6px', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)', padding: '2px', display: 'flex' }}
+                      >
+                        <X size={9} />
+                      </button>
+                    )}
+                  </div>
+                  <button onClick={libSearch} style={{ background: COLOR, border: 'none', borderRadius: '5px', color: '#FFF', cursor: 'pointer', fontFamily: 'inherit', fontSize: '0.68rem', fontWeight: 700, padding: '0 0.45rem', flexShrink: 0 }}>
+                    Buscar
+                  </button>
+                </div>
+              </div>
+
+              {/* Entries */}
+              <div style={{ flex: 1, overflowY: 'auto', padding: '0.4rem 0.45rem', display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
+                {libLoading && <Skeleton />}
+                {!libLoading && libEntries.length === 0 && (
+                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px', padding: '1.5rem 0.5rem', color: 'var(--text-muted)' }}>
+                    <BookOpen size={24} strokeWidth={1} style={{ opacity: 0.2 }} />
+                    <span style={{ fontSize: '0.75rem', textAlign: 'center' }}>Nenhuma entrada encontrada.</span>
+                  </div>
+                )}
+                {!libLoading && libEntries.length > 0 && (
+                  <>
+                    <div style={{ fontSize: '0.62rem', color: 'var(--text-muted)', padding: '0 0.1rem' }}>
+                      {libEntries.length}{libTotal !== null ? ` de ${libTotal.toLocaleString('pt-BR')}` : ''} entradas
+                    </div>
+                    {libEntries.map(entry => (
+                      <EntryCard
+                        key={entry.entry_id}
+                        entry={entry}
+                        expanded={libExpanded.has(entry.entry_id)}
+                        onToggle={() => setLibExpanded(prev => { const s = new Set(prev); s.has(entry.entry_id) ? s.delete(entry.entry_id) : s.add(entry.entry_id); return s })}
+                        onSend={() => sendToAI(entry)}
+                        onTranslate={() => handleTranslate(entry)}
+                        translation={translations.get(entry.entry_id) ?? null}
+                        translating={translating.has(entry.entry_id)}
+                        showPT={showingPT.has(entry.entry_id)}
+                        onToggleLang={() => toggleLang(entry.entry_id)}
+                      />
+                    ))}
+                    {libHasMore && (
+                      <button
+                        onClick={() => void loadLibEntries(selectedLib, libPage + 1, true, libQuery)}
+                        style={{ background: 'var(--surface-2)', border: '1px solid var(--border)', borderRadius: '6px', padding: '0.45rem', fontSize: '0.72rem', fontWeight: 500, color: 'var(--text-secondary)', cursor: 'pointer', fontFamily: 'inherit', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '5px' }}
+                      >
+                        <RefreshCw size={11} /> Carregar mais
+                      </button>
+                    )}
+                  </>
+                )}
+              </div>
+            </div>
+          )}
+        </>
+      )}
     </div>
   )
 }
