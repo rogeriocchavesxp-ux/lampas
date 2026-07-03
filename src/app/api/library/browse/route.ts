@@ -34,10 +34,15 @@ export async function GET(req: NextRequest) {
   if (!work_id) return Response.json({ entries: [], hasMore: false, total: 0 })
 
   // Get volumes for this work
-  const { data: volumes } = await supabase
+  const { data: volumes, error: volError } = await supabase
     .from('lib_volumes')
     .select('id')
     .eq('work_id', work_id)
+
+  if (volError) {
+    console.error('[library/browse] volumes query error:', volError)
+    return Response.json({ error: volError.message }, { status: 500 })
+  }
 
   const volumeIds = (volumes ?? []).map((v: { id: string }) => v.id)
   if (volumeIds.length === 0) return Response.json({ entries: [], hasMore: false, total: 0 })

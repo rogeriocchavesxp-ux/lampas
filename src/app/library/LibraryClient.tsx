@@ -193,6 +193,7 @@ export default function LibraryClient({ works, collections }: Props) {
   const [total,        setTotal]        = useState<number | null>(null)
   const [loadingMore,  setLoadingMore]  = useState(false)
   const [authError,    setAuthError]    = useState(false)
+  const [fetchError,   setFetchError]   = useState<string | null>(null)
 
   const [books,        setBooks]        = useState<string[]>([])
   const [loadingBooks, setLoadingBooks] = useState(false)
@@ -236,8 +237,14 @@ export default function LibraryClient({ works, collections }: Props) {
 
     try {
       const res  = await fetch(`/api/library/browse?${params}`, { signal: ctrl.signal })
-      if (res.status === 401) { setAuthError(true); return }
+      if (res.status === 401) { setAuthError(true); setFetchError(null); return }
       setAuthError(false)
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}))
+        setFetchError(err.error ?? `Erro ${res.status}`)
+        return
+      }
+      setFetchError(null)
       const data = await res.json()
       if (append) setEntries(prev => [...prev, ...(data.entries ?? [])])
       else        setEntries(data.entries ?? [])
@@ -273,6 +280,7 @@ export default function LibraryClient({ works, collections }: Props) {
     setHasMore(false)
     setTotal(null)
     setAuthError(false)
+    setFetchError(null)
     if (selectedWork) {
       loadEntries(selectedWork.id, null, query, 0, false)
     }
@@ -573,6 +581,15 @@ export default function LibraryClient({ works, collections }: Props) {
             />
           )}
 
+          {/* Fetch error */}
+          {fetchError && !authError && (
+            <EmptyState
+              icon={<BookOpen size={32} strokeWidth={1} style={{ opacity: 0.15 }} />}
+              title="Erro ao carregar"
+              sub={fetchError}
+            />
+          )}
+
           {/* No work selected */}
           {!authError && !selectedWork && !hasSearch && (
             <EmptyState
@@ -599,7 +616,7 @@ export default function LibraryClient({ works, collections }: Props) {
           )}
 
           {/* Results count */}
-          {!loading && entries.length > 0 && (
+          {!loading && !fetchError && entries.length > 0 && (
             <div style={{ fontSize: '0.68rem', color: 'var(--text-muted)', marginBottom: '-0.25rem' }}>
               {total !== null
                 ? `${entries.length} de ${total.toLocaleString('pt-BR')} entradas${selectedBook ? ` em ${ptBook(selectedBook)}` : ''}`
@@ -608,7 +625,7 @@ export default function LibraryClient({ works, collections }: Props) {
           )}
 
           {/* Entries */}
-          {!loading && entries.map(entry => {
+          {!loading && !fetchError && entries.map(entry => {
             const work = workOf(entry)
             return (
               <EntryCard
@@ -632,7 +649,7 @@ export default function LibraryClient({ works, collections }: Props) {
           })}
 
           {/* Empty after search */}
-          {!authError && !loading && entries.length === 0 && (selectedWork || hasSearch) && (
+          {!authError && !fetchError && !loading && entries.length === 0 && (selectedWork || hasSearch) && (
             <EmptyState
               icon={<Search size={32} strokeWidth={1} style={{ opacity: 0.15 }} />}
               title="Nenhum resultado"
