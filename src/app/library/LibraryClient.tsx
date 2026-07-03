@@ -192,6 +192,7 @@ export default function LibraryClient({ works, collections }: Props) {
   const [hasMore,      setHasMore]      = useState(false)
   const [total,        setTotal]        = useState<number | null>(null)
   const [loadingMore,  setLoadingMore]  = useState(false)
+  const [authError,    setAuthError]    = useState(false)
 
   const [books,        setBooks]        = useState<string[]>([])
   const [loadingBooks, setLoadingBooks] = useState(false)
@@ -235,6 +236,8 @@ export default function LibraryClient({ works, collections }: Props) {
 
     try {
       const res  = await fetch(`/api/library/browse?${params}`, { signal: ctrl.signal })
+      if (res.status === 401) { setAuthError(true); return }
+      setAuthError(false)
       const data = await res.json()
       if (append) setEntries(prev => [...prev, ...(data.entries ?? [])])
       else        setEntries(data.entries ?? [])
@@ -269,6 +272,7 @@ export default function LibraryClient({ works, collections }: Props) {
     setPage(0)
     setHasMore(false)
     setTotal(null)
+    setAuthError(false)
     if (selectedWork) {
       loadEntries(selectedWork.id, null, query, 0, false)
     }
@@ -560,8 +564,17 @@ export default function LibraryClient({ works, collections }: Props) {
         {/* Entry list */}
         <div style={{ flex: 1, overflowY: 'auto', padding: '1rem 1.25rem', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
 
+          {/* Auth error */}
+          {authError && (
+            <EmptyState
+              icon={<BookOpen size={32} strokeWidth={1} style={{ opacity: 0.15 }} />}
+              title="Sessão expirada"
+              sub="Sua sessão expirou. Recarregue a página ou faça login novamente."
+            />
+          )}
+
           {/* No work selected */}
-          {!selectedWork && !hasSearch && (
+          {!authError && !selectedWork && !hasSearch && (
             <EmptyState
               icon={<BookOpen size={40} strokeWidth={1} style={{ opacity: 0.15 }} />}
               title="Selecione uma obra"
@@ -570,7 +583,7 @@ export default function LibraryClient({ works, collections }: Props) {
           )}
 
           {/* Loading */}
-          {loading && (
+          {!authError && loading && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
               {[1,2,3].map(i => (
                 <div key={i} style={{ border: '1px solid var(--border-subtle)', borderRadius: '10px', overflow: 'hidden' }}>
@@ -619,7 +632,7 @@ export default function LibraryClient({ works, collections }: Props) {
           })}
 
           {/* Empty after search */}
-          {!loading && entries.length === 0 && (selectedWork || hasSearch) && (
+          {!authError && !loading && entries.length === 0 && (selectedWork || hasSearch) && (
             <EmptyState
               icon={<Search size={32} strokeWidth={1} style={{ opacity: 0.15 }} />}
               title="Nenhum resultado"
