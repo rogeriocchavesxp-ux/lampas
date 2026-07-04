@@ -1,5 +1,6 @@
 'use client'
 
+import { useState } from 'react'
 import type { NavPhase } from '@/lib/study-modes'
 
 // ── Design tokens ────────────────────────────────────────────────────────────
@@ -92,25 +93,73 @@ function ProgressChip({ pct, color }: { pct: number; color: string }) {
   )
 }
 
+// ── OpenBookIcon — SVG de Bíblia aberta ──────────────────────────────────────
+
+function OpenBookIcon({ size = 20 }: { size?: number }) {
+  return (
+    <svg width={size} height={Math.round(size * 0.75)} viewBox="0 0 20 15" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      {/* Página esquerda */}
+      <path d="M10 13.5C10 13.5 6.5 12.5 1.5 13.5V2C6.5 1 10 2.5 10 2.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+      {/* Página direita */}
+      <path d="M10 13.5C10 13.5 13.5 12.5 18.5 13.5V2C13.5 1 10 2.5 10 2.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+      {/* Lombada */}
+      <line x1="10" y1="2.5" x2="10" y2="13.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+      {/* Linhas de texto — página esquerda */}
+      <line x1="3"   y1="5"   x2="8"   y2="4.5" stroke="currentColor" strokeWidth="1" strokeLinecap="round" strokeOpacity="0.5"/>
+      <line x1="3"   y1="7.5" x2="8"   y2="7"   stroke="currentColor" strokeWidth="1" strokeLinecap="round" strokeOpacity="0.5"/>
+      <line x1="3"   y1="10"  x2="8"   y2="9.5" stroke="currentColor" strokeWidth="1" strokeLinecap="round" strokeOpacity="0.5"/>
+      {/* Linhas de texto — página direita */}
+      <line x1="12"  y1="4.5" x2="17"  y2="5"   stroke="currentColor" strokeWidth="1" strokeLinecap="round" strokeOpacity="0.5"/>
+      <line x1="12"  y1="7"   x2="17"  y2="7.5" stroke="currentColor" strokeWidth="1" strokeLinecap="round" strokeOpacity="0.5"/>
+      <line x1="12"  y1="9.5" x2="17"  y2="10"  stroke="currentColor" strokeWidth="1" strokeLinecap="round" strokeOpacity="0.5"/>
+    </svg>
+  )
+}
+
 // ── BibleToggle ───────────────────────────────────────────────────────────────
 
 function BibleToggle({ open, onClick }: { open: boolean; onClick: () => void }) {
+  const [hovered, setHovered] = useState(false)
+
+  const iconColor  = open ? '#1D4ED8' : (hovered ? '#334155' : '#64748B')
+  const border     = open ? '#1D4ED8' : (hovered ? '#B8C5D6' : '#DDE3EC')
+  const bg         = open
+    ? 'linear-gradient(135deg, #EFF6FF 0%, #FFF9F0 100%)'
+    : (hovered ? '#F8FAFC' : 'rgba(255,255,255,0.85)')
+  const shadow     = open
+    ? '0 0 0 3px rgba(201,146,26,0.22), 0 2px 10px rgba(29,78,216,0.1)'
+    : (hovered ? '0 0 0 3px rgba(201,146,26,0.14), 0 2px 6px rgba(0,0,0,0.06)' : '0 1px 3px rgba(0,0,0,0.06)')
+
   return (
     <button
       onClick={onClick}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+      title="Texto Bíblico"
       style={{
-        display: 'flex', alignItems: 'center', gap: 5,
-        height: SEG_HEIGHT, padding: '0 10px',
-        border: `1px solid ${open ? 'var(--accent)' : 'var(--border-subtle)'}`,
-        borderRadius: 6,
-        background: open ? 'var(--accent)' : 'transparent',
-        color: open ? '#fff' : 'var(--text-muted)',
-        fontSize: '0.71rem', fontWeight: open ? 650 : 400,
+        display: 'flex', flexDirection: 'column', alignItems: 'center',
+        gap: 3, padding: '5px 14px',
+        border: `1.5px solid ${border}`, borderRadius: 10,
+        background: bg, boxShadow: shadow,
         cursor: 'pointer', fontFamily: 'inherit',
-        transition: 'all 0.12s', whiteSpace: 'nowrap', flexShrink: 0,
+        transition: 'all 0.16s ease', outline: 'none', flexShrink: 0,
       }}
     >
-      Texto Bíblico
+      <span style={{
+        display: 'flex', color: iconColor,
+        transform: hovered ? 'scale(1.08)' : 'scale(1)',
+        transition: 'transform 0.16s ease, color 0.16s ease',
+      }}>
+        <OpenBookIcon size={20} />
+      </span>
+      <span style={{
+        fontSize: '0.56rem', fontWeight: 700,
+        letterSpacing: '0.07em', textTransform: 'uppercase',
+        color: iconColor, transition: 'color 0.16s ease',
+        lineHeight: 1, whiteSpace: 'nowrap',
+      }}>
+        Texto Bíblico
+      </span>
     </button>
   )
 }
@@ -182,8 +231,8 @@ export default function WorkspaceHeader({
           </span>
         </div>
 
-        {/* ── CenterGroup — View controls (always centered) ── */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+        {/* ── CenterGroup — Bible toggle + view controls ── */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
           {showWorkMode && (
             <SegmentedControl
               options={[
@@ -195,6 +244,8 @@ export default function WorkspaceHeader({
               color={activePhase?.color}
             />
           )}
+
+          <BibleToggle open={bibleOpen} onClick={onToggleBible} />
 
           {showViewMode && (
             <SegmentedControl
@@ -208,10 +259,8 @@ export default function WorkspaceHeader({
           )}
         </div>
 
-        {/* ── RightGroup — Bible toggle ── */}
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end' }}>
-          <BibleToggle open={bibleOpen} onClick={onToggleBible} />
-        </div>
+        {/* ── RightGroup — reserved ── */}
+        <div />
     </div>
   )
 }
