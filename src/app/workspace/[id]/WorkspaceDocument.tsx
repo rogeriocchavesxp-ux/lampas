@@ -459,6 +459,7 @@ interface Props {
   onUpdate: (s: Section) => void
   onAskAI: (prompt: string) => void
   guided?: boolean
+  readingMode?: boolean
   initialSlug?: string
   typeLabel?: string
 }
@@ -466,7 +467,7 @@ interface Props {
 // ── Component ─────────────────────────────────────────────────────────────────
 
 export default function WorkspaceDocument({
-  blocks, project, userId, onUpdate, guided = true, initialSlug, typeLabel,
+  blocks, project, userId, onUpdate, guided = true, readingMode = false, initialSlug, typeLabel,
 }: Props) {
   const supabase = createClient()
 
@@ -623,6 +624,67 @@ export default function WorkspaceDocument({
     scheduleCardSave(focusedSlug, focusedCardId, activeEditor.getHTML())
   }, [activeEditor, focusedSlug, focusedCardId]) // eslint-disable-line react-hooks/exhaustive-deps
 
+  // ── Reading mode state ────────────────────────────────────────────────────
+
+  type PaletteState = { x: number; y: number; range: Range; slug: string; cardId: string } | null
+  const [readingPalette, setReadingPalette] = useState<PaletteState>(null)
+  const cardReadRefs = useRef<Map<string, HTMLDivElement>>(new Map())
+
+  useEffect(() => {
+    if (!readingMode) return
+    function onMouseUp() {
+      const sel = window.getSelection()
+      if (!sel || sel.isCollapsed || sel.rangeCount === 0) return
+      const range = sel.getRangeAt(0)
+      const anchor = range.commonAncestorContainer
+      const el = anchor.nodeType === Node.TEXT_NODE ? anchor.parentElement : anchor as Element
+      const cardEl = el?.closest('[data-card-key]')
+      if (!cardEl) return
+      const key = cardEl.getAttribute('data-card-key') ?? ''
+      const sep = key.indexOf(':')
+      if (sep === -1) return
+      const slug   = key.slice(0, sep)
+      const cardId = key.slice(sep + 1)
+      const rect = range.getBoundingClientRect()
+      setReadingPalette({ x: rect.left + rect.width / 2, y: rect.top, range, slug, cardId })
+    }
+    function onDocClick(e: MouseEvent) {
+      if (!(e.target as Element).closest('[data-palette]')) setReadingPalette(null)
+    }
+    document.addEventListener('mouseup', onMouseUp)
+    document.addEventListener('click', onDocClick)
+    return () => {
+      document.removeEventListener('mouseup', onMouseUp)
+      document.removeEventListener('click', onDocClick)
+    }
+  }, [readingMode])
+
+  function applyReadingMark(color: string | null) {
+    if (!readingPalette) return
+    const { range, slug, cardId } = readingPalette
+    const cardEl = cardReadRefs.current.get(`${slug}:${cardId}`)
+    if (!cardEl) return
+    if (color) {
+      const mark = document.createElement('mark')
+      mark.setAttribute('data-color', color)
+      mark.style.backgroundColor = color
+      mark.style.color = 'inherit'
+      try { range.surroundContents(mark) }
+      catch { const frag = range.extractContents(); mark.appendChild(frag); range.insertNode(mark) }
+    } else {
+      cardEl.querySelectorAll('mark').forEach(m => {
+        if (range.intersectsNode(m)) {
+          const p = m.parentNode
+          if (p) { while (m.firstChild) p.insertBefore(m.firstChild, m); p.removeChild(m) }
+        }
+      })
+    }
+    const newHtml = cardEl.innerHTML
+    scheduleCardSave(slug, cardId, newHtml)
+    window.getSelection()?.removeAllRanges()
+    setReadingPalette(null)
+  }
+
   const accent = '#D97706'
   const ed     = activeEditor
 
@@ -772,6 +834,144 @@ export default function WorkspaceDocument({
   }
 
   // ── Render ────────────────────────────────────────────────────────────────
+
+  // ── Reading mode ─────────────────────────────────────────────────────────
+
+  const HL_READING = [
+    { color: '#FEF3C7', label: 'Amarelo' },
+    { color: '#DBEAFE', label: 'Azul'    },
+    { color: '#DCFCE7', label: 'Verde'   },
+    { color: '#EDE9FE', label: 'Roxo'    },
+    { color: '#FFEDD5', label: 'Laranja' },
+    { color: '#FCE7F3', label: 'Rosa'    },
+  ]
+
+  if (readingMode) {
+    return (
+      <div style={{ display: 'flex', flexDirection: 'column', flex: 1, position: 'relative' }}>
+
+        {/* Floating highlight palette */}
+        {readingPalette && (
+          <div
+            data-palette="true"
+            style={{
+              position: 'fixed',
+              left: readingPalette.x,
+              top: readingPalette.y - 52,
+              transform: 'translateX(-50%)',
+              zIndex: 9999,
+              display: 'flex', alignItems: 'center', gap: 4,
+              background: '#1E293B', borderRadius: 8,
+              padding: '6px 8px',
+              boxShadow: '0 4px 20px rgba(0,0,0,0.25)',
+              pointerEvents: 'auto',
+            }}
+          >
+            {/* Triangle */}
+            <div style={{
+              position: 'absolute', bottom: -6, left: '50%', transform: 'translateX(-50%)',
+              width: 0, height: 0,
+              borderLeft: '6px solid transparent', borderRight: '6px solid transparent',
+              borderTop: '6px solid #1E293B',
+            }} />
+            {HL_READING.map(h => (
+              <button
+                key={h.color}
+                data-palette="true"
+                onMouseDown={e => { e.preventDefault(); applyReadingMark(h.color) }}
+                title={h.label}
+                style={{
+                  width: 20, height: 20, borderRadius: 4,
+                  border: '1.5px solid rgba(255,255,255,0.2)',
+                  background: h.color, cursor: 'pointer', flexShrink: 0,
+                }}
+              />
+            ))}
+            <div style={{ width: 1, height: 16, background: 'rgba(255,255,255,0.18)', margin: '0 2px' }} />
+            <button
+              data-palette="true"
+              onMouseDown={e => { e.preventDefault(); applyReadingMark(null) }}
+              title="Remover marcador"
+              style={{
+                width: 20, height: 20, borderRadius: 4,
+                border: '1px solid rgba(255,255,255,0.15)',
+                background: 'transparent', cursor: 'pointer',
+                color: '#94A3B8', fontSize: '0.65rem',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+              }}
+            >✕</button>
+          </div>
+        )}
+
+        {/* Desk */}
+        <div style={{ flex: 1, background: '#C8CCD5', padding: '2.5rem 2rem 8rem', overflowY: 'auto' }}>
+          <div style={{
+            maxWidth: '680px', margin: '0 auto',
+            background: '#ffffff',
+            boxShadow: '0 2px 8px rgba(0,0,0,0.10), 0 12px 40px rgba(0,0,0,0.14)',
+            borderRadius: '2px', padding: '4rem 5rem',
+            minHeight: 'calc(100vh - 160px)',
+            userSelect: 'text',
+          }}>
+            {/* Title */}
+            <div style={{ marginBottom: '3.5rem' }}>
+              <div style={{ width: '28px', height: '3px', borderRadius: '2px', background: accent, marginBottom: '1.1rem' }} />
+              <h1 style={{ margin: 0, fontSize: '2.5rem', fontWeight: 700, color: '#1A1D23', letterSpacing: '-0.045em', lineHeight: 1.0 }}>
+                {project.title}
+              </h1>
+              {(typeLabel || project.bible_version) && (
+                <p style={{ margin: '0.6rem 0 0', fontSize: '0.8rem', color: '#64748B', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                  {typeLabel && <span>{typeLabel}</span>}
+                  {typeLabel && project.bible_version && <span style={{ opacity: 0.4 }}>•</span>}
+                  {project.bible_version && <span>{project.bible_version}</span>}
+                </p>
+              )}
+              <div style={{ margin: '1.75rem 0 0', height: '1px', background: '#E2E4E8' }} />
+            </div>
+
+            {blocks.map(({ sectionDef }, sectionIdx) => {
+              const chMetaEntry = CHAPTER_META[sectionDef.slug]
+              const contents    = cardContents[sectionDef.slug] ?? {}
+              const hasContent  = sectionDef.cards.some(c => isCardDone(contents[c.id] ?? ''))
+              if (!hasContent) return null
+              return (
+                <div key={sectionDef.slug}>
+                  {sectionIdx > 0 && <div style={{ margin: '3rem 0', height: '1px', background: '#E2E4E8' }} />}
+                  <h2 style={{ margin: '0 0 1.5rem', fontSize: '1.4rem', fontWeight: 800, color: '#1A1D23', letterSpacing: '-0.02em' }}>
+                    {chMetaEntry?.title ?? sectionDef.title}
+                  </h2>
+                  {sectionDef.cards.map((card, cardIdx) => {
+                    const html = contents[card.id] ?? ''
+                    if (!isCardDone(html)) return null
+                    const key          = `${sectionDef.slug}:${card.id}`
+                    const sectionTitle = chMetaEntry?.sectionTitles?.[card.id] ?? card.title
+                    return (
+                      <div key={card.id} style={{ marginTop: cardIdx === 0 ? 0 : '2rem' }}>
+                        <h3 style={{
+                          margin: '0 0 0.45rem',
+                          fontSize: '0.75rem', fontWeight: 700,
+                          color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.07em',
+                        }}>
+                          {sectionTitle}
+                        </h3>
+                        <div
+                          ref={el => { if (el) cardReadRefs.current.set(key, el); else cardReadRefs.current.delete(key) }}
+                          data-card-key={key}
+                          className="ws-doc-section"
+                          dangerouslySetInnerHTML={{ __html: html }}
+                          style={{ fontSize: '0.92rem', lineHeight: 1.78, color: '#1E293B' }}
+                        />
+                      </div>
+                    )
+                  })}
+                </div>
+              )
+            })}
+          </div>
+        </div>
+      </div>
+    )
+  }
 
   // ── Free mode — single continuous document (no accordion, no cards) ────
 

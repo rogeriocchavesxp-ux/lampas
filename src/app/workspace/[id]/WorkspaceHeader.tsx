@@ -174,8 +174,8 @@ export interface WorkspaceHeaderProps {
   activePhase?:       NavPhase
   showWorkMode:       boolean
   showViewMode:       boolean
-  workMode:           'guided' | 'free'
-  onWorkModeChange:   (mode: 'guided' | 'free') => void
+  workMode:           'guided' | 'free' | 'reading'
+  onWorkModeChange:   (mode: 'guided' | 'free' | 'reading') => void
   vgViewMode:         'visual' | 'structured'
   onVgViewModeChange: (mode: 'visual' | 'structured') => void
   bibleOpen:          boolean
@@ -236,11 +236,12 @@ export default function WorkspaceHeader({
           {showWorkMode && (
             <SegmentedControl
               options={[
-                { value: 'guided', label: 'Guiado' },
-                { value: 'free',   label: 'Livre'  },
+                { value: 'guided',  label: 'Guiado'  },
+                { value: 'free',    label: 'Livre'   },
+                { value: 'reading', label: 'Leitura' },
               ]}
               value={workMode}
-              onChange={v => onWorkModeChange(v as 'guided' | 'free')}
+              onChange={v => onWorkModeChange(v as 'guided' | 'free' | 'reading')}
               color={activePhase?.color}
             />
           )}

@@ -162,10 +162,10 @@ export default function WorkspaceClient({ user, project, initialSections }: Prop
   const [aiOpen, setAiOpen] = useState(false)
   const [aiPrompt, setAiPrompt] = useState('')
 
-  // Work mode (guided / free) per phase — persisted per project
-  const [workModeMap, setWorkModeMap] = useState<Partial<Record<string, 'guided' | 'free'>>>({})
+  // Work mode (guided / free / reading) per phase — persisted per project
+  const [workModeMap, setWorkModeMap] = useState<Partial<Record<string, 'guided' | 'free' | 'reading'>>>({})
 
-  function setWorkMode(phaseId: string, mode: 'guided' | 'free') {
+  function setWorkMode(phaseId: string, mode: 'guided' | 'free' | 'reading') {
     setWorkModeMap(prev => {
       const next = { ...prev, [phaseId]: mode }
       try { localStorage.setItem(`lampas_workmode_${project.id}`, JSON.stringify(next)) } catch {}
@@ -1661,6 +1661,7 @@ ${body}`
                 onUpdate={handleSectionUpdate}
                 onAskAI={handleAskAI}
                 guided={(workModeMap['investigar'] ?? 'free') === 'guided'}
+                readingMode={(workModeMap['investigar'] ?? 'free') === 'reading'}
                 initialSlug={activeSlug}
                 typeLabel="Investigar"
               />
@@ -1676,6 +1677,7 @@ ${body}`
                 onUpdate={handleSectionUpdate}
                 onAskAI={handleAskAI}
                 guided={(workModeMap['investigar'] ?? 'free') === 'guided'}
+                readingMode={(workModeMap['investigar'] ?? 'free') === 'reading'}
                 initialSlug={activeSlug}
                 typeLabel="Narrativas"
               />
@@ -1691,6 +1693,7 @@ ${body}`
                 onUpdate={handleSectionUpdate}
                 onAskAI={handleAskAI}
                 guided={(workModeMap[activePhase?.id ?? ''] ?? 'guided') === 'guided'}
+                readingMode={(workModeMap[activePhase?.id ?? ''] ?? 'guided') === 'reading'}
                 initialSlug={activeSlug}
                 typeLabel={modeConfig.name}
               />
@@ -1706,6 +1709,7 @@ ${body}`
                 onUpdate={handleSectionUpdate}
                 onAskAI={handleAskAI}
                 guided={(workModeMap['investigar'] ?? 'free') === 'guided'}
+                readingMode={(workModeMap['investigar'] ?? 'free') === 'reading'}
                 initialSlug={activeSlug}
                 typeLabel="Estudo Temático"
               />
@@ -1721,6 +1725,7 @@ ${body}`
                 onUpdate={handleSectionUpdate}
                 onAskAI={handleAskAI}
                 guided={(workModeMap[activePhase?.id ?? ''] ?? 'guided') === 'guided'}
+                readingMode={(workModeMap[activePhase?.id ?? ''] ?? 'guided') === 'reading'}
                 initialSlug={activeSlug}
                 typeLabel={modeConfig.name}
               />
@@ -1753,6 +1758,7 @@ ${body}`
                 onUpdate={handleSectionUpdate}
                 onAskAI={handleAskAI}
                 guided={(workModeMap[activePhase?.id ?? ''] ?? 'guided') === 'guided'}
+                readingMode={(workModeMap[activePhase?.id ?? ''] ?? 'guided') === 'reading'}
                 initialSlug={activeSlug}
                 typeLabel={modeConfig.name}
               />
