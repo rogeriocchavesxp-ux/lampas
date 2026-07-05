@@ -10,6 +10,7 @@ import type { InsertMenuItem } from '@/components/RichEditor'
 
 import type { KnowledgeItem, Props, DimensionFilterType } from './knowledge-internals'
 import { getItemContextualSubtitle, Badge, TYPE_ORDER, TYPE_DESCRIPTIONS, KB_INSERT_MENU, TYPE_SECTION_LABELS, EMPTY_ITEM, filterChip, Field, ListField, SectionTitle, CourseModulesEditor, CourseContentEditor, DetailView, LibraryHome, DimensionView, labelStyle, inputStyle, COURSE_GENERAL_BLOCKS } from './knowledge-internals'
+import BibliotecaTeologica from './BibliotecaTeologica'
 
 export default function KnowledgeClient({ userId, initialItems, initialDashboard }: Props) {
   const supabase = useMemo(() => createClient(), [])
@@ -37,6 +38,7 @@ export default function KnowledgeClient({ userId, initialItems, initialDashboard
   const [groupBy,            setGroupBy]            = useState<'none' | 'type' | 'author' | 'category' | 'status'>('type')
   const [collapsedGroups,    setCollapsedGroups]    = useState<Set<string>>(new Set())
   const [dimensionFilter,    setDimensionFilter]    = useState<{ type: DimensionFilterType; value: string } | null>(null)
+  const [libMode,            setLibMode]            = useState(false)
 
   const selected = items.find(item => item.id === selectedId) ?? null
   const currentDraftType = KNOWLEDGE_TYPES[draft.item_type]
@@ -784,14 +786,36 @@ export default function KnowledgeClient({ userId, initialItems, initialDashboard
             <div style={{ fontSize: '0.68rem', color: '#64748B' }}>Segundo cérebro teológico e ministerial</div>
           </div>
         </div>
-        {items.length > 0 && (
-          <button onClick={() => { setChoosingType(true); setEditing(false) }} style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', border: 'none', background: '#B45309', color: '#FFFFFF', borderRadius: '8px', padding: '0.5rem 0.85rem', fontSize: '0.8rem', fontWeight: 750, cursor: 'pointer', fontFamily: 'inherit' }}>
-            <Plus size={14} /> Novo conhecimento
-          </button>
-        )}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+          {/* Mode toggle */}
+          <div style={{ display: 'flex', border: '1px solid #E2E8F0', borderRadius: '8px', overflow: 'hidden', background: '#F8FAFC' }}>
+            <button
+              onClick={() => setLibMode(false)}
+              style={{ padding: '0.38rem 0.8rem', border: 'none', background: !libMode ? '#FFFFFF' : 'transparent', color: !libMode ? '#0F172A' : '#94A3B8', fontWeight: !libMode ? 700 : 500, fontSize: '0.78rem', cursor: 'pointer', fontFamily: 'inherit', borderRight: '1px solid #E2E8F0', transition: 'all 0.12s', boxShadow: !libMode ? '0 1px 3px rgba(0,0,0,0.06)' : 'none' }}
+            >
+              Minha Biblioteca
+            </button>
+            <button
+              onClick={() => setLibMode(true)}
+              style={{ padding: '0.38rem 0.8rem', border: 'none', background: libMode ? '#FFFFFF' : 'transparent', color: libMode ? '#7C2D12' : '#94A3B8', fontWeight: libMode ? 700 : 500, fontSize: '0.78rem', cursor: 'pointer', fontFamily: 'inherit', transition: 'all 0.12s', boxShadow: libMode ? '0 1px 3px rgba(0,0,0,0.06)' : 'none' }}
+            >
+              Comentários Teológicos
+            </button>
+          </div>
+          {!libMode && items.length > 0 && (
+            <button onClick={() => { setChoosingType(true); setEditing(false) }} style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', border: 'none', background: '#B45309', color: '#FFFFFF', borderRadius: '8px', padding: '0.5rem 0.85rem', fontSize: '0.8rem', fontWeight: 750, cursor: 'pointer', fontFamily: 'inherit' }}>
+              <Plus size={14} /> Novo conhecimento
+            </button>
+          )}
+        </div>
       </header>
 
-      <div style={{ flex: 1, minHeight: 0, display: 'grid', gridTemplateColumns: sidebarCollapsed ? '44px 1fr' : '275px 1fr', transition: 'grid-template-columns 0.18s ease' }}>
+      {libMode && (
+        <div style={{ flex: 1, minHeight: 0, display: 'flex', overflow: 'hidden' }}>
+          <BibliotecaTeologica />
+        </div>
+      )}
+      <div style={{ flex: 1, minHeight: 0, display: libMode ? 'none' : 'grid', gridTemplateColumns: sidebarCollapsed ? '44px 1fr' : '275px 1fr', transition: 'grid-template-columns 0.18s ease' }}>
         <aside style={{ borderRight: '1px solid #E2E8F0', background: '#FFFFFF', minHeight: 0, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
           {sidebarCollapsed ? (
             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', paddingTop: '0.65rem', gap: '1rem' }}>
