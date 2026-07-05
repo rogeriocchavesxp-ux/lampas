@@ -381,7 +381,11 @@ export default function BibliotecaTeologica() {
               {!entLoading && entries.length === 0 && (
                 <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '12px', padding: '3rem 1rem', color: '#94A3B8' }}>
                   <BookOpen size={36} strokeWidth={1} style={{ opacity: 0.15 }} />
-                  <div style={{ fontSize: '0.85rem', color: '#64748B' }}>Nenhuma entrada encontrada.</div>
+                  <div style={{ fontSize: '0.85rem', color: '#64748B', textAlign: 'center', maxWidth: '280px' }}>
+                    {entQuery
+                      ? `Nenhuma entrada encontrada para "${entQuery}".`
+                      : 'Esta obra ainda não possui entradas importadas.'}
+                  </div>
                 </div>
               )}
               <div style={{ height: '2rem' }} />
