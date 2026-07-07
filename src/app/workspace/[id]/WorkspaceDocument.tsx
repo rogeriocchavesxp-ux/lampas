@@ -460,6 +460,7 @@ interface Props {
   onAskAI: (prompt: string) => void
   guided?: boolean
   readingMode?: boolean
+  onExitReadingMode?: () => void
   initialSlug?: string
   typeLabel?: string
 }
@@ -467,7 +468,7 @@ interface Props {
 // ── Component ─────────────────────────────────────────────────────────────────
 
 export default function WorkspaceDocument({
-  blocks, project, userId, onUpdate, guided = true, readingMode = false, initialSlug, typeLabel,
+  blocks, project, userId, onUpdate, guided = true, readingMode = false, onExitReadingMode, initialSlug, typeLabel,
 }: Props) {
   const supabase = createClient()
 
@@ -848,7 +849,7 @@ export default function WorkspaceDocument({
 
   if (readingMode) {
     return (
-      <div style={{ display: 'flex', flexDirection: 'column', flex: 1, position: 'relative' }}>
+      <div style={{ position: 'fixed', inset: 0, zIndex: 400, background: 'var(--background)', overflowY: 'auto' }}>
 
         {/* Floating highlight palette */}
         {readingPalette && (
@@ -903,30 +904,39 @@ export default function WorkspaceDocument({
           </div>
         )}
 
-        {/* Desk */}
-        <div style={{ flex: 1, background: '#C8CCD5', padding: '2.5rem 2rem 8rem', overflowY: 'auto' }}>
-          <div style={{
-            maxWidth: '680px', margin: '0 auto',
-            background: '#ffffff',
-            boxShadow: '0 2px 8px rgba(0,0,0,0.10), 0 12px 40px rgba(0,0,0,0.14)',
-            borderRadius: '2px', padding: '4rem 5rem',
-            minHeight: 'calc(100vh - 160px)',
-            userSelect: 'text',
-          }}>
-            {/* Title */}
-            <div style={{ marginBottom: '3.5rem' }}>
-              <div style={{ width: '28px', height: '3px', borderRadius: '2px', background: accent, marginBottom: '1.1rem' }} />
-              <h1 style={{ margin: 0, fontSize: '2.5rem', fontWeight: 700, color: '#1A1D23', letterSpacing: '-0.045em', lineHeight: 1.0 }}>
-                {project.title}
-              </h1>
-              {(typeLabel || project.bible_version) && (
-                <p style={{ margin: '0.6rem 0 0', fontSize: '0.8rem', color: '#64748B', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-                  {typeLabel && <span>{typeLabel}</span>}
-                  {typeLabel && project.bible_version && <span style={{ opacity: 0.4 }}>•</span>}
-                  {project.bible_version && <span>{project.bible_version}</span>}
-                </p>
+        {/* Reading content */}
+        <div style={{ maxWidth: '820px', margin: '0 auto', padding: '3rem clamp(1.5rem,4vw,2.5rem) 6rem', userSelect: 'text' }}>
+
+            {/* Header bar */}
+            <div style={{
+              display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between',
+              marginBottom: '2.5rem', paddingBottom: '1.25rem',
+              borderBottom: '1px solid var(--border-subtle)', gap: '1rem',
+            }}>
+              <div>
+                <div style={{ fontSize: '0.68rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: '0.35rem' }}>
+                  {typeLabel ?? 'Leitura'}
+                </div>
+                <h2 style={{ fontSize: '1.25rem', fontWeight: 700, color: 'var(--text-primary)', margin: 0 }}>
+                  {project.title}
+                </h2>
+              </div>
+              {onExitReadingMode && (
+                <button
+                  onClick={onExitReadingMode}
+                  style={{
+                    background: 'transparent', border: '1px solid var(--border)',
+                    color: 'var(--text-secondary)', borderRadius: '6px',
+                    padding: '0.4rem 0.9rem', fontSize: '0.78rem',
+                    cursor: 'pointer', fontFamily: 'inherit',
+                    flexShrink: 0, transition: 'all 0.15s',
+                  }}
+                  onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--text-muted)'; e.currentTarget.style.color = 'var(--text-primary)' }}
+                  onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.color = 'var(--text-secondary)' }}
+                >
+                  ← Voltar à edição
+                </button>
               )}
-              <div style={{ margin: '1.75rem 0 0', height: '1px', background: '#E2E4E8' }} />
             </div>
 
             {blocks.map(({ sectionDef }, sectionIdx) => {
@@ -967,7 +977,6 @@ export default function WorkspaceDocument({
                 </div>
               )
             })}
-          </div>
         </div>
       </div>
     )

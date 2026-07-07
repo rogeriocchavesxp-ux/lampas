@@ -1662,6 +1662,7 @@ ${body}`
                 onAskAI={handleAskAI}
                 guided={(workModeMap['investigar'] ?? 'free') === 'guided'}
                 readingMode={(workModeMap['investigar'] ?? 'free') === 'reading'}
+                onExitReadingMode={() => setWorkMode('investigar', 'free')}
                 initialSlug={activeSlug}
                 typeLabel="Investigar"
               />
@@ -1678,6 +1679,7 @@ ${body}`
                 onAskAI={handleAskAI}
                 guided={(workModeMap['investigar'] ?? 'free') === 'guided'}
                 readingMode={(workModeMap['investigar'] ?? 'free') === 'reading'}
+                onExitReadingMode={() => setWorkMode('investigar', 'free')}
                 initialSlug={activeSlug}
                 typeLabel="Narrativas"
               />
@@ -1694,6 +1696,7 @@ ${body}`
                 onAskAI={handleAskAI}
                 guided={(workModeMap[activePhase?.id ?? ''] ?? 'guided') === 'guided'}
                 readingMode={(workModeMap[activePhase?.id ?? ''] ?? 'guided') === 'reading'}
+                onExitReadingMode={() => activePhase && setWorkMode(activePhase.id, 'guided')}
                 initialSlug={activeSlug}
                 typeLabel={modeConfig.name}
               />
@@ -1710,6 +1713,7 @@ ${body}`
                 onAskAI={handleAskAI}
                 guided={(workModeMap['investigar'] ?? 'free') === 'guided'}
                 readingMode={(workModeMap['investigar'] ?? 'free') === 'reading'}
+                onExitReadingMode={() => setWorkMode('investigar', 'free')}
                 initialSlug={activeSlug}
                 typeLabel="Estudo Temático"
               />
@@ -1726,6 +1730,7 @@ ${body}`
                 onAskAI={handleAskAI}
                 guided={(workModeMap[activePhase?.id ?? ''] ?? 'guided') === 'guided'}
                 readingMode={(workModeMap[activePhase?.id ?? ''] ?? 'guided') === 'reading'}
+                onExitReadingMode={() => activePhase && setWorkMode(activePhase.id, 'guided')}
                 initialSlug={activeSlug}
                 typeLabel={modeConfig.name}
               />
@@ -1759,6 +1764,7 @@ ${body}`
                 onAskAI={handleAskAI}
                 guided={(workModeMap[activePhase?.id ?? ''] ?? 'guided') === 'guided'}
                 readingMode={(workModeMap[activePhase?.id ?? ''] ?? 'guided') === 'reading'}
+                onExitReadingMode={() => activePhase && setWorkMode(activePhase.id, 'guided')}
                 initialSlug={activeSlug}
                 typeLabel={modeConfig.name}
               />
@@ -1813,20 +1819,15 @@ ${body}`
             )}
           </main>
 
-          {/* Bible popup — overlay flutuante sobre o workspace */}
+          {/* Bible side panel — flex sibling, acoplado ao workspace */}
+          {bibleOpen && <ResizeHandle onMouseDown={startBibleResize} />}
           {bibleOpen && (
-            <div style={{
-              position: 'fixed',
-              top: 80, right: 52,
-              width: 420, height: 'calc(100vh - 96px)',
-              zIndex: 180,
+            <aside style={{
+              flexShrink: 0,
+              width: `${biblePanelWidth}px`,
+              overflow: 'hidden',
               display: 'flex', flexDirection: 'column',
               background: 'var(--surface)',
-              borderRadius: 14,
-              border: '1px solid var(--border-subtle)',
-              boxShadow: '0 8px 40px rgba(0,0,0,0.18), 0 2px 8px rgba(0,0,0,0.08)',
-              overflow: 'hidden',
-              animation: 'bible-popup-in 0.18s ease',
             }}>
               <BibleFloatingWindow
                 book={project.book}
@@ -1838,7 +1839,7 @@ ${body}`
                 sidebarMode={true}
                 studyMode={project.study_mode}
               />
-            </div>
+            </aside>
           )}
 
           {/* AI panel — flex sibling so content is never obscured */}
