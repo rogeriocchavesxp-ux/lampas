@@ -40,7 +40,6 @@ import AIPanel from './AIPanel'
 import BibleFloatingWindow from './BibleFloatingWindow'
 import VisaoGeralWorkspace from './VisaoGeralWorkspace'
 import WorkspaceDocument from './WorkspaceDocument'
-import WorkspaceHeader from './WorkspaceHeader'
 import EnviarParaSermaModal from './EnviarParaSermaModal'
 import DicionarioWorkspace from './DicionarioWorkspace'
 import IntroducaoWorkspace from './IntroducaoWorkspace'
@@ -719,22 +718,13 @@ ${body}`
         onEnviarDevocional={() => { setEnviarTargetMode('devocional'); setEnviarParaSermaOpen(true) }}
         onEnviarKB={() => window.dispatchEvent(new CustomEvent('lampas:kb-open-create'))}
         onExportarPromptSlides={handleExportarPromptSlides}
-      />
-
-      <WorkspaceHeader
-        titleValue={titleValue}
-        modeConfig={modeConfig}
-        bibleVersion={project.bible_version ?? ''}
-        pct={pct}
-        activePhase={activePhase}
         showWorkMode={ALL_DOC_SLUGS.includes(activeSlug)}
         showViewMode={(VG_SLUGS.includes(activeSlug) || activeSlug === 'nr_investigar_vg') && !PREPARAR_DOC_SLUGS.includes(activeSlug) && !NARRATIVAS_PREPARAR_SLUGS.includes(activeSlug)}
         workMode={activePhase ? (workModeMap[activePhase.id] ?? (activePhase.id === 'investigar' ? 'free' : 'guided')) : 'guided'}
         onWorkModeChange={(mode) => activePhase && setWorkMode(activePhase.id, mode)}
         vgViewMode={vgViewMode}
         onVgViewModeChange={setVgViewMode}
-        bibleOpen={bibleOpen}
-        onToggleBible={() => setBibleOpen(o => !o)}
+        activePhaseColor={activePhase?.color}
       />
 
       {/* ── Guided strip (demo projects only) ─────────────────────────── */}

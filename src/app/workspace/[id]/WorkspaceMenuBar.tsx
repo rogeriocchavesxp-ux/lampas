@@ -38,12 +38,22 @@ export interface WorkspaceMenuBarProps {
   onEnviarDevocional: () => void
   onEnviarKB: () => void
   onExportarPromptSlides: () => void
+  // Context controls (unified from WorkspaceHeader)
+  showWorkMode?: boolean
+  showViewMode?: boolean
+  workMode?: 'guided' | 'free' | 'reading'
+  onWorkModeChange?: (mode: 'guided' | 'free' | 'reading') => void
+  vgViewMode?: 'visual' | 'structured'
+  onVgViewModeChange?: (mode: 'visual' | 'structured') => void
+  activePhaseColor?: string
 }
 
 export default function WorkspaceMenuBar({
   bibleOpen, focusMode, sideBySide, aiOpen, checklistOpen,
   onToggleBible, onToggleFocus, onToggleSideBySide, onToggleAI, onToggleChecklist,
   onEnviarSermao, onEnviarDevocional, onEnviarKB, onExportarPromptSlides,
+  showWorkMode, showViewMode, workMode, onWorkModeChange,
+  vgViewMode, onVgViewModeChange, activePhaseColor,
 }: WorkspaceMenuBarProps) {
   const router = useRouter()
   const [openMenu, setOpenMenu] = useState<string | null>(null)
@@ -389,7 +399,7 @@ export default function WorkspaceMenuBar({
       <div style={{ width: '1px', height: '18px', background: 'var(--border-subtle)', marginRight: '0.35rem', flexShrink: 0 }} />
 
       {/* ── Menu bar ── */}
-      <div ref={barRef} style={{ display: 'flex', alignItems: 'center', flex: 1, minWidth: 0 }}>
+      <div ref={barRef} style={{ display: 'flex', alignItems: 'center', flexShrink: 0 }}>
         {menus.map(menu => (
           <div key={menu.id} style={{ position: 'relative', flexShrink: 0 }}>
             <MenuLabel
@@ -404,6 +414,42 @@ export default function WorkspaceMenuBar({
           </div>
         ))}
       </div>
+
+      {/* ── Contexto: modo + visualização ── */}
+      {(showWorkMode || showViewMode) && <>
+        <div style={{ width: 1, height: 18, background: 'var(--border-subtle)', margin: '0 6px', flexShrink: 0 }} />
+        <div style={{ display: 'flex', alignItems: 'center', gap: 4, flexShrink: 0 }}>
+          {showWorkMode && (
+            <BarSegControl
+              options={[
+                { value: 'guided',  label: 'Guiado'  },
+                { value: 'free',    label: 'Livre'   },
+                { value: 'reading', label: 'Leitura' },
+              ]}
+              value={workMode ?? 'free'}
+              onChange={v => onWorkModeChange?.(v as 'guided' | 'free' | 'reading')}
+              color={activePhaseColor}
+            />
+          )}
+          {showViewMode && (
+            <BarSegControl
+              options={[
+                { value: 'structured', label: 'Estruturado' },
+                { value: 'visual',     label: 'Mapa'        },
+              ]}
+              value={vgViewMode ?? 'structured'}
+              onChange={v => onVgViewModeChange?.(v as 'visual' | 'structured')}
+            />
+          )}
+        </div>
+      </>}
+
+      {/* ── Bíblia ── */}
+      <div style={{ width: 1, height: 18, background: 'var(--border-subtle)', margin: '0 6px', flexShrink: 0 }} />
+      <BarBibleBtn open={bibleOpen} onClick={onToggleBible} />
+
+      {/* ── Spacer ── */}
+      <div style={{ flex: 1, minWidth: 4 }} />
 
       {/* ── Lado direito: Pesquisar + Novo Projeto + Perfil ── */}
       <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', flexShrink: 0 }}>
@@ -548,6 +594,89 @@ export default function WorkspaceMenuBar({
       </div>
     </header>
 
+  )
+}
+
+// ── OpenBookIcon ──────────────────────────────────────────────────────────────
+
+function OpenBookIcon({ size = 13 }: { size?: number }) {
+  return (
+    <svg width={size} height={Math.round(size * 0.75)} viewBox="0 0 20 15" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <path d="M10 13.5C10 13.5 6.5 12.5 1.5 13.5V2C6.5 1 10 2.5 10 2.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+      <path d="M10 13.5C10 13.5 13.5 12.5 18.5 13.5V2C13.5 1 10 2.5 10 2.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+      <line x1="10" y1="2.5" x2="10" y2="13.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+      <line x1="3"  y1="5"   x2="8"  y2="4.5" stroke="currentColor" strokeWidth="1" strokeLinecap="round" strokeOpacity="0.5"/>
+      <line x1="3"  y1="7.5" x2="8"  y2="7"   stroke="currentColor" strokeWidth="1" strokeLinecap="round" strokeOpacity="0.5"/>
+      <line x1="3"  y1="10"  x2="8"  y2="9.5" stroke="currentColor" strokeWidth="1" strokeLinecap="round" strokeOpacity="0.5"/>
+      <line x1="12" y1="4.5" x2="17" y2="5"   stroke="currentColor" strokeWidth="1" strokeLinecap="round" strokeOpacity="0.5"/>
+      <line x1="12" y1="7"   x2="17" y2="7.5" stroke="currentColor" strokeWidth="1" strokeLinecap="round" strokeOpacity="0.5"/>
+      <line x1="12" y1="9.5" x2="17" y2="10"  stroke="currentColor" strokeWidth="1" strokeLinecap="round" strokeOpacity="0.5"/>
+    </svg>
+  )
+}
+
+// ── BarSegControl ─────────────────────────────────────────────────────────────
+
+function BarSegControl({ options, value, onChange, color }: {
+  options: { value: string; label: string }[]
+  value: string
+  onChange: (v: string) => void
+  color?: string
+}) {
+  return (
+    <div style={{
+      display: 'flex', alignItems: 'center',
+      background: 'var(--surface-2)', border: '1px solid var(--border-subtle)',
+      borderRadius: 6, padding: 2, gap: 1,
+      height: 24, boxSizing: 'border-box', flexShrink: 0,
+    }}>
+      {options.map(opt => {
+        const active = opt.value === value
+        return (
+          <button
+            key={opt.value}
+            onClick={() => onChange(opt.value)}
+            style={{
+              height: 20, padding: '0 8px', border: 'none', borderRadius: 4,
+              background: active ? (color ?? 'var(--accent)') : 'transparent',
+              color: active ? '#fff' : 'var(--text-muted)',
+              fontSize: '0.7rem', fontWeight: active ? 650 : 400,
+              cursor: 'pointer', fontFamily: 'inherit', transition: 'all 0.12s',
+              whiteSpace: 'nowrap',
+            }}
+          >
+            {opt.label}
+          </button>
+        )
+      })}
+    </div>
+  )
+}
+
+// ── BarBibleBtn ───────────────────────────────────────────────────────────────
+
+function BarBibleBtn({ open, onClick }: { open: boolean; onClick: () => void }) {
+  const [hovered, setHovered] = useState(false)
+  return (
+    <button
+      onClick={onClick}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+      title="Texto Bíblico (⌘B)"
+      style={{
+        display: 'flex', alignItems: 'center', gap: 5,
+        height: 26, padding: '0 9px',
+        border: `1px solid ${open ? '#1D4ED8' : (hovered ? 'var(--border)' : 'var(--border-subtle)')}`,
+        borderRadius: 6,
+        background: open ? 'rgba(29,78,216,0.08)' : (hovered ? 'var(--surface-2)' : 'transparent'),
+        color: open ? '#1D4ED8' : (hovered ? 'var(--text-secondary)' : 'var(--text-muted)'),
+        cursor: 'pointer', fontFamily: 'inherit', transition: 'all 0.13s',
+        fontSize: '0.72rem', fontWeight: open ? 650 : 400, flexShrink: 0,
+      }}
+    >
+      <OpenBookIcon size={13} />
+      <span>Bíblia</span>
+    </button>
   )
 }
 
