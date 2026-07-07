@@ -697,7 +697,7 @@ ${body}`
       activeSlug={activeSlug}
       activeSection={activeSection}
     >
-      <div style={{ height: 'calc(100vh - 52px)', display: 'flex', flexDirection: 'column', background: 'var(--background)', paddingBottom: focusMode ? 0 : '60px', boxSizing: 'border-box' }}>
+      <div style={{ height: '100vh', display: 'flex', flexDirection: 'column', background: 'var(--background)', paddingBottom: focusMode ? 0 : '60px', boxSizing: 'border-box' }}>
 
       {/* ── Menu bar ──────────────────────────────────────────────────────── */}
       <WorkspaceMenuBar
