@@ -694,14 +694,17 @@ export default function WorkspaceDocument({
   function renderToolbar(chIdx: number) {
     return (
       <div style={{
-        position: 'sticky', top: '37px', zIndex: 20,
-        display: 'flex', alignItems: 'center', gap: '2px', flexWrap: 'wrap',
-        padding: '0.28rem 0.45rem',
+        position: 'sticky', top: '44px', zIndex: 20,
         background: 'var(--background)',
         borderTop: '1px solid rgba(0,0,0,0.06)',
         borderBottom: '1px solid rgba(0,0,0,0.08)',
         boxShadow: '0 2px 6px rgba(0,0,0,0.04)',
       }}>
+        <div style={{
+          maxWidth: '680px', margin: '0 auto',
+          display: 'flex', alignItems: 'center', gap: '2px', flexWrap: 'wrap',
+          padding: '0.28rem 0.45rem',
+        }}>
         {!ed ? (
           <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)', padding: '0 0.25rem' }}>
             Clique em uma seção para começar a escrever
@@ -830,6 +833,7 @@ export default function WorkspaceDocument({
 
           </>
         )}
+        </div>{/* /toolbar-inner */}
       </div>
     )
   }
