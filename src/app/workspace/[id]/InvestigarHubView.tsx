@@ -160,43 +160,62 @@ export default function InvestigarHubView({
 
         {/* 3 study cards */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1rem', marginBottom: '1rem' }}>
-          {studyBlocks.map(block => {
+          {studyBlocks.map((block, idx) => {
             const { filled, total, pct } = calcProgress(block)
             const { label: sLabel, color: sColor } = statusLabel(pct)
-            const accent = getAccentColor(block.sectionDef)
-            const icon   = getIcon(block.sectionDef)
-            const desc   = getDescription(block.sectionDef)
+            const accent  = getAccentColor(block.sectionDef)
+            const desc    = getDescription(block.sectionDef)
+            const numeral = String(idx + 1).padStart(2, '0')
 
             return (
               <div
                 key={block.sectionDef.slug}
                 style={{
                   background: 'var(--surface)',
-                  border: `1px solid ${accent}28`,
+                  border: `1px solid ${accent}22`,
                   borderTop: `3px solid ${accent}`,
                   borderRadius: '10px',
-                  padding: '1.25rem',
+                  padding: '1.1rem 1.1rem 1.1rem 0.9rem',
                   display: 'flex',
                   flexDirection: 'column',
-                  gap: '0.75rem',
+                  gap: '0.7rem',
                   transition: 'box-shadow 0.15s, transform 0.15s',
                 }}
-                onMouseEnter={e => { e.currentTarget.style.boxShadow = `0 4px 20px ${accent}20`; e.currentTarget.style.transform = 'translateY(-1px)' }}
+                onMouseEnter={e => { e.currentTarget.style.boxShadow = `0 4px 20px ${accent}18`; e.currentTarget.style.transform = 'translateY(-1px)' }}
                 onMouseLeave={e => { e.currentTarget.style.boxShadow = 'none'; e.currentTarget.style.transform = 'none' }}
               >
-                <div style={{ display: 'flex', alignItems: 'flex-start', gap: '0.6rem' }}>
-                  <span style={{ fontSize: '1.5rem', lineHeight: 1, flexShrink: 0, marginTop: '0.1rem' }}>{icon}</span>
+                {/* Number + title */}
+                <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.55rem' }}>
+                  <span style={{
+                    fontSize: '0.72rem', fontWeight: 900,
+                    color: '#1E3A5F', opacity: 0.45, flexShrink: 0,
+                    fontVariantNumeric: 'tabular-nums',
+                  }}>
+                    {numeral}
+                  </span>
                   <div>
-                    <div style={{ fontSize: '0.82rem', fontWeight: 700, color: 'var(--text-primary)', marginBottom: '0.2rem' }}>
+                    <div style={{
+                      fontSize: '14px', fontWeight: 800,
+                      color: '#1E3A5F',
+                      textTransform: 'uppercase',
+                      letterSpacing: '0.06em',
+                      lineHeight: 1.15,
+                    }}>
                       {block.sectionDef.title}
                     </div>
-                    <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', lineHeight: 1.4 }}>
+                    <div style={{
+                      fontSize: '13px', fontWeight: 400,
+                      color: 'var(--text-muted)', lineHeight: 1.4,
+                      marginTop: '0.2rem',
+                      paddingLeft: '0.05rem',
+                    }}>
                       {desc}
                     </div>
                   </div>
                 </div>
 
-                <div>
+                {/* Progress */}
+                <div style={{ paddingLeft: '1.4rem' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.35rem' }}>
                     <span style={{ fontSize: '0.65rem', color: sColor, fontWeight: 700, background: `${sColor}14`, padding: '0.1rem 0.45rem', borderRadius: '99px' }}>
                       {sLabel}
@@ -205,16 +224,17 @@ export default function InvestigarHubView({
                       {filled}/{total} campos
                     </span>
                   </div>
-                  <div style={{ height: '5px', background: 'var(--border-subtle)', borderRadius: '99px', overflow: 'hidden' }}>
+                  <div style={{ height: '4px', background: 'var(--border-subtle)', borderRadius: '99px', overflow: 'hidden' }}>
                     <div style={{ height: '100%', width: `${pct}%`, background: pct === 100 ? '#10B981' : accent, borderRadius: '99px', transition: 'width 0.4s ease' }} />
                   </div>
-                  <div style={{ marginTop: '0.3rem', textAlign: 'right', fontSize: '0.62rem', color: 'var(--text-muted)' }}>
+                  <div style={{ marginTop: '0.28rem', textAlign: 'right', fontSize: '0.62rem', color: 'var(--text-muted)' }}>
                     {pct}% concluído
                   </div>
                 </div>
 
+                {/* Card checklist */}
                 {block.sectionDef.cards && block.sectionDef.cards.length > 0 && (
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.18rem' }}>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.18rem', paddingLeft: '1.4rem' }}>
                     {block.sectionDef.cards.map(card => {
                       const text = (block.existingSection?.content as { cards?: Record<string, string> } | null)?.cards?.[card.id] ?? ''
                       const done = text.replace(/<[^>]*>/g, '').trim().length > 10
@@ -232,17 +252,18 @@ export default function InvestigarHubView({
                   </div>
                 )}
 
+                {/* CTA */}
                 <button
                   onClick={() => openStudy(block.sectionDef.slug)}
                   style={{
                     marginTop: 'auto', padding: '0.5rem 0.75rem',
-                    background: accent, color: '#FFFFFF',
+                    background: '#1E3A5F', color: '#FFFFFF',
                     border: 'none', borderRadius: '7px',
                     fontSize: '0.75rem', fontWeight: 700,
                     cursor: 'pointer', fontFamily: 'inherit',
                     transition: 'opacity 0.15s',
                   }}
-                  onMouseEnter={e => e.currentTarget.style.opacity = '0.88'}
+                  onMouseEnter={e => e.currentTarget.style.opacity = '0.82'}
                   onMouseLeave={e => e.currentTarget.style.opacity = '1'}
                 >
                   {pct === 0 ? 'Iniciar estudo' : 'Continuar'}
@@ -273,13 +294,15 @@ export default function InvestigarHubView({
               onMouseEnter={e => { e.currentTarget.style.boxShadow = '0 4px 16px rgba(15,118,110,0.12)' }}
               onMouseLeave={e => { e.currentTarget.style.boxShadow = 'none' }}
             >
-              <span style={{ fontSize: '1.4rem', flexShrink: 0 }}>🧠</span>
-              <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ fontSize: '0.8rem', fontWeight: 700, color: 'var(--text-primary)', marginBottom: '0.15rem' }}>
-                  {vgBlock.sectionDef.title}
-                </div>
-                <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>
-                  {vgBlock.sectionDef.objective}
+              <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.55rem', flex: 1, minWidth: 0 }}>
+                <span style={{ fontSize: '0.72rem', fontWeight: 900, color: '#1E3A5F', opacity: 0.35, flexShrink: 0 }}>04</span>
+                <div>
+                  <div style={{ fontSize: '14px', fontWeight: 800, color: '#1E3A5F', textTransform: 'uppercase', letterSpacing: '0.06em', lineHeight: 1.15 }}>
+                    {vgBlock.sectionDef.title}
+                  </div>
+                  <div style={{ fontSize: '13px', color: 'var(--text-muted)', marginTop: '0.15rem', lineHeight: 1.4 }}>
+                    {vgBlock.sectionDef.objective}
+                  </div>
                 </div>
               </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', flexShrink: 0 }}>
