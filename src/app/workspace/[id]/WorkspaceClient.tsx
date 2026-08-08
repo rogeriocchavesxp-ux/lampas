@@ -1645,13 +1645,17 @@ ${body}`
                 onUpdate={handleSectionUpdate}
                 onAskAI={handleAskAI}
               />
-            ) : INVESTIGAR_DOC_SLUGS.filter(s => s !== 'investigar_visao_geral').includes(activeSlug) ? (
+            ) : (INVESTIGAR_DOC_SLUGS.includes(activeSlug) && !(activeSlug === 'investigar_visao_geral' && vgViewMode === 'visual')) ? (
               <InvestigarHubView
                 key="investigar-hub"
                 studyBlocks={INVESTIGAR_DOC_SLUGS.filter(s => s !== 'investigar_visao_geral').map(slug => ({
                   sectionDef: WORKSPACE_SECTIONS.find(sec => sec.slug === slug)!,
                   existingSection: sections.find(sec => sec.slug === slug),
                 }))}
+                vgBlock={{
+                  sectionDef: WORKSPACE_SECTIONS.find(sec => sec.slug === 'investigar_visao_geral')!,
+                  existingSection: sections.find(sec => sec.slug === 'investigar_visao_geral'),
+                }}
                 project={project}
                 userId={user.id}
                 activeSlug={activeSlug}
@@ -1659,13 +1663,17 @@ ${body}`
                 onAskAI={handleAskAI}
                 onNavigate={navigate}
               />
-            ) : NARRATIVAS_DOC_SLUGS.filter(s => s !== 'nr_investigar_vg').includes(activeSlug) ? (
+            ) : (NARRATIVAS_DOC_SLUGS.includes(activeSlug) || activeSlug === 'nr_investigar_vg') && !(activeSlug === 'nr_investigar_vg' && vgViewMode === 'visual') ? (
               <InvestigarHubView
                 key="narrativas-hub"
                 studyBlocks={NARRATIVAS_DOC_SLUGS.filter(s => s !== 'nr_investigar_vg').map(slug => ({
                   sectionDef: WORKSPACE_SECTIONS.find(sec => sec.slug === slug)!,
                   existingSection: sections.find(sec => sec.slug === slug),
                 }))}
+                vgBlock={{
+                  sectionDef: WORKSPACE_SECTIONS.find(sec => sec.slug === 'nr_investigar_vg')!,
+                  existingSection: sections.find(sec => sec.slug === 'nr_investigar_vg'),
+                }}
                 project={project}
                 userId={user.id}
                 activeSlug={activeSlug}
@@ -1722,7 +1730,7 @@ ${body}`
                 initialSlug={activeSlug}
                 typeLabel={modeConfig.name}
               />
-            ) : (VG_SLUGS.includes(activeSlug) || activeSlug === 'nr_investigar_vg') && !PREPARAR_DOC_SLUGS.includes(activeSlug) && activeDef ? (
+            ) : VG_SLUGS.includes(activeSlug) && !PREPARAR_DOC_SLUGS.includes(activeSlug) && activeDef ? (
               <VisaoGeralWorkspace
                 key={activeSlug}
                 sectionDef={activeDef}

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect } from 'react'
 import type { Project, Section } from '@/types/database'
 import type { SectionDef } from '@/lib/workspace-sections'
 import SectionWorkspace from './SectionWorkspace'
@@ -12,7 +12,8 @@ interface StudyBlock {
 }
 
 interface Props {
-  studyBlocks: StudyBlock[]   // exactly 3: contextual, textual, teológico
+  studyBlocks: StudyBlock[]
+  vgBlock?: StudyBlock
   project: Project
   userId: string
   activeSlug: string
@@ -81,6 +82,7 @@ function statusLabel(pct: number): { label: string; color: string } {
 
 export default function InvestigarHubView({
   studyBlocks,
+  vgBlock,
   project,
   userId,
   activeSlug,
@@ -88,18 +90,21 @@ export default function InvestigarHubView({
   onAskAI,
   onNavigate,
 }: Props) {
+  const allBlocks = vgBlock ? [...studyBlocks, vgBlock] : studyBlocks
+
   const [openStudySlug, setOpenStudySlug] = useState<string | null>(() => {
-    return studyBlocks.some(b => b.sectionDef.slug === activeSlug) ? activeSlug : null
+    return allBlocks.some(b => b.sectionDef.slug === activeSlug) ? activeSlug : null
   })
   const [popups, setPopups] = useState<string[]>([])
 
   useEffect(() => {
-    if (studyBlocks.some(b => b.sectionDef.slug === activeSlug)) {
+    if (allBlocks.some(b => b.sectionDef.slug === activeSlug)) {
       setOpenStudySlug(activeSlug)
     } else {
       setOpenStudySlug(null)
     }
-  }, [activeSlug, studyBlocks])
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeSlug])
 
   function openStudy(slug: string) {
     onNavigate(slug)
@@ -117,35 +122,42 @@ export default function InvestigarHubView({
     )
   }
 
+  const isVgOpen = openStudySlug === vgBlock?.sectionDef.slug
   const currentBlock = openStudySlug
-    ? studyBlocks.find(b => b.sectionDef.slug === openStudySlug)
+    ? allBlocks.find(b => b.sectionDef.slug === openStudySlug)
     : null
-
   const otherBlocks = openStudySlug
     ? studyBlocks.filter(b => b.sectionDef.slug !== openStudySlug)
     : []
 
   // ── Hub view ─────────────────────────────────────────────────────────────
   if (!openStudySlug || !currentBlock) {
+    const totalFields = studyBlocks.reduce((sum, b) => sum + (b.sectionDef.cards?.length ?? 0), 0)
+    const filledFields = studyBlocks.reduce((sum, b) => sum + calcProgress(b).filled, 0)
+    const overallPct = totalFields > 0 ? Math.round((filledFields / totalFields) * 100) : 0
+
     return (
-      <div style={{
-        maxWidth: '780px',
-        margin: '0 auto',
-        padding: '2.5rem 1.5rem',
-      }}>
-        <div style={{ marginBottom: '2rem' }}>
-          <h2 style={{
-            fontSize: '1.1rem', fontWeight: 700,
-            color: 'var(--text-primary)', marginBottom: '0.3rem',
-          }}>
-            Investigar
-          </h2>
-          <p style={{ fontSize: '0.82rem', color: 'var(--text-muted)', lineHeight: 1.5 }}>
-            Três estudos para aprofundar a compreensão da passagem. Comece por qualquer um ou siga a ordem.
-          </p>
+      <div style={{ maxWidth: '800px', margin: '0 auto', padding: '2.5rem 1.5rem' }}>
+        {/* Header */}
+        <div style={{ marginBottom: '2rem', display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', gap: '1rem' }}>
+          <div>
+            <h2 style={{ fontSize: '1.1rem', fontWeight: 700, color: 'var(--text-primary)', marginBottom: '0.3rem' }}>
+              Investigar
+            </h2>
+            <p style={{ fontSize: '0.82rem', color: 'var(--text-muted)', lineHeight: 1.5 }}>
+              Três estudos para aprofundar a compreensão da passagem. Comece por qualquer um.
+            </p>
+          </div>
+          <div style={{ textAlign: 'right', flexShrink: 0 }}>
+            <div style={{ fontSize: '1.2rem', fontWeight: 800, color: overallPct === 100 ? '#10B981' : 'var(--text-secondary)' }}>
+              {overallPct}%
+            </div>
+            <div style={{ fontSize: '0.65rem', color: 'var(--text-muted)' }}>concluído</div>
+          </div>
         </div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1rem' }}>
+        {/* 3 study cards */}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1rem', marginBottom: '1rem' }}>
           {studyBlocks.map(block => {
             const { filled, total, pct } = calcProgress(block)
             const { label: sLabel, color: sColor } = statusLabel(pct)
@@ -166,96 +178,50 @@ export default function InvestigarHubView({
                   flexDirection: 'column',
                   gap: '0.75rem',
                   transition: 'box-shadow 0.15s, transform 0.15s',
-                  cursor: 'default',
                 }}
-                onMouseEnter={e => {
-                  e.currentTarget.style.boxShadow = `0 4px 20px ${accent}20`
-                  e.currentTarget.style.transform = 'translateY(-1px)'
-                }}
-                onMouseLeave={e => {
-                  e.currentTarget.style.boxShadow = 'none'
-                  e.currentTarget.style.transform = 'none'
-                }}
+                onMouseEnter={e => { e.currentTarget.style.boxShadow = `0 4px 20px ${accent}20`; e.currentTarget.style.transform = 'translateY(-1px)' }}
+                onMouseLeave={e => { e.currentTarget.style.boxShadow = 'none'; e.currentTarget.style.transform = 'none' }}
               >
-                {/* Icon + title */}
                 <div style={{ display: 'flex', alignItems: 'flex-start', gap: '0.6rem' }}>
-                  <span style={{
-                    fontSize: '1.5rem', lineHeight: 1,
-                    flexShrink: 0, marginTop: '0.1rem',
-                  }}>{icon}</span>
+                  <span style={{ fontSize: '1.5rem', lineHeight: 1, flexShrink: 0, marginTop: '0.1rem' }}>{icon}</span>
                   <div>
-                    <div style={{
-                      fontSize: '0.82rem', fontWeight: 700,
-                      color: 'var(--text-primary)',
-                      marginBottom: '0.2rem',
-                    }}>
+                    <div style={{ fontSize: '0.82rem', fontWeight: 700, color: 'var(--text-primary)', marginBottom: '0.2rem' }}>
                       {block.sectionDef.title}
                     </div>
-                    <div style={{
-                      fontSize: '0.7rem', color: 'var(--text-muted)', lineHeight: 1.4,
-                    }}>
+                    <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', lineHeight: 1.4 }}>
                       {desc}
                     </div>
                   </div>
                 </div>
 
-                {/* Progress */}
                 <div>
-                  <div style={{
-                    display: 'flex', justifyContent: 'space-between',
-                    alignItems: 'center', marginBottom: '0.35rem',
-                  }}>
-                    <span style={{
-                      fontSize: '0.65rem', color: sColor, fontWeight: 700,
-                      background: `${sColor}14`, padding: '0.1rem 0.45rem',
-                      borderRadius: '99px',
-                    }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.35rem' }}>
+                    <span style={{ fontSize: '0.65rem', color: sColor, fontWeight: 700, background: `${sColor}14`, padding: '0.1rem 0.45rem', borderRadius: '99px' }}>
                       {sLabel}
                     </span>
                     <span style={{ fontSize: '0.68rem', color: 'var(--text-muted)', fontWeight: 600 }}>
                       {filled}/{total} campos
                     </span>
                   </div>
-                  <div style={{
-                    height: '5px', background: 'var(--border-subtle)',
-                    borderRadius: '99px', overflow: 'hidden',
-                  }}>
-                    <div style={{
-                      height: '100%', width: `${pct}%`,
-                      background: pct === 100 ? '#10B981' : accent,
-                      borderRadius: '99px',
-                      transition: 'width 0.4s ease',
-                    }} />
+                  <div style={{ height: '5px', background: 'var(--border-subtle)', borderRadius: '99px', overflow: 'hidden' }}>
+                    <div style={{ height: '100%', width: `${pct}%`, background: pct === 100 ? '#10B981' : accent, borderRadius: '99px', transition: 'width 0.4s ease' }} />
                   </div>
-                  <div style={{
-                    marginTop: '0.3rem', textAlign: 'right',
-                    fontSize: '0.62rem', color: 'var(--text-muted)',
-                  }}>
+                  <div style={{ marginTop: '0.3rem', textAlign: 'right', fontSize: '0.62rem', color: 'var(--text-muted)' }}>
                     {pct}% concluído
                   </div>
                 </div>
 
-                {/* Card list preview */}
                 {block.sectionDef.cards && block.sectionDef.cards.length > 0 && (
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '0.18rem' }}>
                     {block.sectionDef.cards.map(card => {
                       const text = (block.existingSection?.content as { cards?: Record<string, string> } | null)?.cards?.[card.id] ?? ''
                       const done = text.replace(/<[^>]*>/g, '').trim().length > 10
                       return (
-                        <div key={card.id} style={{
-                          display: 'flex', alignItems: 'center', gap: '0.4rem',
-                        }}>
-                          <span style={{
-                            fontSize: '0.62rem', flexShrink: 0, lineHeight: 1,
-                            color: done ? '#10B981' : 'var(--border)',
-                            fontWeight: 700,
-                          }}>
+                        <div key={card.id} style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                          <span style={{ fontSize: '0.62rem', flexShrink: 0, lineHeight: 1, color: done ? '#10B981' : 'var(--border)', fontWeight: 700 }}>
                             {done ? '☑' : '☐'}
                           </span>
-                          <span style={{
-                            fontSize: '0.65rem', color: done ? 'var(--text-secondary)' : 'var(--text-muted)',
-                            overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
-                          }}>
+                          <span style={{ fontSize: '0.65rem', color: done ? 'var(--text-secondary)' : 'var(--text-muted)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                             {card.title}
                           </span>
                         </div>
@@ -264,20 +230,14 @@ export default function InvestigarHubView({
                   </div>
                 )}
 
-                {/* CTA */}
                 <button
                   onClick={() => openStudy(block.sectionDef.slug)}
                   style={{
-                    marginTop: 'auto',
-                    padding: '0.5rem 0.75rem',
-                    background: accent,
-                    color: '#FFFFFF',
-                    border: 'none',
-                    borderRadius: '7px',
-                    fontSize: '0.75rem',
-                    fontWeight: 700,
-                    cursor: 'pointer',
-                    fontFamily: 'inherit',
+                    marginTop: 'auto', padding: '0.5rem 0.75rem',
+                    background: accent, color: '#FFFFFF',
+                    border: 'none', borderRadius: '7px',
+                    fontSize: '0.75rem', fontWeight: 700,
+                    cursor: 'pointer', fontFamily: 'inherit',
                     transition: 'opacity 0.15s',
                   }}
                   onMouseEnter={e => e.currentTarget.style.opacity = '0.88'}
@@ -289,17 +249,78 @@ export default function InvestigarHubView({
             )
           })}
         </div>
+
+        {/* VG / Síntese card — full width, secondary */}
+        {vgBlock && (() => {
+          const { filled, total, pct } = calcProgress(vgBlock)
+          const { label: sLabel, color: sColor } = statusLabel(pct)
+          return (
+            <div
+              style={{
+                background: 'var(--surface)',
+                border: '1px solid #0F766E28',
+                borderLeft: '3px solid #0F766E',
+                borderRadius: '10px',
+                padding: '1rem 1.25rem',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '1.5rem',
+                transition: 'box-shadow 0.15s',
+                cursor: 'default',
+              }}
+              onMouseEnter={e => { e.currentTarget.style.boxShadow = '0 4px 16px rgba(15,118,110,0.12)' }}
+              onMouseLeave={e => { e.currentTarget.style.boxShadow = 'none' }}
+            >
+              <span style={{ fontSize: '1.4rem', flexShrink: 0 }}>🧠</span>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ fontSize: '0.8rem', fontWeight: 700, color: 'var(--text-primary)', marginBottom: '0.15rem' }}>
+                  {vgBlock.sectionDef.title}
+                </div>
+                <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>
+                  {vgBlock.sectionDef.objective}
+                </div>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', flexShrink: 0 }}>
+                <div style={{ textAlign: 'right' }}>
+                  <span style={{ fontSize: '0.65rem', color: sColor, fontWeight: 700, background: `${sColor}14`, padding: '0.1rem 0.45rem', borderRadius: '99px' }}>
+                    {sLabel}
+                  </span>
+                  <div style={{ fontSize: '0.62rem', color: 'var(--text-muted)', marginTop: '0.2rem' }}>
+                    {filled}/{total} campos
+                  </div>
+                </div>
+                <button
+                  onClick={() => openStudy(vgBlock.sectionDef.slug)}
+                  style={{
+                    padding: '0.45rem 1rem',
+                    background: '#0F766E',
+                    color: '#FFFFFF',
+                    border: 'none', borderRadius: '7px',
+                    fontSize: '0.75rem', fontWeight: 700,
+                    cursor: 'pointer', fontFamily: 'inherit',
+                    transition: 'opacity 0.15s',
+                  }}
+                  onMouseEnter={e => e.currentTarget.style.opacity = '0.88'}
+                  onMouseLeave={e => e.currentTarget.style.opacity = '1'}
+                >
+                  {pct === 0 ? 'Abrir síntese' : 'Ver síntese'}
+                </button>
+              </div>
+            </div>
+          )
+        })()}
       </div>
     )
   }
 
-  // ── Study view ────────────────────────────────────────────────────────────
-  const currentAccent = getAccentColor(currentBlock.sectionDef)
+  // ── Study / VG view ───────────────────────────────────────────────────────
+  const currentAccent = isVgOpen ? '#0F766E' : getAccentColor(currentBlock.sectionDef)
+  const currentIcon   = isVgOpen ? '🧠' : getIcon(currentBlock.sectionDef)
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
 
-      {/* Sub-header: breadcrumb + quick access buttons */}
+      {/* Sub-header */}
       <div style={{
         display: 'flex', alignItems: 'center', gap: '0.5rem',
         padding: '0.4rem 1rem',
@@ -323,17 +344,15 @@ export default function InvestigarHubView({
 
         <span style={{ color: 'var(--border)', fontSize: '0.75rem' }}>/</span>
 
-        <span style={{
-          fontSize: '0.72rem', fontWeight: 700,
-          color: currentAccent,
-        }}>
-          {getIcon(currentBlock.sectionDef)} {currentBlock.sectionDef.title}
+        <span style={{ fontSize: '0.72rem', fontWeight: 700, color: currentAccent }}>
+          {currentIcon} {currentBlock.sectionDef.title}
         </span>
 
+        {/* Quick access buttons — always show the 3 study blocks */}
         <div style={{ marginLeft: 'auto', display: 'flex', gap: '0.4rem' }}>
-          {otherBlocks.map(block => {
-            const accent  = getAccentColor(block.sectionDef)
-            const isOpen  = popups.includes(block.sectionDef.slug)
+          {(isVgOpen ? studyBlocks : otherBlocks).map((block, idx) => {
+            const accent = getAccentColor(block.sectionDef)
+            const isOpen = popups.includes(block.sectionDef.slug)
             return (
               <button
                 key={block.sectionDef.slug}
@@ -344,24 +363,14 @@ export default function InvestigarHubView({
                   background: isOpen ? `${accent}14` : 'transparent',
                   border: `1px solid ${isOpen ? accent : accent + '50'}`,
                   borderRadius: '6px',
-                  fontSize: '0.68rem',
-                  fontWeight: 700,
+                  fontSize: '0.68rem', fontWeight: 700,
                   color: isOpen ? accent : `${accent}CC`,
-                  cursor: 'pointer',
-                  fontFamily: 'inherit',
+                  cursor: 'pointer', fontFamily: 'inherit',
                   transition: 'all 0.15s',
                   display: 'flex', alignItems: 'center', gap: '0.3rem',
                 }}
-                onMouseEnter={e => {
-                  e.currentTarget.style.background = `${accent}14`
-                  e.currentTarget.style.borderColor = accent
-                  e.currentTarget.style.color = accent
-                }}
-                onMouseLeave={e => {
-                  e.currentTarget.style.background = isOpen ? `${accent}14` : 'transparent'
-                  e.currentTarget.style.borderColor = isOpen ? accent : `${accent}50`
-                  e.currentTarget.style.color = isOpen ? accent : `${accent}CC`
-                }}
+                onMouseEnter={e => { e.currentTarget.style.background = `${accent}14`; e.currentTarget.style.borderColor = accent; e.currentTarget.style.color = accent }}
+                onMouseLeave={e => { e.currentTarget.style.background = isOpen ? `${accent}14` : 'transparent'; e.currentTarget.style.borderColor = isOpen ? accent : `${accent}50`; e.currentTarget.style.color = isOpen ? accent : `${accent}CC` }}
               >
                 <span>{getIcon(block.sectionDef)}</span>
                 {block.sectionDef.shortTitle}
@@ -383,7 +392,7 @@ export default function InvestigarHubView({
         />
       </div>
 
-      {/* Floating popups for other studies */}
+      {/* Floating popups */}
       {popups.map((slug, idx) => {
         const block = studyBlocks.find(b => b.sectionDef.slug === slug)
         if (!block) return null
