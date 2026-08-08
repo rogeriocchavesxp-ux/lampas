@@ -1,6 +1,7 @@
 interface LogoProps {
   height?: number
   variant?: 'dark' | 'light'
+  version?: string
 }
 interface MarkProps {
   size?: number
@@ -42,7 +43,7 @@ function SymbolSVG({ size = 36 }: { size: number }) {
 
 // ── LampasLogo — símbolo + wordmark ──────────────────────────────────────────
 
-export function LampasLogo({ height = 40, variant = 'dark' }: LogoProps) {
+export function LampasLogo({ height = 40, variant = 'dark', version }: LogoProps) {
   const symSize   = Math.round(height * 0.92)
   const gap       = Math.round(height * 0.18)
   const fs        = Math.round(height * 0.64)
@@ -51,17 +52,33 @@ export function LampasLogo({ height = 40, variant = 'dark' }: LogoProps) {
   return (
     <div style={{ display: 'inline-flex', alignItems: 'center', gap }}>
       <SymbolSVG size={symSize} />
-      <span style={{
-        fontFamily: "'EB Garamond', Georgia, 'Times New Roman', serif",
-        fontWeight: 500,
-        fontSize: fs,
-        color: wordColor,
-        letterSpacing: '-0.01em',
-        lineHeight: 1,
-        userSelect: 'none',
-      }}>
-        Lamp<span style={{ color: '#c9921a' }}>as</span>
-      </span>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
+        <span style={{
+          fontFamily: "'EB Garamond', Georgia, 'Times New Roman', serif",
+          fontWeight: 500,
+          fontSize: fs,
+          color: wordColor,
+          letterSpacing: '-0.01em',
+          lineHeight: 1,
+          userSelect: 'none',
+        }}>
+          Lamp<span style={{ color: '#c9921a' }}>as</span>
+        </span>
+        {version && (
+          <span style={{
+            fontSize: '0.5rem',
+            color: '#94A3B8',
+            letterSpacing: '0.06em',
+            fontFamily: 'inherit',
+            fontWeight: 500,
+            lineHeight: 1,
+            marginTop: '0.22rem',
+            userSelect: 'none',
+          }}>
+            {version}
+          </span>
+        )}
+      </div>
     </div>
   )
 }

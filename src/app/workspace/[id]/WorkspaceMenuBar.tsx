@@ -4,6 +4,7 @@ import { useState, useRef, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { LampasLogo } from '@/components/LampasLogo'
 import { createClient } from '@/lib/supabase/client'
+import { APP_VERSION } from '@/lib/version'
 
 interface MenuAction {
   label: string
@@ -396,7 +397,7 @@ export default function WorkspaceMenuBar({
 
       {/* ── Logo ── */}
       <div style={{ flexShrink: 0, marginRight: '0.5rem', display: 'flex', alignItems: 'center' }}>
-        <LampasLogo height={34} />
+        <LampasLogo height={34} version={`v${APP_VERSION}`} />
       </div>
 
       <div style={{ width: '1px', height: '18px', background: 'var(--border-subtle)', marginRight: '0.35rem', flexShrink: 0 }} />
