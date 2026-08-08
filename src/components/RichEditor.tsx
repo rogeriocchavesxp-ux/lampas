@@ -223,6 +223,10 @@ export default function RichEditor({
             ? (editor.commands.liftListItem('listItem') || editor.commands.liftListItem('taskItem'))
             : (editor.commands.sinkListItem('listItem') || editor.commands.sinkListItem('taskItem'))
         }
+        if (!event.shiftKey) {
+          editor?.commands.insertContent('    ')
+          return true
+        }
         return false
       },
     },
