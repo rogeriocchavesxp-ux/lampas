@@ -373,9 +373,9 @@ export default function InvestigarHubView({
           {currentIcon} {currentBlock.sectionDef.title}
         </span>
 
-        {/* Quick access buttons — always show the 3 study blocks */}
-        <div style={{ marginLeft: 'auto', display: 'flex', gap: '0.4rem' }}>
-          {(isVgOpen ? studyBlocks : otherBlocks).map((block, idx) => {
+        {/* Quick access buttons — centered */}
+        <div style={{ flex: 1, display: 'flex', justifyContent: 'center', gap: '0.5rem' }}>
+          {(isVgOpen ? studyBlocks : otherBlocks).map(block => {
             const accent = getAccentColor(block.sectionDef)
             const isOpen = popups.includes(block.sectionDef.slug)
             return (
@@ -384,7 +384,7 @@ export default function InvestigarHubView({
                 onClick={() => togglePopup(block.sectionDef.slug)}
                 title={isOpen ? `Fechar ${block.sectionDef.title}` : `Abrir ${block.sectionDef.title}`}
                 style={{
-                  padding: '0.25rem 0.65rem',
+                  padding: '0.25rem 0.8rem',
                   background: isOpen ? `${accent}14` : 'transparent',
                   border: `1px solid ${isOpen ? accent : accent + '50'}`,
                   borderRadius: '6px',
@@ -398,7 +398,7 @@ export default function InvestigarHubView({
                 onMouseLeave={e => { e.currentTarget.style.background = isOpen ? `${accent}14` : 'transparent'; e.currentTarget.style.borderColor = isOpen ? accent : `${accent}50`; e.currentTarget.style.color = isOpen ? accent : `${accent}CC` }}
               >
                 <span>{getIcon(block.sectionDef)}</span>
-                {block.sectionDef.shortTitle}
+                Estudo {block.sectionDef.shortTitle}
               </button>
             )
           })}
