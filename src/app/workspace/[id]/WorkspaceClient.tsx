@@ -1678,22 +1678,20 @@ ${body}`
                 initialSlug={activeSlug}
                 typeLabel="Narrativas"
               />
-            ) : modeConfig.id === 'estudo_narrativas' && NARRATIVAS_PREPARAR_SLUGS.includes(activeSlug) ? (
+            ) : activeSlug === 'nr_preparar_visao_geral' ? (
               <WorkspaceDocument
-                key="narrativas-preparar-doc"
-                blocks={NARRATIVAS_PREPARAR_SLUGS.map(slug => ({
-                  sectionDef: WORKSPACE_SECTIONS.find(s => s.slug === slug)!,
-                  existingSection: sections.find(s => s.slug === slug),
-                }))}
+                key="narrativas-preparar-vg"
+                blocks={[{
+                  sectionDef: WORKSPACE_SECTIONS.find(s => s.slug === 'nr_preparar_visao_geral')!,
+                  existingSection: sections.find(s => s.slug === 'nr_preparar_visao_geral'),
+                }]}
                 project={project}
                 userId={user.id}
                 onUpdate={handleSectionUpdate}
                 onAskAI={handleAskAI}
-                guided={(workModeMap[activePhase?.id ?? ''] ?? 'guided') === 'guided'}
-                readingMode={(workModeMap[activePhase?.id ?? ''] ?? 'guided') === 'reading'}
-                onExitReadingMode={() => activePhase && setWorkMode(activePhase.id, 'guided')}
+                guided={true}
                 initialSlug={activeSlug}
-                typeLabel={modeConfig.name}
+                typeLabel="Visão Geral"
               />
             ) : TEMATICO_DOC_SLUGS.includes(activeSlug) ? (
               <WorkspaceDocument
