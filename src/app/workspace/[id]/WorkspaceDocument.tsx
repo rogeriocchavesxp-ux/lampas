@@ -1006,9 +1006,17 @@ export default function WorkspaceDocument({
               const hasContent  = sectionDef.cards.some(c => isCardDone(contents[c.id] ?? ''))
               if (!hasContent) return null
               return (
-                <div key={sectionDef.slug}>
-                  {sectionIdx > 0 && <div style={{ margin: '3rem 0', height: '1px', background: '#E2E4E8' }} />}
-                  <h2 style={{ margin: '0 0 1.5rem', fontSize: '1.4rem', fontWeight: 800, color: '#1A1D23', letterSpacing: '-0.02em' }}>
+                <div key={sectionDef.slug} style={{
+                  marginTop: sectionIdx === 0 ? 0 : '4rem',
+                  paddingTop: sectionIdx === 0 ? 0 : '2.5rem',
+                  borderTop: sectionIdx === 0 ? 'none' : '1px solid #D1D5DB',
+                }}>
+                  <h2 style={{
+                    margin: '0 0 2rem',
+                    fontSize: '1.45rem', fontWeight: 700,
+                    color: '#0F172A', letterSpacing: '-0.025em',
+                    lineHeight: 1.2,
+                  }}>
                     {chMetaEntry?.title ?? sectionDef.title}
                   </h2>
                   {sectionDef.cards.map((card, cardIdx) => {
@@ -1017,11 +1025,13 @@ export default function WorkspaceDocument({
                     const key          = `${sectionDef.slug}:${card.id}`
                     const sectionTitle = chMetaEntry?.sectionTitles?.[card.id] ?? card.title
                     return (
-                      <div key={card.id} style={{ marginTop: cardIdx === 0 ? 0 : '2rem' }}>
+                      <div key={card.id} style={{ marginTop: cardIdx === 0 ? 0 : '2.5rem' }}>
                         <h3 style={{
-                          margin: '0 0 0.45rem',
-                          fontSize: '0.75rem', fontWeight: 700,
-                          color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.07em',
+                          margin: '0 0 0.6rem',
+                          fontSize: '0.88rem', fontWeight: 600,
+                          color: '#334155', letterSpacing: '0.01em',
+                          paddingBottom: '0.5rem',
+                          borderBottom: '1px solid #E2E8F0',
                         }}>
                           {sectionTitle}
                         </h3>
@@ -1030,7 +1040,7 @@ export default function WorkspaceDocument({
                           data-card-key={key}
                           className="ws-doc-section"
                           dangerouslySetInnerHTML={{ __html: html }}
-                          style={{ fontSize: '0.92rem', lineHeight: 1.78, color: '#1E293B' }}
+                          style={{ fontSize: '0.95rem', lineHeight: 1.82, color: '#1E293B' }}
                         />
                       </div>
                     )
