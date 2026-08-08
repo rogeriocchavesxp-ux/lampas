@@ -416,6 +416,7 @@ export default function InvestigarHubView({
           onAskAI={onAskAI}
           guided={false}
           initialSlug={currentBlock.sectionDef.slug}
+          toolbarTop="0"
         />
       </div>
 

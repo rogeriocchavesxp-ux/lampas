@@ -146,6 +146,7 @@ export default function InvestigarSectionPopup({
           onAskAI={onAskAI}
           guided={false}
           initialSlug={sectionDef.slug}
+          toolbarTop="0"
         />
       </div>
     </div>

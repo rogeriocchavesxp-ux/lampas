@@ -463,12 +463,13 @@ interface Props {
   onExitReadingMode?: () => void
   initialSlug?: string
   typeLabel?: string
+  toolbarTop?: string
 }
 
 // ── Component ─────────────────────────────────────────────────────────────────
 
 export default function WorkspaceDocument({
-  blocks, project, userId, onUpdate, guided = true, readingMode = false, onExitReadingMode, initialSlug, typeLabel,
+  blocks, project, userId, onUpdate, guided = true, readingMode = false, onExitReadingMode, initialSlug, typeLabel, toolbarTop = '44px',
 }: Props) {
   const supabase = createClient()
 
@@ -695,7 +696,7 @@ export default function WorkspaceDocument({
   function renderToolbar(chIdx: number) {
     return (
       <div style={{
-        position: 'sticky', top: '44px', zIndex: 20,
+        position: 'sticky', top: toolbarTop, zIndex: 20,
         background: 'var(--background)',
         borderTop: '1px solid rgba(0,0,0,0.06)',
         borderBottom: '1px solid rgba(0,0,0,0.08)',
