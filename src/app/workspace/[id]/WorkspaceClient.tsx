@@ -45,6 +45,7 @@ import IntroducaoWorkspace from './IntroducaoWorkspace'
 import BibliotecaWorkspace from './BibliotecaWorkspace'
 import WorkspaceLateralTabs from './WorkspaceLateralTabs'
 import FreeModeEditor from './FreeModeEditor'
+import AnnotationsPanel from './AnnotationsPanel'
 import {
   Heart, BookOpen, FileText, Crosshair, Landmark, Languages, GraduationCap,
   Sparkles, BookMarked, Flame, MessageSquareText, Layers, Book, Library,
@@ -187,8 +188,9 @@ export default function WorkspaceClient({ user, project, initialSections }: Prop
   const [enviarTargetMode, setEnviarTargetMode] = useState<'sermao' | 'devocional'>('sermao')
   const [enviarDropdownOpen, setEnviarDropdownOpen] = useState(false)
   const enviarDropdownRef = useRef<HTMLDivElement>(null)
-  const [pilgrimOpen, setPilgrimOpen]       = useState(false)
-  const [checklistOpen, setChecklistOpen]   = useState(false)
+  const [pilgrimOpen, setPilgrimOpen]         = useState(false)
+  const [checklistOpen, setChecklistOpen]     = useState(false)
+  const [annotationsOpen, setAnnotationsOpen] = useState(false)
   const [slidePromptOpen, setSlidePromptOpen] = useState(false)
   const [slidePromptText, setSlidePromptText] = useState('')
 
@@ -717,6 +719,8 @@ ${body}`
         onEnviarDevocional={() => { setEnviarTargetMode('devocional'); setEnviarParaSermaOpen(true) }}
         onEnviarKB={() => window.dispatchEvent(new CustomEvent('lampas:kb-open-create'))}
         onExportarPromptSlides={handleExportarPromptSlides}
+        annotationsOpen={annotationsOpen}
+        onToggleAnnotations={() => setAnnotationsOpen(o => !o)}
         showWorkMode={ALL_DOC_SLUGS.includes(activeSlug)}
         showViewMode={(VG_SLUGS.includes(activeSlug) || activeSlug === 'nr_investigar_vg') && !PREPARAR_DOC_SLUGS.includes(activeSlug) && !NARRATIVAS_PREPARAR_SLUGS.includes(activeSlug)}
         workMode={activePhase ? (workModeMap[activePhase.id] ?? (activePhase.id === 'investigar' ? 'free' : 'guided')) : 'guided'}
@@ -1870,6 +1874,14 @@ ${body}`
             onClose={() => setChecklistOpen(false)}
           />
         </aside>
+      )}
+
+      {/* ── Painel de Anotações ───────────────────────────────────── */}
+      {annotationsOpen && (
+        <AnnotationsPanel
+          projectId={project.id}
+          onClose={() => setAnnotationsOpen(false)}
+        />
       )}
 
       {/* ── Janela flutuante Pilgrim ──────────────────────────────── */}

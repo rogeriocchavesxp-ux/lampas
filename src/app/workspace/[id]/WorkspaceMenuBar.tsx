@@ -38,6 +38,8 @@ export interface WorkspaceMenuBarProps {
   onEnviarDevocional: () => void
   onEnviarKB: () => void
   onExportarPromptSlides: () => void
+  annotationsOpen?: boolean
+  onToggleAnnotations?: () => void
   // Context controls (unified from WorkspaceHeader)
   showWorkMode?: boolean
   showViewMode?: boolean
@@ -52,6 +54,7 @@ export default function WorkspaceMenuBar({
   bibleOpen, focusMode, sideBySide, aiOpen, checklistOpen,
   onToggleBible, onToggleFocus, onToggleSideBySide, onToggleAI, onToggleChecklist,
   onEnviarSermao, onEnviarDevocional, onEnviarKB, onExportarPromptSlides,
+  annotationsOpen, onToggleAnnotations,
   showWorkMode, showViewMode, workMode, onWorkModeChange,
   vgViewMode, onVgViewModeChange, activePhaseColor,
 }: WorkspaceMenuBarProps) {
@@ -453,6 +456,29 @@ export default function WorkspaceMenuBar({
 
       {/* ── Lado direito: Pesquisar + Novo Projeto + Perfil ── */}
       <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', flexShrink: 0 }}>
+
+        {/* Anotações */}
+        {onToggleAnnotations && (
+          <button
+            onClick={onToggleAnnotations}
+            title="Anotações e Insights"
+            style={{
+              display: 'flex', alignItems: 'center', gap: '0.28rem',
+              background: annotationsOpen ? 'rgba(201,146,26,0.08)' : 'none',
+              border: `1px solid ${annotationsOpen ? 'rgba(201,146,26,0.45)' : 'var(--border-subtle)'}`,
+              borderRadius: '6px', padding: '0.25rem 0.55rem',
+              cursor: 'pointer', fontFamily: 'inherit',
+              color: annotationsOpen ? '#92650a' : 'var(--text-muted)',
+              fontSize: '0.76rem', fontWeight: annotationsOpen ? 650 : 500,
+              transition: 'all 0.13s', flexShrink: 0,
+            }}
+            onMouseEnter={e => { if (!annotationsOpen) { e.currentTarget.style.borderColor = 'rgba(201,146,26,0.45)'; e.currentTarget.style.color = '#92650a' } }}
+            onMouseLeave={e => { if (!annotationsOpen) { e.currentTarget.style.borderColor = 'var(--border-subtle)'; e.currentTarget.style.color = 'var(--text-muted)' } }}
+          >
+            <span style={{ fontSize: '0.78rem', lineHeight: 1 }}>📝</span>
+            <span>Anotações</span>
+          </button>
+        )}
 
         {/* Pesquisar */}
         {showSearch ? (
