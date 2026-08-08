@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import type { Project, Section } from '@/types/database'
 import type { SectionDef } from '@/lib/workspace-sections'
-import SectionWorkspace from './SectionWorkspace'
+import WorkspaceDocument from './WorkspaceDocument'
 import InvestigarSectionPopup from './InvestigarSectionPopup'
 
 interface StudyBlock {
@@ -384,13 +384,15 @@ export default function InvestigarHubView({
 
       {/* Main content */}
       <div style={{ flex: 1, overflowY: 'auto' }}>
-        <SectionWorkspace
-          sectionDef={currentBlock.sectionDef}
+        <WorkspaceDocument
+          key={currentBlock.sectionDef.slug}
+          blocks={[{ sectionDef: currentBlock.sectionDef, existingSection: currentBlock.existingSection }]}
           project={project}
           userId={userId}
-          existingSection={currentBlock.existingSection}
           onUpdate={onUpdate}
           onAskAI={onAskAI}
+          guided={false}
+          initialSlug={currentBlock.sectionDef.slug}
         />
       </div>
 

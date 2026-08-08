@@ -3,7 +3,7 @@
 import { useRef, useState, useEffect, useCallback } from 'react'
 import type { Project, Section } from '@/types/database'
 import type { SectionDef } from '@/lib/workspace-sections'
-import SectionWorkspace from './SectionWorkspace'
+import WorkspaceDocument from './WorkspaceDocument'
 import { X } from 'lucide-react'
 
 interface Props {
@@ -138,13 +138,14 @@ export default function InvestigarSectionPopup({
 
       {/* Content */}
       <div style={{ flex: 1, overflowY: 'auto' }}>
-        <SectionWorkspace
-          sectionDef={sectionDef}
+        <WorkspaceDocument
+          blocks={[{ sectionDef, existingSection }]}
           project={project}
           userId={userId}
-          existingSection={existingSection}
           onUpdate={onUpdate}
           onAskAI={onAskAI}
+          guided={false}
+          initialSlug={sectionDef.slug}
         />
       </div>
     </div>
