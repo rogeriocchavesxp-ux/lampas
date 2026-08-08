@@ -492,6 +492,7 @@ export default function WorkspaceDocument({
   const [linkOpen,  setLinkOpen]  = useState(false)
   const [linkUrl,   setLinkUrl]   = useState('')
   const [aiOpen,    setAiOpen]    = useState(false)
+  const [rdMaximized, setRdMaximized] = useState(false)
 
   // Per-chapter picker refs (toolbar lives inside each chapter)
   const hlRefs    = useRef<(HTMLDivElement | null)[]>([])
@@ -852,8 +853,40 @@ export default function WorkspaceDocument({
   ]
 
   if (readingMode) {
+    const dialogStyle: React.CSSProperties = rdMaximized
+      ? { position: 'fixed', inset: 0, borderRadius: 0, boxShadow: 'none' }
+      : {
+          position: 'fixed',
+          top: '50%', left: '50%',
+          transform: 'translate(-50%, -50%)',
+          width: 'min(92vw, 1020px)',
+          height: '88vh',
+          borderRadius: '12px',
+          boxShadow: '0 8px 48px rgba(0,0,0,0.22)',
+        }
+
     return (
-      <div style={{ position: 'fixed', inset: 0, zIndex: 400, background: 'var(--background)', overflowY: 'auto' }}>
+      <>
+        {/* Backdrop */}
+        {!rdMaximized && (
+          <div
+            onClick={onExitReadingMode}
+            style={{
+              position: 'fixed', inset: 0, zIndex: 399,
+              background: 'rgba(15,23,42,0.45)',
+              backdropFilter: 'blur(2px)',
+            }}
+          />
+        )}
+
+        {/* Dialog */}
+        <div style={{
+          ...dialogStyle,
+          zIndex: 400,
+          background: 'var(--background)',
+          display: 'flex', flexDirection: 'column',
+          overflow: 'hidden',
+        }}>
 
         {/* Floating highlight palette */}
         {readingPalette && (
@@ -908,40 +941,64 @@ export default function WorkspaceDocument({
           </div>
         )}
 
-        {/* Reading content */}
-        <div style={{ maxWidth: '820px', margin: '0 auto', padding: '3rem clamp(1.5rem,4vw,2.5rem) 6rem', userSelect: 'text' }}>
-
-            {/* Header bar */}
-            <div style={{
-              display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between',
-              marginBottom: '2.5rem', paddingBottom: '1.25rem',
-              borderBottom: '1px solid var(--border-subtle)', gap: '1rem',
-            }}>
-              <div>
-                <div style={{ fontSize: '0.68rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: '0.35rem' }}>
-                  {typeLabel ?? 'Leitura'}
-                </div>
-                <h2 style={{ fontSize: '1.25rem', fontWeight: 700, color: 'var(--text-primary)', margin: 0 }}>
-                  {project.title}
-                </h2>
-              </div>
-              {onExitReadingMode && (
-                <button
-                  onClick={onExitReadingMode}
-                  style={{
-                    background: 'transparent', border: '1px solid var(--border)',
-                    color: 'var(--text-secondary)', borderRadius: '6px',
-                    padding: '0.4rem 0.9rem', fontSize: '0.78rem',
-                    cursor: 'pointer', fontFamily: 'inherit',
-                    flexShrink: 0, transition: 'all 0.15s',
-                  }}
-                  onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--text-muted)'; e.currentTarget.style.color = 'var(--text-primary)' }}
-                  onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.color = 'var(--text-secondary)' }}
-                >
-                  ← Voltar à edição
-                </button>
-              )}
+        {/* Modal header */}
+        <div style={{
+          flexShrink: 0,
+          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+          padding: '0.6rem 0.75rem 0.6rem 1.25rem',
+          borderBottom: '1px solid var(--border-subtle)',
+          background: 'var(--surface)',
+          gap: '0.75rem',
+        }}>
+          <div style={{ minWidth: 0 }}>
+            <div style={{ fontSize: '0.62rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: '0.2rem' }}>
+              {typeLabel ?? 'Leitura'}
             </div>
+            <div style={{ fontSize: '0.92rem', fontWeight: 700, color: 'var(--text-primary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+              {project.title}
+            </div>
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem', flexShrink: 0 }}>
+            {/* Maximize / restore */}
+            <button
+              onClick={() => setRdMaximized(v => !v)}
+              title={rdMaximized ? 'Restaurar janela' : 'Maximizar'}
+              style={{
+                width: 28, height: 28, border: '1px solid var(--border)',
+                background: 'transparent', borderRadius: '6px',
+                cursor: 'pointer', color: 'var(--text-muted)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                fontSize: '0.75rem', transition: 'all 0.12s',
+              }}
+              onMouseEnter={e => { e.currentTarget.style.background = 'var(--surface-2)'; e.currentTarget.style.color = 'var(--text-primary)' }}
+              onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = 'var(--text-muted)' }}
+            >
+              {rdMaximized ? '⊡' : '⊞'}
+            </button>
+            {/* Close */}
+            {onExitReadingMode && (
+              <button
+                onClick={onExitReadingMode}
+                title="Fechar leitura"
+                style={{
+                  width: 28, height: 28, border: '1px solid var(--border)',
+                  background: 'transparent', borderRadius: '6px',
+                  cursor: 'pointer', color: 'var(--text-muted)',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  fontSize: '0.8rem', transition: 'all 0.12s',
+                }}
+                onMouseEnter={e => { e.currentTarget.style.background = 'rgba(220,38,38,0.06)'; e.currentTarget.style.color = '#dc2626'; e.currentTarget.style.borderColor = 'rgba(220,38,38,0.3)' }}
+                onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = 'var(--text-muted)'; e.currentTarget.style.borderColor = 'var(--border)' }}
+              >
+                ✕
+              </button>
+            )}
+          </div>
+        </div>
+
+        {/* Scrollable reading content */}
+        <div style={{ flex: 1, overflowY: 'auto' }}>
+          <div style={{ maxWidth: '820px', margin: '0 auto', padding: '2.5rem clamp(1.5rem,4vw,2.5rem) 5rem', userSelect: 'text' }}>
 
             {blocks.map(({ sectionDef }, sectionIdx) => {
               const chMetaEntry = CHAPTER_META[sectionDef.slug]
@@ -981,8 +1038,10 @@ export default function WorkspaceDocument({
                 </div>
               )
             })}
+          </div>
         </div>
       </div>
+    </>
     )
   }
 
