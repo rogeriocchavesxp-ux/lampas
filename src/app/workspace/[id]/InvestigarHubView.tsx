@@ -93,14 +93,16 @@ export default function InvestigarHubView({
   const allBlocks = vgBlock ? [...studyBlocks, vgBlock] : studyBlocks
 
   const [openStudySlug, setOpenStudySlug] = useState<string | null>(() => {
-    return allBlocks.some(b => b.sectionDef.slug === activeSlug) ? activeSlug : null
+    // VG slug as entry → show hub; study slugs → open that study directly
+    return studyBlocks.some(b => b.sectionDef.slug === activeSlug) ? activeSlug : null
   })
   const [popups, setPopups] = useState<string[]>([])
 
   useEffect(() => {
-    if (allBlocks.some(b => b.sectionDef.slug === activeSlug)) {
+    if (studyBlocks.some(b => b.sectionDef.slug === activeSlug)) {
       setOpenStudySlug(activeSlug)
     } else {
+      // VG slug or any non-study slug → show hub
       setOpenStudySlug(null)
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
