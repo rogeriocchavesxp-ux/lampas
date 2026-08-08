@@ -47,6 +47,7 @@ import WorkspaceLateralTabs from './WorkspaceLateralTabs'
 import FreeModeEditor from './FreeModeEditor'
 import AnnotationsPanel from './AnnotationsPanel'
 import PreparMovementsView from './PreparMovementsView'
+import InvestigarHubView from './InvestigarHubView'
 import {
   Heart, BookOpen, FileText, Crosshair, Landmark, Languages, GraduationCap,
   Sparkles, BookMarked, Flame, MessageSquareText, Layers, Book, Library,
@@ -1644,39 +1645,33 @@ ${body}`
                 onUpdate={handleSectionUpdate}
                 onAskAI={handleAskAI}
               />
-            ) : INVESTIGAR_DOC_SLUGS.includes(activeSlug) && !(activeSlug === 'investigar_visao_geral' && vgViewMode === 'visual') ? (
-              <WorkspaceDocument
-                key="investigar-doc"
-                blocks={INVESTIGAR_DOC_SLUGS.map(slug => ({
-                  sectionDef: WORKSPACE_SECTIONS.find(s => s.slug === slug)!,
-                  existingSection: sections.find(s => s.slug === slug),
+            ) : INVESTIGAR_DOC_SLUGS.filter(s => s !== 'investigar_visao_geral').includes(activeSlug) ? (
+              <InvestigarHubView
+                key="investigar-hub"
+                studyBlocks={INVESTIGAR_DOC_SLUGS.filter(s => s !== 'investigar_visao_geral').map(slug => ({
+                  sectionDef: WORKSPACE_SECTIONS.find(sec => sec.slug === slug)!,
+                  existingSection: sections.find(sec => sec.slug === slug),
                 }))}
                 project={project}
                 userId={user.id}
+                activeSlug={activeSlug}
                 onUpdate={handleSectionUpdate}
                 onAskAI={handleAskAI}
-                guided={(workModeMap['investigar'] ?? 'free') === 'guided'}
-                readingMode={(workModeMap['investigar'] ?? 'free') === 'reading'}
-                onExitReadingMode={() => setWorkMode('investigar', 'free')}
-                initialSlug={activeSlug}
-                typeLabel="Investigar"
+                onNavigate={navigate}
               />
-            ) : NARRATIVAS_DOC_SLUGS.includes(activeSlug) && !(activeSlug === 'nr_investigar_vg' && vgViewMode === 'visual') ? (
-              <WorkspaceDocument
-                key="narrativas-doc"
-                blocks={NARRATIVAS_DOC_SLUGS.map(slug => ({
-                  sectionDef: WORKSPACE_SECTIONS.find(s => s.slug === slug)!,
-                  existingSection: sections.find(s => s.slug === slug),
+            ) : NARRATIVAS_DOC_SLUGS.filter(s => s !== 'nr_investigar_vg').includes(activeSlug) ? (
+              <InvestigarHubView
+                key="narrativas-hub"
+                studyBlocks={NARRATIVAS_DOC_SLUGS.filter(s => s !== 'nr_investigar_vg').map(slug => ({
+                  sectionDef: WORKSPACE_SECTIONS.find(sec => sec.slug === slug)!,
+                  existingSection: sections.find(sec => sec.slug === slug),
                 }))}
                 project={project}
                 userId={user.id}
+                activeSlug={activeSlug}
                 onUpdate={handleSectionUpdate}
                 onAskAI={handleAskAI}
-                guided={(workModeMap['investigar'] ?? 'free') === 'guided'}
-                readingMode={(workModeMap['investigar'] ?? 'free') === 'reading'}
-                onExitReadingMode={() => setWorkMode('investigar', 'free')}
-                initialSlug={activeSlug}
-                typeLabel="Narrativas"
+                onNavigate={navigate}
               />
             ) : activeSlug === 'nr_preparar_visao_geral' ? (
               <WorkspaceDocument
