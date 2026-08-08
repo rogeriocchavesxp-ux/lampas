@@ -46,6 +46,7 @@ import BibliotecaWorkspace from './BibliotecaWorkspace'
 import WorkspaceLateralTabs from './WorkspaceLateralTabs'
 import FreeModeEditor from './FreeModeEditor'
 import AnnotationsPanel from './AnnotationsPanel'
+import PreparMovementsView from './PreparMovementsView'
 import {
   Heart, BookOpen, FileText, Crosshair, Landmark, Languages, GraduationCap,
   Sparkles, BookMarked, Flame, MessageSquareText, Layers, Book, Library,
@@ -101,7 +102,8 @@ function ProgressRing({ pct, color, size = 15 }: { pct: number; color: string; s
 }
 
 
-const PREPARAR_DOC_SLUGS = ['preparacao_espiritual', 'preparar_leia_assimile', 'preparar_visao_geral']
+const PREPARAR_DOC_SLUGS    = ['preparacao_espiritual', 'preparar_leia_assimile', 'preparar_visao_geral']
+const PREPARAR_MOVIMENTOS   = ['preparacao_espiritual', 'preparar_leia_assimile']
 const INVESTIGAR_DOC_SLUGS = ['inv_estudo_contextual', 'inv_estudo_textual', 'inv_estudo_teologico', 'investigar_visao_geral']
 const NARRATIVAS_DOC_SLUGS    = ['nr_estudo_contextual', 'nr_estudo_textual', 'nr_estudo_teologico', 'nr_investigar_vg']
 const NARRATIVAS_PREPARAR_SLUGS = ['preparacao_espiritual', 'preparar_leia_assimile', 'nr_preparar_visao_geral']
@@ -1744,9 +1746,9 @@ ${body}`
                 viewMode={vgViewMode}
                 onViewModeChange={setVgViewMode}
               />
-            ) : PREPARAR_DOC_SLUGS.includes(activeSlug) ? (
+            ) : PREPARAR_DOC_SLUGS.includes(activeSlug) && (workModeMap[activePhase?.id ?? ''] ?? 'guided') === 'reading' ? (
               <WorkspaceDocument
-                key="preparar-doc"
+                key="preparar-doc-reading"
                 blocks={PREPARAR_DOC_SLUGS.map(slug => ({
                   sectionDef: WORKSPACE_SECTIONS.find(s => s.slug === slug)!,
                   existingSection: sections.find(s => s.slug === slug),
@@ -1755,11 +1757,38 @@ ${body}`
                 userId={user.id}
                 onUpdate={handleSectionUpdate}
                 onAskAI={handleAskAI}
-                guided={(workModeMap[activePhase?.id ?? ''] ?? 'guided') === 'guided'}
-                readingMode={(workModeMap[activePhase?.id ?? ''] ?? 'guided') === 'reading'}
+                guided={false}
+                readingMode={true}
                 onExitReadingMode={() => activePhase && setWorkMode(activePhase.id, 'guided')}
                 initialSlug={activeSlug}
                 typeLabel={modeConfig.name}
+              />
+            ) : PREPARAR_MOVIMENTOS.includes(activeSlug) ? (
+              <PreparMovementsView
+                key="preparar-movements"
+                blocks={PREPARAR_MOVIMENTOS.map(slug => ({
+                  sectionDef: WORKSPACE_SECTIONS.find(s => s.slug === slug)!,
+                  existingSection: sections.find(s => s.slug === slug),
+                }))}
+                project={project}
+                userId={user.id}
+                onUpdate={handleSectionUpdate}
+                onAskAI={handleAskAI}
+              />
+            ) : activeSlug === 'preparar_visao_geral' ? (
+              <WorkspaceDocument
+                key="preparar-vg"
+                blocks={[{
+                  sectionDef: WORKSPACE_SECTIONS.find(s => s.slug === 'preparar_visao_geral')!,
+                  existingSection: sections.find(s => s.slug === 'preparar_visao_geral'),
+                }]}
+                project={project}
+                userId={user.id}
+                onUpdate={handleSectionUpdate}
+                onAskAI={handleAskAI}
+                guided={true}
+                initialSlug={activeSlug}
+                typeLabel="Visão Geral"
               />
             ) : activeDef ? (
               <SectionWorkspace
