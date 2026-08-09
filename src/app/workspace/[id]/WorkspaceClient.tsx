@@ -1681,21 +1681,6 @@ ${body}`
                 onAskAI={handleAskAI}
                 onNavigate={navigate}
               />
-            ) : activeSlug === 'nr_preparar_visao_geral' ? (
-              <WorkspaceDocument
-                key="narrativas-preparar-vg"
-                blocks={[{
-                  sectionDef: WORKSPACE_SECTIONS.find(s => s.slug === 'nr_preparar_visao_geral')!,
-                  existingSection: sections.find(s => s.slug === 'nr_preparar_visao_geral'),
-                }]}
-                project={project}
-                userId={user.id}
-                onUpdate={handleSectionUpdate}
-                onAskAI={handleAskAI}
-                guided={true}
-                initialSlug={activeSlug}
-                typeLabel="Visão Geral"
-              />
             ) : TEMATICO_DOC_SLUGS.includes(activeSlug) ? (
               <WorkspaceDocument
                 key="tematico-doc"
@@ -1764,32 +1749,47 @@ ${body}`
                 initialSlug={activeSlug}
                 typeLabel={modeConfig.name}
               />
-            ) : PREPARAR_MOVIMENTOS.includes(activeSlug) ? (
-              <PreparMovementsView
-                key="preparar-movements"
-                blocks={PREPARAR_MOVIMENTOS.map(slug => ({
+            ) : modeConfig.id === 'estudo_narrativas' && NARRATIVAS_PREPARAR_SLUGS.includes(activeSlug) ? (
+              <InvestigarHubView
+                key="narrativas-preparar-hub"
+                studyBlocks={['preparacao_espiritual', 'preparar_leia_assimile'].map(slug => ({
                   sectionDef: WORKSPACE_SECTIONS.find(s => s.slug === slug)!,
                   existingSection: sections.find(s => s.slug === slug),
                 }))}
+                vgBlock={{
+                  sectionDef: WORKSPACE_SECTIONS.find(s => s.slug === 'nr_preparar_visao_geral')!,
+                  existingSection: sections.find(s => s.slug === 'nr_preparar_visao_geral'),
+                }}
                 project={project}
                 userId={user.id}
+                activeSlug={activeSlug}
+                phaseLabel="Preparar"
+                phaseDescription="Três etapas para se preparar espiritualmente e entrar na passagem. Comece por qualquer uma."
+                itemLabel=""
                 onUpdate={handleSectionUpdate}
                 onAskAI={handleAskAI}
+                onNavigate={navigate}
               />
-            ) : activeSlug === 'preparar_visao_geral' ? (
-              <WorkspaceDocument
-                key="preparar-vg"
-                blocks={[{
+            ) : PREPARAR_DOC_SLUGS.includes(activeSlug) ? (
+              <InvestigarHubView
+                key="preparar-hub"
+                studyBlocks={['preparacao_espiritual', 'preparar_leia_assimile'].map(slug => ({
+                  sectionDef: WORKSPACE_SECTIONS.find(s => s.slug === slug)!,
+                  existingSection: sections.find(s => s.slug === slug),
+                }))}
+                vgBlock={{
                   sectionDef: WORKSPACE_SECTIONS.find(s => s.slug === 'preparar_visao_geral')!,
                   existingSection: sections.find(s => s.slug === 'preparar_visao_geral'),
-                }]}
+                }}
                 project={project}
                 userId={user.id}
+                activeSlug={activeSlug}
+                phaseLabel="Preparar"
+                phaseDescription="Três etapas para se preparar espiritualmente e entrar na passagem. Comece por qualquer uma."
+                itemLabel=""
                 onUpdate={handleSectionUpdate}
                 onAskAI={handleAskAI}
-                guided={true}
-                initialSlug={activeSlug}
-                typeLabel="Visão Geral"
+                onNavigate={navigate}
               />
             ) : activeDef ? (
               <SectionWorkspace

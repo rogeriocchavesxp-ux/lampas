@@ -17,36 +17,52 @@ interface Props {
   project: Project
   userId: string
   activeSlug: string
+  phaseLabel?: string
+  phaseDescription?: string
+  itemLabel?: string
   onUpdate: (s: Section) => void
   onAskAI: (prompt: string) => void
   onNavigate: (slug: string) => void
 }
 
 const STUDY_COLORS: Record<string, string> = {
-  contextual: '#0EA5E9',
-  textual:    '#8B5CF6',
-  teologico:  '#F59E0B',
-  teológico:  '#F59E0B',
+  contextual:  '#0EA5E9',
+  textual:     '#8B5CF6',
+  teologico:   '#F59E0B',
+  teológico:   '#F59E0B',
+  espiritual:  '#EC4899',
+  leia:        '#10B981',
+  visao_geral: '#6366F1',
 }
 
 const STUDY_ICONS: Record<string, string> = {
-  contextual: '🌍',
-  textual:    '📖',
-  teologico:  '✝️',
-  teológico:  '✝️',
+  contextual:  '🌍',
+  textual:     '📖',
+  teologico:   '✝️',
+  teológico:   '✝️',
+  espiritual:  '🙏',
+  leia:        '👁️',
+  visao_geral: '🗺️',
 }
 
 const STUDY_DESCRIPTIONS: Record<string, string> = {
-  contextual: 'Contexto histórico, literário e canônico do texto',
-  textual:    'Análise do texto original, estrutura e exegese',
-  teologico:  'Temas teológicos, progressão e relevância',
-  teológico:  'Temas teológicos, progressão e relevância',
+  contextual:  'Contexto histórico, literário e canônico do texto',
+  textual:     'Análise do texto original, estrutura e exegese',
+  teologico:   'Temas teológicos, progressão e relevância',
+  teológico:   'Temas teológicos, progressão e relevância',
+  espiritual:  'Preparo pessoal, oração e contexto pastoral',
+  leia:        'Leitura lenta, comparação de traduções e ideia inicial',
+  visao_geral: 'Visão panorâmica, estrutura e perguntas iniciais',
 }
 
 function getKey(def: SectionDef): string {
   const s = def.slug.toLowerCase()
-  if (s.includes('contextual')) return 'contextual'
-  if (s.includes('textual'))    return 'textual'
+  if (s.includes('contextual'))               return 'contextual'
+  if (s.includes('textual'))                  return 'textual'
+  if (s.includes('teologico') || s.includes('teológico')) return 'teologico'
+  if (s.includes('espiritual'))               return 'espiritual'
+  if (s.includes('leia') || s.includes('assimile')) return 'leia'
+  if (s.includes('visao_geral') || s.includes('visão_geral')) return 'visao_geral'
   return 'teologico'
 }
 
@@ -86,6 +102,9 @@ export default function InvestigarHubView({
   project,
   userId,
   activeSlug,
+  phaseLabel = 'Investigar',
+  phaseDescription,
+  itemLabel = 'Estudo',
   onUpdate,
   onAskAI,
   onNavigate,
@@ -144,10 +163,10 @@ export default function InvestigarHubView({
         <div style={{ marginBottom: '2rem', display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', gap: '1rem' }}>
           <div>
             <h2 style={{ fontSize: '1.1rem', fontWeight: 700, color: 'var(--text-primary)', marginBottom: '0.3rem' }}>
-              Investigar
+              {phaseLabel}
             </h2>
             <p style={{ fontSize: '0.82rem', color: 'var(--text-muted)', lineHeight: 1.5 }}>
-              Três estudos para aprofundar a compreensão da passagem. Comece por qualquer um.
+              {phaseDescription ?? 'Três estudos para aprofundar a compreensão da passagem. Comece por qualquer um.'}
             </p>
           </div>
           <div style={{ textAlign: 'right', flexShrink: 0 }}>
@@ -328,7 +347,7 @@ export default function InvestigarHubView({
                   onMouseEnter={e => e.currentTarget.style.opacity = '0.88'}
                   onMouseLeave={e => e.currentTarget.style.opacity = '1'}
                 >
-                  {pct === 0 ? 'Abrir síntese' : 'Ver síntese'}
+                  {pct === 0 ? `Abrir ${vgBlock.sectionDef.shortTitle.toLowerCase()}` : `Ver ${vgBlock.sectionDef.shortTitle.toLowerCase()}`}
                 </button>
               </div>
             </div>
@@ -364,7 +383,7 @@ export default function InvestigarHubView({
           onMouseEnter={e => { e.currentTarget.style.background = 'rgba(0,0,0,0.05)'; e.currentTarget.style.color = 'var(--text-secondary)' }}
           onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = 'var(--text-muted)' }}
         >
-          ← Investigar
+          ← {phaseLabel}
         </button>
 
         <span style={{ color: 'var(--border)', fontSize: '0.75rem' }}>/</span>
@@ -398,7 +417,7 @@ export default function InvestigarHubView({
                 onMouseLeave={e => { e.currentTarget.style.background = isOpen ? `${accent}14` : 'transparent'; e.currentTarget.style.borderColor = isOpen ? accent : `${accent}50`; e.currentTarget.style.color = isOpen ? accent : `${accent}CC` }}
               >
                 <span>{getIcon(block.sectionDef)}</span>
-                Estudo {block.sectionDef.shortTitle}
+                {itemLabel ? `${itemLabel} ${block.sectionDef.shortTitle}` : block.sectionDef.shortTitle}
               </button>
             )
           })}
