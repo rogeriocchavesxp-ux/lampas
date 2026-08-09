@@ -1715,7 +1715,7 @@ ${body}`
                 initialSlug={activeSlug}
                 typeLabel={modeConfig.name}
               />
-            ) : VG_SLUGS.includes(activeSlug) && !PREPARAR_DOC_SLUGS.includes(activeSlug) && activeDef ? (
+            ) : VG_SLUGS.includes(activeSlug) && !PREPARAR_DOC_SLUGS.includes(activeSlug) && !NARRATIVAS_PREPARAR_SLUGS.includes(activeSlug) && activeDef ? (
               <VisaoGeralWorkspace
                 key={activeSlug}
                 sectionDef={activeDef}
