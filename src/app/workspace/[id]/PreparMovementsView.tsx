@@ -22,39 +22,48 @@ interface Props {
 
 // ── Movement definition ───────────────────────────────────────────────────────
 
-const MOVEMENTS = [
-  {
-    number: 1,
-    label: 'Pré-leitura',
-    description: 'Prepare seu coração antes de abrir o texto.',
-    cards: [
-      { slug: 'preparacao_espiritual', id: 'preparar_oracao',           icon: '🙏' },
-      { slug: 'preparacao_espiritual', id: 'preparar_ocasiiao_publico', icon: '👥' },
-      { slug: 'preparacao_espiritual', id: 'preparar_objetivo_estudo',  icon: '🎯' },
-    ],
-    showBibleText: false,
-  },
-  {
-    number: 2,
-    label: 'Texto Bíblico',
-    description: 'Leia o texto devagar. Observe o que chama atenção.',
-    cards: [
-      { slug: 'preparar_leia_assimile', id: 'preparar_leitura_lenta',        icon: '📖' },
-      { slug: 'preparar_leia_assimile', id: 'preparar_comparacao_traducoes', icon: '🔍' },
-    ],
-    showBibleText: true,
-  },
-  {
-    number: 3,
-    label: 'Pós-leitura',
-    description: 'Após a leitura, registre sua compreensão inicial.',
-    cards: [
-      { slug: 'preparar_leia_assimile', id: 'preparar_ideia_inicial',      icon: '💡' },
-      { slug: 'preparar_leia_assimile', id: 'preparar_tensoes_repeticoes', icon: '⚡' },
-    ],
-    showBibleText: false,
-  },
-]
+interface CardRef { slug: string; id: string; icon: string }
+interface Movement { number: number; label: string; description: string; cards: CardRef[]; showBibleText: boolean }
+
+function buildMovements(blocks: DocumentBlock[]): Movement[] {
+  const isNarrativas = blocks.some(b => b.sectionDef.slug === 'nr_preparar_visao_geral')
+  return [
+    {
+      number: 1,
+      label: 'Oração e Propósito',
+      description: 'Prepare seu coração e defina o propósito desta mensagem.',
+      cards: [
+        { slug: 'preparacao_espiritual', id: 'preparar_oracao',          icon: '🙏' },
+        { slug: 'preparacao_espiritual', id: 'preparar_objetivo_estudo', icon: '🎯' },
+      ],
+      showBibleText: false,
+    },
+    {
+      number: 2,
+      label: 'Texto Bíblico',
+      description: 'Leia devagar. Use os destaques para marcar o que chama atenção.',
+      cards: [
+        { slug: 'preparar_leia_assimile', id: 'preparar_leitura_lenta', icon: '📖' },
+      ],
+      showBibleText: true,
+    },
+    {
+      number: 3,
+      label: 'Interpretação Prévia',
+      description: 'Antes de qualquer comentário, registre sua impressão inicial.',
+      cards: isNarrativas
+        ? [
+            { slug: 'nr_preparar_visao_geral', id: 'nr_vg_tema',      icon: '💡' },
+            { slug: 'nr_preparar_visao_geral', id: 'nr_vg_estrutura', icon: '✏️' },
+          ]
+        : [
+            { slug: 'preparar_visao_geral', id: 'preparar_tema_provavel',       icon: '💡' },
+            { slug: 'preparar_visao_geral', id: 'preparar_grande_ideia_inicial', icon: '✏️' },
+          ],
+      showBibleText: false,
+    },
+  ]
+}
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -311,7 +320,7 @@ export default function PreparMovementsView({ blocks, project, userId, onUpdate,
       <div style={{ flex: 1, overflowY: 'auto' }}>
         <div style={{ maxWidth: '720px', margin: '0 auto', padding: '2rem 2rem 6rem' }}>
 
-          {MOVEMENTS.map((movement, mIdx) => (
+          {buildMovements(blocks).map((movement, mIdx) => (
             <div key={movement.number} style={{ marginTop: mIdx === 0 ? 0 : '3.5rem' }}>
 
               {/* Movement header */}
