@@ -79,13 +79,14 @@ function isCardDone(html: string) {
 // ── Inline Bible Text ─────────────────────────────────────────────────────────
 
 function InlineBibleText({
-  book, passageRef, version, highlights, onHighlightChange,
+  book, passageRef, version, highlights, onHighlightChange, noBorder,
 }: {
   book: string
   passageRef: string
   version?: string
   highlights?: Record<number, string>
   onHighlightChange?: (verse: number, color: string | null) => void
+  noBorder?: boolean
 }) {
   const [verses, setVerses] = useState<{ v: number; t: string }[]>([])
   const [loading, setLoading] = useState(true)
@@ -119,12 +120,93 @@ function InlineBibleText({
     setPickerVerse(prev => prev === verseNum ? null : verseNum)
   }
 
+  const picker = pickerVerse !== null && onHighlightChange && (
+    <div
+      onMouseDown={e => e.stopPropagation()}
+      style={{
+        position: 'fixed',
+        left: pickerPos.x,
+        top: pickerPos.y,
+        zIndex: 500,
+        background: '#FFF',
+        border: '1px solid var(--border)',
+        borderRadius: '10px',
+        padding: '0.4rem',
+        display: 'flex',
+        gap: '5px',
+        flexWrap: 'wrap',
+        width: '148px',
+        boxShadow: '0 6px 24px rgba(0,0,0,0.12)',
+      }}
+    >
+      {HL_COLORS.map(h => (
+        <button
+          key={h.color}
+          type="button"
+          title={h.label}
+          onClick={() => { onHighlightChange(pickerVerse, h.color); setPickerVerse(null) }}
+          style={{
+            width: 26, height: 26, borderRadius: 5, cursor: 'pointer',
+            background: h.color,
+            border: highlights?.[pickerVerse] === h.color
+              ? '2px solid #555'
+              : '1px solid rgba(0,0,0,0.12)',
+          }}
+        />
+      ))}
+      {highlights?.[pickerVerse] && (
+        <button
+          type="button"
+          title="Remover destaque"
+          onClick={() => { onHighlightChange(pickerVerse, null); setPickerVerse(null) }}
+          style={{
+            width: 26, height: 26, borderRadius: 5, cursor: 'pointer',
+            border: '1px solid var(--border)', background: 'transparent',
+            fontSize: '0.65rem', color: 'var(--text-muted)',
+          }}
+        >✕</button>
+      )}
+    </div>
+  )
+
+  const versesEl = (
+    <p style={{
+      margin: 0,
+      fontSize: '1.02rem', lineHeight: 2, color: '#1A1D23',
+      fontFamily: "'EB Garamond', Georgia, serif",
+    }}>
+      {verses.map(v => (
+        <span
+          key={v.v}
+          onClick={(e) => handleVerseClick(e, v.v)}
+          style={{
+            backgroundColor: highlights?.[v.v] ?? 'transparent',
+            borderRadius: '3px',
+            padding: highlights?.[v.v] ? '1px 3px' : '0',
+            cursor: onHighlightChange ? 'pointer' : 'default',
+            transition: 'background-color 0.15s',
+          }}
+        >
+          <sup style={{
+            fontSize: '0.52rem', fontWeight: 700, color: '#D97706',
+            fontFamily: 'inherit', marginRight: '2px',
+          }}>
+            {v.v}
+          </sup>
+          {v.t}{' '}
+        </span>
+      ))}
+    </p>
+  )
+
   if (loading) return (
     <div style={{ padding: '1.25rem 0', color: 'var(--text-muted)', fontSize: '0.82rem' }}>
       Carregando passagem...
     </div>
   )
   if (!verses.length) return null
+
+  if (noBorder) return <>{versesEl}{picker}</>
 
   return (
     <div style={{
@@ -152,83 +234,8 @@ function InlineBibleText({
           </span>
         )}
       </div>
-      <p style={{
-        margin: 0,
-        fontSize: '1rem', lineHeight: 1.88, color: '#1A1D23',
-        fontFamily: "'EB Garamond', Georgia, serif",
-      }}>
-        {verses.map(v => (
-          <span
-            key={v.v}
-            onClick={(e) => handleVerseClick(e, v.v)}
-            style={{
-              backgroundColor: highlights?.[v.v] ?? 'transparent',
-              borderRadius: '3px',
-              padding: highlights?.[v.v] ? '1px 2px' : '0',
-              cursor: onHighlightChange ? 'pointer' : 'default',
-              transition: 'background-color 0.15s',
-            }}
-          >
-            <sup style={{
-              fontSize: '0.52rem', fontWeight: 700, color: '#D97706',
-              fontFamily: 'inherit', marginRight: '2px',
-            }}>
-              {v.v}
-            </sup>
-            {v.t}{' '}
-          </span>
-        ))}
-      </p>
-
-      {/* Verse highlight color picker */}
-      {pickerVerse !== null && onHighlightChange && (
-        <div
-          onMouseDown={e => e.stopPropagation()}
-          style={{
-            position: 'fixed',
-            left: pickerPos.x,
-            top: pickerPos.y,
-            zIndex: 200,
-            background: '#FFF',
-            border: '1px solid var(--border)',
-            borderRadius: '10px',
-            padding: '0.4rem',
-            display: 'flex',
-            gap: '5px',
-            flexWrap: 'wrap',
-            width: '148px',
-            boxShadow: '0 6px 24px rgba(0,0,0,0.12)',
-          }}
-        >
-          {HL_COLORS.map(h => (
-            <button
-              key={h.color}
-              type="button"
-              title={h.label}
-              onClick={() => { onHighlightChange(pickerVerse, h.color); setPickerVerse(null) }}
-              style={{
-                width: 26, height: 26, borderRadius: 5, cursor: 'pointer',
-                background: h.color,
-                border: highlights?.[pickerVerse] === h.color
-                  ? '2px solid #555'
-                  : '1px solid rgba(0,0,0,0.12)',
-              }}
-            />
-          ))}
-          {highlights?.[pickerVerse] && (
-            <button
-              type="button"
-              title="Remover destaque"
-              onClick={() => { onHighlightChange(pickerVerse, null); setPickerVerse(null) }}
-              style={{
-                width: 26, height: 26, borderRadius: 5, cursor: 'pointer',
-                border: '1px solid var(--border)', background: 'transparent',
-                fontSize: '0.65rem', color: 'var(--text-muted)',
-              }}
-            >✕</button>
-          )}
-        </div>
-      )}
+      {versesEl}
+      {picker}
     </div>
   )
 }
@@ -347,6 +354,10 @@ export default function PreparMovementsView({ blocks, project, userId, onUpdate,
     const leiaBlock = blocks.find(b => b.sectionDef.slug === 'preparar_leia_assimile')
     return (leiaBlock?.existingSection?.content as { bibleHighlights?: Record<number, string> } | null)?.bibleHighlights ?? {}
   })
+  const [bibleOpen, setBibleOpen] = useState(false)
+  const [popupPos, setPopupPos] = useState({ x: 40, y: 110 })
+  const popupDrag = useRef<{ active: boolean; ox: number; oy: number }>({ active: false, ox: 0, oy: 0 })
+
   const [activeEditorKey, setActiveEditorKey] = useState<string | null>(null)
   const [, forceUpdate] = useState(0)
   const [hlOpen, setHlOpen] = useState(false)
@@ -435,6 +446,25 @@ export default function PreparMovementsView({ blocks, project, userId, onUpdate,
     }
   }
 
+  function handlePopupDragStart(e: React.MouseEvent) {
+    e.preventDefault()
+    popupDrag.current = { active: true, ox: e.clientX - popupPos.x, oy: e.clientY - popupPos.y }
+    function onMove(ev: MouseEvent) {
+      if (!popupDrag.current.active) return
+      setPopupPos({
+        x: Math.max(0, Math.min(window.innerWidth - 480, ev.clientX - popupDrag.current.ox)),
+        y: Math.max(0, Math.min(window.innerHeight - 120, ev.clientY - popupDrag.current.oy)),
+      })
+    }
+    function onUp() {
+      popupDrag.current.active = false
+      document.removeEventListener('mousemove', onMove)
+      document.removeEventListener('mouseup', onUp)
+    }
+    document.addEventListener('mousemove', onMove)
+    document.addEventListener('mouseup', onUp)
+  }
+
   function handleBibleHighlightChange(verse: number, color: string | null) {
     setBibleHighlights(prev => {
       const updated = { ...prev }
@@ -447,6 +477,12 @@ export default function PreparMovementsView({ blocks, project, userId, onUpdate,
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', flex: 1 }}>
+      <style>{`
+        @keyframes biblePulse {
+          0%, 100% { box-shadow: 0 0 0 0 rgba(217,119,6,0.55), 0 8px 28px rgba(217,119,6,0.3); }
+          55% { box-shadow: 0 0 0 14px rgba(217,119,6,0), 0 8px 28px rgba(217,119,6,0.5); }
+        }
+      `}</style>
 
       {/* Shared sticky toolbar */}
       <Toolbar ed={ed} hlRef={hlRef} hlOpen={hlOpen} setHlOpen={setHlOpen} />
@@ -491,16 +527,7 @@ export default function PreparMovementsView({ blocks, project, userId, onUpdate,
                 </div>
               </div>
 
-              {/* Bible text (movement 2) */}
-              {movement.showBibleText && project.passage_ref && (
-                <InlineBibleText
-                  book={project.book}
-                  passageRef={project.passage_ref}
-                  version={project.bible_version ?? undefined}
-                  highlights={bibleHighlights}
-                  onHighlightChange={handleBibleHighlightChange}
-                />
-              )}
+              {/* Bible text lives in the floating popup */}
 
               {/* Cards */}
               <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
@@ -583,6 +610,128 @@ export default function PreparMovementsView({ blocks, project, userId, onUpdate,
 
         </div>
       </div>
+
+      {/* ── Floating Bible button ───────────────────────────────────── */}
+      {project.passage_ref && (
+        <button
+          onClick={() => setBibleOpen(o => !o)}
+          title={bibleOpen ? 'Fechar texto bíblico' : `Abrir ${project.passage_ref}`}
+          style={{
+            position: 'fixed',
+            bottom: '90px',
+            right: '88px',
+            width: 58,
+            height: 58,
+            borderRadius: '50%',
+            background: bibleOpen
+              ? 'linear-gradient(145deg, #92400E, #78350F)'
+              : 'linear-gradient(145deg, #D97706, #B45309)',
+            border: bibleOpen ? '2.5px solid #FDE68A' : '2.5px solid rgba(253,230,138,0.35)',
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            animation: bibleOpen ? 'none' : 'biblePulse 2.4s ease-in-out infinite',
+            zIndex: 110,
+            transition: 'background 0.25s, border 0.25s',
+          }}
+        >
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/>
+            <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>
+          </svg>
+        </button>
+      )}
+
+      {/* ── Bible popup ─────────────────────────────────────────────── */}
+      {bibleOpen && project.passage_ref && (
+        <div
+          style={{
+            position: 'fixed',
+            left: popupPos.x,
+            top: popupPos.y,
+            width: 480,
+            maxHeight: '74vh',
+            zIndex: 105,
+            display: 'flex',
+            flexDirection: 'column',
+            borderRadius: '14px',
+            overflow: 'hidden',
+            boxShadow: '0 24px 64px rgba(0,0,0,0.22), 0 0 0 1px rgba(217,119,6,0.18)',
+          }}
+        >
+          {/* Header */}
+          <div
+            onMouseDown={handlePopupDragStart}
+            style={{
+              padding: '0.8rem 1rem',
+              background: 'linear-gradient(135deg, #92400E 0%, #78350F 100%)',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.7rem',
+              cursor: 'grab',
+              userSelect: 'none',
+              flexShrink: 0,
+            }}
+          >
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#FDE68A" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/>
+              <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>
+            </svg>
+            <span style={{
+              fontSize: '0.8rem', fontWeight: 700, color: '#FDE68A',
+              letterSpacing: '0.03em', flex: 1,
+              fontFamily: "'EB Garamond', Georgia, serif",
+            }}>
+              {project.passage_ref}
+              <span style={{ fontWeight: 400, opacity: 0.75, marginLeft: '0.5rem', fontSize: '0.72rem' }}>
+                {project.bible_version ?? 'ACF'}
+              </span>
+            </span>
+            <button
+              onClick={() => setBibleOpen(false)}
+              style={{
+                background: 'rgba(253,230,138,0.12)', border: '1px solid rgba(253,230,138,0.25)',
+                borderRadius: '6px', cursor: 'pointer',
+                color: '#FDE68A', fontSize: '0.78rem', lineHeight: 1,
+                padding: '0.25rem 0.45rem', transition: 'background 0.15s',
+              }}
+            >
+              ✕
+            </button>
+          </div>
+
+          {/* Hint strip */}
+          <div style={{
+            padding: '0.4rem 1rem',
+            background: '#FEF7EC',
+            borderBottom: '1px solid #E8E2D5',
+            fontSize: '0.65rem',
+            color: '#92400E',
+            fontStyle: 'italic',
+            flexShrink: 0,
+          }}>
+            Clique num versículo para destacar
+          </div>
+
+          {/* Bible text */}
+          <div style={{
+            flex: 1, overflowY: 'auto',
+            padding: '1.4rem 1.6rem 1.8rem',
+            background: '#FEFDF9',
+          }}>
+            <InlineBibleText
+              book={project.book}
+              passageRef={project.passage_ref}
+              version={project.bible_version ?? undefined}
+              highlights={bibleHighlights}
+              onHighlightChange={handleBibleHighlightChange}
+              noBorder
+            />
+          </div>
+        </div>
+      )}
+
     </div>
   )
 }
