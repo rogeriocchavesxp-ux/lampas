@@ -92,6 +92,7 @@ function InlineBibleText({
   const [loading, setLoading] = useState(true)
   const [pickerVerse, setPickerVerse] = useState<number | null>(null)
   const [pickerPos, setPickerPos] = useState({ x: 0, y: 0 })
+  const pickerRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     fetch('/api/bible/text', {
@@ -107,7 +108,10 @@ function InlineBibleText({
 
   useEffect(() => {
     if (pickerVerse === null) return
-    function close() { setPickerVerse(null) }
+    function close(e: MouseEvent) {
+      if (pickerRef.current?.contains(e.target as Node)) return
+      setPickerVerse(null)
+    }
     document.addEventListener('mousedown', close)
     return () => document.removeEventListener('mousedown', close)
   }, [pickerVerse])
@@ -122,7 +126,7 @@ function InlineBibleText({
 
   const picker = pickerVerse !== null && onHighlightChange && (
     <div
-      onMouseDown={e => e.stopPropagation()}
+      ref={pickerRef}
       style={{
         position: 'fixed',
         left: pickerPos.x,
@@ -358,6 +362,19 @@ export default function PreparMovementsView({ blocks, project, userId, onUpdate,
   const [popupPos, setPopupPos] = useState({ x: 40, y: 110 })
   const popupDrag = useRef<{ active: boolean; ox: number; oy: number }>({ active: false, ox: 0, oy: 0 })
 
+  // Button drag state — initialized after mount to get real window dimensions
+  const [btnPos, setBtnPos] = useState({ x: 0, y: 0 })
+  const btnReady = useRef(false)
+  useEffect(() => {
+    if (!btnReady.current) {
+      setBtnPos({
+        x: Math.round(window.innerWidth / 2 - 29),
+        y: Math.round(window.innerHeight - 130),
+      })
+      btnReady.current = true
+    }
+  }, [])
+
   const [activeEditorKey, setActiveEditorKey] = useState<string | null>(null)
   const [, forceUpdate] = useState(0)
   const [hlOpen, setHlOpen] = useState(false)
@@ -444,6 +461,31 @@ export default function PreparMovementsView({ blocks, project, userId, onUpdate,
       const { data } = await supabase.from('sections').insert(payload).select().single()
       if (data) { const s = data as Section; sectionRefs.current[sectionSlug] = s; onUpdate(s) }
     }
+  }
+
+  function handleBtnMouseDown(e: React.MouseEvent) {
+    e.preventDefault()
+    const startX = e.clientX
+    const startY = e.clientY
+    const originX = btnPos.x
+    const originY = btnPos.y
+    let moved = false
+
+    function onMove(ev: MouseEvent) {
+      if (!moved && Math.abs(ev.clientX - startX) < 4 && Math.abs(ev.clientY - startY) < 4) return
+      moved = true
+      setBtnPos({
+        x: Math.max(0, Math.min(window.innerWidth - 58, originX + ev.clientX - startX)),
+        y: Math.max(0, Math.min(window.innerHeight - 58, originY + ev.clientY - startY)),
+      })
+    }
+    function onUp() {
+      document.removeEventListener('mousemove', onMove)
+      document.removeEventListener('mouseup', onUp)
+      if (!moved) setBibleOpen(o => !o)
+    }
+    document.addEventListener('mousemove', onMove)
+    document.addEventListener('mouseup', onUp)
   }
 
   function handlePopupDragStart(e: React.MouseEvent) {
@@ -611,15 +653,15 @@ export default function PreparMovementsView({ blocks, project, userId, onUpdate,
         </div>
       </div>
 
-      {/* ── Floating Bible button ───────────────────────────────────── */}
-      {project.passage_ref && (
+      {/* ── Floating Bible button (draggable) ──────────────────────── */}
+      {project.passage_ref && btnReady.current && (
         <button
-          onClick={() => setBibleOpen(o => !o)}
+          onMouseDown={handleBtnMouseDown}
           title={bibleOpen ? 'Fechar texto bíblico' : `Abrir ${project.passage_ref}`}
           style={{
             position: 'fixed',
-            bottom: '90px',
-            right: '88px',
+            left: btnPos.x,
+            top: btnPos.y,
             width: 58,
             height: 58,
             borderRadius: '50%',
@@ -627,13 +669,14 @@ export default function PreparMovementsView({ blocks, project, userId, onUpdate,
               ? 'linear-gradient(145deg, #92400E, #78350F)'
               : 'linear-gradient(145deg, #D97706, #B45309)',
             border: bibleOpen ? '2.5px solid #FDE68A' : '2.5px solid rgba(253,230,138,0.35)',
-            cursor: 'pointer',
+            cursor: 'grab',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
             animation: bibleOpen ? 'none' : 'biblePulse 2.4s ease-in-out infinite',
             zIndex: 110,
             transition: 'background 0.25s, border 0.25s',
+            userSelect: 'none',
           }}
         >
           <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
