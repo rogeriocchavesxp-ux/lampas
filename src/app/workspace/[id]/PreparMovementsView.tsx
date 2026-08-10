@@ -78,9 +78,19 @@ function isCardDone(html: string) {
 
 // ── Inline Bible Text ─────────────────────────────────────────────────────────
 
-function InlineBibleText({ book, passageRef, version }: { book: string; passageRef: string; version?: string }) {
+function InlineBibleText({
+  book, passageRef, version, highlights, onHighlightChange,
+}: {
+  book: string
+  passageRef: string
+  version?: string
+  highlights?: Record<number, string>
+  onHighlightChange?: (verse: number, color: string | null) => void
+}) {
   const [verses, setVerses] = useState<{ v: number; t: string }[]>([])
   const [loading, setLoading] = useState(true)
+  const [pickerVerse, setPickerVerse] = useState<number | null>(null)
+  const [pickerPos, setPickerPos] = useState({ x: 0, y: 0 })
 
   useEffect(() => {
     fetch('/api/bible/text', {
@@ -93,6 +103,21 @@ function InlineBibleText({ book, passageRef, version }: { book: string; passageR
       .catch(() => {})
       .finally(() => setLoading(false))
   }, [book, passageRef, version])
+
+  useEffect(() => {
+    if (pickerVerse === null) return
+    function close() { setPickerVerse(null) }
+    document.addEventListener('mousedown', close)
+    return () => document.removeEventListener('mousedown', close)
+  }, [pickerVerse])
+
+  function handleVerseClick(e: React.MouseEvent<HTMLSpanElement>, verseNum: number) {
+    if (!onHighlightChange) return
+    e.stopPropagation()
+    const rect = e.currentTarget.getBoundingClientRect()
+    setPickerPos({ x: Math.min(rect.left, window.innerWidth - 160), y: rect.bottom + 6 })
+    setPickerVerse(prev => prev === verseNum ? null : verseNum)
+  }
 
   if (loading) return (
     <div style={{ padding: '1.25rem 0', color: 'var(--text-muted)', fontSize: '0.82rem' }}>
@@ -109,12 +134,23 @@ function InlineBibleText({ book, passageRef, version }: { book: string; passageR
       border: '1px solid #E8E2D5',
       borderRadius: '10px',
       borderLeft: '3px solid #D97706',
+      position: 'relative',
     }}>
       <div style={{
-        fontSize: '0.62rem', fontWeight: 700, letterSpacing: '0.08em',
-        color: '#D97706', textTransform: 'uppercase', marginBottom: '1rem',
+        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+        marginBottom: '1rem',
       }}>
-        {passageRef} · {version ?? 'ACF'}
+        <span style={{
+          fontSize: '0.62rem', fontWeight: 700, letterSpacing: '0.08em',
+          color: '#D97706', textTransform: 'uppercase',
+        }}>
+          {passageRef} · {version ?? 'ACF'}
+        </span>
+        {onHighlightChange && (
+          <span style={{ fontSize: '0.6rem', color: 'var(--text-muted)', fontStyle: 'italic' }}>
+            Clique num versículo para destacar
+          </span>
+        )}
       </div>
       <p style={{
         margin: 0,
@@ -122,7 +158,17 @@ function InlineBibleText({ book, passageRef, version }: { book: string; passageR
         fontFamily: "'EB Garamond', Georgia, serif",
       }}>
         {verses.map(v => (
-          <span key={v.v}>
+          <span
+            key={v.v}
+            onClick={(e) => handleVerseClick(e, v.v)}
+            style={{
+              backgroundColor: highlights?.[v.v] ?? 'transparent',
+              borderRadius: '3px',
+              padding: highlights?.[v.v] ? '1px 2px' : '0',
+              cursor: onHighlightChange ? 'pointer' : 'default',
+              transition: 'background-color 0.15s',
+            }}
+          >
             <sup style={{
               fontSize: '0.52rem', fontWeight: 700, color: '#D97706',
               fontFamily: 'inherit', marginRight: '2px',
@@ -133,6 +179,56 @@ function InlineBibleText({ book, passageRef, version }: { book: string; passageR
           </span>
         ))}
       </p>
+
+      {/* Verse highlight color picker */}
+      {pickerVerse !== null && onHighlightChange && (
+        <div
+          onMouseDown={e => e.stopPropagation()}
+          style={{
+            position: 'fixed',
+            left: pickerPos.x,
+            top: pickerPos.y,
+            zIndex: 200,
+            background: '#FFF',
+            border: '1px solid var(--border)',
+            borderRadius: '10px',
+            padding: '0.4rem',
+            display: 'flex',
+            gap: '5px',
+            flexWrap: 'wrap',
+            width: '148px',
+            boxShadow: '0 6px 24px rgba(0,0,0,0.12)',
+          }}
+        >
+          {HL_COLORS.map(h => (
+            <button
+              key={h.color}
+              type="button"
+              title={h.label}
+              onClick={() => { onHighlightChange(pickerVerse, h.color); setPickerVerse(null) }}
+              style={{
+                width: 26, height: 26, borderRadius: 5, cursor: 'pointer',
+                background: h.color,
+                border: highlights?.[pickerVerse] === h.color
+                  ? '2px solid #555'
+                  : '1px solid rgba(0,0,0,0.12)',
+              }}
+            />
+          ))}
+          {highlights?.[pickerVerse] && (
+            <button
+              type="button"
+              title="Remover destaque"
+              onClick={() => { onHighlightChange(pickerVerse, null); setPickerVerse(null) }}
+              style={{
+                width: 26, height: 26, borderRadius: 5, cursor: 'pointer',
+                border: '1px solid var(--border)', background: 'transparent',
+                fontSize: '0.65rem', color: 'var(--text-muted)',
+              }}
+            >✕</button>
+          )}
+        </div>
+      )}
     </div>
   )
 }
@@ -247,6 +343,10 @@ export default function PreparMovementsView({ blocks, project, userId, onUpdate,
   const [cardContents, setCardContents] = useState<Record<string, Record<string, string>>>(() =>
     Object.fromEntries(blocks.map(b => [b.sectionDef.slug, loadCards(b.sectionDef, b.existingSection)]))
   )
+  const [bibleHighlights, setBibleHighlights] = useState<Record<number, string>>(() => {
+    const leiaBlock = blocks.find(b => b.sectionDef.slug === 'preparar_leia_assimile')
+    return (leiaBlock?.existingSection?.content as { bibleHighlights?: Record<number, string> } | null)?.bibleHighlights ?? {}
+  })
   const [activeEditorKey, setActiveEditorKey] = useState<string | null>(null)
   const [, forceUpdate] = useState(0)
   const [hlOpen, setHlOpen] = useState(false)
@@ -295,10 +395,11 @@ export default function PreparMovementsView({ blocks, project, userId, onUpdate,
     const doneCount     = def.cards.filter(c => isCardDone(updatedCards[c.id] ?? '')).length
     const status: 'empty' | 'draft' | 'reviewed' =
       doneCount === 0 ? 'empty' : doneCount === def.cards.length ? 'reviewed' : 'draft'
+    const hlExtra = sectionSlug === 'preparar_leia_assimile' ? { bibleHighlights } : {}
     const payload = {
       project_id: project.id, user_id: userId,
       slug: sectionSlug, module: def.module, title: def.title,
-      content: { cards: updatedCards }, status,
+      content: { cards: updatedCards, ...hlExtra }, status,
     }
     const existing = sectionRefs.current[sectionSlug]
     if (existing) {
@@ -308,6 +409,40 @@ export default function PreparMovementsView({ blocks, project, userId, onUpdate,
       const { data } = await supabase.from('sections').insert(payload).select().single()
       if (data) { const s = data as Section; sectionRefs.current[sectionSlug] = s; onUpdate(s) }
     }
+  }
+
+  async function saveBibleHighlights(updated: Record<number, string>) {
+    const sectionSlug = 'preparar_leia_assimile'
+    const block = blocks.find(b => b.sectionDef.slug === sectionSlug)
+    if (!block) return
+    const def = block.sectionDef
+    const currentCards = cardContents[sectionSlug] ?? {}
+    const doneCount = def.cards.filter(c => isCardDone(currentCards[c.id] ?? '')).length
+    const status: 'empty' | 'draft' | 'reviewed' =
+      doneCount === 0 ? 'empty' : doneCount === def.cards.length ? 'reviewed' : 'draft'
+    const payload = {
+      project_id: project.id, user_id: userId,
+      slug: sectionSlug, module: def.module, title: def.title,
+      content: { cards: currentCards, bibleHighlights: updated }, status,
+    }
+    const existing = sectionRefs.current[sectionSlug]
+    if (existing) {
+      const { data } = await supabase.from('sections').update(payload).eq('id', existing.id).select().single()
+      if (data) { const s = data as Section; sectionRefs.current[sectionSlug] = s; onUpdate(s) }
+    } else {
+      const { data } = await supabase.from('sections').insert(payload).select().single()
+      if (data) { const s = data as Section; sectionRefs.current[sectionSlug] = s; onUpdate(s) }
+    }
+  }
+
+  function handleBibleHighlightChange(verse: number, color: string | null) {
+    setBibleHighlights(prev => {
+      const updated = { ...prev }
+      if (color === null) delete updated[verse]
+      else updated[verse] = color
+      void saveBibleHighlights(updated)
+      return updated
+    })
   }
 
   return (
@@ -362,6 +497,8 @@ export default function PreparMovementsView({ blocks, project, userId, onUpdate,
                   book={project.book}
                   passageRef={project.passage_ref}
                   version={project.bible_version ?? undefined}
+                  highlights={bibleHighlights}
+                  onHighlightChange={handleBibleHighlightChange}
                 />
               )}
 
