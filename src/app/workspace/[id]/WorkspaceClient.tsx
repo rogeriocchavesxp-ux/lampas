@@ -182,6 +182,14 @@ export default function WorkspaceClient({ user, project, initialSections }: Prop
   const [referenceWidth, setReferenceWidth] = useState(280)
   const [aiWidth, setAiWidth] = useState(308)
   const [biblePanelWidth, setBiblePanelWidth] = useState(380)
+  const [fabPos, setFabPos] = useState({ x: 0, y: 0 })
+  const fabReady = useRef(false)
+  useEffect(() => {
+    if (!fabReady.current) {
+      setFabPos({ x: window.innerWidth - 76, y: window.innerHeight - 130 })
+      fabReady.current = true
+    }
+  }, [])
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
   const [referenceCollapsed, setReferenceCollapsed] = useState(false)
   const [focusMode, setFocusMode] = useState(false)
@@ -351,6 +359,28 @@ export default function WorkspaceClient({ user, project, initialSections }: Prop
     }
     window.addEventListener('mousemove', onMove); window.addEventListener('mouseup', onUp)
   }, [])
+
+  const handleFABMouseDown = useCallback((e: React.MouseEvent) => {
+    e.preventDefault()
+    const startX = e.clientX, startY = e.clientY
+    const originX = fabPos.x, originY = fabPos.y
+    let moved = false
+    const onMove = (ev: MouseEvent) => {
+      if (!moved && Math.abs(ev.clientX - startX) < 4 && Math.abs(ev.clientY - startY) < 4) return
+      moved = true
+      setFabPos({
+        x: Math.max(0, Math.min(window.innerWidth  - 50, originX + ev.clientX - startX)),
+        y: Math.max(0, Math.min(window.innerHeight - 50, originY + ev.clientY - startY)),
+      })
+    }
+    const onUp = () => {
+      window.removeEventListener('mousemove', onMove)
+      window.removeEventListener('mouseup', onUp)
+      if (!moved) setBibleOpen(o => !o)
+    }
+    window.addEventListener('mousemove', onMove)
+    window.addEventListener('mouseup', onUp)
+  }, [fabPos])
 
   const { def: activeDef, loading: activeDefLoading } = useSectionDef(activeSlug)
   const activeTool = getToolAreaBySlug(activeSlug)
@@ -1824,27 +1854,18 @@ ${body}`
             )}
           </main>
 
-          {/* Bible side panel — flex sibling, acoplado ao workspace */}
-          {bibleOpen && <ResizeHandle onMouseDown={startBibleResize} />}
+          {/* Bible popup — flutuante, não ocupa espaço no flex */}
           {bibleOpen && (
-            <aside style={{
-              flexShrink: 0,
-              width: `${biblePanelWidth}px`,
-              overflow: 'hidden',
-              display: 'flex', flexDirection: 'column',
-              background: 'var(--surface)',
-            }}>
-              <BibleFloatingWindow
-                book={project.book}
-                passageRef={project.passage_ref}
-                testament={project.testament}
-                projectId={project.id}
-                userId={user.id}
-                onClose={() => setBibleOpen(false)}
-                sidebarMode={true}
-                studyMode={project.study_mode}
-              />
-            </aside>
+            <BibleFloatingWindow
+              book={project.book}
+              passageRef={project.passage_ref}
+              testament={project.testament}
+              projectId={project.id}
+              userId={user.id}
+              onClose={() => setBibleOpen(false)}
+              sidebarMode={false}
+              studyMode={project.study_mode}
+            />
           )}
 
           {/* AI panel — flex sibling so content is never obscured */}
@@ -1911,8 +1932,8 @@ ${body}`
       )}
 
 
-      {/* ── Bible FAB — visível em todos os módulos ─────────────── */}
-      {project.passage_ref && !focusMode && (
+      {/* ── Bible FAB — visível em todos os módulos, arrastável ─── */}
+      {project.passage_ref && !focusMode && fabReady.current && (
         <>
           <style>{`
             @keyframes biblePulse {
@@ -1921,12 +1942,12 @@ ${body}`
             }
           `}</style>
           <button
-            onClick={() => setBibleOpen(o => !o)}
+            onMouseDown={handleFABMouseDown}
             title={bibleOpen ? 'Fechar Bíblia' : (project.passage_ref ?? '')}
             style={{
               position: 'fixed',
-              right: '28px',
-              bottom: '72px',
+              left: fabPos.x,
+              top: fabPos.y,
               width: 50,
               height: 50,
               borderRadius: '50%',
@@ -1934,7 +1955,7 @@ ${body}`
                 ? 'linear-gradient(145deg, #92400E, #78350F)'
                 : 'linear-gradient(145deg, #D97706, #B45309)',
               border: bibleOpen ? '2px solid #FDE68A' : '2px solid rgba(253,230,138,0.3)',
-              cursor: 'pointer',
+              cursor: 'grab',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
               animation: bibleOpen ? 'none' : 'biblePulse 2.4s ease-in-out infinite',
               zIndex: 200,
