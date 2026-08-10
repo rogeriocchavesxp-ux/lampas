@@ -448,10 +448,6 @@ export default function WorkspaceMenuBar({
         </div>
       </>}
 
-      {/* ── Bíblia ── */}
-      <div style={{ width: 1, height: 18, background: 'var(--border-subtle)', margin: '0 6px', flexShrink: 0 }} />
-      <BarBibleBtn open={bibleOpen} onClick={onToggleBible} />
-
       {/* ── Spacer ── */}
       <div style={{ flex: 1, minWidth: 4 }} />
 

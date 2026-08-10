@@ -1911,6 +1911,45 @@ ${body}`
       )}
 
 
+      {/* ── Bible FAB — visível em todos os módulos ─────────────── */}
+      {project.passage_ref && !focusMode && (
+        <>
+          <style>{`
+            @keyframes biblePulse {
+              0%, 100% { box-shadow: 0 0 0 0 rgba(217,119,6,0.55), 0 6px 20px rgba(217,119,6,0.28); }
+              55%       { box-shadow: 0 0 0 13px rgba(217,119,6,0),  0 6px 20px rgba(217,119,6,0.45); }
+            }
+          `}</style>
+          <button
+            onClick={() => setBibleOpen(o => !o)}
+            title={bibleOpen ? 'Fechar Bíblia' : (project.passage_ref ?? '')}
+            style={{
+              position: 'fixed',
+              right: '28px',
+              bottom: '72px',
+              width: 50,
+              height: 50,
+              borderRadius: '50%',
+              background: bibleOpen
+                ? 'linear-gradient(145deg, #92400E, #78350F)'
+                : 'linear-gradient(145deg, #D97706, #B45309)',
+              border: bibleOpen ? '2px solid #FDE68A' : '2px solid rgba(253,230,138,0.3)',
+              cursor: 'pointer',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              animation: bibleOpen ? 'none' : 'biblePulse 2.4s ease-in-out infinite',
+              zIndex: 200,
+              transition: 'background 0.22s, border 0.22s',
+              userSelect: 'none',
+            }}
+          >
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/>
+              <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>
+            </svg>
+          </button>
+        </>
+      )}
+
       {/* ── Bottom Nav Bar — progresso + navegação ──────────────── */}
       {!focusMode && (
         <div style={{
