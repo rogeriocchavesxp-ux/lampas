@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useRef, useEffect, useCallback } from 'react'
+import RichEditor from '@/components/RichEditorLazy'
 
 interface Annotation {
   id: string
@@ -23,6 +24,10 @@ function loadAnnotations(projectId: string): Annotation[] {
 
 function saveAnnotations(projectId: string, list: Annotation[]) {
   try { localStorage.setItem(`lampas_ann_${projectId}`, JSON.stringify(list)) } catch {}
+}
+
+function isEmpty(html: string) {
+  return html.replace(/<[^>]*>/g, '').trim().length === 0
 }
 
 function formatDate(iso: string) {
@@ -73,7 +78,7 @@ export default function AnnotationsPanel({ projectId, onClose }: Props) {
   }, [])
 
   function handleSave() {
-    if (!text.trim()) return
+    if (isEmpty(text)) return
     const ann: Annotation = {
       id: Math.random().toString(36).slice(2),
       context: context.trim(),
@@ -102,7 +107,7 @@ export default function AnnotationsPanel({ projectId, onClose }: Props) {
   }
 
   function handleEditSave() {
-    if (!editText.trim() || !editingId) return
+    if (isEmpty(editText) || !editingId) return
     const next = annotations.map(a =>
       a.id === editingId
         ? { ...a, context: editContext.trim(), text: editText.trim() }
@@ -226,27 +231,26 @@ export default function AnnotationsPanel({ projectId, onClose }: Props) {
               <label style={{ display: 'block', fontSize: '0.69rem', color: 'var(--text-muted)', marginBottom: '0.28rem', fontWeight: 600, letterSpacing: '0.03em' }}>
                 Insight
               </label>
-              <textarea
-                value={text}
-                onChange={e => setText(e.target.value)}
-                placeholder="Escreva sua ideia, ilustração ou insight..."
-                rows={5}
-                style={{ ...inputStyle }}
-                onFocus={e => (e.target.style.borderColor = 'var(--accent)')}
-                onBlur={e => (e.target.style.borderColor = 'var(--border)')}
-                onKeyDown={e => { if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) handleSave() }}
-              />
-              <div style={{ fontSize: '0.62rem', color: 'var(--text-muted)', marginTop: '0.2rem' }}>⌘ Enter para salvar</div>
+              <div style={{ border: '1px solid var(--border)', borderRadius: '7px', overflow: 'hidden' }}>
+                <RichEditor
+                  value={text}
+                  onChange={setText}
+                  placeholder="Escreva sua ideia, ilustração ou insight..."
+                  minHeight={100}
+                  moduleColor="var(--accent)"
+                  compact
+                />
+              </div>
             </div>
             <button
               onClick={handleSave}
-              disabled={!text.trim()}
+              disabled={isEmpty(text)}
               style={{
                 width: '100%', padding: '0.52rem', border: 'none',
                 borderRadius: '7px', fontSize: '0.82rem', fontWeight: 650,
-                cursor: text.trim() ? 'pointer' : 'default', fontFamily: 'inherit',
-                background: saved ? '#16a34a' : (text.trim() ? 'var(--accent)' : 'var(--surface-2)'),
-                color: text.trim() ? '#fff' : 'var(--text-muted)',
+                cursor: isEmpty(text) ? 'default' : 'pointer', fontFamily: 'inherit',
+                background: saved ? '#16a34a' : (isEmpty(text) ? 'var(--surface-2)' : 'var(--accent)'),
+                color: isEmpty(text) ? 'var(--text-muted)' : '#fff',
                 transition: 'background 0.15s',
               }}
             >
@@ -288,26 +292,27 @@ export default function AnnotationsPanel({ projectId, onClose }: Props) {
                         onFocus={e => (e.target.style.borderColor = 'var(--accent)')}
                         onBlur={e => (e.target.style.borderColor = 'var(--border)')}
                       />
-                      <textarea
-                        value={editText}
-                        onChange={e => setEditText(e.target.value)}
-                        rows={4}
-                        style={{ ...inputStyle }}
-                        onFocus={e => (e.target.style.borderColor = 'var(--accent)')}
-                        onBlur={e => (e.target.style.borderColor = 'var(--border)')}
-                        onKeyDown={e => { if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) handleEditSave() }}
-                        autoFocus
-                      />
+                      <div style={{ border: '1px solid var(--border)', borderRadius: '7px', overflow: 'hidden' }}>
+                        <RichEditor
+                          value={editText}
+                          onChange={setEditText}
+                          placeholder="Edite sua anotação..."
+                          minHeight={80}
+                          moduleColor="var(--accent)"
+                          compact
+                          autoFocus
+                        />
+                      </div>
                       <div style={{ display: 'flex', gap: '0.4rem' }}>
                         <button
                           onClick={handleEditSave}
-                          disabled={!editText.trim()}
+                          disabled={isEmpty(editText)}
                           style={{
                             flex: 1, padding: '0.4rem', border: 'none',
                             borderRadius: '6px', fontSize: '0.78rem', fontWeight: 650,
-                            cursor: editText.trim() ? 'pointer' : 'default', fontFamily: 'inherit',
-                            background: editText.trim() ? 'var(--accent)' : 'var(--surface-2)',
-                            color: editText.trim() ? '#fff' : 'var(--text-muted)',
+                            cursor: isEmpty(editText) ? 'default' : 'pointer', fontFamily: 'inherit',
+                            background: isEmpty(editText) ? 'var(--surface-2)' : 'var(--accent)',
+                            color: isEmpty(editText) ? 'var(--text-muted)' : '#fff',
                           }}
                         >
                           Salvar
@@ -339,13 +344,11 @@ export default function AnnotationsPanel({ projectId, onClose }: Props) {
                           {a.context}
                         </div>
                       )}
-                      <p style={{
-                        margin: 0, fontSize: '0.8rem', lineHeight: 1.55,
-                        color: 'var(--text-primary)',
-                        whiteSpace: 'pre-wrap', wordBreak: 'break-word',
-                      }}>
-                        {a.text}
-                      </p>
+                      <div
+                        className="ws-doc-section"
+                        dangerouslySetInnerHTML={{ __html: a.text }}
+                        style={{ fontSize: '0.8rem', lineHeight: 1.55, color: 'var(--text-primary)', wordBreak: 'break-word' }}
+                      />
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '0.45rem' }}>
                         <span style={{ fontSize: '0.62rem', color: 'var(--text-muted)' }}>
                           {formatDate(a.createdAt)}
