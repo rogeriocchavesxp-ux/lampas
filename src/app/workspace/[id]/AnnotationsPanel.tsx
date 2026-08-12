@@ -37,6 +37,9 @@ export default function AnnotationsPanel({ projectId, onClose }: Props) {
   const [context, setContext] = useState('')
   const [text, setText] = useState('')
   const [saved, setSaved] = useState(false)
+  const [editingId, setEditingId] = useState<string | null>(null)
+  const [editContext, setEditContext] = useState('')
+  const [editText, setEditText] = useState('')
 
   // Draggable
   const panelRef = useRef<HTMLDivElement>(null)
@@ -90,6 +93,28 @@ export default function AnnotationsPanel({ projectId, onClose }: Props) {
     const next = annotations.filter(a => a.id !== id)
     setAnnotations(next)
     saveAnnotations(projectId, next)
+  }
+
+  function handleEditStart(a: Annotation) {
+    setEditingId(a.id)
+    setEditContext(a.context)
+    setEditText(a.text)
+  }
+
+  function handleEditSave() {
+    if (!editText.trim() || !editingId) return
+    const next = annotations.map(a =>
+      a.id === editingId
+        ? { ...a, context: editContext.trim(), text: editText.trim() }
+        : a
+    )
+    setAnnotations(next)
+    saveAnnotations(projectId, next)
+    setEditingId(null)
+  }
+
+  function handleEditCancel() {
+    setEditingId(null)
   }
 
   const inputStyle: React.CSSProperties = {
@@ -247,52 +272,113 @@ export default function AnnotationsPanel({ projectId, onClose }: Props) {
                 <div key={a.id} style={{
                   margin: '0 0.6rem 0.5rem',
                   padding: '0.65rem 0.75rem',
-                  background: 'var(--surface-2)',
-                  border: '1px solid var(--border-subtle)',
+                  background: editingId === a.id ? 'var(--surface)' : 'var(--surface-2)',
+                  border: `1px solid ${editingId === a.id ? 'var(--accent)' : 'var(--border-subtle)'}`,
                   borderRadius: '8px',
-                  position: 'relative',
                 }}>
-                  {/* Context tag */}
-                  {a.context && (
-                    <div style={{
-                      display: 'inline-block',
-                      fontSize: '0.64rem', fontWeight: 700,
-                      background: 'rgba(30,77,140,0.08)', color: 'var(--accent)',
-                      borderRadius: '4px', padding: '0.1rem 0.38rem',
-                      marginBottom: '0.38rem',
-                      letterSpacing: '0.01em',
-                    }}>
-                      {a.context}
+                  {editingId === a.id ? (
+                    /* ── Modo edição ── */
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                      <input
+                        type="text"
+                        value={editContext}
+                        onChange={e => setEditContext(e.target.value)}
+                        placeholder="Contexto (versículo, seção...)"
+                        style={{ ...inputStyle }}
+                        onFocus={e => (e.target.style.borderColor = 'var(--accent)')}
+                        onBlur={e => (e.target.style.borderColor = 'var(--border)')}
+                      />
+                      <textarea
+                        value={editText}
+                        onChange={e => setEditText(e.target.value)}
+                        rows={4}
+                        style={{ ...inputStyle }}
+                        onFocus={e => (e.target.style.borderColor = 'var(--accent)')}
+                        onBlur={e => (e.target.style.borderColor = 'var(--border)')}
+                        onKeyDown={e => { if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) handleEditSave() }}
+                        autoFocus
+                      />
+                      <div style={{ display: 'flex', gap: '0.4rem' }}>
+                        <button
+                          onClick={handleEditSave}
+                          disabled={!editText.trim()}
+                          style={{
+                            flex: 1, padding: '0.4rem', border: 'none',
+                            borderRadius: '6px', fontSize: '0.78rem', fontWeight: 650,
+                            cursor: editText.trim() ? 'pointer' : 'default', fontFamily: 'inherit',
+                            background: editText.trim() ? 'var(--accent)' : 'var(--surface-2)',
+                            color: editText.trim() ? '#fff' : 'var(--text-muted)',
+                          }}
+                        >
+                          Salvar
+                        </button>
+                        <button
+                          onClick={handleEditCancel}
+                          style={{
+                            padding: '0.4rem 0.75rem', border: '1px solid var(--border)',
+                            borderRadius: '6px', fontSize: '0.78rem', fontWeight: 500,
+                            cursor: 'pointer', fontFamily: 'inherit',
+                            background: 'transparent', color: 'var(--text-muted)',
+                          }}
+                        >
+                          Cancelar
+                        </button>
+                      </div>
                     </div>
+                  ) : (
+                    /* ── Modo leitura ── */
+                    <>
+                      {a.context && (
+                        <div style={{
+                          display: 'inline-block',
+                          fontSize: '0.64rem', fontWeight: 700,
+                          background: 'rgba(30,77,140,0.08)', color: 'var(--accent)',
+                          borderRadius: '4px', padding: '0.1rem 0.38rem',
+                          marginBottom: '0.38rem', letterSpacing: '0.01em',
+                        }}>
+                          {a.context}
+                        </div>
+                      )}
+                      <p style={{
+                        margin: 0, fontSize: '0.8rem', lineHeight: 1.55,
+                        color: 'var(--text-primary)',
+                        whiteSpace: 'pre-wrap', wordBreak: 'break-word',
+                      }}>
+                        {a.text}
+                      </p>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '0.45rem' }}>
+                        <span style={{ fontSize: '0.62rem', color: 'var(--text-muted)' }}>
+                          {formatDate(a.createdAt)}
+                        </span>
+                        <div style={{ display: 'flex', gap: '0.5rem' }}>
+                          <button
+                            onClick={() => handleEditStart(a)}
+                            style={{
+                              background: 'none', border: 'none', cursor: 'pointer',
+                              color: 'var(--text-muted)', fontSize: '0.7rem', padding: '0 0.15rem',
+                              lineHeight: 1, borderRadius: '3px', transition: 'color 0.12s',
+                            }}
+                            onMouseEnter={e => (e.currentTarget.style.color = 'var(--accent)')}
+                            onMouseLeave={e => (e.currentTarget.style.color = 'var(--text-muted)')}
+                          >
+                            Editar
+                          </button>
+                          <button
+                            onClick={() => handleDelete(a.id)}
+                            style={{
+                              background: 'none', border: 'none', cursor: 'pointer',
+                              color: 'var(--text-muted)', fontSize: '0.7rem', padding: '0 0.15rem',
+                              lineHeight: 1, borderRadius: '3px', transition: 'color 0.12s',
+                            }}
+                            onMouseEnter={e => (e.currentTarget.style.color = '#dc2626')}
+                            onMouseLeave={e => (e.currentTarget.style.color = 'var(--text-muted)')}
+                          >
+                            Excluir
+                          </button>
+                        </div>
+                      </div>
+                    </>
                   )}
-                  {/* Text */}
-                  <p style={{
-                    margin: 0, fontSize: '0.8rem', lineHeight: 1.55,
-                    color: 'var(--text-primary)',
-                    whiteSpace: 'pre-wrap', wordBreak: 'break-word',
-                  }}>
-                    {a.text}
-                  </p>
-                  {/* Footer */}
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '0.45rem' }}>
-                    <span style={{ fontSize: '0.62rem', color: 'var(--text-muted)' }}>
-                      {formatDate(a.createdAt)}
-                    </span>
-                    <button
-                      onClick={() => handleDelete(a.id)}
-                      title="Excluir anotação"
-                      style={{
-                        background: 'none', border: 'none', cursor: 'pointer',
-                        color: 'var(--text-muted)', fontSize: '0.7rem', padding: '0 0.15rem',
-                        lineHeight: 1, borderRadius: '3px',
-                        transition: 'color 0.12s',
-                      }}
-                      onMouseEnter={e => (e.currentTarget.style.color = '#dc2626')}
-                      onMouseLeave={e => (e.currentTarget.style.color = 'var(--text-muted)')}
-                    >
-                      Excluir
-                    </button>
-                  </div>
                 </div>
               ))
             )}
