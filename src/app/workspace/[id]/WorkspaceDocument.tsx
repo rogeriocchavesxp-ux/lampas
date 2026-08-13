@@ -1028,11 +1028,12 @@ export default function WorkspaceDocument({
                     return (
                       <div key={card.id} style={{ marginTop: cardIdx === 0 ? 0 : '2.5rem' }}>
                         <h3 style={{
-                          margin: '0 0 0.6rem',
-                          fontSize: '0.88rem', fontWeight: 600,
-                          color: '#334155', letterSpacing: '0.01em',
-                          paddingBottom: '0.5rem',
-                          borderBottom: '1px solid #E2E8F0',
+                          margin: '0 calc(-1 * clamp(1.5rem, 4vw, 2.5rem)) 0.75rem',
+                          padding: '0.42rem clamp(1.5rem, 4vw, 2.5rem)',
+                          fontSize: '0.82rem', fontWeight: 600,
+                          color: '#475569', letterSpacing: '0.02em',
+                          textTransform: 'uppercase',
+                          background: '#F1F5F9',
                         }}>
                           {sectionTitle}
                         </h3>
@@ -1132,12 +1133,18 @@ export default function WorkspaceDocument({
                   const sectionTitle = chMetaEntry?.sectionTitles?.[card.id] ?? card.title
 
                   return (
-                    <div key={card.id} style={{ marginTop: cardIdx === 0 ? 0 : '1.25rem' }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem', marginBottom: '0.1rem' }}>
+                    <div key={card.id} style={{ marginTop: cardIdx === 0 ? 0 : '1.75rem' }}>
+                      <div style={{
+                        display: 'flex', alignItems: 'center', gap: '0.45rem',
+                        margin: '0 -5rem 0.65rem',
+                        padding: '0.42rem 5rem',
+                        background: '#F1F5F9',
+                      }}>
                       <h3 style={{
-                        margin: 0,
-                        fontSize: '0.9rem', fontWeight: 600,
-                        color: '#64748B', letterSpacing: '-0.005em',
+                        margin: 0, flex: 1,
+                        fontSize: '0.82rem', fontWeight: 600,
+                        color: '#475569', letterSpacing: '0.02em',
+                        textTransform: 'uppercase',
                       }}>
                         {sectionTitle}
                       </h3>
@@ -1397,90 +1404,84 @@ export default function WorkspaceDocument({
                         return (
                           <div key={card.id}>
                             {!isFirst && (
-                              <div style={{ margin: '1.15rem 0', display: 'flex', alignItems: 'center' }}>
-                                <div style={{ flex: 1, height: '1px', background: 'var(--border)', opacity: 0.2 }} />
-                              </div>
+                              <div style={{ height: '1px', background: 'var(--border)', opacity: 0.15, margin: '1rem -1.4rem' }} />
                             )}
 
-                            {/* Section row: icon + content */}
-                            <div style={{ display: 'flex', gap: '0.85rem', alignItems: 'flex-start' }}>
-
-                              {/* Icon box */}
+                            {/* Full-width title band */}
+                            <div style={{
+                              display: 'flex', alignItems: 'center', gap: '0.6rem',
+                              margin: `${isFirst ? '0' : '0'} -1.4rem`,
+                              padding: '0.48rem 1.4rem',
+                              background: `${accent}09`,
+                            }}>
                               {icon && (
                                 <div style={{
-                                  width: '38px', height: '38px', borderRadius: '10px', flexShrink: 0,
-                                  background: done ? '#10B98112' : `${accent}14`,
+                                  width: '22px', height: '22px', borderRadius: '6px', flexShrink: 0,
+                                  background: done ? '#10B98118' : `${accent}18`,
                                   display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                  fontSize: '1.05rem', marginTop: '1px',
+                                  fontSize: '0.8rem',
                                   transition: 'background 0.3s ease',
                                 }}>
                                   {icon}
                                 </div>
                               )}
+                              <h3 style={{
+                                margin: 0, flex: 1,
+                                fontSize: '0.82rem', fontWeight: 600,
+                                color: done ? 'var(--text-secondary)' : 'var(--text-primary)',
+                                letterSpacing: '0.02em',
+                                textTransform: 'uppercase',
+                                transition: 'color 0.3s ease',
+                              }}>
+                                {sectionTitle}
+                              </h3>
+                              {done && (
+                                <span style={{ fontSize: '0.62rem', color: '#10B981', fontWeight: 700 }}>✓</span>
+                              )}
+                              {activeEditorKey === editorKey && (
+                                <button
+                                  type="button"
+                                  onMouseDown={e => { e.preventDefault(); setAiOpen(o => !o) }}
+                                  style={{
+                                    display: 'inline-flex', alignItems: 'center', gap: '0.2rem',
+                                    background: aiOpen ? `${accent}15` : 'transparent',
+                                    border: `1px solid ${aiOpen ? `${accent}50` : 'var(--border-subtle)'}`,
+                                    borderRadius: '5px', padding: '0.1rem 0.42rem',
+                                    cursor: 'pointer', fontFamily: 'inherit',
+                                    fontSize: '0.65rem', fontWeight: 700,
+                                    color: aiOpen ? accent : 'var(--text-muted)',
+                                    transition: 'all 0.12s',
+                                  }}
+                                >
+                                  ✨ IA
+                                </button>
+                              )}
+                            </div>{/* /title band */}
 
-                              {/* Section content */}
-                              <div style={{ flex: 1, minWidth: 0 }}>
-                                {/* Title + inline AI button */}
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.25rem' }}>
-                                  <h3 style={{
-                                    margin: 0,
-                                    fontSize: '1.0rem', fontWeight: 700,
-                                    color: done ? 'var(--text-secondary)' : 'var(--text-primary)',
-                                    letterSpacing: '-0.015em',
-                                    transition: 'color 0.3s ease',
-                                  }}>
-                                    {sectionTitle}
-                                  </h3>
-                                  {done && (
-                                    <span style={{ fontSize: '0.62rem', color: '#10B981', fontWeight: 600 }}>✓</span>
-                                  )}
-                                  {activeEditorKey === editorKey && (
-                                    <button
-                                      type="button"
-                                      onMouseDown={e => { e.preventDefault(); setAiOpen(o => !o) }}
-                                      style={{
-                                        display: 'inline-flex', alignItems: 'center', gap: '0.2rem',
-                                        background: aiOpen ? `${accent}15` : 'transparent',
-                                        border: `1px solid ${aiOpen ? `${accent}50` : 'var(--border-subtle)'}`,
-                                        borderRadius: '5px', padding: '0.1rem 0.42rem',
-                                        cursor: 'pointer', fontFamily: 'inherit',
-                                        fontSize: '0.65rem', fontWeight: 700,
-                                        color: aiOpen ? accent : 'var(--text-muted)',
-                                        transition: 'all 0.12s',
-                                      }}
-                                    >
-                                      ✨ IA
-                                    </button>
-                                  )}
-                                </div>
-
-                                {/* Orientation */}
-                                {orientation && (
-                                  <p style={{
-                                    margin: '0 0 0.25rem',
-                                    fontSize: '0.77rem', color: 'var(--text-muted)',
-                                    lineHeight: 1.6, fontStyle: 'italic',
-                                  }}>
-                                    {orientation}
-                                  </p>
-                                )}
-
-                                {/* Writing area */}
-                                <div className="ws-doc-section" style={{ marginTop: '0.1rem' }}>
-                                  <RichEditor
-                                    value={cardContent}
-                                    onChange={html => scheduleCardSave(sectionDef.slug, card.id, html)}
-                                    placeholder={editorHint}
-                                    minHeight={72}
-                                    moduleColor={accent}
-                                    hideToolbar
-                                    onEditorMount={editor => { editorMapRef.current.set(editorKey, editor) }}
-                                    onFocusChange={focused => { if (focused) setActiveEditorKey(editorKey) }}
-                                  />
-                                </div>
-
-                              </div>{/* /section content */}
-                            </div>{/* /section row */}
+                            {/* Content below band */}
+                            <div style={{ paddingTop: '0.6rem' }}>
+                              {orientation && (
+                                <p style={{
+                                  margin: '0 0 0.25rem',
+                                  fontSize: '0.77rem', color: 'var(--text-muted)',
+                                  lineHeight: 1.6, fontStyle: 'italic',
+                                }}>
+                                  {orientation}
+                                </p>
+                              )}
+                              <div className="ws-doc-section" style={{ marginTop: '0.1rem' }}>
+                                <RichEditor
+                                  value={cardContent}
+                                  onChange={html => scheduleCardSave(sectionDef.slug, card.id, html)}
+                                  placeholder={editorHint}
+                                  minHeight={72}
+                                  moduleColor={accent}
+                                  hideToolbar
+                                  onEditorMount={editor => { editorMapRef.current.set(editorKey, editor) }}
+                                  onFocusChange={focused => { if (focused) setActiveEditorKey(editorKey) }}
+                                />
+                              </div>
+                            </div>{/* /content */}
                           </div>
                         )
                       })}
