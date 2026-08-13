@@ -155,6 +155,25 @@ function buildSegs(vNum: number, text: string, cls: Classification[], hls: Highl
   return segs
 }
 
+// ── Annotations ───────────────────────────────────────────────────────────────
+
+interface AnnItem { id: string; context: string; text: string; createdAt: string }
+
+function normBook(s: string) {
+  return s.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-z0-9]/g, '')
+}
+
+function parseVerseCtx(context: string): { bookNorm: string; chapter: number; vStart: number; vEnd: number } | null {
+  const m = context.match(/([1-3]?\s*[A-Za-zÀ-ÿ]+\.?\s*[A-Za-zÀ-ÿ]*)\s+(\d+)[.:,](\d+)(?:\s*[-–]\s*(\d+))?/)
+  if (!m) return null
+  return {
+    bookNorm: normBook(m[1].trim()),
+    chapter: parseInt(m[2]),
+    vStart:  parseInt(m[3]),
+    vEnd:    m[4] ? parseInt(m[4]) : parseInt(m[3]),
+  }
+}
+
 // ── Props ─────────────────────────────────────────────────────────────────────
 
 interface Props {
@@ -228,8 +247,29 @@ export default function BibleFloatingWindow({ book, passageRef, testament, proje
   const [noteVal,   setNoteVal]   = useState('')
   const [saving,    setSaving]    = useState(false)
 
-  const [tooltip, setTooltip] = useState<{ id: string; rect: DOMRect } | null>(null)
+  const [tooltip,  setTooltip]  = useState<{ id: string; rect: DOMRect } | null>(null)
+  const [annList,  setAnnList]  = useState<AnnItem[]>([])
+  const [annPopup, setAnnPopup] = useState<{ verse: number; anns: AnnItem[]; x: number; y: number } | null>(null)
+
   const clsById = useMemo(() => Object.fromEntries(clsList.map(c => [c.id, c])), [clsList])
+
+  const bookNorm      = useMemo(() => normBook(book), [book])
+  const currentChapter = useMemo(() => parseInt(passageRef), [passageRef])
+
+  const verseAnnotations = useMemo(() => {
+    const map = new Map<number, AnnItem[]>()
+    for (const ann of annList) {
+      const ref = parseVerseCtx(ann.context)
+      if (!ref) continue
+      if (ref.chapter !== currentChapter) continue
+      if (!bookNorm.includes(ref.bookNorm) && !ref.bookNorm.includes(bookNorm)) continue
+      for (let v = ref.vStart; v <= ref.vEnd; v++) {
+        if (!map.has(v)) map.set(v, [])
+        map.get(v)!.push(ann)
+      }
+    }
+    return map
+  }, [annList, bookNorm, currentChapter])
 
   // ── Init ──────────────────────────────────────────────────────────────────
   useEffect(() => {
@@ -253,6 +293,18 @@ export default function BibleFloatingWindow({ book, passageRef, testament, proje
       const merged = [...fromDB, ...local.filter(c => !dbIds.has(c.id))] as Classification[]
       setClsList(merged); wcl(projectId, merged)
     })
+  }, [projectId])
+
+  useEffect(() => {
+    function load() {
+      try {
+        const raw = localStorage.getItem(`lampas_ann_${projectId}`)
+        setAnnList(raw ? JSON.parse(raw) : [])
+      } catch { setAnnList([]) }
+    }
+    load()
+    window.addEventListener('storage', load)
+    return () => window.removeEventListener('storage', load)
   }, [projectId])
 
   // ── Fetch Portuguese ──────────────────────────────────────────────────────
@@ -460,9 +512,25 @@ export default function BibleFloatingWindow({ book, passageRef, testament, proje
 
   function renderPtVerse(verse: Verse) {
     const segs = buildSegs(verse.v, verse.t, clsList, hlList)
+    const anns = verseAnnotations.get(verse.v)
     return (
       <span key={verse.v} style={{ display: 'inline' }}>
         <sup style={{ fontSize: '0.56rem', fontWeight: 700, color: accent, marginRight: '0.18rem', verticalAlign: 'super', lineHeight: 0, fontFamily: 'var(--font-sans)' }}>{verse.v}</sup>
+        {anns && anns.length > 0 && (
+          <button
+            onClick={e => { e.stopPropagation(); setAnnPopup(p => p?.verse === verse.v ? null : { verse: verse.v, anns, x: e.clientX, y: e.clientY }) }}
+            style={{
+              display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+              width: '12px', height: '12px', borderRadius: '50%',
+              background: '#F59E0B', border: 'none', cursor: 'pointer',
+              fontSize: '0.48rem', color: '#fff', fontWeight: 800,
+              verticalAlign: 'super', lineHeight: 0, marginRight: '2px', padding: 0,
+            }}
+            title={`${anns.length} anotação${anns.length > 1 ? 'ões' : ''}`}
+          >
+            {anns.length}
+          </button>
+        )}
         <span data-verse={String(verse.v)}>
           {segs.map((seg, i) => {
             const cls = seg.classId ? clsById[seg.classId] : null
@@ -1011,6 +1079,46 @@ export default function BibleFloatingWindow({ book, passageRef, testament, proje
           <div style={{ color: 'rgba(255,255,255,0.5)', fontSize: '0.65rem', marginTop: '0.15rem' }}>v.{tooltipCls.startVerse} · "{tooltipCls.selectedText.slice(0, 30)}{tooltipCls.selectedText.length > 30 ? '…' : ''}"</div>
           <div style={{ position: 'absolute', top: '-5px', left: '50%', transform: 'translateX(-50%)', width: 0, height: 0, borderLeft: '5px solid transparent', borderRight: '5px solid transparent', borderBottom: '5px solid #18181B' }} />
         </div>
+      )}
+
+      {annPopup && (
+        <>
+          <div onClick={() => setAnnPopup(null)} style={{ position: 'fixed', inset: 0, zIndex: 9996 }} />
+          <div
+            onClick={e => e.stopPropagation()}
+            style={{
+              position: 'fixed',
+              left: Math.min(annPopup.x + 8, window.innerWidth - 272),
+              top: Math.min(annPopup.y + 8, window.innerHeight - 320),
+              zIndex: 9997,
+              width: 260,
+              maxHeight: 300,
+              overflowY: 'auto',
+              background: 'var(--surface)',
+              border: '1px solid var(--border)',
+              borderRadius: '10px',
+              boxShadow: '0 8px 24px rgba(0,0,0,0.15)',
+            }}
+          >
+            <div style={{ padding: '0.45rem 0.65rem', borderBottom: '1px solid var(--border-subtle)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', position: 'sticky', top: 0, background: 'var(--surface)' }}>
+              <span style={{ fontSize: '0.7rem', fontWeight: 700, color: '#F59E0B' }}>
+                📝 v.{annPopup.verse} · {annPopup.anns.length} anotação{annPopup.anns.length > 1 ? 'ões' : ''}
+              </span>
+              <button onClick={() => setAnnPopup(null)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)', fontSize: '0.82rem', lineHeight: 1, padding: '0.1rem 0.2rem' }}>✕</button>
+            </div>
+            {annPopup.anns.map((ann, i) => (
+              <div key={ann.id} style={{ padding: '0.55rem 0.65rem', borderBottom: i < annPopup.anns.length - 1 ? '1px solid var(--border-subtle)' : 'none' }}>
+                {ann.context && (
+                  <div style={{ fontSize: '0.62rem', fontWeight: 600, color: 'var(--text-muted)', marginBottom: '0.3rem', letterSpacing: '0.01em' }}>{ann.context}</div>
+                )}
+                <div
+                  style={{ fontSize: '0.78rem', color: 'var(--text-primary)', lineHeight: 1.55 }}
+                  dangerouslySetInnerHTML={{ __html: ann.text }}
+                />
+              </div>
+            ))}
+          </div>
+        </>
       )}
     </>
   )
