@@ -583,16 +583,31 @@ export default function BibleFloatingWindow({ book, passageRef, testament, proje
         {anns && anns.length > 0 && (
           <button
             onClick={e => { e.stopPropagation(); setAnnPopup(p => p?.verse === verse.v ? null : { verse: verse.v, anns, x: e.clientX, y: e.clientY }) }}
+            title={`${anns.length} anotação${anns.length > 1 ? 'ões' : ''}`}
             style={{
               display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
-              width: '12px', height: '12px', borderRadius: '50%',
-              background: '#F59E0B', border: 'none', cursor: 'pointer',
-              fontSize: '0.48rem', color: '#fff', fontWeight: 800,
-              verticalAlign: 'super', lineHeight: 0, marginRight: '2px', padding: 0,
+              background: 'none', border: 'none', cursor: 'pointer', padding: 0,
+              verticalAlign: 'super', lineHeight: 0, marginRight: '2px',
+              position: 'relative',
             }}
-            title={`${anns.length} anotação${anns.length > 1 ? 'ões' : ''}`}
           >
-            {anns.length}
+            <svg width="11" height="12" viewBox="0 0 11 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M1 0.5 H7 L10 3.5 V11.5 H1 Z" fill="#FDE68A" stroke="#D97706" strokeWidth="0.75"/>
+              <path d="M7 0.5 V3.5 H10" fill="#F59E0B" stroke="#D97706" strokeWidth="0.75" strokeLinejoin="round"/>
+              <line x1="2.5" y1="5.5" x2="8" y2="5.5" stroke="#D97706" strokeWidth="0.6" opacity="0.5"/>
+              <line x1="2.5" y1="7.5" x2="7" y2="7.5" stroke="#D97706" strokeWidth="0.6" opacity="0.5"/>
+            </svg>
+            {anns.length > 1 && (
+              <span style={{
+                position: 'absolute', top: '-3px', right: '-4px',
+                background: '#D97706', color: '#fff',
+                fontSize: '0.4rem', fontWeight: 800, lineHeight: 1,
+                borderRadius: '99px', padding: '0.5px 2px',
+                fontFamily: 'var(--font-sans)',
+              }}>
+                {anns.length}
+              </span>
+            )}
           </button>
         )}
         <span data-verse={String(verse.v)}>
