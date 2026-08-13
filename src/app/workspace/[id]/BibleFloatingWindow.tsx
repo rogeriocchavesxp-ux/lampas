@@ -163,14 +163,78 @@ function normBook(s: string) {
   return s.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-z0-9]/g, '')
 }
 
+const BOOK_ABBR: Record<string, string> = {
+  // AT
+  'gn':'genesis','gen':'genesis',
+  'ex':'exodo','exo':'exodo',
+  'lv':'levitico','lev':'levitico',
+  'nm':'numeros','num':'numeros',
+  'dt':'deuteronomio','deu':'deuteronomio',
+  'js':'josue','jos':'josue',
+  'jz':'juizes','jui':'juizes',
+  'rt':'rute','rut':'rute',
+  '1sm':'1samuel','1sa':'1samuel',
+  '2sm':'2samuel','2sa':'2samuel',
+  '1rs':'1reis','1re':'1reis',
+  '2rs':'2reis','2re':'2reis',
+  '1cr':'1cronicas','2cr':'2cronicas',
+  'ed':'esdras','ne':'neemias','et':'ester',
+  'sl':'salmos','sal':'salmos',
+  'pv':'proverbios','pro':'proverbios','prov':'proverbios',
+  'ec':'eclesiastes','ecl':'eclesiastes',
+  'ct':'cantares','can':'cantares',
+  'is':'isaias','isa':'isaias',
+  'jr':'jeremias','jer':'jeremias',
+  'lm':'lamentacoes','lam':'lamentacoes',
+  'ez':'ezequiel','eze':'ezequiel',
+  'dn':'daniel','dan':'daniel',
+  'os':'oseias','ose':'oseias',
+  'jl':'joel','am':'amos','ob':'obadias',
+  'jn':'jonas','jon':'jonas',
+  'mq':'miqueias','miq':'miqueias',
+  'na':'naum','hc':'habacuque','hab':'habacuque',
+  'sf':'sofonias','sof':'sofonias',
+  'ag':'ageu','zc':'zacarias','zac':'zacarias',
+  'ml':'malaquias','mal':'malaquias',
+  // NT
+  'mt':'mateus','mat':'mateus',
+  'mc':'marcos','mar':'marcos',
+  'lc':'lucas','luc':'lucas',
+  'jo':'joao','joa':'joao',
+  'at':'atos',
+  'rm':'romanos','rom':'romanos',
+  '1co':'1corintios','1cor':'1corintios',
+  '2co':'2corintios','2cor':'2corintios',
+  'gl':'galatas','gal':'galatas',
+  'ef':'efesios',
+  'fp':'filipenses','fil':'filipenses',
+  'cl':'colossenses','col':'colossenses',
+  '1ts':'1tessalonicenses','2ts':'2tessalonicenses',
+  '1tm':'1timoteo','1ti':'1timoteo',
+  '2tm':'2timoteo','2ti':'2timoteo',
+  'tt':'tito','tit':'tito',
+  'fm':'filemom',
+  'hb':'hebreus','heb':'hebreus',
+  'tg':'tiago',
+  '1pe':'1pedro','2pe':'2pedro',
+  '1jo':'1joao','2jo':'2joao','3jo':'3joao',
+  'jd':'judas','jud':'judas',
+  'ap':'apocalipse','apo':'apocalipse',
+}
+
+function resolveBook(raw: string): string {
+  const n = normBook(raw)
+  return BOOK_ABBR[n] ?? n
+}
+
 function parseVerseCtx(context: string): { bookNorm: string; chapter: number; vStart: number; vEnd: number } | null {
   const m = context.match(/([1-3]?\s*[A-Za-zÀ-ÿ]+\.?\s*[A-Za-zÀ-ÿ]*)\s+(\d+)[.:,](\d+)(?:\s*[-–]\s*(\d+))?/)
   if (!m) return null
   return {
-    bookNorm: normBook(m[1].trim()),
-    chapter: parseInt(m[2]),
-    vStart:  parseInt(m[3]),
-    vEnd:    m[4] ? parseInt(m[4]) : parseInt(m[3]),
+    bookNorm: resolveBook(m[1].trim()),
+    chapter:  parseInt(m[2]),
+    vStart:   parseInt(m[3]),
+    vEnd:     m[4] ? parseInt(m[4]) : parseInt(m[3]),
   }
 }
 
@@ -253,7 +317,7 @@ export default function BibleFloatingWindow({ book, passageRef, testament, proje
 
   const clsById = useMemo(() => Object.fromEntries(clsList.map(c => [c.id, c])), [clsList])
 
-  const bookNorm      = useMemo(() => normBook(book), [book])
+  const bookNorm      = useMemo(() => resolveBook(book), [book])
   const currentChapter = useMemo(() => parseInt(passageRef), [passageRef])
 
   const verseAnnotations = useMemo(() => {
