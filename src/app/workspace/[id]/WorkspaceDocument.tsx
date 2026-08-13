@@ -1171,7 +1171,7 @@ export default function WorkspaceDocument({
                         <RichEditor
                           value={cardContent}
                           onChange={html => scheduleCardSave(sectionDef.slug, card.id, html)}
-                          placeholder=""
+                          placeholder="Clique para escrever…"
                           minHeight={60}
                           moduleColor={accent}
                           hideToolbar
@@ -1396,7 +1396,9 @@ export default function WorkspaceDocument({
                         const isFirst      = cardIdx === 0
                         const sectionTitle = chMetaEntry?.sectionTitles?.[card.id] ?? card.title
                         const orientation  = guided ? (chMetaEntry?.placeholders?.[card.id] ?? '') : ''
-                        const editorHint   = chMetaEntry?.editorHints?.[card.id] ?? ''
+                        const editorHint   = chMetaEntry?.editorHints?.[card.id]
+                          ?? (card as { placeholder?: string }).placeholder
+                          ?? 'Clique para escrever…'
                         const icon         = chMetaEntry?.icons?.[card.id]
                         const editorKey    = `${sectionDef.slug}:${card.id}`
                         const done         = isCardDone(cardContent)
