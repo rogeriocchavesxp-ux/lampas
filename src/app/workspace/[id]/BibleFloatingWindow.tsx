@@ -1186,12 +1186,33 @@ export default function BibleFloatingWindow({ book, passageRef, testament, proje
               <button onClick={() => setAnnPopup(null)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)', fontSize: '0.82rem', lineHeight: 1, padding: '0.1rem 0.2rem' }}>✕</button>
             </div>
             {annPopup.anns.map((ann, i) => (
-              <div key={ann.id} style={{ padding: '0.55rem 0.65rem', borderBottom: i < annPopup.anns.length - 1 ? '1px solid var(--border-subtle)' : 'none' }}>
-                {ann.context && (
-                  <div style={{ fontSize: '0.62rem', fontWeight: 600, color: 'var(--text-muted)', marginBottom: '0.3rem', letterSpacing: '0.01em' }}>{ann.context}</div>
-                )}
+              <div key={ann.id} style={{
+                margin: '0.45rem 0.55rem',
+                border: '1px solid var(--border-subtle)',
+                borderRadius: '7px',
+                overflow: 'hidden',
+              }}>
+                <div style={{
+                  display: 'flex', alignItems: 'center', gap: '0.4rem',
+                  padding: '0.28rem 0.55rem',
+                  background: 'var(--surface-2)',
+                  borderBottom: '1px solid var(--border-subtle)',
+                }}>
+                  <span style={{
+                    fontSize: '0.58rem', fontWeight: 800,
+                    background: '#F59E0B', color: '#fff',
+                    borderRadius: '3px', padding: '0.05rem 0.28rem',
+                  }}>
+                    {i + 1}/{annPopup.anns.length}
+                  </span>
+                  {ann.context && (
+                    <span style={{ fontSize: '0.65rem', fontWeight: 600, color: 'var(--text-secondary)', letterSpacing: '0.01em' }}>
+                      {ann.context}
+                    </span>
+                  )}
+                </div>
                 <div
-                  style={{ fontSize: '0.78rem', color: 'var(--text-primary)', lineHeight: 1.55 }}
+                  style={{ padding: '0.5rem 0.55rem', fontSize: '0.78rem', color: 'var(--text-primary)', lineHeight: 1.55 }}
                   dangerouslySetInnerHTML={{ __html: ann.text }}
                 />
               </div>
