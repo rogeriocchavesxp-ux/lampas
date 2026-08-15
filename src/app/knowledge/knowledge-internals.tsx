@@ -63,6 +63,7 @@ export interface KnowledgeItem {
   parent_id: string | null
   order_index: number
   query_count: number
+  is_template: boolean
   created_at: string
   updated_at: string
 }
@@ -129,6 +130,7 @@ export const TYPE_SECTION_LABELS: Record<KnowledgeItemType, { metadata: string; 
 export const EMPTY_ITEM: Omit<KnowledgeItem, 'id' | 'user_id' | 'query_count' | 'created_at' | 'updated_at'> = {
   parent_id: null,
   order_index: 0,
+  is_template: false,
   item_type: 'book',
   title: '',
   subtitle: '',
