@@ -471,7 +471,7 @@ interface Props {
 // ── Component ─────────────────────────────────────────────────────────────────
 
 export default function WorkspaceDocument({
-  blocks, project, userId, onUpdate, guided = true, readingMode = false, onExitReadingMode, initialSlug, typeLabel, toolbarTop = '44px',
+  blocks, project, userId, onUpdate, onAskAI, guided = true, readingMode = false, onExitReadingMode, initialSlug, typeLabel, toolbarTop = '44px',
 }: Props) {
   const supabase = createClient()
 
@@ -518,6 +518,20 @@ export default function WorkspaceDocument({
     activeEditor.on('transaction', h)
     return () => { activeEditor.off('transaction', h) }
   }, [activeEditor])
+
+  useEffect(() => {
+    function handleFill(e: Event) {
+      const { slug, cardId, html } = (e as CustomEvent<{ slug: string; cardId: string; html: string }>).detail
+      const key = `${slug}:${cardId}`
+      const editor = editorMapRef.current.get(key)
+      if (editor) {
+        editor.chain().setContent(html).run()
+        scheduleCardSave(slug, cardId, html)
+      }
+    }
+    window.addEventListener('workspace:fill-card', handleFill)
+    return () => window.removeEventListener('workspace:fill-card', handleFill)
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   // Close pickers on outside click — checks all chapter refs
   useEffect(() => {

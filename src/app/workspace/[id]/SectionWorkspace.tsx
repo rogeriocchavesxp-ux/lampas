@@ -345,6 +345,22 @@ export default function SectionWorkspace({
     return () => document.removeEventListener('mousedown', handler)
   }, [questionsOpen])
 
+  useEffect(() => {
+    function handleFill(e: Event) {
+      const { slug, cardId, html } = (e as CustomEvent<{ slug: string; cardId: string; html: string }>).detail
+      if (slug !== sectionDef.slug) return
+      const key = `${slug}:${cardId}`
+      const editor = editorMapRef.current.get(key)
+      if (editor) {
+        editor.chain().setContent(html).run()
+        scheduleAutosave(cardId, html)
+      }
+    }
+    window.addEventListener('workspace:fill-card', handleFill)
+    return () => window.removeEventListener('workspace:fill-card', handleFill)
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [sectionDef.slug])
+
   function scheduleAutosave(cardId: string, value: string) {
     const next = { ...latestContent.current, [cardId]: value }
     setCardContent(next)

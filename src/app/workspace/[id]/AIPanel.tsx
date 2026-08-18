@@ -595,10 +595,216 @@ function getSectionActions(slug: string, ref: string, sectionDef?: SectionDef | 
   ]
 }
 
+// ── Markdown → HTML (inline) ──────────────────────────────────────────────────
+function inlinemd(text: string): string {
+  return text
+    .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+    .replace(/\*(.+?)\*/g, '<em>$1</em>')
+    .replace(/_(.+?)_/g, '<em>$1</em>')
+    .replace(/`(.+?)`/g, '<code>$1</code>')
+}
+
+function mdToHtml(text: string): string {
+  const lines = text.split('\n')
+  const out: string[] = []
+  let inUl = false, inOl = false
+
+  const flushLists = () => {
+    if (inUl) { out.push('</ul>'); inUl = false }
+    if (inOl) { out.push('</ol>'); inOl = false }
+  }
+
+  for (const line of lines) {
+    if (/^#{1,3}\s/.test(line)) {
+      flushLists()
+      const lvl = Math.min((line.match(/^#+/)![0].length) + 2, 6)
+      out.push(`<h${lvl}>${inlinemd(line.replace(/^#+\s*/, ''))}</h${lvl}>`)
+      continue
+    }
+    if (/^\s*[-*]\s/.test(line)) {
+      if (inOl) { out.push('</ol>'); inOl = false }
+      if (!inUl) { out.push('<ul>'); inUl = true }
+      out.push(`<li>${inlinemd(line.replace(/^\s*[-*]\s*/, ''))}</li>`)
+      continue
+    }
+    if (/^\s*\d+\.\s/.test(line)) {
+      if (inUl) { out.push('</ul>'); inUl = false }
+      if (!inOl) { out.push('<ol>'); inOl = true }
+      out.push(`<li>${inlinemd(line.replace(/^\s*\d+\.\s*/, ''))}</li>`)
+      continue
+    }
+    if (!line.trim()) { flushLists(); continue }
+    flushLists()
+    out.push(`<p>${inlinemd(line)}</p>`)
+  }
+  flushLists()
+  return out.join('')
+}
+
+// ── Narrative generate config ─────────────────────────────────────────────────
+type NarrativeGenerate = { label: string; slug: string; cardIds: string[]; buildPrompt: (ref: string) => string }
+
+const NARRATIVE_GENERATE: NarrativeGenerate[] = [
+  {
+    label: 'Personagens',
+    slug: 'nr_personagens',
+    cardIds: ['personagem_central', 'personagens_secundarios', 'desenvolvimento_personagem', 'caracterizacao_indireta'],
+    buildPrompt: (ref) => `Você é especialista em análise narrativa bíblica (Alter, Berlin, Bar-Efrat). Analise os personagens de ${ref}.
+
+Responda EXATAMENTE neste formato, preenchendo a análise entre os marcadores:
+
+[CARD:personagem_central]
+Descreva o personagem central: nome, posição, como o narrador o introduz, traços revelados direta e indiretamente.
+[/CARD]
+
+[CARD:personagens_secundarios]
+Liste e analise os personagens secundários: função dramática, contraste ou paralelo com o personagem central.
+[/CARD]
+
+[CARD:desenvolvimento_personagem]
+Os personagens se transformam em ${ref}? Que evento catalisa a mudança? O que revela sobre eles?
+[/CARD]
+
+[CARD:caracterizacao_indireta]
+Que técnicas de caracterização indireta o narrador usa? O que ações, falas, silêncios e reações revelam?
+[/CARD]`,
+  },
+  {
+    label: 'Enredo',
+    slug: 'nr_enredo',
+    cardIds: ['exposicao', 'complicacao_conflito', 'climax_virada', 'resolucao_lacunas'],
+    buildPrompt: (ref) => `Analise o enredo e a tensão narrativa de ${ref} usando Alter, Bar-Efrat e Sternberg.
+
+Responda EXATAMENTE neste formato:
+
+[CARD:exposicao]
+Descreva a situação inicial: quem, onde, quando, que problema está em jogo.
+[/CARD]
+
+[CARD:complicacao_conflito]
+Que problema ou conflito move a narrativa? É entre personagens, com Deus, interno ou externo?
+[/CARD]
+
+[CARD:climax_virada]
+Onde está o clímax — o momento de maior tensão ou ponto de virada? Como transforma a situação?
+[/CARD]
+
+[CARD:resolucao_lacunas]
+Como a tensão é resolvida — plena, parcial ou aberta? Que lacunas o narrador deixa intencionalmente?
+[/CARD]`,
+  },
+  {
+    label: 'Cenário',
+    slug: 'nr_cenario',
+    cardIds: ['lugares', 'tempo_narrativo', 'movimento_espacial'],
+    buildPrompt: (ref) => `Analise o cenário, tempo e espaço de ${ref} como elementos ativos de significado.
+
+Responda EXATAMENTE neste formato:
+
+[CARD:lugares]
+Que lugares aparecem? Como funcionam — pano de fundo, símbolo ou elemento ativo? Há simbolismo geográfico?
+[/CARD]
+
+[CARD:tempo_narrativo]
+Como o narrador manipula o tempo? Identifique cenas (ritmo lento), sumários e elipses. Como o ritmo guia a atenção?
+[/CARD]
+
+[CARD:movimento_espacial]
+Há movimento espacial significativo — subida/descida, centro/margem? Como reflete a jornada interior dos personagens?
+[/CARD]`,
+  },
+  {
+    label: 'Narrador',
+    slug: 'nr_narrador',
+    cardIds: ['onisciencia', 'ponto_de_vista', 'vida_interior'],
+    buildPrompt: (ref) => `Analise a voz e perspectiva do narrador em ${ref} (Sternberg, Alter, Berlin).
+
+Responda EXATAMENTE neste formato:
+
+[CARD:onisciencia]
+O narrador é onisciente? O que conhece e revela? O que omite deliberadamente — e que efeito produz?
+[/CARD]
+
+[CARD:ponto_de_vista]
+O narrador emite julgamento explícito ou implícito? Há ironia, simpatia, distância? Como molda a leitura?
+[/CARD]
+
+[CARD:vida_interior]
+A quais personagens o narrador dá acesso interior — pensamentos, sentimentos, motivações? Por que essa seletividade?
+[/CARD]`,
+  },
+  {
+    label: 'Diálogo',
+    slug: 'nr_dialogo',
+    cardIds: ['funcao_dialogo', 'silencio_omissao', 'ironia_dramatica'],
+    buildPrompt: (ref) => `Analise o diálogo e discurso em ${ref} (Alter, Sternberg, Bar-Efrat).
+
+Responda EXATAMENTE neste formato:
+
+[CARD:funcao_dialogo]
+Qual a função dramática e teológica do diálogo? Como as falas revelam caráter, avançam o enredo ou expressam teologia?
+[/CARD]
+
+[CARD:silencio_omissao]
+Há silêncios ou omissões significativos? Personagens que calam, perguntas sem resposta, eventos não explicados — o que comunicam?
+[/CARD]
+
+[CARD:ironia_dramatica]
+Existe ironia dramática — momentos em que o leitor sabe algo que o personagem ignora? Como cria tensão ou revela o ponto de vista do narrador?
+[/CARD]`,
+  },
+  {
+    label: 'Intertextualidade',
+    slug: 'nr_intertextualidade',
+    cardIds: ['nr_intertext_prefiguracao', 'nr_intertext_alusao', 'nr_intertext_contraste', 'nr_intertext_eco'],
+    buildPrompt: (ref) => `Analise as inter-relações literárias de ${ref} com outras narrativas bíblicas (Alter, Hays, Beale, Fokkelman).
+
+Responda EXATAMENTE neste formato:
+
+[CARD:nr_intertext_prefiguracao]
+Esta narrativa prefigura algo posterior? Que eventos, personagens ou padrões aqui antecipam cumprimentos futuros no cânon?
+[/CARD]
+
+[CARD:nr_intertext_alusao]
+O narrador faz alusões conscientes a narrativas anteriores? Que textos do AT são evocados e que efeito interpretativo produzem?
+[/CARD]
+
+[CARD:nr_intertext_contraste]
+Há personagens ou episódios que funcionam como contraste deliberado a figuras de outras narrativas bíblicas?
+[/CARD]
+
+[CARD:nr_intertext_eco]
+Há repetição de ações ou declarações de narrativas anteriores que ratificam, aprofundam ou completam compromissos anteriores?
+[/CARD]`,
+  },
+  {
+    label: 'Estrutura do Discurso',
+    slug: 'nr_txt_estrutura',
+    cardIds: ['nr_txt_struct_main'],
+    buildPrompt: (ref) => `Você é especialista em análise discursiva da narrativa hebraica (Chisholm, Waltke-O'Connor, Bar-Efrat). Analise a estrutura do discurso de ${ref}.
+
+Responda EXATAMENTE neste formato. Inclua uma tabela HTML de classificação das orações principais e um esboço estrutural:
+
+[CARD:nr_txt_struct_main]
+Produza:
+
+1. Uma tabela classificando as orações da narrativa por tipo (wayyiqtol = linha narrativa principal; waw + perfeito = resultado/consequência; oração nominal verbless = estado/background; negativa = contraste; imperativo/jussivo = comando/exortação; discurso direto = cenas climáticas). Use este formato de tabela:
+
+| Versículo | Oração | Tipo | Função |
+|-----------|--------|------|--------|
+| v. X | [trecho] | wayyiqtol | Linha narrativa |
+
+2. Um esboço estrutural da narrativa com cenas identificadas, padrões literários (inclusio, quiasmo, paralelismo, repetição) e mapa de tensão (exposição → complicação → clímax → resolução).
+[/CARD]`,
+  },
+]
+
 export default function AIPanel({ project, activeSlug, activeTitle, context, onClearContext, sectionDef }: Props) {
   const [messages, setMessages] = useState<Message[]>([])
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
+  const [fillLoading, setFillLoading] = useState<string | null>(null)
+  const [fillStatus, setFillStatus] = useState<string | null>(null)
   const bottomRef = useRef<HTMLDivElement>(null)
   const streamBufferRef = useRef('')
 
@@ -734,6 +940,80 @@ export default function AIPanel({ project, activeSlug, activeTitle, context, onC
     }
   }
 
+  async function sendAndFill(slug: string, cardIds: string[], prompt: string) {
+    if (fillLoading || loading) return
+    setFillLoading(slug)
+    setFillStatus(null)
+
+    const payload = {
+      messages: [{ role: 'user', content: prompt }],
+      project: {
+        id: project.id,
+        book: project.book,
+        passage_ref: project.passage_ref,
+        testament: project.testament,
+        original_language: project.original_language,
+        study_mode: project.study_mode,
+      },
+      activeSlug: slug,
+      activeTitle,
+    }
+
+    let fullText = ''
+    try {
+      const res = await fetch('/api/claude/stream', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      })
+
+      if (!res.ok || !res.body) {
+        setFillStatus('Erro ao gerar. Tente novamente.')
+        return
+      }
+
+      const reader = res.body.getReader()
+      const decoder = new TextDecoder()
+      while (true) {
+        const { done, value } = await reader.read()
+        if (done) break
+        const chunk = decoder.decode(value, { stream: true })
+        for (const line of chunk.split('\n')) {
+          if (!line.startsWith('data: ')) continue
+          const data = line.slice(6)
+          if (data === '[DONE]') continue
+          try {
+            const parsed = JSON.parse(data)
+            fullText += parsed.delta?.text ?? ''
+          } catch { /* ignore */ }
+        }
+      }
+
+      // Parse [CARD:id]...[/CARD] blocks and dispatch fill events
+      let filled = 0
+      const cardPattern = /\[CARD:([^\]]+)\]([\s\S]*?)\[\/CARD\]/g
+      let match
+      while ((match = cardPattern.exec(fullText)) !== null) {
+        const [, cardId, content] = match
+        if (cardIds.includes(cardId)) {
+          const html = mdToHtml(content.trim())
+          window.dispatchEvent(new CustomEvent('workspace:fill-card', {
+            detail: { slug, cardId, html },
+          }))
+          filled++
+        }
+      }
+
+      setFillStatus(filled > 0
+        ? `${filled} campo${filled > 1 ? 's' : ''} preenchido${filled > 1 ? 's' : ''} com sucesso.`
+        : 'Gerado, mas nenhum campo foi reconhecido. Verifique a resposta.')
+    } catch {
+      setFillStatus('Erro de conexão. Tente novamente.')
+    } finally {
+      setFillLoading(null)
+    }
+  }
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
 
@@ -774,6 +1054,45 @@ export default function AIPanel({ project, activeSlug, activeTitle, context, onC
             <p style={{ marginBottom: '1rem' }}>
               Pergunte sobre <strong style={{ color: 'var(--text-secondary)' }}>{activeTitle}</strong> para {project.book} {project.passage_ref}.
             </p>
+
+            {/* Narrative generate-and-fill buttons */}
+            {studyMode === 'estudo_narrativas' && (
+              <>
+                <div style={{ fontSize: '0.68rem', color: 'var(--ai)', textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: '0.4rem', marginTop: '0.25rem', fontWeight: 600 }}>
+                  Gerar análise narrativa
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.3rem', marginBottom: '0.4rem' }}>
+                  {NARRATIVE_GENERATE.map(({ label, slug, cardIds, buildPrompt }) => (
+                    <button
+                      key={slug}
+                      disabled={!!fillLoading || loading}
+                      onClick={() => sendAndFill(slug, cardIds, buildPrompt(ref))}
+                      style={{
+                        background: fillLoading === slug ? 'var(--ai)' : 'var(--surface-2)',
+                        border: `1px solid ${fillLoading === slug ? 'var(--ai)' : 'var(--border-subtle)'}`,
+                        borderRadius: '6px',
+                        padding: '0.38rem 0.65rem',
+                        textAlign: 'left',
+                        cursor: fillLoading || loading ? 'not-allowed' : 'pointer',
+                        fontSize: '0.78rem',
+                        color: fillLoading === slug ? '#fff' : 'var(--text-secondary)',
+                        fontFamily: 'inherit',
+                        lineHeight: '1.4',
+                        opacity: fillLoading && fillLoading !== slug ? 0.45 : 1,
+                        transition: 'background 0.15s, color 0.15s',
+                      }}
+                    >
+                      {fillLoading === slug ? `Gerando ${label}…` : `↓ ${label}`}
+                    </button>
+                  ))}
+                </div>
+                {fillStatus && (
+                  <div style={{ fontSize: '0.74rem', color: fillStatus.startsWith('Erro') ? 'var(--destructive)' : 'var(--success)', marginBottom: '0.5rem' }}>
+                    {fillStatus}
+                  </div>
+                )}
+              </>
+            )}
 
             {/* Level 3: Section-specific prompts */}
             {sectionActions.length > 0 && (
