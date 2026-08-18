@@ -8,6 +8,8 @@ import type { SectionDef } from '@/lib/workspace-sections'
 import type { AIContext } from '@/components/RichEditor'
 import AIAssistantPanel from '@/components/AIAssistantPanel'
 import RichEditor from '@/components/RichEditorLazy'
+import HelpIcon from '@/components/help/HelpIcon'
+import { HELP_CONTENT } from '@/lib/help-content'
 
 // ── Color palettes ────────────────────────────────────────────────────────────
 
@@ -1437,6 +1439,9 @@ export default function WorkspaceDocument({
                               }}>
                                 {sectionTitle}
                               </h3>
+                              {HELP_CONTENT[card.id] && (
+                                <HelpIcon cardId={card.id} onAskAI={onAskAI} />
+                              )}
                               {done && (
                                 <span style={{ fontSize: '0.62rem', color: '#10B981', fontWeight: 700 }}>✓</span>
                               )}

@@ -652,4 +652,38 @@ export const ESTUDO_NARRATIVAS_SECTIONS: SectionDef[] = [
         'Como esta narrativa se encaixa na grande narrativa bíblica? Que tipologias ela contém? Como aponta para Cristo ou encontra seu cumprimento nele? Use Goldsworthy ou Greidanus.'),
     ],
   },
+
+  // ── Intertextualidade Narrativa ───────────────────────────────────────────
+  {
+    slug: 'nr_intertextualidade',
+    title: 'Intertextualidade Narrativa',
+    shortTitle: 'Intertextualidade',
+    module: 'inventio',
+    group: 'nr_intertextualidade_grp',
+    groupLabel: 'Intertextualidade Narrativa',
+    order: 706,
+    objective:
+      'Identificar as inter-relações literárias conscientes entre esta narrativa e outras anteriores — prefigurações, alusões, contrastes e ecos que o narrador usa para aprofundar o significado teológico.',
+    keyQuestions: [
+      'Esta narrativa antecipa ou é antecipada por outra narrativa bíblica?',
+      'O narrador está fazendo referência consciente a uma história anterior — quais são os paralelos verbais ou estruturais?',
+      'Há personagens ou episódios similares que o narrador intenciona contrastar?',
+      'Ações ou declarações de uma narrativa anterior são repetidas aqui com sentido ampliado ou ratificado?',
+    ],
+    relevantAuthors: ['Robert Alter', 'Meir Sternberg', 'Richard Hays', 'G.K. Beale', 'Jan Fokkelman'],
+    cards: [
+      card('nr_intertext_prefiguracao', 'Prefiguração',
+        'Há algum evento, personagem ou padrão nesta narrativa que antecipa algo posterior na história bíblica — ou que foi antecipado por algo anterior?\n\nOrientações:\n→ Que elemento desta história aponta para algo mais pleno ou definitivo?\n→ Como o cumprimento posterior ilumina o significado original?\n→ O narrador dá pistas de que pretende essa leitura tipológica?',
+        'Identifique elementos de prefiguração nesta narrativa: que pessoas, eventos ou padrões antecipam algo posterior (tipologia, foreshadowing)? Como o cumprimento ilumina retrospectivamente o significado da história? Use Chisholm, Greidanus ou Alter.'),
+      card('nr_intertext_alusao', 'Alusão',
+        'O narrador faz referência consciente a uma narrativa anterior — com paralelos verbais, estruturais ou temáticos?\n\nOrientações:\n→ Que narrativa anterior este texto evoca?\n→ Há palavras, frases ou situações que reaparecem com intenção literária?\n→ O que muda na narrativa atual em relação ao modelo anterior — e o que isso comunica?',
+        'Identifique alusões literárias nesta narrativa: que textos anteriores o narrador evoca conscientemente? Aponte os paralelos verbais ou estruturais e explique o que essa relação acrescenta ao significado da passagem atual. Use Alter, Sternberg ou Hays.'),
+      card('nr_intertext_contraste', 'Contraste Narrativo',
+        'Há personagens ou episódios em outras narrativas bíblicas que o autor intenciona comparar com esta história por contraste deliberado?\n\nOrientações:\n→ Que personagem similar aparece em outra narrativa com resultado ou caráter oposto?\n→ O que o contraste revela que a narrativa sozinha não mostraria?\n→ O autor dá pistas (verbais ou estruturais) de que o contraste é intencional?',
+        'Identifique contrastes narrativos intencionais: que personagem ou episódio de outra narrativa bíblica o autor usa como contraponto desta história? Como o contraste aprofunda o retrato teológico dos personagens ou da ação de Deus? Use Chisholm ou Alter.'),
+      card('nr_intertext_eco', 'Eco',
+        'Ações ou declarações de uma narrativa anterior são repetidas nesta passagem com função de ratificação ou aprofundamento?\n\nOrientações:\n→ Que ações ou falas reaparecem de uma cena anterior?\n→ A repetição formaliza, intensifica ou amplifica o sentido original?\n→ O eco marca um ponto de chegada na jornada de um personagem ou na revelação de Deus?',
+        'Identifique ecos literários nesta narrativa: que ações, declarações ou cenas de textos anteriores reaparecem aqui, e como essa repetição funciona? O eco ratifica um compromisso anterior, amplifica o sentido ou marca uma virada na jornada do personagem? Use Alter ou Fokkelman.'),
+    ],
+  },
 ]

@@ -1517,6 +1517,33 @@ export const NAV_SPECIALIZED: SectionNav[] = [
     ]
   },
   {
+    "slug": "nr_intertextualidade",
+    "title": "Intertextualidade Narrativa",
+    "shortTitle": "Intertextualidade",
+    "module": "inventio",
+    "group": "nr_intertextualidade_grp",
+    "groupLabel": "Intertextualidade Narrativa",
+    "order": 706,
+    "cards": [
+      {
+        "id": "nr_intertext_prefiguracao",
+        "title": "Prefiguração"
+      },
+      {
+        "id": "nr_intertext_alusao",
+        "title": "Alusão"
+      },
+      {
+        "id": "nr_intertext_contraste",
+        "title": "Contraste Narrativo"
+      },
+      {
+        "id": "nr_intertext_eco",
+        "title": "Eco"
+      }
+    ]
+  },
+  {
     "slug": "pt_tema",
     "title": "I. Tema e Problema",
     "shortTitle": "Tema e Problema",
