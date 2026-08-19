@@ -66,6 +66,18 @@ type Category =
 
 type TrustLevel = 1 | 2 | 3 | 4
 
+// Character-specific fields stored in category_data JSONB (Chisholm methodology)
+interface CharData {
+  identification?: string              // Identificação — nome, posição, como o narrador apresenta
+  direct_characterization?: string     // Caracterização Direta — traços enunciados explicitamente
+  indirect_characterization?: string   // Caracterização Indireta — via ações, falas, silêncios
+  development?: string                 // Desenvolvimento e Transformação — arco do personagem
+  narrative_function?: string          // Funções Narrativas — papel dramático, contrastes
+  inner_life?: string                  // Vida Interior — acesso do narrador a pensamentos/sentimentos
+  theological_meaning?: string         // Significado Teológico — o que revela sobre Deus/redenção
+  main_passages?: string               // Passagens Principais — onde o personagem aparece
+}
+
 interface DictionaryEntry {
   id: string
   user_id: string
@@ -87,6 +99,7 @@ interface DictionaryEntry {
   theological_biblical: string | null
   theological_systematic: string | null
   applications: string | null
+  category_data: CharData | null
   cross_references: string[]
   bibliography: string | null
   related_terms: string[]
@@ -133,24 +146,26 @@ const EMPTY_DRAFT: Omit<DictionaryEntry, 'id' | 'user_id' | 'query_count' | 'cit
   lang_hebrew: '', lang_aramaic: '', lang_greek: '', transliteration: '', pronunciation: '',
   occurrences: '', main_texts: '',
   theological_biblical: '', theological_systematic: '', applications: '',
+  category_data: null,
   cross_references: [], bibliography: '', related_terms: [], tags: [], sources: ['Usuário'],
 }
 
-// ── Character-specific field labels (Chisholm's narrative analysis) ───────────
+// ── Character analysis fields (Chisholm methodology) ─────────────────────────
 
-const PERSONAGEM_LABELS: Partial<Record<keyof DictionaryEntry, string>> = {
-  definition:             'Identificação',
-  etymology:              'Caracterização Direta',
-  occurrences:            'Caracterização Indireta',
-  main_texts:             'Passagens Principais',
-  theological_biblical:   'Desenvolvimento e Transformação',
-  theological_systematic: 'Funções Narrativas',
-  applications:           'Significado Teológico',
-  notes:                  'Vida Interior',
-}
+const CHAR_FIELDS: { key: keyof CharData; label: string; rows: number }[] = [
+  { key: 'identification',           label: 'Identificação',                rows: 4 },
+  { key: 'direct_characterization',  label: 'Caracterização Direta',        rows: 4 },
+  { key: 'indirect_characterization',label: 'Caracterização Indireta',      rows: 4 },
+  { key: 'main_passages',            label: 'Passagens Principais',         rows: 2 },
+  { key: 'development',              label: 'Desenvolvimento e Transformação', rows: 4 },
+  { key: 'narrative_function',       label: 'Funções Narrativas',           rows: 4 },
+  { key: 'theological_meaning',      label: 'Significado Teológico',        rows: 4 },
+  { key: 'inner_life',               label: 'Vida Interior',                rows: 3 },
+]
 
-function personagemLabel(key: keyof DictionaryEntry, fallback: string, category: string): string {
-  return category === 'personagem' ? (PERSONAGEM_LABELS[key] ?? fallback) : fallback
+const EMPTY_CHAR_DATA: CharData = {
+  identification: '', direct_characterization: '', indirect_characterization: '',
+  development: '', narrative_function: '', inner_life: '', theological_meaning: '', main_passages: '',
 }
 
 // ── Props ─────────────────────────────────────────────────────────────────────
@@ -440,19 +455,27 @@ export default function DicionarioWorkspace({ project, userId, onAskAI, compact 
       category:   cat,
       trust_level: 1 as TrustLevel,
       is_shared:  true,
-      definition:             sections['identificação'] ?? sections['identificacao'] ?? sections['definição'] ?? sections['definicao'] ?? '',
-      etymology:              sections['caracterização direta'] ?? sections['caracterizacao direta'] ?? sections['etimologia'] ?? '',
-      occurrences:            sections['caracterização indireta'] ?? sections['caracterizacao indireta'] ?? '',
-      main_texts:             sections['passagens principais'] ?? sections['uso bíblico'] ?? sections['uso biblico'] ?? '',
-      theological_biblical:   sections['desenvolvimento e transformação'] ?? sections['desenvolvimento e transformacao'] ?? sections['teologia bíblica'] ?? sections['teologia biblica'] ?? '',
-      theological_systematic: sections['funções narrativas'] ?? sections['funcoes narrativas'] ?? sections['teologia sistemática'] ?? sections['teologia sistematica'] ?? '',
-      applications:           sections['significado teológico'] ?? sections['significado teologico'] ?? sections['aplicações pastorais'] ?? sections['aplicacoes pastorais'] ?? '',
-      notes:                  sections['vida interior'] ?? '',
+      definition:             sections['definição'] ?? sections['definicao'] ?? '',
+      etymology:              sections['significado do nome'] ?? sections['etimologia'] ?? '',
       lang_hebrew:            hebrewMatch?.[1]?.trim() ?? '',
       lang_greek:             greekMatch?.[1]?.trim()  ?? '',
       lang_aramaic:           aramMatch?.[1]?.trim()   ?? '',
       transliteration:        translitMatch?.[1]?.trim() ?? '',
       pronunciation:          pronuncMatch?.[1]?.trim()  ?? '',
+      main_texts:             sections['passagens principais'] ?? sections['uso bíblico'] ?? sections['uso biblico'] ?? '',
+      theological_biblical:   sections['teologia bíblica'] ?? sections['teologia biblica'] ?? '',
+      theological_systematic: sections['teologia sistemática'] ?? sections['teologia sistematica'] ?? '',
+      applications:           sections['aplicações pastorais'] ?? sections['aplicacoes pastorais'] ?? '',
+      category_data: cat === 'personagem' ? {
+        identification:            sections['identificação'] ?? sections['identificacao'] ?? '',
+        direct_characterization:   sections['caracterização direta'] ?? sections['caracterizacao direta'] ?? '',
+        indirect_characterization: sections['caracterização indireta'] ?? sections['caracterizacao indireta'] ?? '',
+        development:               sections['desenvolvimento e transformação'] ?? sections['desenvolvimento e transformacao'] ?? '',
+        narrative_function:        sections['funções narrativas'] ?? sections['funcoes narrativas'] ?? '',
+        inner_life:                sections['vida interior'] ?? '',
+        theological_meaning:       sections['significado teológico'] ?? sections['significado teologico'] ?? '',
+        main_passages:             sections['passagens principais'] ?? '',
+      } : null,
       bibliography:           sections['bibliografia'] ?? '',
       cross_references:       uniqueRefs,
       sources:                ['IA'],
@@ -622,7 +645,7 @@ export default function DicionarioWorkspace({ project, userId, onAskAI, compact 
   }
 
   // ── Update a single field directly (from expand modal in detail view) ────────
-  async function updateFieldDirectly(key: string, value: string) {
+  async function updateFieldDirectly(key: string, value: unknown) {
     if (!selected) return
     const updated = { ...selected, [key]: value } as DictionaryEntry
     setSelected(updated)
@@ -758,35 +781,53 @@ export default function DicionarioWorkspace({ project, userId, onAskAI, compact 
                   </select>
                 </div>
               </div>
-              {df('definition', personagemLabel('definition', 'Definição', draft.category), 5)}
-              {draft.category === 'personagem' ? (
+              {df('definition', 'Definição', 5)}
+              {df('etymology', draft.category === 'personagem' ? 'Significado do Nome' : 'Etimologia', 2)}
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '10px', marginBottom: '14px' }}>
+                {(['lang_hebrew', 'lang_greek', 'lang_aramaic'] as const).map(k => df(k, k === 'lang_hebrew' ? 'Hebraico' : k === 'lang_greek' ? 'Grego' : 'Aramaico', 1))}
+              </div>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+                {df('transliteration', 'Transliteração', 1)}
+                {df('pronunciation', 'Pronúncia', 1)}
+              </div>
+              {df('occurrences', 'Ocorrências', 1)}
+              {df('main_texts', 'Principais textos', 2)}
+              {df('theological_biblical',   'Teologia Bíblica',       3)}
+              {df('theological_systematic', 'Teologia Sistemática',   3)}
+              {df('applications',           'Aplicações Pastorais',   3)}
+              {df('notes',                  'Notas Pessoais',         2)}
+
+              {/* Character-specific section (Chisholm methodology) */}
+              {draft.category === 'personagem' && (
                 <>
-                  {df('etymology',              'Caracterização Direta',           4)}
-                  {df('occurrences',            'Caracterização Indireta',         4)}
-                  {df('main_texts',             'Passagens Principais',            2)}
-                  {df('theological_biblical',   'Desenvolvimento e Transformação', 4)}
-                  {df('theological_systematic', 'Funções Narrativas',              4)}
-                  {df('applications',           'Significado Teológico',           4)}
-                  {df('notes',                  'Vida Interior',                   3)}
-                </>
-              ) : (
-                <>
-                  {df('etymology', 'Etimologia', 2)}
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '10px', marginBottom: '14px' }}>
-                    {(['lang_hebrew', 'lang_greek', 'lang_aramaic'] as const).map(k => df(k, k === 'lang_hebrew' ? 'Hebraico' : k === 'lang_greek' ? 'Grego' : 'Aramaico', 1))}
+                  <div style={{ margin: '1rem 0 0.75rem', paddingTop: '1rem', borderTop: '1px solid #E2E8F0' }}>
+                    <div style={{ fontSize: '0.66rem', fontWeight: 700, color: '#7C3AED', textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: '0.25rem' }}>
+                      Análise Narrativa (Chisholm · Alter · Berlin)
+                    </div>
+                    <div style={{ fontSize: '0.75rem', color: '#94A3B8' }}>
+                      Caracterização, desenvolvimento e significado teológico do personagem
+                    </div>
                   </div>
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
-                    {df('transliteration', 'Transliteração', 1)}
-                    {df('pronunciation', 'Pronúncia', 1)}
-                  </div>
-                  {df('occurrences', 'Ocorrências', 1)}
-                  {df('main_texts', 'Principais textos', 2)}
-                  {df('theological_biblical',   'Teologia Bíblica',       3)}
-                  {df('theological_systematic', 'Teologia Sistemática',   3)}
-                  {df('applications',           'Aplicações Pastorais',   3)}
-                  {df('notes',                  'Notas Pessoais',         2)}
+                  {CHAR_FIELDS.map(({ key, label, rows }) => {
+                    const charData = draft.category_data ?? EMPTY_CHAR_DATA
+                    const val = (charData as CharData)[key] ?? ''
+                    return (
+                      <div key={key} style={{ marginBottom: '14px' }}>
+                        <label style={{ display: 'block', fontSize: '0.66rem', fontWeight: 700, color: '#7C3AED', textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: '5px' }}>{label}</label>
+                        <textarea
+                          value={val}
+                          onChange={e => setDraft(p => ({ ...p, category_data: { ...(p.category_data ?? EMPTY_CHAR_DATA), [key]: e.target.value } }))}
+                          rows={rows}
+                          style={{ width: '100%', boxSizing: 'border-box', background: '#FAFAFA', border: '1px solid #DDD6FE', borderRadius: '7px', padding: '7px 10px', fontSize: '0.84rem', fontFamily: 'inherit', outline: 'none', color: '#1E293B', resize: 'vertical' }}
+                          onFocus={e => { e.target.style.borderColor = '#7C3AED' }}
+                          onBlur={e => { e.target.style.borderColor = '#DDD6FE' }}
+                        />
+                      </div>
+                    )
+                  })}
                 </>
               )}
+
               {df('bibliography', 'Bibliografia', 2)}
               <div>
                 <label style={{ display: 'block', fontSize: '0.66rem', fontWeight: 700, color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: '5px' }}>Tags (separadas por vírgula)</label>
@@ -1019,7 +1060,8 @@ export default function DicionarioWorkspace({ project, userId, onAskAI, compact 
                           occurrences: selected.occurrences ?? '', main_texts: selected.main_texts ?? '',
                           theological_biblical: selected.theological_biblical ?? '',
                           theological_systematic: selected.theological_systematic ?? '',
-                          applications: selected.applications ?? '', cross_references: selected.cross_references,
+                          applications: selected.applications ?? '', category_data: selected.category_data ?? null,
+                          cross_references: selected.cross_references,
                           bibliography: selected.bibliography ?? '', related_terms: selected.related_terms,
                           tags: selected.tags, sources: selected.sources,
                         })
@@ -1085,13 +1127,15 @@ export default function DicionarioWorkspace({ project, userId, onAskAI, compact 
                         )}
                       </div>
 
-                      <Field label={personagemLabel('definition', 'Definição', selected.category)} value={selected.definition}
-                        onExpand={() => { const lbl = personagemLabel('definition', 'Definição', selected.category); setExpandModal({ label: lbl, content: selected.definition ?? '', onSave: (v) => { updateFieldDirectly('definition', v); setExpandModal(null) } }) }}
+                      <Field label="Definição" value={selected.definition}
+                        onExpand={() => setExpandModal({ label: 'Definição', content: selected.definition ?? '', onSave: (v) => { updateFieldDirectly('definition', v); setExpandModal(null) } })}
                       />
 
-                      {selected.category !== 'personagem' && (selected.lang_hebrew || selected.lang_greek || selected.lang_aramaic) && (
+                      {(selected.lang_hebrew || selected.lang_greek || selected.lang_aramaic) && (
                         <div style={{ marginBottom: '1.75rem', padding: '1.25rem 1.5rem', background: '#F8FAFC', borderRadius: '10px', border: '1px solid #EEF0F4' }}>
-                          <div style={{ fontSize: '0.62rem', fontWeight: 700, color: '#94A3B8', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '1rem' }}>Línguas Originais</div>
+                          <div style={{ fontSize: '0.62rem', fontWeight: 700, color: '#94A3B8', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '1rem' }}>
+                            {selected.category === 'personagem' ? 'Nome nas Línguas Originais' : 'Línguas Originais'}
+                          </div>
                           <div style={{ display: 'flex', gap: '2.5rem', flexWrap: 'wrap' }}>
                             {selected.lang_hebrew && (
                               <div>
@@ -1115,36 +1159,50 @@ export default function DicionarioWorkspace({ project, userId, onAskAI, compact 
                         </div>
                       )}
 
-                      <Field label={personagemLabel('etymology', 'Etimologia', selected.category)} value={selected.etymology}
-                        onExpand={() => { const lbl = personagemLabel('etymology', 'Etimologia', selected.category); setExpandModal({ label: lbl, content: selected.etymology ?? '', onSave: (v) => { updateFieldDirectly('etymology', v); setExpandModal(null) } }) }}
+                      <Field label={selected.category === 'personagem' ? 'Significado do Nome' : 'Etimologia'} value={selected.etymology}
+                        onExpand={() => { const lbl = selected.category === 'personagem' ? 'Significado do Nome' : 'Etimologia'; setExpandModal({ label: lbl, content: selected.etymology ?? '', onSave: (v) => { updateFieldDirectly('etymology', v); setExpandModal(null) } }) }}
                       />
-                      <Field
-                        label={selected.category === 'personagem' ? 'Caracterização Indireta' : 'Uso Bíblico'}
-                        value={selected.category === 'personagem' ? selected.occurrences : [selected.occurrences, selected.main_texts].filter(Boolean).join('\n\n')}
-                        onExpand={() => {
-                          const lbl = selected.category === 'personagem' ? 'Caracterização Indireta' : 'Uso Bíblico'
-                          const val = selected.category === 'personagem' ? (selected.occurrences ?? '') : [selected.occurrences, selected.main_texts].filter(Boolean).join('\n\n')
-                          setExpandModal({ label: lbl, content: val, onSave: (v) => { updateFieldDirectly(selected.category === 'personagem' ? 'occurrences' : 'main_texts', v); setExpandModal(null) } })
-                        }}
+                      <Field label="Uso Bíblico" value={[selected.occurrences, selected.main_texts].filter(Boolean).join('\n\n')}
+                        onExpand={() => setExpandModal({ label: 'Uso Bíblico', content: [selected.occurrences, selected.main_texts].filter(Boolean).join('\n\n'), onSave: (v) => { updateFieldDirectly('main_texts', v); setExpandModal(null) } })}
                       />
-                      {selected.category === 'personagem' && (
-                        <Field label="Passagens Principais" value={selected.main_texts}
-                          onExpand={() => setExpandModal({ label: 'Passagens Principais', content: selected.main_texts ?? '', onSave: (v) => { updateFieldDirectly('main_texts', v); setExpandModal(null) } })}
-                        />
-                      )}
-                      <Field label={personagemLabel('theological_biblical', 'Teologia Bíblica', selected.category)} value={selected.theological_biblical}
-                        onExpand={() => { const lbl = personagemLabel('theological_biblical', 'Teologia Bíblica', selected.category); setExpandModal({ label: lbl, content: selected.theological_biblical ?? '', onSave: (v) => { updateFieldDirectly('theological_biblical', v); setExpandModal(null) } }) }}
+                      <Field label="Teologia Bíblica" value={selected.theological_biblical}
+                        onExpand={() => setExpandModal({ label: 'Teologia Bíblica', content: selected.theological_biblical ?? '', onSave: (v) => { updateFieldDirectly('theological_biblical', v); setExpandModal(null) } })}
                       />
-                      <Field label={personagemLabel('theological_systematic', 'Teologia Sistemática', selected.category)} value={selected.theological_systematic}
-                        onExpand={() => { const lbl = personagemLabel('theological_systematic', 'Teologia Sistemática', selected.category); setExpandModal({ label: lbl, content: selected.theological_systematic ?? '', onSave: (v) => { updateFieldDirectly('theological_systematic', v); setExpandModal(null) } }) }}
+                      <Field label="Teologia Sistemática" value={selected.theological_systematic}
+                        onExpand={() => setExpandModal({ label: 'Teologia Sistemática', content: selected.theological_systematic ?? '', onSave: (v) => { updateFieldDirectly('theological_systematic', v); setExpandModal(null) } })}
                       />
-                      <Field label={personagemLabel('applications', 'Aplicações Pastorais', selected.category)} value={selected.applications}
-                        onExpand={() => { const lbl = personagemLabel('applications', 'Aplicações Pastorais', selected.category); setExpandModal({ label: lbl, content: selected.applications ?? '', onSave: (v) => { updateFieldDirectly('applications', v); setExpandModal(null) } }) }}
+                      <Field label="Aplicações Pastorais" value={selected.applications}
+                        onExpand={() => setExpandModal({ label: 'Aplicações Pastorais', content: selected.applications ?? '', onSave: (v) => { updateFieldDirectly('applications', v); setExpandModal(null) } })}
                       />
-                      {selected.category === 'personagem' && (
-                        <Field label="Vida Interior" value={selected.notes}
-                          onExpand={() => setExpandModal({ label: 'Vida Interior', content: selected.notes ?? '', onSave: (v) => { updateFieldDirectly('notes', v); setExpandModal(null) } })}
-                        />
+
+                      {/* Character analysis section (Chisholm) */}
+                      {selected.category === 'personagem' && selected.category_data && CHAR_FIELDS.some(f => selected.category_data?.[f.key]?.trim()) && (
+                        <>
+                          <div style={{ margin: '2rem 0 1rem', paddingTop: '1.25rem', borderTop: '1px solid #EDE9FE' }}>
+                            <div style={{ fontSize: '0.62rem', fontWeight: 700, color: '#7C3AED', textTransform: 'uppercase', letterSpacing: '0.1em' }}>
+                              Análise Narrativa — Chisholm · Alter · Berlin
+                            </div>
+                          </div>
+                          {CHAR_FIELDS.map(({ key, label }) => {
+                            const val = selected.category_data?.[key] ?? ''
+                            if (!val?.trim()) return null
+                            return (
+                              <Field
+                                key={key}
+                                label={label}
+                                value={val}
+                                onExpand={() => setExpandModal({
+                                  label,
+                                  content: val,
+                                  onSave: (v) => {
+                                    updateFieldDirectly('category_data', { ...selected.category_data, [key]: v })
+                                    setExpandModal(null)
+                                  },
+                                })}
+                              />
+                            )
+                          })}
+                        </>
                       )}
 
                       {selected.cross_references?.length > 0 && (

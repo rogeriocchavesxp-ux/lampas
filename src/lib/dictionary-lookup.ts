@@ -126,5 +126,5 @@ const DICT_FIELDS = [
   'definition', 'etymology',
   'lang_hebrew', 'lang_greek', 'lang_aramaic', 'transliteration',
   'main_texts', 'theological_biblical', 'theological_systematic',
-  'applications', 'cross_references', 'bibliography', 'query_count',
+  'applications', 'category_data', 'cross_references', 'bibliography', 'query_count',
 ].join(', ')
