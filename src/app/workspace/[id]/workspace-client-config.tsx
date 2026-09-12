@@ -252,9 +252,12 @@ export const GROUP_ICONS: Record<string, LucideIcon> = {
   ferramentas_dicionario:    Library,
   ferramentas_livros:        BookCopy,
   ferramentas_refs_cruzadas: Link2,
-  ferramentas_introducao_at: BookOpen,
-  ferramentas_introducao_nt: BookOpen,
-  colagens:                  Paperclip,
+  ferramentas_introducao_at:        BookOpen,
+  ferramentas_introducao_nt:        BookOpen,
+  ferramentas_historiografia:       Landmark,
+  ferramentas_geografia:            MapPin,
+  ferramentas_filosofia:            Lightbulb,
+  colagens:                         Paperclip,
 }
 
 export const MODE_ICONS_LUCIDE: Record<string, LucideIcon> = {
