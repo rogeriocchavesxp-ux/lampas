@@ -43,6 +43,7 @@ const NAV: NavItem[] = [
       { label: 'Referências Cruzadas', href: '/knowledge' },
       { sep: true, label: 'Anotações' },
       { label: 'Colagens',             href: '/knowledge' },
+      { label: 'Estudos',              href: '/estudos' },
     ],
   },
   {
