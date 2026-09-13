@@ -3,6 +3,8 @@ import type { Metadata } from 'next'
 import { LampasLogo } from '@/components/LampasLogo'
 import { getEstudos } from '@/lib/estudos'
 
+export const dynamic = 'force-dynamic'
+
 export const metadata: Metadata = {
   title: 'Estudos — Lampas',
   description: 'Estudos panorâmicos de Teologia Bíblica na tradição Reformada.',

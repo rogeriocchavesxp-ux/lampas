@@ -2,15 +2,12 @@ import Link from 'next/link'
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import { LampasLogo } from '@/components/LampasLogo'
-import { getEstudo, getEstudos, getAllEstudos, getEstudoNav } from '@/lib/estudos'
+import { getEstudo, getEstudos, getEstudoNav } from '@/lib/estudos'
 import EstudoBody from '../EstudoBody'
 
-type Props = { params: Promise<{ slug: string }> }
+export const dynamic = 'force-dynamic'
 
-export async function generateStaticParams() {
-  const estudos = await getAllEstudos()
-  return estudos.map(e => ({ slug: e.slug }))
-}
+type Props = { params: Promise<{ slug: string }> }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params
