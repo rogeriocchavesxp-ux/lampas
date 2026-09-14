@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 
 const NAV_ITEMS = [
+  { href: '/agenda/caderno',    label: 'Caderno',    icon: '📓' },
   { href: '/agenda/calendario', label: 'Calendário', icon: '📅' },
   { href: '/agenda/eventos',    label: 'Eventos',    icon: '📋' },
   { href: '/agenda/pregacoes',  label: 'Pregações',  icon: '📖' },
