@@ -832,7 +832,8 @@ let lastSelId=null;     // which dot's info is in the tooltip
 const PERIODS=[
   {f:-4000,t:-586, bg:'rgba(210,160,60,.09)', lc:'#b88820', l:'Pré-exílico'},
   {f:-586, t:-538, bg:'rgba(180,55,55,.18)',  lc:'#b43030', l:'Exílio'},
-  {f:-538, t:2025, bg:'rgba(45,155,95,.08)',  lc:'#2a8c50', l:'Pós-exílico'},
+  {f:-538, t:0,    bg:'rgba(45,155,95,.08)',  lc:'#2a8c50', l:'Pós-exílico'},
+  {f:0,    t:2025, bg:'rgba(190,140,80,.10)', lc:'#8a5a20', l:'Novo Testamento'},
 ];
 
 function renderPeriodBands(){
@@ -874,6 +875,31 @@ function renderPeriodBands(){
     lbl.textContent=m.l;
     r.appendChild(lbl);
   });
+  // Linha divisória — Ano 0 (AT / NT)
+  (function(){
+    const xp=px(0);
+    const ntc='#8a5a20';
+    const tick=document.createElement('div');
+    tick.className='pb-mark';
+    tick.style.cssText=`position:absolute;left:${xp}px;top:0;bottom:0;width:2px;background:${ntc};opacity:0.6;transform:translateX(-50%);pointer-events:none`;
+    r.appendChild(tick);
+    const lbl=document.createElement('div');
+    lbl.className='pb-mark';
+    lbl.style.cssText=`position:absolute;left:${xp}px;top:5px;font-size:.6rem;font-weight:800;color:${ntc};white-space:nowrap;transform:translateX(-50%);pointer-events:none;letter-spacing:.06em;background:var(--surface);padding:0 3px`;
+    lbl.textContent='A.D.';
+    r.appendChild(lbl);
+    // linha vertical em todas as faixas
+    const allTracks=['t-empires','t-events','t-biblical','t-christianity','t-israel','t-prophets-north','t-prophets-south','t-kings-north','t-kings-south','t-kings-pagan','t-letters','t-patristic'];
+    allTracks.forEach(tid=>{
+      const tr=document.getElementById(tid);
+      if(!tr)return;
+      tr.querySelectorAll('.nt-divider').forEach(e=>e.remove());
+      const d=document.createElement('div');
+      d.className='nt-divider';
+      d.style.cssText=`position:absolute;left:${xp}px;top:0;bottom:0;width:2px;background:${ntc};opacity:0.25;transform:translateX(-50%);pointer-events:none;z-index:2`;
+      tr.appendChild(d);
+    });
+  })();
 }
 
 function setW(){
