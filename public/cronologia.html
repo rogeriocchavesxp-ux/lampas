@@ -1,0 +1,1624 @@
+<title>Cronologia da História</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600;700&family=IBM+Plex+Sans:wght@300;400;500&display=swap">
+<style>
+:root{
+  --bg:#f2ede3;--surface:#faf8f4;--s2:#ebe5d8;--border:#d8d0be;
+  --fg:#1c2535;--fgm:#3d4a5c;--fgd:#6b7585;
+  --accent:#2a4f7a;--al:rgba(42,79,122,.09);
+  --ff:'Cormorant Garamond',Georgia,serif;
+  --fui:'IBM Plex Sans',system-ui,sans-serif;
+  --ce:#7a5030;--cv:#8a6a00;--cb:#2a4f7a;--ch:#7a1c2e;--cci:#6b3fa0;--cis:#1a6b3a;--cpr:#8b4a00;--cpa:#1a5a60;--ckn:#7a4020;--cks:#4a3080;
+}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0f1520;--surface:#172030;--s2:#1e2a3a;--border:#2a3848;
+  --fg:#e4dfd4;--fgm:#aab0bc;--fgd:#7a8494;
+  --accent:#6a9cd4;--al:rgba(106,156,212,.1);
+  --ce:#c4904a;--cv:#d4aa30;--cb:#6a9cd4;--ch:#d06070;--cci:#c090e0;--cis:#60d090;--cpr:#e0a050;--cpa:#50b8c0;--ckn:#e08050;--cks:#9070d0;
+  color-scheme:dark;
+}}
+:root[data-theme="dark"]{
+  --bg:#0f1520;--surface:#172030;--s2:#1e2a3a;--border:#2a3848;
+  --fg:#e4dfd4;--fgm:#aab0bc;--fgd:#7a8494;
+  --accent:#6a9cd4;--al:rgba(106,156,212,.1);
+  --ce:#c4904a;--cv:#d4aa30;--cb:#6a9cd4;--ch:#d06070;--cci:#c090e0;--cis:#60d090;--cpr:#e0a050;--cpa:#50b8c0;--ckn:#e08050;--cks:#9070d0;
+  color-scheme:dark;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--fg);font-family:var(--fui);overflow:hidden;height:100%;display:flex;flex-direction:column}
+html{height:100%}
+
+/* HEADER */
+.hd{
+  display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;
+  padding:10px 16px;background:var(--bg);border-bottom:1px solid var(--border);
+  position:sticky;top:env(safe-area-inset-top,0px);z-index:200;flex-shrink:0;
+}
+.htitle{font-family:var(--ff);font-size:clamp(1rem,2vw,1.35rem);font-weight:600;line-height:1.1}
+.hsubt{font-size:.62rem;font-weight:300;letter-spacing:.1em;text-transform:uppercase;color:var(--fgd);margin-top:2px}
+.hright{display:flex;align-items:center;gap:6px}
+.zbtn{
+  width:26px;height:26px;background:var(--s2);border:1px solid var(--border);color:var(--fgm);
+  border-radius:3px;cursor:pointer;font-size:1rem;display:flex;align-items:center;justify-content:center;
+}
+.zbtn:hover{background:var(--al);color:var(--fg)}
+.zlbl{font-size:.7rem;color:var(--fgd);min-width:28px;text-align:center;font-variant-numeric:tabular-nums}
+.ibtn{width:28px;height:28px;background:var(--s2);border:1px solid var(--border);color:var(--fgm);border-radius:3px;cursor:pointer;font-size:.85rem;display:flex;align-items:center;justify-content:center}
+.srch{display:flex;align-items:center;gap:0;border:1px solid var(--border);border-radius:4px;overflow:hidden;background:var(--s2)}
+.srch input{width:90px;height:26px;border:none;background:transparent;color:var(--fg);font-family:var(--fui);font-size:.68rem;padding:0 7px;outline:none;font-variant-numeric:tabular-nums}
+.srch input::placeholder{color:var(--fgd);font-size:.65rem}
+.srch button{height:26px;padding:0 7px;border:none;background:transparent;color:var(--fgd);cursor:pointer;font-size:.75rem;border-left:1px solid var(--border)}
+.srch button:hover{background:var(--al);color:var(--fg)}
+.srch-err{animation:srch-shake .25s}
+@keyframes srch-shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-4px)}75%{transform:translateX(4px)}}
+
+/* TOGGLES / FILTER BAR */
+.tg{
+  display:flex;align-items:center;flex-wrap:wrap;gap:5px;
+  padding:6px 14px;background:var(--surface);border-bottom:1px solid var(--border);flex-shrink:0;
+}
+.tg-section{display:flex;align-items:center;gap:4px;flex-wrap:wrap}
+.tg-lbl{
+  font-size:.58rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;
+  color:var(--fgd);white-space:nowrap;padding-right:4px;user-select:none;
+}
+.ti{
+  display:inline-flex;align-items:center;gap:5px;cursor:pointer;user-select:none;
+  padding:4px 11px 4px 9px;border-radius:9999px;border:1.5px solid transparent;
+  font-size:.68rem;font-weight:500;background:var(--s2);color:var(--fgd);
+  transition:all .18s;position:relative;
+}
+.ti:hover{background:var(--al);color:var(--fg)}
+.ti.on{
+  border-color:currentColor;color:inherit;
+  background:color-mix(in srgb,currentColor 11%,transparent);
+}
+.ti.partial{
+  border-color:currentColor;color:inherit;opacity:0.65;
+  background:color-mix(in srgb,currentColor 6%,transparent);
+}
+.tdot{width:7px;height:7px;border-radius:50%;background:currentColor;flex-shrink:0}
+.ti:not(.on):not(.partial) .tdot{opacity:.3;background:var(--fgd)}
+.ti:not(.on):not(.partial) .tlbl{opacity:.5}
+.tlbl{font-size:.68rem;font-weight:500;letter-spacing:.02em}
+.tarr{font-size:.55rem;margin-left:1px;opacity:.6;line-height:1}
+.tg-sep{width:1px;height:20px;background:var(--border);margin:0 6px;flex-shrink:0}
+/* DROPDOWN MENUS */
+.ti-wrap{position:relative;display:inline-flex}
+.ti-ddmenu{
+  position:absolute;top:calc(100% + 5px);left:0;z-index:350;
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:7px;box-shadow:0 6px 20px rgba(0,0,0,.18);
+  min-width:190px;padding:5px 0;display:none;
+}
+.ti-ddmenu.open{display:block}
+.ti-dditem{
+  display:flex;align-items:center;gap:9px;padding:6px 13px;
+  cursor:pointer;user-select:none;transition:background .1s;
+}
+.ti-dditem:hover{background:var(--al)}
+.ti-dditem input[type=checkbox]{width:13px;height:13px;cursor:pointer;accent-color:var(--accent);flex-shrink:0}
+.ti-dditem-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.ti-dditem-lbl{font-size:.72rem;color:var(--fg);font-weight:500}
+.ti-ddsep{height:1px;background:var(--border);margin:4px 0}
+/* SUB-LABELS WITHIN REIS CELL */
+.lbi-sub-tag{
+  position:absolute;right:5px;
+  font-size:.48rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;
+  transform:translateY(-50%);transition:opacity .2s;
+  opacity:.7;pointer-events:none;
+}
+.lbi-sub-tag.off{opacity:0;}
+/* ERA JUMP */
+.ejump{display:flex;align-items:center;gap:4px;flex-wrap:wrap}
+.ej-lbl{font-size:.58rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--fgd);white-space:nowrap;padding-right:4px;user-select:none}
+.ej-btn{
+  font-size:.62rem;padding:3px 9px;border-radius:9999px;cursor:pointer;
+  background:var(--s2);border:1px solid var(--border);color:var(--fgm);
+  white-space:nowrap;transition:background .12s,color .12s,border-color .12s;
+}
+.ej-btn:hover{background:var(--al);color:var(--fg);border-color:var(--accent)}
+.ej-btn.hi{background:color-mix(in srgb,var(--accent) 15%,transparent);
+  border-color:var(--accent);color:var(--accent);font-weight:600}
+
+/* TIMELINE LAYOUT */
+.wrap{display:flex;flex:1;overflow:hidden;min-height:0}
+.lblcol{
+  width:102px;flex-shrink:0;background:var(--bg);border-right:1px solid var(--border);
+  display:flex;flex-direction:column;z-index:10;
+}
+.lblr{height:52px;flex-shrink:0;border-bottom:1px solid var(--border)}
+.lbi{
+  display:flex;align-items:center;gap:6px;padding:0 8px;
+  border-bottom:1px solid var(--border);font-size:.6rem;font-weight:500;
+  letter-spacing:.07em;text-transform:uppercase;color:var(--fgd);flex-shrink:0;
+  transition:opacity .2s,background .12s;overflow:hidden;
+  cursor:pointer;user-select:none;
+}
+.lbi:hover{background:var(--al)}
+.lbi.off{height:0!important;border-bottom:none;padding:0;overflow:hidden;opacity:0;pointer-events:none}
+.lbi::after{
+  content:'▾';margin-left:auto;font-size:.65rem;flex-shrink:0;
+  color:var(--fgd);transition:transform .22s;padding-right:1px;
+}
+.lbi.off::after{transform:rotate(-90deg)}
+.lbdot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+
+/* SCROLL AREA */
+.scr{flex:1;min-width:0;overflow:auto;-webkit-overflow-scrolling:touch;position:relative;cursor:grab}
+.scr.dragging{cursor:grabbing;user-select:none}
+.inner{display:flex;flex-direction:column;position:relative}
+
+/* RULER */
+.ruler{
+  height:52px;flex-shrink:0;position:relative;
+  border-bottom:2px solid var(--border);background:var(--surface);overflow:hidden;
+}
+.rband{position:absolute;top:0;bottom:0}
+.rtick{position:absolute;bottom:0;display:flex;flex-direction:column;align-items:center}
+.rtick .tl{background:var(--border);flex-shrink:0}
+.rtick.maj .tl{width:1px;height:12px}
+.rtick.min .tl{width:1px;height:6px;opacity:.45}
+.rtick .yl{
+  position:absolute;bottom:calc(100% + 2px);
+  font-size:.57rem;color:var(--fgd);white-space:nowrap;
+  transform:translateX(-50%);font-variant-numeric:tabular-nums;
+  pointer-events:none;
+}
+.eralbl{
+  position:absolute;bottom:3px;
+  font-size:.55rem;font-weight:500;letter-spacing:.07em;text-transform:uppercase;
+  color:var(--fgd);white-space:nowrap;pointer-events:none;opacity:.65;
+  transform:translateX(-50%);
+}
+
+/* TRACKS */
+.track{flex-shrink:0;position:relative;border-bottom:1px solid var(--border);background:var(--surface);overflow:hidden;transition:height .25s}
+.track.off{height:0!important;border-bottom:none;overflow:hidden!important}
+
+/* EMPIRE BANDS */
+.eband{
+  position:absolute;border-radius:2px;display:flex;align-items:center;padding:0 5px;
+  overflow:hidden;cursor:pointer;transition:filter .1s,opacity .1s;opacity:.82;
+}
+.eband:hover{opacity:1;filter:brightness(1.08)}
+.eband span{font-size:.55rem;font-weight:500;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;letter-spacing:.04em;text-transform:uppercase;pointer-events:none}
+
+/* DOTS / ICONS */
+.dot{
+  position:absolute;width:26px;height:26px;border-radius:50%;
+  border:1.5px solid var(--border);background:var(--surface);
+  cursor:pointer;display:flex;align-items:center;justify-content:center;
+  font-size:13px;line-height:1;
+  transform:translate(-50%,-50%);transition:transform .15s,box-shadow .15s;z-index:2;
+  box-shadow:0 1px 4px rgba(0,0,0,.12);
+}
+.dot:hover,.dot.sel{transform:translate(-50%,-50%) scale(1.45);box-shadow:0 3px 14px rgba(0,0,0,.22)}
+.dot.dot-free{background:none;border:none;box-shadow:none;font-size:20px;width:22px;height:22px}
+.dot.dot-free:hover,.dot.dot-free.sel{box-shadow:none;transform:translate(-50%,-50%) scale(1.3)}
+.dlbl{
+  position:absolute;font-size:.54rem;color:var(--fgd);font-weight:500;
+  white-space:nowrap;transform:translateX(-50%);pointer-events:none;
+  text-align:center;line-height:1.2;
+  transition:opacity .15s;
+}
+
+/* TOOLTIP */
+.tt{
+  position:fixed;z-index:500;background:var(--surface);border:1px solid var(--border);
+  border-radius:4px;box-shadow:0 4px 24px rgba(0,0,0,.18);padding:14px 14px 12px;
+  max-width:270px;opacity:0;pointer-events:none;transition:opacity .15s;
+}
+.tt.vis{opacity:1;pointer-events:auto}
+.tt-arr{position:absolute;top:-8px;left:50%;transform:translateX(-50%);width:0;height:0;border-left:7px solid transparent;border-right:7px solid transparent;border-bottom:8px solid var(--border)}
+.tt-arr::after{content:'';position:absolute;top:2px;left:-6px;width:0;height:0;border-left:6px solid transparent;border-right:6px solid transparent;border-bottom:7px solid var(--surface)}
+.tt-tag{font-size:.6rem;font-weight:500;letter-spacing:.1em;text-transform:uppercase;margin-bottom:3px}
+.tt-date{font-size:.68rem;color:var(--fgd);font-variant-numeric:tabular-nums;margin-bottom:3px}
+.tt-name{font-family:var(--ff);font-size:1.15rem;font-weight:600;color:var(--fg);line-height:1.2;margin-bottom:6px}
+.tt-desc{font-size:.78rem;line-height:1.65;color:var(--fgm)}
+.tt-refs{font-size:.68rem;font-style:italic;color:var(--fgd);margin-top:5px}
+.tt-close{position:absolute;top:8px;right:8px;background:none;border:none;color:var(--fgd);cursor:pointer;font-size:.85rem;padding:3px;line-height:1}
+.tt-close:hover{color:var(--fg)}
+
+/* SELECTION LINES */
+.selline{position:absolute;pointer-events:none;z-index:1;}
+.sel-date{position:absolute;pointer-events:none;z-index:1;font-size:.52rem;white-space:nowrap;transform:translateX(-50%);font-variant-numeric:tabular-nums;font-weight:500;letter-spacing:.03em;}
+
+/* FILTER PANEL */
+.fp{
+  position:fixed;right:0;top:0;bottom:0;width:268px;z-index:400;
+  background:var(--surface);border-left:1px solid var(--border);
+  display:flex;flex-direction:column;
+  transform:translateX(100%);transition:transform .22s ease;
+  box-shadow:-4px 0 24px rgba(0,0,0,.15);
+}
+.fp.open{transform:translateX(0)}
+.fph{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:12px 14px 10px;border-bottom:1px solid var(--border);flex-shrink:0;
+}
+.fptit{font-family:var(--ff);font-size:1.05rem;font-weight:600}
+.fpcnt{font-size:.62rem;color:var(--fgd);margin-left:6px}
+.fpcls{background:none;border:none;color:var(--fgd);cursor:pointer;font-size:.85rem;
+  padding:4px 6px;line-height:1;border-radius:3px}
+.fpcls:hover{color:var(--fg);background:var(--al)}
+.fpbody{overflow-y:auto;flex:1;padding:4px 0 20px}
+.fps{margin-bottom:0}
+.fpsh{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:8px 14px 4px;position:sticky;top:0;background:var(--surface);z-index:1;
+  border-bottom:1px solid var(--border);
+}
+.fpstit{font-size:.58rem;font-weight:500;letter-spacing:.1em;text-transform:uppercase}
+.fpsctl{display:flex;gap:4px}
+.fpsbtn{
+  font-size:.58rem;padding:2px 7px;background:var(--s2);border:1px solid var(--border);
+  border-radius:2px;cursor:pointer;color:var(--fgm);line-height:1.5;
+}
+.fpsbtn:hover{background:var(--al);color:var(--fg)}
+.fprow{
+  display:flex;align-items:center;gap:7px;padding:5px 14px;cursor:pointer;
+  user-select:none;transition:background .1s;
+}
+.fprow:hover{background:var(--al)}
+.fprow input[type=checkbox]{
+  width:13px;height:13px;cursor:pointer;accent-color:var(--accent);
+  flex-shrink:0;margin:0;
+}
+.fpic{font-size:13px;flex-shrink:0;width:18px;text-align:center}
+.fplbl{font-size:.73rem;color:var(--fgd);line-height:1.3;transition:color .1s}
+.fprow:has(input:checked) .fplbl{color:var(--fg)}
+.fpovl{position:fixed;inset:0;z-index:390;pointer-events:none}
+.fpovl.open{pointer-events:auto}
+/* badge on filter button */
+.ibtn.active{background:var(--accent);color:var(--bg);border-color:var(--accent)}
+
+@media(max-width:600px){
+  .lblcol{width:72px}
+  .lbi{font-size:.54rem;padding:0 5px}
+  .tt{max-width:220px}
+  .fp{width:100%}
+}
+@media(prefers-reduced-motion:reduce){*{transition:none!important}}
+
+/* REFERENCES PANEL */
+.refp{
+  position:fixed;left:0;top:0;bottom:0;width:320px;z-index:400;
+  background:var(--surface);border-right:1px solid var(--border);
+  display:flex;flex-direction:column;
+  transform:translateX(-100%);transition:transform .22s ease;
+  box-shadow:4px 0 24px rgba(0,0,0,.15);
+}
+.refp.open{transform:translateX(0)}
+.refph{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:12px 14px 10px;border-bottom:1px solid var(--border);flex-shrink:0;
+}
+.refptit{font-family:var(--ff);font-size:1.05rem;font-weight:600}
+.refpcls{background:none;border:none;color:var(--fgd);cursor:pointer;font-size:.9rem;padding:4px 6px;border-radius:3px;line-height:1}
+.refpcls:hover{background:var(--al);color:var(--fg)}
+.refpbody{flex:1;overflow-y:auto;padding:14px}
+.refp-book{margin-bottom:20px;padding-bottom:20px;border-bottom:1px solid var(--border)}
+.refp-book:last-child{border-bottom:none;margin-bottom:0}
+.refp-book-title{font-family:var(--ff);font-size:.88rem;font-weight:700;color:var(--fg);line-height:1.35;margin-bottom:4px}
+.refp-book-auth{font-size:.72rem;color:var(--fgm);margin-bottom:2px}
+.refp-book-pub{font-size:.68rem;color:var(--fgd);font-style:italic;margin-bottom:6px}
+.refp-book-desc{font-size:.73rem;line-height:1.6;color:var(--fgm)}
+.refp-section{font-size:.6rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--fgd);margin:16px 0 8px}
+.refp-note{font-size:.7rem;line-height:1.55;color:var(--fgm)}
+</style>
+
+<div class="hd">
+  <div>
+    <div class="htitle">Cronologia da História</div>
+    <div class="hsubt">Da Criação ao Século XX · Linha do Tempo Horizontal</div>
+  </div>
+  <div class="hright">
+    <button class="zbtn" id="zo">−</button>
+    <span class="zlbl" id="zl">1×</span>
+    <button class="zbtn" id="zi">+</button>
+    <div class="srch" id="srch">
+      <input type="text" id="syear" placeholder="Ano (ex: 586 a.C.)" autocomplete="off" spellcheck="false">
+      <button id="sgo" title="Ir para o ano">→</button>
+    </div>
+    <button class="ibtn" id="refbtn" style="width:auto;padding:0 8px;font-size:.65rem;letter-spacing:.04em;gap:4px;display:flex;align-items:center">📚 Referências</button>
+    <button class="ibtn" id="fpbtn" style="width:auto;padding:0 8px;font-size:.65rem;letter-spacing:.04em;gap:4px;display:flex;align-items:center">☰ Filtros</button>
+    <button class="ibtn" id="thbtn">☽</button>
+  </div>
+</div>
+
+<div class="tg" id="tg">
+  <span class="tg-lbl">Faixas:</span>
+  <div class="tg-section">
+    <!-- Impérios com dropdown -->
+    <div class="ti-wrap" id="wrap-empires">
+      <button class="ti on" id="ti-empires" style="color:var(--ce)"><div class="tdot"></div><span class="tlbl">Impérios</span><span class="tarr">▾</span></button>
+      <div class="ti-ddmenu" id="dd-empires"></div>
+    </div>
+    <button class="ti on" data-tid="events" style="color:var(--cv)"><div class="tdot"></div><span class="tlbl">Acontecimentos</span></button>
+    <button class="ti on" data-tid="biblical" style="color:var(--cb)"><div class="tdot"></div><span class="tlbl">Personagens</span></button>
+    <button class="ti on" data-tid="christianity" style="color:var(--cci)"><div class="tdot"></div><span class="tlbl">Cristianismo</span></button>
+    <button class="ti on" data-tid="israel" style="color:var(--cis)"><div class="tdot"></div><span class="tlbl">Israel</span></button>
+    <!-- Profetas com dropdown -->
+    <div class="ti-wrap" id="wrap-prophets">
+      <button class="ti on" id="ti-prophets" style="color:var(--cpr)"><div class="tdot"></div><span class="tlbl">Profetas</span><span class="tarr">▾</span></button>
+      <div class="ti-ddmenu" id="dd-prophets">
+        <label class="ti-dditem"><input type="checkbox" checked data-subtid="prophets-north"><div class="ti-dditem-dot" style="background:var(--cpr)"></div><span class="ti-dditem-lbl">Norte (Israel)</span></label>
+        <label class="ti-dditem"><input type="checkbox" checked data-subtid="prophets-south"><div class="ti-dditem-dot" style="background:var(--cpr)"></div><span class="ti-dditem-lbl">Sul (Judá)</span></label>
+      </div>
+    </div>
+    <!-- Reis com dropdown -->
+    <div class="ti-wrap" id="wrap-reis">
+      <button class="ti on" id="ti-reis" style="color:var(--ckn)"><div class="tdot"></div><span class="tlbl">Reis</span><span class="tarr">▾</span></button>
+      <div class="ti-ddmenu" id="dd-reis">
+        <label class="ti-dditem"><input type="checkbox" checked data-subtid="kings-north"><div class="ti-dditem-dot" style="background:var(--ckn)"></div><span class="ti-dditem-lbl">Norte (Israel)</span></label>
+        <label class="ti-dditem"><input type="checkbox" checked data-subtid="kings-south"><div class="ti-dditem-dot" style="background:var(--cks)"></div><span class="ti-dditem-lbl">Judá</span></label>
+        <div class="ti-ddsep"></div>
+        <label class="ti-dditem"><input type="checkbox" checked data-subtid="kings-pagan"><div class="ti-dditem-dot" style="background:var(--ch)"></div><span class="ti-dditem-lbl">Reis Pagãos</span></label>
+      </div>
+    </div>
+    <button class="ti on" data-tid="patristic" style="color:var(--cpa)"><div class="tdot"></div><span class="tlbl">Pais da Igreja</span></button>
+  </div>
+  <div class="tg-sep"></div>
+  <div class="ejump">
+    <span class="ej-lbl">Ir para:</span>
+    <button class="ej-btn" onclick="scrollToEra(-3900)">Criação</button>
+    <button class="ej-btn" onclick="scrollToEra(-2091)">Patriarcas</button>
+    <button class="ej-btn" onclick="scrollToEra(-1446)">Êxodo</button>
+    <button class="ej-btn" onclick="scrollToEra(-966)">Monarquia</button>
+    <button class="ej-btn" onclick="scrollToEra(-780)">Profetas</button>
+    <button class="ej-btn" onclick="scrollToEra(-586)">Exílio</button>
+    <button class="ej-btn hi" onclick="scrollToEra(-4)">Cristo e Século I</button>
+    <button class="ej-btn" onclick="scrollToEra(100)">Pais da Igreja</button>
+    <button class="ej-btn" onclick="scrollToEra(325)">Concílios</button>
+    <button class="ej-btn" onclick="scrollToEra(1517)">Reforma</button>
+    <button class="ej-btn" onclick="scrollToEra(1897)">Israel Moderno</button>
+  </div>
+</div>
+
+<div class="wrap">
+  <div class="lblcol" id="lc">
+    <div class="lblr"></div>
+    <div class="lbi" id="li-empires" style="height:174px"><div class="lbdot" style="background:var(--ce)"></div>Impérios e Reinos</div>
+    <div class="lbi" id="li-events" style="height:180px"><div class="lbdot" style="background:var(--cv)"></div>Acontecimentos</div>
+    <div class="lbi" id="li-biblical" style="height:240px"><div class="lbdot" style="background:linear-gradient(to bottom,var(--cb) 50%,var(--ch) 50%)"></div>Personagens</div>
+    <div class="lbi off" id="li-historical" style="height:0;border-bottom:none;padding:0"></div>
+    <div class="lbi" id="li-christianity" style="height:100px"><div class="lbdot" style="background:var(--cci)"></div>Cristianismo</div>
+    <div class="lbi" id="li-israel" style="height:100px"><div class="lbdot" style="background:var(--cis)"></div>Israel</div>
+    <div class="lbi" id="li-prophets" style="height:260px;position:relative">
+      <div class="lbdot" style="background:var(--cpr)"></div>Profetas
+      <span class="lbi-sub-tag" id="lbt-prophets-north" style="top:40px;color:var(--cpr)">Norte</span>
+      <span class="lbi-sub-tag" id="lbt-prophets-south" style="top:170px;color:var(--cpr)">Sul</span>
+    </div>
+    <div class="lbi" id="li-kings" style="height:380px;position:relative">
+      <div class="lbdot" style="background:linear-gradient(to bottom,var(--ckn) 33%,var(--cks) 66%,var(--ch) 100%)"></div>Reis
+      <span class="lbi-sub-tag" id="lbt-kings-north" style="top:50px;color:var(--ckn)">Norte</span>
+      <span class="lbi-sub-tag" id="lbt-kings-south" style="top:150px;color:var(--cks)">Judá</span>
+      <span class="lbi-sub-tag" id="lbt-kings-pagan" style="top:290px;color:var(--ch)">Pagãos</span>
+    </div>
+    <div class="lbi" id="li-patristic" style="height:100px"><div class="lbdot" style="background:var(--cpa)"></div>Pais da Igreja</div>
+  </div>
+  <div class="scr" id="scr">
+    <div class="inner" id="inn">
+      <div class="ruler" id="ruler"></div>
+      <div class="track" id="t-empires" style="height:174px"></div>
+      <div class="track" id="t-events" style="height:180px"></div>
+      <div class="track" id="t-biblical" style="height:240px"></div>
+      <div class="track off" id="t-historical" style="height:100px"></div>
+      <div class="track" id="t-christianity" style="height:100px"></div>
+      <div class="track" id="t-israel" style="height:100px;overflow:visible"></div>
+      <div class="track" id="t-prophets-north" style="height:80px"></div>
+      <div class="track" id="t-prophets-south" style="height:180px"></div>
+      <div class="track" id="t-kings-north" style="height:100px"></div>
+      <div class="track" id="t-kings-south" style="height:100px"></div>
+      <div class="track" id="t-kings-pagan" style="height:180px"></div>
+      <div class="track" id="t-patristic" style="height:100px"></div>
+    </div>
+  </div>
+</div>
+
+<div class="fpovl" id="refpovl"></div>
+<div class="refp" id="refp">
+  <div class="refph">
+    <span class="refptit">Referências Bibliográficas</span>
+    <button class="refpcls" id="refpcls">✕</button>
+  </div>
+  <div class="refpbody">
+    <div class="refp-section">Fontes Principais</div>
+
+    <div class="refp-book">
+      <div class="refp-book-title">Interpretação dos Livros Proféticos: Um Prático e Indispensável Manual de Exegese</div>
+      <div class="refp-book-auth">Gary V. Smith</div>
+      <div class="refp-book-pub">Editora Cultura, 2026</div>
+      <div class="refp-book-desc">Guia exegético para a interpretação dos livros proféticos do Antigo Testamento. Aborda o contexto histórico, características literárias e temas centrais da profecia bíblica. Fundamentou a datação e o contexto histórico dos profetas nesta cronologia.</div>
+    </div>
+
+    <div class="refp-book">
+      <div class="refp-book-title">Panorama do Antigo Testamento</div>
+      <div class="refp-book-auth">Andrew E. Hill &amp; John H. Walton</div>
+      <div class="refp-book-pub">Editora Vida, 2024</div>
+      <div class="refp-book-desc">Introdução abrangente ao Antigo Testamento com ênfase em hermenêutica, história de Israel e do Antigo Oriente Médio, arqueologia, geografia e cronologia bíblica. Referência para os eventos e personagens do AT nesta linha do tempo.</div>
+    </div>
+
+    <div class="refp-book">
+      <div class="refp-book-title">Como Ler a Bíblia Livro por Livro: Um Guia Confiável para Ler e Entender as Escrituras Sagradas</div>
+      <div class="refp-book-auth">Gordon D. Fee &amp; Douglas Stuart</div>
+      <div class="refp-book-pub">Thomas Nelson, 2023</div>
+      <div class="refp-book-desc">Apresenta cada livro da Bíblia com seu contexto histórico, literário e teológico. Guia de referência para compreender o propósito e a mensagem de cada livro canônico, com orientação sobre os gêneros literários e a mensagem central de cada texto.</div>
+    </div>
+
+    <div class="refp-book">
+      <div class="refp-book-title">Você Entende o que Você Lê? Um Guia para a Interpretação Bíblica</div>
+      <div class="refp-book-auth">Gordon Fee &amp; Douglas Stuart</div>
+      <div class="refp-book-pub">Thomas Nelson, 2026 (Nova edição atualizada e expandida)</div>
+      <div class="refp-book-desc">Manual clássico de hermenêutica e exegese bíblica. Capacita o leitor a identificar os gêneros literários (narrativa, lei, profecia, poesia, epístola, apocalipse) e aplicar métodos interpretativos adequados a cada um, fundamentando a leitura contextualizada da Bíblia.</div>
+    </div>
+
+    <div class="refp-book">
+      <div class="refp-book-title">Lendo a Bíblia Livro por Livro: Um Guia Prático de Estudo Panorâmico da Bíblia</div>
+      <div class="refp-book-auth">Dr. William H. Marty &amp; Dr. Boyd Seevers</div>
+      <div class="refp-book-pub">Vida Nova, 2020</div>
+      <div class="refp-book-desc">Visão panorâmica de todos os 66 livros da Bíblia, respondendo às perguntas "O que a Bíblia diz?" e "Por que isso é importante?". Referência acessível para situar cada livro no contexto histórico e canônico das Escrituras.</div>
+    </div>
+
+    <div class="refp-section">Sobre a Cronologia</div>
+    <div class="refp-note">
+      As datações utilizadas seguem o consenso da cronologia bíblica evangélica conservadora,
+      compatível com as fontes acima. Para profetas com datas disputadas (como Joel e Naum),
+      adotou-se a posição da datação precoce (pré-exílica).<br><br>
+      As datas dos reis de Israel e Judá seguem E. R. Thiele,
+      <em>The Mysterious Numbers of the Hebrew Kings</em> (revisado).
+    </div>
+  </div>
+</div>
+
+<div class="fpovl" id="fpovl"></div>
+<div class="fp" id="fp">
+  <div class="fph">
+    <div style="display:flex;align-items:baseline;gap:0">
+      <span class="fptit">Filtros</span>
+      <span class="fpcnt" id="fpcnt"></span>
+    </div>
+    <button class="fpcls" id="fpcls">✕</button>
+  </div>
+  <div class="fpbody" id="fpbody"></div>
+</div>
+
+<div class="tt" id="tt">
+  <div class="tt-arr" id="tt-arr"></div>
+  <button class="tt-close" id="ttc">✕</button>
+  <div class="tt-tag" id="tt-tag"></div>
+  <div class="tt-date" id="tt-date"></div>
+  <div class="tt-name" id="tt-name"></div>
+  <div class="tt-desc" id="tt-desc"></div>
+  <div class="tt-refs" id="tt-refs"></div>
+</div>
+
+<script>
+const SY=-4000,EY=2025;
+const ZS=[.4,.6,.8,1,1.5,2,3,4,6,8];
+let zi=3;
+const hiddenEmpires=new Set();
+function sc(){return ZS[zi]*3}
+function px(y){return(y-SY)*sc()}
+function tw(){return(EY-SY)*sc()}
+function fy(y){if(y<=-4000)return'Origem';if(y<0)return Math.abs(y)+' a.C.';if(y===0)return'1 d.C.';return y+' d.C.'}
+function fspan(a,b){return fy(a)+' — '+fy(b)}
+
+const EMPIRES=[
+  // ln 0 — Egito (sequencial, sem sobreposição)
+  {l:'Egito: Reino Antigo',f:-2686,t:-2181,ln:0,c:'#b06820'},
+  {l:'Egito: Reino Médio',f:-2055,t:-1650,ln:0,c:'#b06820'},
+  {l:'Egito: Reino Novo',f:-1550,t:-1069,ln:0,c:'#b06820'},
+  {l:'Egito: Período Tardio',f:-664,t:-332,ln:0,c:'#b06820'},
+  // ln 1 — Mesopotâmia (sequencial)
+  {l:'Terceira Dinastia de Ur',f:-2112,t:-2004,ln:1,c:'#7060a0'},
+  {l:'Babilônia Antiga',f:-1895,t:-1595,ln:1,c:'#604890'},
+  {l:'Império Assírio',f:-934,t:-609,ln:1,c:'#804848'},
+  {l:'Babilônia Neobabilônica',f:-626,t:-539,ln:1,c:'#405880'},
+  // ln 2 — Pérsia (separada de Roma e Grécia)
+  {l:'Império Persa',f:-550,t:-330,ln:2,c:'#307858'},
+  // ln 3 — Grécia e Macedônia (separada)
+  {l:'Grécia e Macedônia',f:-336,t:-63,ln:3,c:'#304888'},
+  // ln 4 — Roma (sobrepõe Pérsia e Grécia, linha própria)
+  {l:'Império Romano',f:-509,t:100,ln:4,c:'#904040'},
+  // ln 5 — Israel sequencial: Monarquia Unida → Judeia/Pérsia → Asmoneia
+  {l:'Monarquia Unida de Israel',f:-1050,t:-930,ln:5,c:'#304888'},
+  {l:'Judeia sob a Pérsia',f:-538,t:-332,ln:5,c:'#307858'},
+  {l:'Dinastia Asmoneia',f:-164,t:-63,ln:5,c:'#487898'},
+  // ln 6 — Reino do Norte (Israel)
+  {l:'Reino do Norte (Israel)',f:-930,t:-722,ln:6,c:'#405098'},
+  // ln 7 — Reino do Sul (Judá)
+  {l:'Reino do Sul (Judá)',f:-930,t:-586,ln:7,c:'#3858a8'},
+];
+
+const EVENTS=[
+  {id:'cr',y:-4000,l:'Criação',ic:'✨',tag:'Bíblico',d:'Deus cria os céus e a terra em seis dias. Adão e Eva são formados à imagem de Deus. A criação é declarada "muito boa". (Gn 1–2)',r:'Gn 1–2'},
+  {id:'fa',y:-3900,l:'A Queda',ic:'🍎',tag:'Bíblico',d:'Adão e Eva desobedecem a Deus. O pecado entra no mundo. Promessa do Redentor — protoevangelium: "ele te ferirá a cabeça". (Gn 3:15)',r:'Gn 3'},
+  {id:'fl',y:-2350,l:'O Dilúvio',ic:'🌊',tag:'Bíblico',d:'Deus envia o dilúvio pela maldade humana. Noé e sua família sobrevivem na arca. Aliança noética: Deus nunca mais destruirá a terra com água. (Gn 6–9)',r:'Gn 6–9'},
+  {id:'bb',y:-2200,l:'Torre de Babel',ic:'🗼',tag:'Bíblico',d:'Deus confunde as línguas em Babel e dispersa os povos. Inverte a concentração humana arrogante. Prepara o cenário para Abraão. (Gn 11:1-9)',r:'Gn 11'},
+  {id:'ab',y:-2091,l:'Chamado de Abraão',ic:'🌟',tag:'Aliança',d:'"Em ti serão benditas todas as famílias da terra." Deus chama Abrão de Ur. A aliança abraâmica é estabelecida — fundamento do plano de redenção. (Gn 12; 15; 17)',r:'Gn 12; 15; 17'},
+  {id:'mo',y:-2051,l:'Monte Moriá',ic:'⛰️',tag:'Tipo',d:'Deus testa a fé de Abraão com o sacrifício de Isaque. Provê um carneiro substituto. "No monte do SENHOR será provido." Tipo do sacrifício de Cristo. (Gn 22)',r:'Gn 22'},
+  {id:'jo',y:-1885,l:'José no Egito',ic:'🌾',tag:'Providência',d:'José vendido pelos irmãos. Exaltado a segundo do faraó. "Vós me vendestes... mas Deus mo enviou." Todo Israel desce ao Egito (70 almas). (Gn 37–50)',r:'Gn 37–50'},
+  {id:'ex',y:-1446,l:'O Êxodo',ic:'🔥',tag:'Redenção',d:'Moisés lidera Israel para fora do Egito. As 10 pragas. O Mar Vermelho se abre. A Páscoa é instituída. O Êxodo é o evento redentor central do AT. (Êx 12–15)',r:'Êx 12–15'},
+  {id:'si',y:-1445,l:'Aliança no Sinai',ic:'⚡',tag:'Aliança',d:'Os Dez Mandamentos. A Lei e o Tabernáculo. Israel como nação sacerdotal. A aliança mosaica é condicional — contraste com a abraâmica. (Êx 19–24)',r:'Êx 19–24'},
+  {id:'ca',y:-1406,l:'Conquista de Canaã',ic:'🏹',tag:'Cumprimento',d:'Josué lidera a conquista. Jericó cai após 7 dias de marcha obediente. A terra prometida é dividida entre as tribos. (Js 1–24)',r:'Js 1–24'},
+  {id:'t1',y:-966,l:'1º Templo',ic:'🏛️',tag:'Templo',d:'Salomão constrói o Primeiro Templo em 7 anos. A glória de Deus o preenche. Centro da adoração de Israel. (1 Rs 5–8)',r:'1 Rs 5–8'},
+  {id:'sp',y:-930,l:'Divisão do Reino',ic:'⚔️',tag:'Julgamento',d:'Após Salomão, o reino se divide: Israel (Norte) e Judá (Sul). Jeroboão introduz idolatria no Norte. (1 Rs 12)',r:'1 Rs 12'},
+  {id:'sm',y:-722,l:'Queda de Samaria',ic:'💥',tag:'Julgamento',d:'Sargão II (Assíria) conquista Samaria. As 10 tribos do Norte são deportadas — consequência da idolatria crônica. (2 Rs 17)',r:'2 Rs 17'},
+  {id:'jq',y:-586,l:'Queda de Jerusalém',ic:'🔥',tag:'Julgamento',d:'Nabucadnesar destrói Jerusalém e o Templo. Israel vai ao exílio babilônico. O evento mais traumático da história bíblica. (2 Rs 25; Jr 52)',r:'2 Rs 25'},
+  {id:'cy',y:-538,l:'Decreto de Ciro',ic:'📜',tag:'Restauração',d:'Ciro o Grande permite o retorno dos exilados. Isaías o nomeou 150 anos antes (Is 44:28). Cumprimento literal da profecia. (Esd 1)',r:'Esd 1; Is 44:28'},
+  {id:'t2',y:-516,l:'2º Templo',ic:'🕍',tag:'Templo',d:'O Segundo Templo é concluído 70 anos após a queda do primeiro — conforme Jeremias profetizou. (Esd 6; Ag 2:9)',r:'Esd 6'},
+  {id:'ml',y:-430,l:'Malaquias',ic:'📖',tag:'Profecia',d:'Último profeta do AT. Promete o mensageiro precursor do Messias (Ml 3:1). Início do silêncio profético de ~400 anos.',r:'Ml 3–4'},
+  {id:'mc',y:-164,l:'Revolta Macabeia',ic:'⚔️',tag:'Intertestamental',d:'Judas Macabeu purifica o Templo profanado por Antíoco IV. Origem da Festa de Chanucá (Jo 10:22). Tipo da "Abominação da Desolação". (1 Mc; Dn 11:31)',r:'1 Mc; Dn 11:31'},
+  {id:'rm',y:-63,l:'Roma conquista Judeia',ic:'🦅',tag:'Político',d:'Pompeu entra em Jerusalém. Judeia torna-se estado-cliente de Roma. As estradas e a Pax Romana preparam providencialmente o mundo para o Evangelho.',r:'Lc 2:1; 3:1'},
+  {id:'jn',y:-4,l:'Nascimento de Jesus',ic:'⭐',tag:'Encarnação',d:'"O Verbo se fez carne e habitou entre nós." (Jo 1:14). O Filho de Deus encarnado na virgem Maria em Belém. Cumprimento de todas as promessas do AT.',r:'Mt 1–2; Lc 2; Jo 1:14'},
+  {id:'bt',y:27,l:'Batismo de Jesus',ic:'🕊️',tag:'Ministério',d:'O Espírito desce como pomba. "Este é meu Filho amado." Jesus é tentado 40 dias no deserto e inicia seu ministério público. (Mt 3)',r:'Mt 3; Jo 1:29-34'},
+  {id:'cr2',y:30,l:'Crucificação e Ressurreição',ic:'✝️',tag:'Redenção',d:'"Consumado está." (Jo 19:30). Jesus morre, é sepultado e ressuscita corporalmente no terceiro dia. Fundamento de toda a fé cristã. (Mt 26–28; 1 Co 15)',r:'Mt 26–28; Jo 19–20; 1 Co 15'},
+  {id:'pc',y:30,l:'Pentecostes',ic:'🔥',tag:'Igreja',d:'O Espírito Santo é derramado. 3.000 se convertem. A Igreja nasce. Pentecostes reverte Babel: as línguas divididas são reunidas. (At 2; Jl 2:28-32)',r:'At 2'},
+  {id:'j70',y:70,l:'Destruição do Templo',ic:'💥',tag:'Julgamento',d:'Tito destrói Jerusalém e o Templo. Predito por Jesus 40 anos antes: "não ficará pedra sobre pedra". (Mt 24:2)',r:'Mt 24:2; Lc 21:20'},
+  {id:'ap',y:95,l:'O Apocalipse',ic:'👁️',tag:'Profecia',d:'João recebe as visões em Patmos. "Vem, Senhor Jesus." (Ap 22:20). A Bíblia encerra com o clamor pela consumação do Reino. (Ap 1–22)',r:'Ap 1–22'},
+  // Eventos adicionados a partir das imagens de referência
+  {id:'slavery',y:-1500,l:'Escravidão no Egito',ic:'⛓️',tag:'Julgamento',d:'"Levantou-se um novo rei sobre o Egito que não conhecia José." (Êx 1:8). Israel é reduzido à escravidão após a morte de José. A opressão dura ~400 anos — período de forja nacional, cumprindo a profecia a Abraão em Gn 15:13.',r:'Êx 1; Gn 15:13; At 7:6'},
+  {id:'apostles',y:33,l:'Ministério dos Apóstolos',ic:'🌍',tag:'Igreja',d:'Os apóstolos pregam em Jerusalém, Judeia e Samaria. Estêvão é martirizado (At 7). Paulo se converte (At 9). A Igreja cresce e se expande além das fronteiras judaicas. Pedro vai a Cornélio (At 10). (At 3–12)',r:'At 3–12'},
+  {id:'john7',y:85,l:'João às Sete Igrejas',ic:'✉️',tag:'Profecia',d:'João, exilado em Patmos por Domiciano, escreve às sete igrejas da Ásia: Éfeso, Esmirna, Pérgamo, Tiatira, Sardes, Filadélfia, Laodiceia. Mensagens de correção, encorajamento e esperança escatológica. (Ap 2–3)',r:'Ap 2–3'},
+  {id:'future',y:2000,l:'Nova Criação',ic:'🌟',tag:'Escatologia',d:'"Vi um céu novo e uma terra nova." (Ap 21:1). A consumação da história: Deus habita com os homens, toda lágrima é enxugada, a morte não existe mais. O horizonte para o qual toda a história aponta. (Ap 21–22; Rm 8:18-25)',r:'Ap 21–22; Is 65:17; Rm 8:18-25'},
+  // Eventos OT adicionais
+  {id:'caim',y:-3870,l:'Caim e Abel',ic:'🩸',tag:'Bíblico',d:'O primeiro assassinato. Caim mata Abel por inveja da oferta aceita por Deus. "O sangue do teu irmão clama da terra." (Gn 4:10). Tipo do conflito entre a semente da serpente e a semente da mulher (Gn 3:15).',r:'Gn 4'},
+  {id:'noahcov',y:-2348,l:'Aliança com Noé',ic:'🌈',tag:'Aliança',d:'Após o dilúvio, Deus firma a aliança noética com Noé, sua família e toda a criação. O arco-íris como sinal. "Nunca mais haverá dilúvio para destruir a terra." A primeira aliança universal da história bíblica.',r:'Gn 9:8-17'},
+  {id:'sodoma',y:-2067,l:'Sodoma e Gomorra',ic:'🔥',tag:'Julgamento',d:'Deus destrói Sodoma e Gomorra com fogo e enxofre pelo pecado extremo. Ló e sua família são resgatados. Torna-se o exemplo paradigmático do julgamento divino sobre a imoralidade no NT (2 Pe 2:6; Jd 7).',r:'Gn 19; 2 Pe 2:6'},
+  {id:'jud',y:-1375,l:'Período dos Juízes',ic:'⚖️',tag:'Julgamento',d:'~340 anos de ciclos de apostasia, opressão, clamor e livramento. Débora, Gideão, Sansão, Jefté. "Cada um fazia o que parecia reto aos seus próprios olhos." (Jz 21:25). Deus levanta juízes para livrar Israel, mas o povo sempre recai na idolatria.',r:'Juízes; Jz 2:11-19'},
+  {id:'davung',y:-1010,l:'Ungimento de Davi',ic:'🎵',tag:'Aliança',d:'Samuel unge Davi, o filho mais novo de Jessé de Belém, como rei escolhido por Deus. "O SENHOR não vê como o homem vê; o homem vê a aparência exterior, mas o SENHOR vê o coração." (1 Sm 16:7). Início da aliança davídica.',r:'1 Sm 16; 2 Sm 7'},
+  {id:'ezrane',y:-457,l:'Esdras e Neemias',ic:'🧱',tag:'Restauração',d:'Esdras retorna a Jerusalém e lê publicamente a Lei, provocando avivamento e reforma (458 a.C.). Neemias reconstrói os muros em 52 dias contra forte oposição (445 a.C.). Os dois últimos grandes líderes do AT antes do silêncio profético.',r:'Esd 7–10; Ne 1–13; 8'},
+  {id:'sil400',y:-400,l:'400 Anos de Silêncio',ic:'🤫',tag:'Intertestamental',d:'Entre Malaquias e João Batista, ~400 anos sem profeta em Israel. Período de dominação persa, grega e romana. Surgem fariseus, saduceus, escribas e o cânone do AT. O silêncio termina abruptamente com a voz de João Batista no deserto. (Ml 4:5-6; Lc 1:17)',r:'Ml 4:5-6; Lc 1:17'},
+  {id:'joaonat',y:-5,l:'Nascimento de João Batista',ic:'🕊️',tag:'Profecia',d:'Nascimento miraculoso de João, filho de Zacarias e Isabel. O anjo Gabriel anuncia: "Será grande diante do Senhor... preparará ao Senhor um povo bem disposto." (Lc 1:15-17). João cumpre a promessa do Elias que haveria de vir (Ml 4:5).',r:'Lc 1:5-25; 57-80'},
+  {id:'transf',y:29,l:'Transfiguração',ic:'✨',tag:'Ministério',d:'Jesus resplandece em glória no monte com Moisés e Elias. "Este é meu Filho amado, em quem me comprazo; a ele ouvi!" (Mt 17:5). A Lei e os Profetas testemunham sobre Cristo. Antecipação da glória da ressurreição.',r:'Mt 17:1-13; Mc 9; Lc 9'},
+  {id:'ress',y:33,l:'Paulo se Converte',ic:'⚡',tag:'Igreja',d:'Jesus aparece a Saulo de Tarso na estrada de Damasco. O maior perseguidor da Igreja torna-se seu maior missionário. A conversão de Paulo demonstra o poder transformador do Ressurreto e abre as portas para a missão aos gentios.',r:'At 9:1-19; Gl 1:11-17'},
+  {id:'jer70',y:70,l:'Queda de Jerusalém — 70 d.C.',ic:'🔥',tag:'Julgamento',d:'Tito, general romano, destrói Jerusalém e o Segundo Templo em 70 d.C. Jesus profetizou com precisão: "não ficará aqui pedra sobre pedra." (Mt 24:2). Fim do judaísmo do templo. Início da diáspora judaica definitiva.',r:'Mt 24:2; Lc 21:20-24'},
+];
+
+const BIBLICAL=[
+  {id:'adam',f:-4000,t:-3070,l:'Adão',ic:'🌿',d:'Primeiro ser humano, criado à imagem de Deus. Pecou e caiu. Pai da humanidade. Viveu 930 anos (Gn 5:5). Em Rm 5:14, chamado de "figura daquele que havia de vir."',r:'Gn 1–5; Rm 5:14'},
+  {id:'noah',f:-2948,t:-1998,l:'Noé',ic:'⛵',d:'Homem justo que construiu a arca e sobreviveu ao dilúvio. Deus firmou aliança com ele e toda a criação. Viveu 950 anos (Gn 9:29).',r:'Gn 5–9'},
+  {id:'abr',f:-2166,t:-1991,l:'Abraão',ic:'✨',d:'Pai da fé. Chamado de Ur para Canaã. Recebeu as promessas da aliança. "Foi contado como justiça" (Gn 15:6). Paradigma da justificação pela fé (Rm 4).',r:'Gn 12–25; Rm 4'},
+  {id:'isaac',f:-2066,t:-1886,l:'Isaque',ic:'🐑',d:'Filho da promessa. Nasceu de Sara aos 90 anos. Quase sacrificado no Moriá. Tipo de Cristo. Pai de Jacó e Esaú.',r:'Gn 21–35; Gl 4:22-31'},
+  {id:'jacob',f:-2006,t:-1859,l:'Jacó/Israel',ic:'🤼',d:'Luta com Deus e é renomeado Israel. Pai das 12 tribos. "Como príncipe lutaste com Deus e prevaleceste." (Gn 32:28)',r:'Gn 25–50'},
+  {id:'joseph',f:-1915,t:-1805,l:'José',ic:'👑',d:'Vendido pelos irmãos como escravo. Exaltado a segundo do faraó. "Vós me vendestes... mas Deus mo enviou." Paradigma da providência divina.',r:'Gn 37–50'},
+  {id:'moses',f:-1526,t:-1406,l:'Moisés',ic:'🔥',d:'Libertador de Israel, mediador da aliança sinaítica, legislador, profeta. "Não haverá profeta em Israel como Moisés." (Dt 34:10). Tipo de Cristo como Mediador.',r:'Êx–Dt; Hb 3:1-6'},
+  {id:'joshua',f:-1466,t:-1390,l:'Josué',ic:'🏹',d:'Sucessor de Moisés. Liderou a conquista de Canaã. "Quanto a mim e minha casa, serviremos ao SENHOR." (Js 24:15). Seu nome em grego = Jesus.',r:'Josué'},
+  {id:'samuel',f:-1105,t:-1020,l:'Samuel',ic:'🫙',d:'Último dos juízes, primeiro dos profetas escriturísticos. Ungiu Saul e Davi. Transição da teocracia para a monarquia.',r:'1 Sm 1–16'},
+  {id:'david',f:-1040,t:-970,l:'Davi',ic:'🎵',d:'"Homem segundo o coração de Deus." Recebeu a aliança davídica (2 Sm 7). Escriba dos Salmos. Tipo de Cristo como Rei-Pastor.',r:'1 Sm 16 – 1 Rs 2'},
+  {id:'solomon',f:-1000,t:-930,l:'Salomão',ic:'📖',d:'Construiu o Primeiro Templo. Recebeu sabedoria extraordinária. Escreveu Provérbios, Eclesiastes e Cântico dos Cânticos. "Mais que Salomão está aqui." (Lc 11:31)',r:'1 Rs 1–11'},
+  {id:'elijah',f:-870,t:-845,l:'Elias',ic:'⚡',d:'Profeta do fogo. Desafiou Acabe e os profetas de Baal no Carmelo. Arrebatado ao céu sem morrer. Aparece na Transfiguração. Tipo de João Batista (Ml 4:5; Mt 11:14).',r:'1 Rs 17–21; 2 Rs 2'},
+  {id:'ezra',f:-480,t:-440,l:'Esdras',ic:'📜',d:'Sacerdote e escriba. Retornou do exílio e leu a Lei em público, promovendo grande reforma espiritual. Estabeleceu a centralidade da Escritura na comunidade pós-exílica.',r:'Esd 7–10; Ne 8'},
+  {id:'nehemiah',f:-480,t:-420,l:'Neemias',ic:'🧱',d:'Copeiro do rei Artaxerxes. Reconstruiu os muros de Jerusalém em 52 dias apesar de forte oposição. Reformou a aliança com o povo.',r:'Neemias'},
+  {id:'elisha',f:-845,t:-800,l:'Eliseu',ic:'⚡',d:'Discípulo e sucessor de Elias. Realizou milagres semelhantes — multiplicação de óleo, ressurreição do filho da sunamita, cura de Naamã o sírio. Serviu Israel por ~50 anos.',r:'2 Rs 2–13'},
+  {id:'johnb',f:-4,t:30,l:'João Batista',ic:'🕊️',d:'"Voz que clama no deserto." Precursor do Messias, cumpre Ml 3:1 e Is 40:3. Batizou Jesus. Decapitado por Herodes Antipas. "O maior entre os nascidos de mulher." (Mt 11:11)',r:'Mt 3; 11:7-14'},
+  {id:'jesus',f:-4,t:30,l:'Jesus Cristo',ic:'☀️',d:'O Filho de Deus encarnado. Salvador, Sumo-sacerdote, Profeta e Rei. Crucificado, ressurreto e exaltado à direita do Pai. Centro de toda a história e de toda a Escritura.',r:'Todo o NT'},
+  {id:'paul',f:5,t:67,l:'Paulo',ic:'✉️',d:'Apóstolo aos gentios. Ex-fariseu convertido na estrada de Damasco. Três viagens missionárias. Fundou igrejas pelo mundo greco-romano. Escreveu 13 epístolas canônicas.',r:'At 9–28; Epístolas Paulinas'},
+  {id:'john',f:5,t:100,l:'João Apóstolo',ic:'📖',d:'Apóstolo amado. 4º Evangelho, três epístolas e o Apocalipse. Exilado em Patmos por Domiciano (~95 d.C.). Único apóstolo que não morreu como mártir.',r:'Jo; 1–3 Jo; Ap'},
+];
+
+const HISTORICAL=[
+  {id:'hamm',f:-1810,t:-1750,l:'Hamurábi',ic:'⚖️',per:'Babilônia',d:'Rei da Babilônia Antiga. Promulgou o Código de Hamurábi (~1754 a.C.) — um dos primeiros códigos legais da história. Ilumina o contexto jurídico do período patriarcal.'},
+  {id:'thut',f:-1479,t:-1425,l:'Tutmés III',ic:'🏺',per:'Egito',d:'Faraó egípcio, o maior conquistador do Egito. Possível contexto do Êxodo (teoria da data precoce). Campanha em Meguido documentada nos registros de Karnak.'},
+  {id:'ram',f:-1303,t:-1213,l:'Ramsés II',ic:'🏺',per:'Egito',d:'Faraó mais lembrado do Egito. Muitos o identificam com o faraó do Êxodo (teoria da data tardia). Construiu Pi-Ramsés. Assinou o Tratado de Qadesh — primeiro tratado de paz documentado da história.'},
+  {id:'homer',f:-800,t:-700,l:'Homero',ic:'📜',per:'Grécia',d:'Poeta grego a quem se atribui a Ilíada e a Odisseia. Sua existência é debatida. Os textos influenciaram profundamente a cultura grega que formará o contexto helenístico do NT.'},
+  {id:'senna',f:-705,t:-681,l:'Senaqueribe',ic:'⚔️',per:'Assíria',d:'Rei assírio. Cercou Jerusalém no tempo de Ezequias (701 a.C.). O Prisma de Senaqueribe confirma o cerco. O exército assírio foi destruído sobrenaturalmente numa noite. (2 Rs 19:35)'},
+  {id:'nebu',f:-634,t:-562,l:'Nabucadnesar II',ic:'👑',per:'Babilônia',d:'Maior rei da Babilônia. Destruiu Jerusalém e o Templo (586 a.C.). Levou Israel ao exílio. Daniel serviu em sua corte. Converteu-se ao final de sua vida. (Dn 4:34-37)'},
+  {id:'cyrus2',f:-600,t:-530,l:'Ciro, o Grande',ic:'🌐',per:'Pérsia',d:'Fundador do Império Persa. Conquistou Babilônia (539 a.C.). Emitiu o decreto de retorno dos exilados judeus. Isaías o nomeou pelo nome 150 anos antes. (Is 44:28; 45:1)'},
+  {id:'conf',f:-551,t:-479,l:'Confúcio',ic:'🧘',per:'China',d:'Filósofo e educador chinês. Fundador do confucionismo. Contemporâneo de Daniel no exílio. Testemunho da busca universal por ordem moral e social no Eixo Axial.'},
+  {id:'soc',f:-470,t:-399,l:'Sócrates',ic:'💭',per:'Grécia',d:'Filósofo grego. Método socrático de questionamento. Condenado à morte em Atenas por "corromper a juventude". Seu pensamento influenciou o mundo greco-romano em que o Evangelho foi pregado.'},
+  {id:'plat',f:-428,t:-348,l:'Platão',ic:'🏛️',per:'Grécia',d:'Discípulo de Sócrates. Teoria das Formas/Ideias. Fundou a Academia. Sua filosofia influenciou profundamente a teologia patrística — Justino Mártir, Clemente de Alexandria, Agostinho.'},
+  {id:'arist',f:-384,t:-322,l:'Aristóteles',ic:'🧠',per:'Grécia',d:'Discípulo de Platão. Tutor de Alexandre Magno. Fundou o Liceu. Sua lógica e filosofia dominaram o pensamento medieval, especialmente via Tomás de Aquino.'},
+  {id:'alex',f:-356,t:-323,l:'Alexandre Magno',ic:'⚔️',per:'Macedônia',d:'Conquistou o Oriente Médio, o Egito e chegou à Índia. A helenização resultante criou a língua koiné — o veículo do NT — e unificou culturalmente o mundo mediterrâneo.'},
+  {id:'caes',f:-100,t:-44,l:'Júlio César',ic:'🗡️',per:'Roma',d:'General e ditador romano. Suas conquistas expandiram Roma. Assassinado nos Idos de Março de 44 a.C. Contribuiu para a transformação da República em Império.'},
+  {id:'aug',f:-63,t:14,l:'César Augusto',ic:'🦅',per:'Roma',d:'"Saiu um decreto de César Augusto." (Lc 2:1). Primeiro imperador romano. A Pax Romana e as estradas romanas prepararam providencialmente o mundo para o Evangelho de Cristo.'},
+  {id:'tib',f:-42,t:37,l:'Tibério César',ic:'🦅',per:'Roma',d:'Segundo imperador romano. Governava quando João Batista iniciou seu ministério (Lc 3:1) e durante todo o ministério de Jesus. Pôncio Pilatos era seu governador na Judeia.'},
+  {id:'jos',f:37,t:100,l:'Flávio Josefo',ic:'📜',per:'Roma/Judeia',d:'Historiador judeu-romano. Obras: Antiguidades Judaicas e Guerra Judaica. Fontes primárias indispensáveis para o NT. Menciona João Batista, Jesus e Tiago o Justo.'},
+  // Filósofos gregos — Período Pré-Socrático
+  {id:'thales',f:-624,t:-546,l:'Tales de Mileto',ic:'💧',per:'Grécia',d:'Considerado o primeiro filósofo ocidental. Propôs a água como princípio fundamental de todas as coisas (arkhê). Matemático e astrônomo que teria previsto um eclipse solar em 585 a.C. Fundador da escola jônica de filosofia natural.'},
+  {id:'anaximandro',f:-610,t:-546,l:'Anaximandro',ic:'♾️',per:'Grécia',d:'Discípulo de Tales. Propôs o ápeiron — o ilimitado e indefinido — como princípio de tudo. Elaborou um dos primeiros mapas do mundo conhecido e especulou sobre a origem dos seres vivos.'},
+  {id:'anaximenes',f:-585,t:-525,l:'Anaxímenes',ic:'💨',per:'Grécia',d:'Discípulo de Anaximandro. Identificou o ar como princípio fundamental — mais rarefeito geraria fogo, mais condensado geraria água e terra. Contemporâneo do regresso dos exilados judeus da Babilônia.'},
+  {id:'pythagoras',f:-570,t:-495,l:'Pitágoras de Samos',ic:'🔢',per:'Grécia',d:'Filósofo e matemático. Fundou escola mística na Magna Grécia. Propôs que os números são a essência de todas as coisas. Seu teorema é universalmente conhecido. Contemporâneo de Daniel no exílio babilônico.'},
+  {id:'heraclitus',f:-535,t:-475,l:'Heráclito de Éfeso',ic:'🔥',per:'Grécia',d:'Filósofo do fluxo eterno: "Tudo flui" (panta rhei). O Logos universal rege a transformação de todas as coisas. O Evangelho de João usa "Logos" dialogando com este conceito (Jo 1:1). Contemporâneo do retorno dos exilados judeus.'},
+  {id:'parmenides',f:-515,t:-450,l:'Parmênides de Eleia',ic:'⭕',per:'Grécia',d:'Fundador da escola eleática. Afirmou que o ser é uno, eterno e imutável — o não-ser não pode existir. Contraste radical com Heráclito. Influenciou profundamente Platão e a tradição filosófica ocidental sobre a natureza do ser.'},
+  {id:'zenoelea',f:-490,t:-430,l:'Zenão de Eleia',ic:'🏹',per:'Grécia',d:'Discípulo de Parmênides. Formulou os famosos paradoxos do movimento (Aquiles e a tartaruga, a flecha imóvel) para demonstrar que o movimento e a pluralidade são ilusões. Fundador do método dialético por redução ao absurdo.'},
+  {id:'empedocles',f:-495,t:-435,l:'Empédocles de Agrigento',ic:'🌊',per:'Grécia',d:'Propôs os quatro elementos (água, fogo, terra, ar) regidos pelo Amor e pelo Ódio. Precursor da física e da biologia. Contemporâneo de Malaquias e do período do Segundo Templo em Jerusalém.'},
+  {id:'anaxagoras',f:-500,t:-428,l:'Anaxágoras de Clazômenas',ic:'🌀',per:'Grécia',d:'Introduziu o Nous (mente, espírito) como princípio ordenador do cosmos. Viveu em Atenas e foi mestre de Péricles. Acusado de impiedade por afirmar que o sol era uma pedra incandescente. Contemporâneo de Neemias e Esdras.'},
+  {id:'protagoras',f:-490,t:-420,l:'Protágoras de Abdera',ic:'🗣️',per:'Grécia',d:'Principal sofista. "O homem é a medida de todas as coisas." Relativismo moral e epistêmico que Sócrates combateu. Seu pensamento é antítese direta da revelação bíblica, que afirma Deus como medida de todas as coisas.'},
+  {id:'democritus',f:-460,t:-370,l:'Demócrito de Abdera',ic:'⚛️',per:'Grécia',d:'Fundador do atomismo materialista: toda a realidade consiste em átomos e vazio. Não há teleologia nem providência. Seu materialismo filosófico antecipa debates teológicos sobre criação e providência que persistem até hoje.'},
+  // Filósofos gregos — Período Clássico e Helenístico
+  {id:'diogenes',f:-412,t:-323,l:'Diógenes de Sinope',ic:'🏺',per:'Grécia',d:'Fundador do cinismo. Recusou convenções sociais e viveu em extrema simplicidade. Quando Alexandre Magno se ofereceu para cumprir qualquer desejo, pediu apenas que saísse da frente do sol. Contemporâneo de Alexandre, Platão e Aristóteles.'},
+  {id:'theophrastus',f:-371,t:-287,l:'Teofrasto',ic:'🌿',per:'Grécia',d:'Discípulo e sucessor de Aristóteles na liderança do Liceu. Fundador da botânica científica. Escreveu sobre ética, lógica e metafísica. Seu pensamento caracterológico influenciou a literatura moral do período helenístico.'},
+  {id:'pyrrho',f:-360,t:-270,l:'Pirro de Élis',ic:'❓',per:'Grécia',d:'Fundador do ceticismo filosófico (pirronismo). Afirmava que nenhum conhecimento certo é possível — a epochê (suspensão do juízo) leva à ataraxia. Acompanhou Alexandre Magno até a Índia. O ceticismo que Paulo enfrenta em Atenas tem raízes nesta tradição.'},
+  {id:'epicurus',f:-341,t:-270,l:'Epicuro de Samos',ic:'🌿',per:'Grécia',d:'Fundou o Jardim em Atenas. Propôs que o sumo bem é a ausência de dor e a tranquilidade da alma (ataraxia). Os deuses não se importam com o mundo. Paulo debate com epicuristas em Atenas (At 17:18). Seu materialismo nega a ressurreição.'},
+  {id:'zenocitico',f:-334,t:-262,l:'Zenão de Cítio',ic:'🏛️',per:'Grécia',d:'Fundador do estoicismo. Ensinava no Pórtico Pintado (Stoá Poikilê) em Atenas. O Logos divino permeia e ordena o cosmos; a virtude é o único bem verdadeiro. Paulo dialoga com estoicos em Atenas (At 17:18) e cita poetas estoicos no discurso no Areópago (At 17:28).'},
+];
+
+const ISRAEL=[
+  // Monarquia
+  {id:'saul-k',f:-1050,t:-1010,l:'Saul, Primeiro Rei',ic:'👑',d:'Primeiro rei de Israel, escolhido pelo povo a pedido deles — rejeição da teocracia. Desobediente a Deus, rejeitado por Samuel. Perseguiu Davi. Morreu na batalha do Gilboa contra os filisteus. Seus fracassos revelam que Israel precisava de um rei melhor do que qualquer homem.',r:'1 Sm 9–31'},
+  {id:'david-k',f:-1010,t:-970,l:'Reinado de Davi',ic:'⭐',d:'Rei sobre toda Israel a partir de Jerusalém. Conquistou a cidade, trouxe a Arca da Aliança. Recebeu a aliança davídica: "Teu trono será estabelecido para sempre." (2 Sm 7:16). Paradigma do rei ideal — tipo de Cristo como Rei-Pastor.',r:'2 Sm 1–24; 1 Rs 1–2; Sl 89'},
+  {id:'solomon-k',f:-970,t:-931,l:'Reinado de Salomão',ic:'🏛️',d:'Edificou o Primeiro Templo em 966 a.C., concluído em 7 anos. Recebeu sabedoria extraordinária. Seu coração se desviou por causa das muitas esposas estrangeiras, introduzindo ídolos em Israel. Sua apostasia causou diretamente a divisão do reino após sua morte.',r:'1 Rs 3–11; 2 Cr 1–9'},
+  // Reino do Norte
+  {id:'jeroboam-k',f:-931,t:-910,l:'Jeroboão I — Cisma',ic:'🐂',d:'Primeiro rei do Reino do Norte. Introduziu dois bezerros de ouro em Betel e Dã para impedir o povo de ir a Jerusalém: "Eis os teus deuses, ó Israel." Estabeleceu o padrão de idolatria que caracterizou todo o Norte e selou seu destino. (1 Rs 12:28)',r:'1 Rs 12–14'},
+  {id:'omri-k',f:-885,t:-874,l:'Omri — Fundação de Samaria',ic:'🏙️',d:'Rei de Israel. Fundou Samaria como nova capital do Norte (~880 a.C.). Estabeleceu alianças com Fenícia e Judá. Sua dinastia (Omridas) é mencionada em inscrições assírias. Seu filho Acabe tornou o apostolado ainda pior.',r:'1 Rs 16:21-28'},
+  {id:'ahab-k',f:-874,t:-853,l:'Acabe e Jezabel',ic:'💀',d:'Rei mais ímpio de Israel. Casou com a fenícia Jezabel, que trouxe o culto de Baal para Israel. Tomou a vinha de Nabote por homicídio judicial. Elias o confrontou no Monte Carmelo. Morreu em Ramote-Gileade após ser ferido por uma flecha casual — julgamento divino. (1 Rs 21:19)',r:'1 Rs 16–22'},
+  {id:'jehu-k',f:-841,t:-814,l:'Jeú — Fim dos Omridas',ic:'🏇',d:'Ungido por Elias para exterminar a casa de Acabe. Matou Jorão de Israel, Acazias de Judá e a rainha Jezabel. Aboliu o culto de Baal. "Jeú destruiu Baal de Israel." Mas não abandonou os bezerros de ouro. Deus prometeu quatro gerações no trono. (2 Rs 10:28)',r:'2 Rs 9–10'},
+  // Reino do Sul
+  {id:'jehosh-k',f:-873,t:-849,l:'Josafá de Judá',ic:'📜',d:'Rei piedoso de Judá. Enviou mestres e levitas por todo Judá para ensinar a Lei ao povo. Estabeleceu tribunais de justiça. Aliou-se a Acabe de Israel em batalha — aliança equivocada com o ímpio, que o profeta Jeú filho de Hanani repreendeu.',r:'2 Cr 17–20'},
+  {id:'hezekiah-k',f:-716,t:-687,l:'Ezequias de Judá',ic:'🙏',d:'Um dos reis mais piedosos de Judá. Destruiu os altos idólatras, quebrou a serpente de bronze. Confiou em Deus quando Senaqueribe cercou Jerusalém: 185.000 assírios mortos numa noite pelo anjo do SENHOR (2 Rs 19:35). Sua oração estendeu sua vida 15 anos.',r:'2 Rs 18–20; Is 36–39'},
+  {id:'manasseh-k',f:-697,t:-643,l:'Manassés de Judá',ic:'😈',d:'Reinado mais longo de Judá (55 anos) e o mais ímpio. Colocou ídolos no Templo, fez seus filhos passarem pelo fogo. Levado cativo à Babilônia, humilhou-se e foi restaurado — um dos mais notáveis registros de conversão tardia do Antigo Testamento. (2 Cr 33:12-13)',r:'2 Rs 21; 2 Cr 33'},
+  {id:'josiah-k',f:-640,t:-609,l:'Josias — Grande Reforma',ic:'📜',d:'Rei mais piedoso após Davi. A redescoberta do livro da Lei no Templo desencadeou reforma nacional. Celebrou a maior Páscoa desde Samuel. Morreu em Meguido ao enfrentar o faraó Necao. A reforma de Josias retardou, mas não impediu, o julgamento divino sobre Judá.',r:'2 Rs 22–23; 2 Cr 34–35'},
+  // Pós-exílio
+  {id:'zerubbabel-k',f:-538,t:-516,l:'Zorobabel — Retorno',ic:'🏗️',d:'Governador de Judá sob o domínio persa. Liderou o primeiro grupo de retorno do exílio (538 a.C.). Reconstruiu o altar e fundou o Segundo Templo, concluído em 516 a.C. Descendente da linhagem davídica — na genealogia messiânica (Mt 1:12; Ag 2:23).',r:'Esd 1–6; Ag; Zc 4; Mt 1:12'},
+  // Período Romano e Revolta
+  {id:'herod-k',f:-37,t:4,l:'Herodes, o Grande',ic:'🏰',d:'Rei da Judeia nomeado por Roma. Reconstruiu magnificamente o Segundo Templo — "o maior canteiro de obras da Antiguidade." Ordenou o massacre dos inocentes de Belém ao saber do nascimento de Jesus. Governou pelo terror, assassinando filhos e esposa.',r:'Mt 2; Josefo: Guerra Judaica I'},
+  {id:'revolt-66',f:66,t:73,l:'Grande Revolta Judaica',ic:'⚔️',d:'Revolta dos zelotes contra Roma (66–73 d.C.). Destruição de Jerusalém e do Templo por Tito em 70 d.C. — cumprindo as profecias de Jesus (Mt 24:2). A resistência final em Massada (73 d.C.): 960 judeus preferiram a morte à escravidão romana.',r:'Mt 24; Josefo: Guerra Judaica'},
+  {id:'barkokhba',f:132,t:135,l:'Revolta de Bar Kokhba',ic:'💥',d:'Segunda grande revolta (132–135 d.C.). Bar Kokhba aclamado como messias pelo Rabi Akiva. Esmagada por Adriano: mais de 500.000 judeus mortos. Jerusalém é destruída e reconstruída como Aelia Capitolina. Judeus banidos da própria terra.',r:'Cassius Dio; Fontes Romanas'},
+  {id:'diaspora-period',f:135,t:1897,l:'A Grande Diáspora',ic:'🌍',d:'Dispersão do povo judeu pelo mundo por quase 1800 anos. Perseguições nas cruzadas, expulsão da Espanha (1492), pogroms na Europa Oriental, Holocausto nazista (1941–1945). A preservação de Israel na diáspora é vista pela teologia reformada como evidência da fidelidade divina às promessas pactais.',r:'Dt 28:64-67; Lv 26:33; Rm 11:1-2'},
+  {id:'herzl',f:1897,t:1917,l:'Movimento Sionista',ic:'✡️',d:'Teodoro Herzl convocou o Primeiro Congresso Sionista em Basileia (1897): "Em Basileia fundei o Estado judaico — se não em 5 anos, então em 50." Declaração Balfour (1917): apoio britânico a um lar nacional judaico na Palestina. Início do retorno organizado a Eretz Israel.',r:'Der Judenstaat (Herzl, 1896); Declaração Balfour (1917)'},
+  {id:'holocaust',f:1941,t:1945,l:'Holocausto',ic:'🕯️',d:'Genocídio sistemático de 6 milhões de judeus pelo regime nazista (1941–1945). Evento que alterou radicalmente a geopolítica do século XX e acelerou o movimento pela criação do Estado de Israel. Uma das maiores tragédias da história humana.',r:'Testemunhos de Nuremberg; Yad Vashem'},
+  {id:'israel1948',f:1948,t:1948,l:'Estado de Israel — 1948',ic:'🇮🇱',d:'Em 14 de maio de 1948, David Ben-Gurion proclamou o Estado de Israel — primeiro estado judeu soberano em 2.000 anos. No dia seguinte, foi atacado simultaneamente por cinco países árabes. Interpretado por muitos teólogos como cumprimento parcial das profecias do retorno (Ez 37; Is 11:11-12).',r:'Ez 37; Is 11:11-12; Declaração de Independência de Israel'},
+];
+
+const PROPHETS=[
+  // Profetas Maiores
+  {id:'pr-isaiah',side:'s',f:-740,t:-687,l:'Isaías',ic:'👁️',d:'Profeta de Jerusalém no reinado de Uzias até Ezequias. A majestade soberana e o amor redentor de Javé revelados a Israel. Profetizou o Servo Sofredor (Is 52–53), a virgem concebendo (Is 7:14), o nascimento do Messias em Belém e a Nova Criação (Is 65–66). O mais cristológico dos profetas.',r:'Isaías 1:1; Is 7:14; 52–53; 65–66'},
+  {id:'pr-jeremiah',side:'s',f:-627,t:-585,l:'Jeremias',ic:'😢',d:'Profeta de linhagem sacerdotal de Anatote. Profetizou por ~40 anos contra a infidelidade de Judá. Anunciou o julgamento inevitável e a Nova Aliança: "Porei a minha lei no seu íntimo e a escreverei em seu coração." (Jr 31:31-34). Assistiu à queda de Jerusalém. Citado em Hb 8–10 como cumprido em Cristo.',r:'Jr 1:2,3; Jr 31:31-34; Hb 8'},
+  {id:'pr-ezekiel',side:'s',f:-593,t:-571,l:'Ezequiel',ic:'🌀',d:'Sacerdote e profeta conduzido à Babilônia em 598 a.C. Profetizou a queda inevitável de Jerusalém por causa de seus pecados, a partida e o retorno da glória de Javé, e a restauração de Israel com o derramamento do Espírito. A visão dos ossos secos (Ez 37) e o novo templo (Ez 40–48) são fundamentais.',r:'Ez 1:2; 29:17; Ez 36:26-27; Ez 37'},
+  {id:'pr-daniel',side:'s',f:-605,t:-536,l:'Daniel',ic:'🦁',d:'Primeiro grupo de exilados à Babilônia. Administrador na corte de Nabucadnesar e Ciro. Recebeu quatro visões apocalípticas sobre as eras das nações e o Reino final de Deus. A soberania de Deus sobre todas as nações e o cuidado divino pelos fiéis no exílio são temas centrais. As 70 semanas de Daniel (Dn 9) são mapa profético do NT.',r:'Daniel; Dn 9:24-27; Mt 24:15'},
+  // Profetas Menores — Pré-exílicos do Norte
+  {id:'pr-jonah',side:'n',f:-780,t:-760,l:'Jonas',ic:'🐋',d:'Filho de Amitai, profetizou durante o reinado de Jeroboão II (2 Rs 14:25). Enviado a Nínive, fugiu, foi engolido por um grande peixe e retornou para pregar arrependimento. Deus demonstra compaixão pelos gentios. "Como Jonas esteve três dias no ventre do peixe, assim o Filho do Homem estará." (Mt 12:40)',r:'Jonas; 2 Rs 14:25; Mt 12:39-41'},
+  {id:'pr-amos',side:'n',f:-762,t:-755,l:'Amós',ic:'⚖️',d:'Pastor e boiadeiro de Tecoa, ao sul de Belém em Judá. Profetizou ao Reino do Norte (~760 a.C.) no auge do reinado de Jeroboão II. Em período de rara prosperidade, Javé anuncia destruição por deslealdade à aliança. A religião sincrética é anátema; Javé requer justiça para os inocentes. "Que corra o direito como as águas." (Am 5:24)',r:'Amós 1:1; Am 5:24'},
+  {id:'pr-hosea',side:'n',f:-758,t:-722,l:'Oseias',ic:'💔',d:'Profeta do norte, provavelmente de Samaria. Ministrou ~758–722 a.C. A compaixão de Javé pelo reino do norte, mas também sua condenação. Seu casamento com a infiel Gômer é tipo da relação de Deus com Israel infiel. O amor infalível de Javé persiste mesmo quando pune seu povo. "Quero misericórdia e não sacrifício." (Os 6:6)',r:'Oseias; Os 6:6'},
+  // Profetas Menores — Pré-exílicos do Sul
+  {id:'pr-joel',side:'s',f:-835,t:-796,l:'Joel',ic:'🌿',d:'Profeta de Judá e Jerusalém. Ministrou durante o reinado de Joás em Judá (~835–796 a.C.), contemporâneo de Eliseu. Uma praga de gafanhotos estabelece o palco para dupla convocação ao arrependimento. Deus responde com promessa de misericórdia e derramamento do Espírito sobre toda carne (Jl 2:28-32) — citado por Pedro no Pentecostes (At 2:17). O dia de Javé: juízo e salvação.',r:'Joel; Jl 2:28-32; At 2:17'},
+  {id:'pr-micah',side:'s',f:-735,t:-700,l:'Miqueias',ic:'📍',d:'Profeta judeu de Moresete, ~40 km a sudoeste de Jerusalém. Contemporâneo de Isaías. Oráculos alternados de destruição e esperança. Predisse o nascimento do Messias em Belém (Mq 5:2 — citado em Mt 2:6). "O que o SENHOR pede de ti: que pratiques a justiça, ames a misericórdia e andes humildemente com teu Deus." (Mq 6:8)',r:'Miquéias; Mq 5:2; 6:8; Mt 2:6'},
+  {id:'pr-nahum',side:'s',f:-650,t:-612,l:'Naum',ic:'💥',d:'Profeta de Judá, completamente desconhecido fora deste livro. Profetizou antes da queda de Nínive (612 a.C.), quando Judá era vassalo da Assíria. Oráculo de destruição contra Nínive por sua opressão, crueldade e idolatria. A soberania de Javé sobre todas as nações; a execução da justiça divina contra os arrogantes que se julgam eternos.',r:'Naum 1:1'},
+  {id:'pr-zephaniah',side:'s',f:-640,t:-622,l:'Sofonias',ic:'🔥',d:'Profeta de Jerusalém, possivelmente da linhagem real de Ezequias. Ministrou durante o reinado de Josias (~640–609 a.C.). Oráculos de catastróficos juízos vindouros contra Jerusalém e as nações vizinhas, mas também oráculo de restauração para um remanescente. "O SENHOR teu Deus está no meio de ti, poderoso para salvar." (Sf 3:17)',r:'Sofonias 1:1; Sf 3:17'},
+  {id:'pr-habakkuk',side:'s',f:-612,t:-599,l:'Habacuque',ic:'❓',d:'Profeta de Judá, desconhecido fora deste livro. Ministrou ~612–599 a.C. quando a Babilônia dominava. Entra em diálogo com Deus sobre a injustiça: como os ímpios ficam impunes? Deus responde com soberania divina. "O justo viverá pela sua fé." (Hc 2:4) — citado em Rm 1:17; Gl 3:11; Hb 10:38. Fundamento da doutrina da justificação.',r:'Habacuque; Hc 2:4; Rm 1:17; Gl 3:11'},
+  // Profetas Menores — Peri-exílico
+  {id:'pr-obadiah',side:'s',f:-586,t:-582,l:'Obadias',ic:'⚔️',d:'Profeta de Judá. Provavelmente após a queda de Jerusalém (586 a.C.). O oráculo mais curto do AT. Anuncia destruição contra Edom por se aproveitar da queda de Jerusalém: "No dia que ficaste de parte, no dia em que estranhos levaram sua força... tu eras como um deles." A derrota dos que se acham inconquistáveis; libertação de Israel no dia do SENHOR.',r:'Obadias 1'},
+  // Profetas Menores — Pós-exílicos
+  {id:'pr-haggai',side:'s',f:-520,t:-519,l:'Ageu',ic:'🏗️',d:'Profeta pós-exílico em Jerusalém, contemporâneo de Zacarias. Ministrou por quatro meses no segundo ano do reinado de Dario da Pérsia (520 a.C.). Exortou o povo retornado a priorizar a reconstrução do Templo. "Não é este o tempo de habitardes em vossas casas apaineladas enquanto esta casa está em ruínas?" (Ag 1:4). Prometeu que a glória do segundo templo seria maior.',r:'Ageu 1:1; Ag 1:4; 2:9; Esd 5:1; 6:14'},
+  {id:'pr-zechariah',side:'s',f:-520,t:-400,l:'Zacarias',ic:'🌅',d:'Profeta de Jerusalém, contemporâneo de Ageu mas com ministério mais longo (~520–400 a.C.). Recebeu oito visões noturnas encorajando a comunidade pós-exílica a reconstruir o templo. Oráculos sobre o Rei vindouro que seria morto e triunfaria. Predisse a entrada em Jerusalém sobre um jumento (Zc 9:9 — cumprida em Mt 21:5) e os 30 siclos de prata (Zc 11:12-13 — cumprida em Jd 27-30).',r:'Zacarias 1:1; 7:1; Zc 9:9; 11:12-13; Mt 21:5'},
+  {id:'pr-malachi',side:'s',f:-460,t:-450,l:'Malaquias',ic:'📜',d:'"Meu mensageiro" — completamente desconhecido. Ministrou ~460 a.C., pouco antes das reformas de Esdras e Neemias. Em seis discussões com seu povo, Javé adverte sobre juízos futuros e promete redenção aos fiéis. Javé guarda a aliança e requer o mesmo do seu povo. Promete o mensageiro precursor do Messias (Ml 3:1) e o retorno de "Elias" (Ml 4:5) — cumprido em João Batista (Mt 11:14). Último profeta do AT: ~400 anos de silêncio.',r:'Malaquias; Ml 3:1; 4:5; Mt 11:14'},
+];
+
+const KINGS_PAGAN=[
+  {id:'kp-farao-ex',f:-1280,t:-1213,l:'Faraó do Êxodo',d:'Possivelmente Ramsés II. Endureceu o coração contra Moisés e recusou libertar Israel após as 9 primeiras pragas. A 10ª praga — morte dos primogênitos — o quebrou. "Levantai-vos, saí do meio do meu povo." (Êx 12:31). Paradigma bíblico do opressor que resiste a Deus.',r:'Êx 5–14'},
+  {id:'kp-shishak',f:-945,t:-924,l:'Sisaque (Faraó)',d:'Faraó egípcio (Sheshonq I). Saqueou Jerusalém no reinado de Roboão (926 a.C.), levando os tesouros do Templo e do palácio, incluindo os escudos de ouro de Salomão. Registrado no relevo de Karnak e confirmado arqueologicamente. (1 Rs 14:25-26)',r:'1 Rs 14:25-26; 2 Cr 12'},
+  {id:'kp-benhadad',f:-900,t:-842,l:'Ben-hadade (Aram)',d:'Reis de Damasco (Ben-hadade I e II). Principais adversários de Israel e Judá no século IX a.C. Ben-hadade I aliou-se com Asa contra Israel. Ben-hadade II sitiou Samaria, mas foi derrotado sobrenatural­mente por Deus. (1 Rs 20)',r:'1 Rs 15:18-20; 20; 2 Rs 6–7'},
+  {id:'kp-hazael',f:-842,t:-796,l:'Hazael (Aram)',d:'Rei de Aram que assassinou Ben-hadade II para tomar o trono — profetizado por Eliseu (2 Rs 8:12). Oprimiu Israel brutalmente no tempo de Jeú e Jeoacaz. Tomou Gate e ameaçou Jerusalém. Deus o usou como instrumento de julgamento sobre Israel.',r:'2 Rs 8:7-15; 10:32; 12:17-18; Am 1:3-4'},
+  {id:'kp-tiglat',f:-745,t:-727,l:'Tiglate-Pileser III (Assíria)',d:'Rei assírio que iniciou as deportações de Israel. Conquistou territórios do Norte e deportou tribos (732 a.C.). Acaz de Judá pediu sua ajuda — uma aliança condenada por Isaías. "Pul" no texto bíblico. Marca o início da ameaça assíria direta a Israel.',r:'2 Rs 15:29; 16:7-10; Is 7–8; 1 Cr 5:26'},
+  {id:'kp-salmaneser',f:-727,t:-722,l:'Salmaneser V (Assíria)',d:'Rei assírio que iniciou o cerco de Samaria por 3 anos quando o rei Oseias de Israel buscou aliança com o Egito. Morreu durante o cerco. Seu sucessor Sargão II concluiu a conquista e deportou Israel. (2 Rs 17:3-6)',r:'2 Rs 17:3-6; 18:9-10'},
+  {id:'kp-sargon',f:-722,t:-705,l:'Sargão II (Assíria)',d:'Concluiu a conquista de Samaria (722 a.C.) e deportou ~27.290 israelitas para a Assíria e Média. As 10 tribos do Norte são dispersadas e nunca restauradas como nação. Seu prisma de Khorsabad registra a conquista. Fim do Reino do Norte de Israel.',r:'2 Rs 17:6; Is 20:1'},
+  {id:'kp-senaqueribe',f:-705,t:-681,l:'Senaqueribe (Assíria)',d:'Cercou Jerusalém em 701 a.C. com 185.000 soldados no tempo de Ezequias. Enviou Rabsaqué para intimidar o povo. Ezequias orou e Isaías profetizou: "Não entrará nesta cidade." O anjo do Senhor feriu 185.000 assírios numa noite. (2 Rs 19:35)',r:'2 Rs 18–19; Is 36–37; 2 Cr 32'},
+  {id:'kp-nabuco',f:-605,t:-562,l:'Nabucodonosor II (Babilônia)',d:'Maior rei da Babilônia Neobabilônica. Destruiu Jerusalém e o Templo em 586 a.C. Três deportações: 605, 597 e 586 a.C. Daniel serviu em sua corte. Ao final foi humilhado por Deus e reconheceu: "Agora eu, Nabucodonosor, louvo, exalto e glorifico o Rei do céu." (Dn 4:37)',r:'2 Rs 24–25; Dn 1–4; Jr 25'},
+  {id:'kp-ciro',f:-559,t:-530,l:'Ciro, o Grande (Pérsia)',d:'Fundador do Império Persa. Conquistou Babilônia (539 a.C.) sem batalha. Emitiu o decreto de retorno dos exilados judeus em 538 a.C. Isaías o chamou "meu ungido" 150 anos antes. (Is 44:28; 45:1). Único rei pagão chamado de "messias" na Escritura.',r:'Is 44:28; 45:1; Esd 1; 2 Cr 36:22-23'},
+  {id:'kp-dario',f:-522,t:-486,l:'Dario I (Pérsia)',d:'Rei persa que confirmou o decreto de Ciro e financiou a reconstrução do Segundo Templo (concluído em 516 a.C.), no 6º ano de seu reinado. Contemporâneo de Ageu e Zacarias. Venceu a batalha de Maratona (490 a.C.) contra os gregos.',r:'Esd 5–6; Ag 1:1; Zc 1:1; Dn 6'},
+  {id:'kp-artaxerxes',f:-465,t:-424,l:'Artaxerxes I (Pérsia)',d:'Enviou Esdras a Jerusalém (458 a.C.) com autoridade para ensinar a Lei. Autorizou Neemias a reconstruir os muros de Jerusalém (445 a.C.). Seu decreto marca o início das "70 semanas" de Daniel (Dn 9:25), ponto de partida do cômputo messiânico.',r:'Esd 7; Ne 2; Dn 9:25'},
+  {id:'kp-antiochus',f:-175,t:-164,l:'Antíoco IV Epífanes (Síria)',d:'Rei selêucida que profanou o Templo (167 a.C.) — sacrificou um porco no altar e erigiu uma estátua de Zeus. Perseguiu brutalmente os judeus fiéis. Precipitou a revolta macabeia. Jesus o usa como tipo da "abominação desoladora" futura. (Dn 11:31; Mt 24:15)',r:'1 Mc 1; Dn 8:9-14; 11:21-35; Mt 24:15'},
+  {id:'kp-herodes',f:-37,t:-4,l:'Herodes, o Grande',d:'Rei idumeu nomeado por Roma. Reconstruiu o Templo em escala grandiosa. Mandou matar os bebês de Belém tentando eliminar o Messias (Mt 2:16) — cumprimento de Jr 31:15. "Quando Herodes era rei" — o contexto político do nascimento de Jesus. Morreu de doença, corroído por vermes.',r:'Mt 2:1-18; Lc 1:5; Jr 31:15'},
+  {id:'kp-pilatos',f:26,t:36,l:'Pôncio Pilatos',d:'Governador romano da Judeia. Julgou Jesus e, apesar de não encontrar culpa alguma, entregou-o à crucificação por pressão das lideranças judaicas e por medo de Tiberião. "Não tenho culpa no sangue deste justo." (Mt 27:24). Mencionado no Credo Apostólico.',r:'Mt 27; Lc 23; Jo 18–19; 1 Tm 6:13'},
+  {id:'kp-nero',f:54,t:68,l:'Nero (Roma)',d:'Imperador romano. Incendiou Roma (64 d.C.) e culpou os cristãos. Iniciou a primeira perseguição imperial ao Cristianismo. Pedro e Paulo foram martirizados sob Nero (~64-67 d.C.). Muitos estudiosos o identificam como a "besta" de Ap 13 e o "número 666".',r:'Ap 13; 1 Pe 4:12-19; 5:13; At 25:11'},
+  {id:'kp-tito',f:79,t:81,l:'Tito (Roma)',d:'General romano que destruiu Jerusalém e o Segundo Templo em 70 d.C., cumprindo a profecia de Jesus (Mt 24:2; Lc 21:20-24). Depois tornou-se imperador. O Arco de Tito em Roma retrata o saque do Templo — a menorá e os vasos sagrados sendo carregados em triunfo.',r:'Mt 24:2; Lc 21:20; Flávio Josefo: Guerra Judaica VI'},
+];
+
+const KINGS_NORTH=[
+  {id:'kn-saul',f:-1050,t:-1010,l:'Saul',d:'Primeiro rei de Israel. Ungido por Samuel em Mizpá. Rejeitado por Deus após desobedecer em Gilgal e contra Amaleque. Morreu no Monte Gilboa contra os filisteus; seus filhos também.',r:'1 Sm 9–31'},
+  {id:'kn-david',f:-1010,t:-970,l:'Davi',d:'"Homem segundo o coração de Deus." Recebeu a aliança davídica (2 Sm 7): seu trono seria estabelecido para sempre. Rei-Pastor e tipo de Cristo. Pecou com Bate-Seba mas se arrependeu (Sl 51).',r:'2 Sm; 1 Rs 2'},
+  {id:'kn-solomon',f:-970,t:-930,l:'Salomão',d:'Construiu o Primeiro Templo em Jerusalém. Recebeu sabedoria extraordinária (1 Rs 3). Seu coração se desviou no fim pela influência das esposas estrangeiras (1 Rs 11).',r:'1 Rs 1–11'},
+  {id:'kn-jeroboam1',pa:'s',f:-930,t:-909,l:'Jeroboão I',d:'Primeiro rei do Reino do Norte após a divisão. Introduziu bezerros de ouro em Betel e Dã: "Eis aqui os teus deuses, ó Israel" — paródia do Êxodo. "O pecado de Jeroboão" tornou-se fórmula para idolatria real.',r:'1 Rs 12–14'},
+  {id:'kn-omri',pa:'s',f:-885,t:-874,l:'Omri',d:'Fundou Samaria como capital do Norte. Politicamente poderoso — a Assíria chamava Israel de "Casa de Omri" por séculos. Religiosamente, "fez o que era mau aos olhos do SENHOR mais do que todos os que foram antes dele."',r:'1 Rs 16'},
+  {id:'kn-ahab',pa:'s',f:-874,t:-853,l:'Acabe',d:'O mais perverso rei de Israel. Casou com Jezebel e introduziu o culto a Baal e Aserá. Confrontado por Elias no Monte Carmelo (1 Rs 18). Morreu em batalha em Ramote-Gileade conforme profecia de Miqueias ben Inlá.',r:'1 Rs 16–22'},
+  {id:'kn-jehu',pa:'s',f:-841,t:-814,l:'Jeú',d:'Ungido por profeta a mando de Eliseu. Eliminou Acabe, Jezebel, todos os filhos de Acabe e os profetas de Baal. Cumpriu o julgamento divino mas não abandonou os bezerros de Jeroboão. Fundou dinastia de 4 gerações.',r:'2 Rs 9–10'},
+  {id:'kn-jeroboam2',pa:'s',f:-793,t:-753,l:'Jeroboão II',d:'Maior expansão territorial do Norte. Longo reinado de prosperidade material e injustiça social — contexto direto dos ministérios de Amós e Oséias. Eles denunciaram a podridão moral por baixo da riqueza superficial.',r:'2 Rs 14'},
+  {id:'kn-hoshea',pa:'s',f:-732,t:-722,l:'Oseias (Rei)',d:'Último rei de Israel. Buscou aliança com o faraó Só do Egito contra a Assíria. Sargão II sitiou Samaria por 3 anos e a deportou em 722 a.C. — fim do Reino do Norte. As dez tribos dispersadas, nunca restauradas como nação.',r:'2 Rs 17'},
+];
+const KINGS_JUDAH=[
+  {id:'kj-rehoboam',pa:'r',f:-930,t:-913,l:'Roboão',d:'Filho de Salomão. Sua dureza ("meu pai vos castigou com açoites, mas eu vos castigarei com escorpiões") causou a divisão do reino. O Norte se rebelou sob Jeroboão. Farão Sisaque saqueou Jerusalém em seu reinado.',r:'1 Rs 12; 2 Cr 12'},
+  {id:'kj-asa',f:-911,t:-870,l:'Asa',d:'Terceiro rei de Judá. Rei pio que removeu altares pagãos e depôs sua mãe Maacá por causa de um ídolo. "O coração de Asa foi perfeito com o SENHOR durante toda a sua vida." Porém no fim buscou ajuda médica em vez de Deus.',r:'1 Rs 15; 2 Cr 14–16'},
+  {id:'kj-jehoshaphat',f:-873,t:-848,l:'Josafá',d:'Rei pio que promoveu o ensino da Lei em Judá. Aliou-se com Acabe — casamento e guerras conjuntas. Profeta Jeú repreendeu-o: "Devias amar os que odeiam o SENHOR?" Orou e Deus salvou Judá de invasão sem batalha (2 Cr 20).',r:'1 Rs 22; 2 Cr 17–20'},
+  {id:'kj-joash',f:-835,t:-796,l:'Joás',d:'Coroado rei aos 7 anos por Jeoiada o sacerdote, que o escondeu do massacre de Atalias. Reformou o Templo. Após a morte de Jeoiada, apostatou e mandou apedrejar Zacarias, filho de Jeoiada. Morreu assassinado por seus servos.',r:'2 Rs 12; 2 Cr 24'},
+  {id:'kj-uzziah',f:-792,t:-740,l:'Uzias',d:'Longo reinado de 52 anos; militarmente próspero. Acometido de lepra por usurpar funções sacerdotais no Templo. "No ano em que morreu o rei Uzias, eu vi o Senhor" (Is 6:1) — seu fim marcou o início do ministério de Isaías.',r:'2 Rs 15; 2 Cr 26; Is 6:1'},
+  {id:'kj-ahaz',pa:'r',f:-735,t:-716,l:'Acaz',d:'Rei ímpio que sacrificou seus filhos pelo fogo. Buscou ajuda da Assíria (Tiglate-Pileser III) contra Síria e Israel — em vez de confiar em Deus. Fechou o Templo. Contexto da profecia da virgem: "Eis que a virgem conceberá" (Is 7:14).',r:'2 Rs 16; 2 Cr 28; Is 7:14'},
+  {id:'kj-hezekiah',f:-716,t:-687,l:'Ezequias',d:'O melhor rei após Davi. Abriu e limpou o Templo; destruiu a serpente de bronze. Deus livrou Jerusalém de Senaqueribe milagrosamente: "O anjo do SENHOR saiu e feriu no campo assírio 185.000 homens" (2 Rs 19:35). Recebeu 15 anos extras de vida.',r:'2 Rs 18–20; 2 Cr 29–32; Is 36–39'},
+  {id:'kj-manasseh',pa:'r',f:-697,t:-643,l:'Manassés',d:'Reinado mais longo de Judá (55 anos) e o mais perverso. Reconstruiu os altares pagãos, instalou ídolo no Templo, queimou seus filhos no fogo. "Manassés derramou sangue inocente em grande abundância." Seu pecado selou o julgamento do exílio (2 Rs 24:3). Mas se arrependeu ao ser preso pelos assírios (2 Cr 33).',r:'2 Rs 21; 2 Cr 33'},
+  {id:'kj-josiah',f:-641,t:-609,l:'Josias',d:'Grande reformador. Coroado aos 8 anos. Encontrou o Livro da Lei no Templo (622 a.C.) — leitura pública chocou o rei. Destruiu altares pagãos de Betel a Nínive. Celebrou a maior Páscoa desde Josué. Morreu em Meguido contra o faraó Neco — "Deus havia chamado a luta contra ele, mas Josias não se desviou."',r:'2 Rs 22–23; 2 Cr 34–35'},
+  {id:'kj-jehoiakim',pa:'r',f:-609,t:-598,l:'Jeoaquim',d:'Vassalo de Nabucadnesar. Queimou o rolo do profeta Jeremias peça por peça (Jr 36). A primeira deportação — incluindo Daniel — ocorreu em seu reinado. Morreu com desonra; "seu cadáver será lançado e exposto ao calor de dia" (Jr 22:19).',r:'2 Rs 23–24; Jr 22; Jr 36'},
+  {id:'kj-jehoiachin',f:-598,t:-597,l:'Jeconias',d:'Rei por apenas 3 meses e 10 dias. Rendeu-se a Nabucadnesar. Deportado à Babilônia com 10.000 judeus — elite de Jerusalém, incluindo Ezequiel. Libertado da prisão após 37 anos por Evil-Merodaque (2 Rs 25:27). Na genealogia de Jesus (Mt 1:11-12).',r:'2 Rs 24; 2 Cr 36; Mt 1:12'},
+  {id:'kj-zedekiah',pa:'r',f:-597,t:-586,l:'Zedequias',d:'Último rei de Judá. Tio de Jeconias, posto pelo próprio Nabucadnesar. Ignorou repetidamente os conselhos de Jeremias. Tentou fugir; capturado. Seus filhos foram mortos diante de seus olhos, então foi cegado. Jerusalém e o Templo foram destruídos em 586 a.C. — fim do reino davídico.',r:'2 Rs 24–25; Jr 39; Jr 52'},
+];
+
+const PATRISTIC=[
+  // Padres Apostólicos
+  {id:'pa-clement-rome',f:35,t:99,l:'Clemente de Roma',ic:'📜',d:'Terceiro bispo de Roma. Sua epístola à Igreja de Corinto (c. 96 d.C.) — "1 Clemente" — é o documento cristão mais antigo fora do NT. Exorta à unidade e à submissão à liderança eclesiástica. Elo entre a era apostólica e a Igreja do século II.',r:'1 Clemente; Eusébio: HE III.16'},
+  {id:'pa-ignatius',f:35,t:108,l:'Inácio de Antioquia',ic:'🦁',d:'Bispo de Antioquia. Martirizado em Roma (~108 d.C.). Durante a viagem ao martírio, escreveu sete cartas às igrejas — tesouro da eclesiologia primitiva. Primeiro a usar o termo "Igreja Católica" (ekklesia katholike). "É bom para mim morrer em Jesus Cristo." Discípulo de João.',r:'Cartas de Inácio; Eusébio: HE III.36'},
+  {id:'pa-polycarp',f:69,t:155,l:'Policarpo de Esmirna',ic:'🕯️',d:'Discípulo do apóstolo João. Bispo de Esmirna. Martirizado (~155 d.C.) aos 86 anos: "Oitenta e seis anos sirvo a Cristo e Ele nunca me fez mal algum. Como poderia blasfemar meu Rei e Salvador?" Elo vivo entre os apóstolos e a Igreja do século II. Combateu o marcionismo.',r:'Martírio de Policarpo; Carta de Policarpo aos Filipenses'},
+  {id:'pa-papias',f:60,t:130,l:'Papias de Hierápolis',ic:'📖',d:'Bispo de Hierápolis. Contemporâneo de Policarpo. Escreveu "Exposição dos Oráculos do Senhor" (5 livros, fragmentos preservados em Eusébio). Registrou tradições orais sobre os evangelhos — que Mateus escreveu em aramaico, que Marcos compilou os ensinamentos de Pedro. Discípulo do apóstolo João.',r:'Eusébio: HE III.39'},
+  // Apologistas
+  {id:'pa-justin',f:100,t:165,l:'Justino Mártir',ic:'📜',d:'Primeiro grande apologista cristão. Ex-filósofo platônico convertido em Éfeso. Dirigiu duas Apologias aos imperadores romanos defendendo o Cristianismo. "Diálogo com Trifão" é a mais antiga apologia cristã ao judaísmo. Usou o conceito de Logos para contextualizar a fé no mundo greco-romano. Martirizado em Roma (~165 d.C.).',r:'Apologia I e II; Diálogo com Trifão'},
+  {id:'pa-irenaeus',f:130,t:202,l:'Ireneu de Lyon',ic:'🛡️',d:'Discípulo de Policarpo, que foi discípulo de João. Bispo de Lyon. Sua obra "Contra as Heresias" (5 livros) é o mais importante tratado anti-gnóstico da Antiguidade. Afirmou a regra de fé, o cânon das Escrituras e a sucessão apostólica como critérios de ortodoxia. Desenvolveu a teologia da "recapitulação" em Cristo.',r:'Contra as Heresias; Demonstração da Pregação Apostólica'},
+  // Escola de Alexandria
+  {id:'pa-clement-alex',f:150,t:215,l:'Clemente de Alexandria',ic:'🏛️',d:'Dirigiu a escola catequética de Alexandria. Seu projeto: integrar a filosofia grega à fé cristã — "a filosofia foi o pedagogo dos gregos rumo a Cristo." Obras: Protréptico, Pedagogo, Stromata. Mestre de Orígenes. A escola alexandrina moldou a exegese alegórica e a teologia cristã por séculos.',r:'Stromata; Protréptico; Pedagogo'},
+  {id:'pa-origen',f:185,t:253,l:'Orígenes de Alexandria',ic:'📚',d:'Maior erudito bíblico da Igreja Primitiva. Compilou as Hexaplas — seis versões paralelas do AT em colunas paralelas. Pioneer da exegese sistemática e da teologia especulativa. "Sobre os Princípios" é o primeiro sistema teológico cristão. Suas especulações sobre apocatástase foram posteriormente condenadas (553 d.C.). Tortured mas não martirizado; morreu das feridas.',r:'Hexaplas; Sobre os Princípios; Contra Celso'},
+  // África do Norte
+  {id:'pa-tertullian',f:155,t:220,l:'Tertuliano de Cartago',ic:'⚖️',d:'Primeiro teólogo a escrever sistematicamente em latim. Cunhou os termos "Trinitas" e "tres personae, una substantia." "O que Atenas tem a ver com Jerusalém?" Defensor ferrenho da ortodoxia — paradoxalmente aderiu ao Montanismo em seus últimos anos. Criou o vocabulário teológico latino que dominou o Ocidente.',r:'Apologeticum; Contra Práxeas; De Praescriptione Haereticorum'},
+  {id:'pa-cyprian',f:200,t:258,l:'Cipriano de Cartago',ic:'⛪',d:'Bispo de Cartago. Convertido em ~246 d.C.; bispo dois anos depois. Obra capital: "Sobre a Unidade da Igreja" — "não pode ter Deus por Pai quem não tem a Igreja por mãe." Desenvolveu a eclesiologia episcopal. Martirizado em 258 d.C. durante a perseguição de Valeriano. Influência decisiva na teologia sacramental ocidental.',r:'Sobre a Unidade da Igreja; Sobre a Lapsi'},
+  // Historiador e Apologista
+  {id:'pa-eusebius',f:260,t:339,l:'Eusébio de Cesareia',ic:'📜',d:'"Pai da História da Igreja." Sua "História Eclesiástica" (10 livros) é a fonte primária insubstituível para os três primeiros séculos do Cristianismo. Preservou fragmentos de escritores cristãos primitivos que de outra forma estariam perdidos. Assessor de Constantino. Participou do Concílio de Niceia (325 d.C.).',r:'História Eclesiástica; Vida de Constantino'},
+  // Pós-Niceia — Atanásio
+  {id:'pa-athanasius',f:296,t:373,l:'Atanásio de Alexandria',ic:'⛪',d:'"Atanásio contra o mundo." Defensor ferrenho da divindade plena de Cristo contra o arianismo. Exilado cinco vezes por imperadores arianos — total de 17 anos no exílio. "Athanasius contra mundum — et Athanasius vincit." Formulou o cânon do NT em sua 39ª Carta Festiva (367 d.C.). "Deus tornou-se homem para que o homem pudesse tornar-se divino."',r:'De Incarnatione; 39ª Carta Festiva; Vida de Antônio'},
+  // Padres Capadócios
+  {id:'pa-basil',f:330,t:379,l:'Basílio de Cesareia',ic:'🕊️',d:'Chamado "O Grande." Bispo de Cesareia. Um dos três Padres Capadócios. Consolidou a teologia da Trindade pós-Niceia, distinguindo ousia (substância) e hypostasis (pessoa). Fundou o monaquismo comunitário oriental (cenobitismo) — sua Regra ainda rege o monaquismo ortodoxo. Combateu o arianismo e o pneumatomaquismo.',r:'Sobre o Espírito Santo; Regra de Basílio; Cartas'},
+  {id:'pa-gregory-naz',f:329,t:390,l:'Gregório de Nazianzo',ic:'💭',d:'"O Teólogo" — único teólogo a merecer este título ao lado de João Evangelista, na tradição ortodoxa. Segundo Padre Capadócio. Seus "Cinco Discursos Teológicos" são a formulação definitiva da doutrina trinitária. Presidiu brevemente o Concílio de Constantinopla I (381 d.C.). Poeta e orador extraordinário.',r:'Cinco Discursos Teológicos; Cartas; Poemas'},
+  {id:'pa-gregory-nyssa',f:335,t:394,l:'Gregório de Nissa',ic:'✨',d:'Irmão de Basílio. Terceiro Padre Capadócio. O mais especulativo e místico dos três. Desenvolveu a teologia apofática — Deus transcende toda compreensão. Sua "Vida de Moisés" é um clássico da espiritualidade cristã: a ascensão da alma em direção ao Deus infinito é progresso sem fim. Defendeu a apocatástase universal.',r:'Vida de Moisés; Grande Catequese; Sobre a Alma e a Ressurreição'},
+  // Ocidente Latino
+  {id:'pa-ambrose',f:340,t:397,l:'Ambrósio de Milão',ic:'🏛️',d:'Bispo de Milão. Eleito por aclamação popular enquanto ainda era catecúmeno. Confrontou o imperador Teodósio após o massacre de Tessalônica (390 d.C.) — penitência pública imposta ao imperador: marco na relação Igreja-Estado. Mentor e batizador de Agostinho. Grande pregador e compositor de hinos litúrgicos.',r:'Sobre os Deveres; Sobre o Espírito Santo; Cartas a Teodósio'},
+  {id:'pa-chrysostom',f:349,t:407,l:'João Crisóstomo',ic:'🗣️',d:'"Boca de Ouro." O maior pregador da Antiguidade cristã. Arcebispo de Constantinopla. Seus comentários bíblicos — especialmente sobre Mateus, João e as Epístolas de Paulo — permanecem inestimáveis. Exilado por Eudóxia após criticar a luxúria da corte imperial. "Que vergonha! A vida de Cristo descrita em livros de ouro encadernados em couro, enquanto Cristo morre de fome no pobre."',r:'Homilias sobre Mateus; Homilias sobre João; Homilias sobre Romanos'},
+  {id:'pa-jerome',f:347,t:420,l:'Jerônimo de Estridão',ic:'📖',d:'Erudito bíblico incomparável. Secretário do Papa Dâmaso I. Traduziu a Bíblia do hebraico e grego para o latim — a Vulgata — que foi a Bíblia oficial da Igreja Ocidental por 1.000 anos. Aprendeu hebraico com rabinos para garantir precisão textual. Fundou um mosteiro em Belém. Polêmico e apaixonado: "Ame as Escrituras e a sabedoria virá a você."',r:'Vulgata; Cartas; De Viris Illustribus'},
+  {id:'pa-augustine',f:354,t:430,l:'Agostinho de Hipona',ic:'🧠',d:'Maior teólogo da Igreja Ocidental — "o segundo fundador do Ocidente." Convertido em 386 d.C. após vida dissoluta e busca filosófica. "Nos fizeste para Ti e nosso coração fica inquieto até que descanse em Ti" (Confissões I.1). Desenvolveu as doutrinas da graça soberana, predestinação, pecado original e justa guerra. "A Cidade de Deus" moldou o pensamento político medieval.',r:'Confissões; A Cidade de Deus; Sobre a Graça e o Livre-Arbítrio; Sobre a Trindade'},
+  // Último período patrístico
+  {id:'pa-leo',f:400,t:461,l:'Leão I, o Grande',ic:'🦁',d:'Papa de Roma. Seu "Tomo" (Epistola dogmática) foi lido no Concílio de Calcedônia (451 d.C.) e aclamado: "Pedro falou pela boca de Leão!" Definiu a doutrina das duas naturezas de Cristo com precisão sem igual. Persuadiu Átila (452 d.C.) a não saquear Roma. Desenvolveu a eclesiologia do primado romano.',r:'Tomo de Leão; Sermões; Cartas'},
+  {id:'pa-john-dam',f:676,t:749,l:'João Damasceno',ic:'📚',d:'Último grande Padre da Igreja Oriental. Viveu sob domínio muçulmano em Damasco. Sua "Fonte do Conhecimento" (Fons Scientiae) é a primeira síntese sistemática da teologia ortodoxa — antecipando a Suma Teológica de Tomás de Aquino por 500 anos. Defensor das imagens (ícones) contra o iconoclasmo imperial. Codificou a liturgia ortodoxa.',r:'Fonte do Conhecimento; Sobre as Imagens Sagradas; Sobre a Fé Ortodoxa'},
+];
+
+const CHRISTIANITY=[
+  {id:'polycarp',f:69,t:155,l:'Policarpo de Esmirna',ic:'🕯️',d:'Discípulo do apóstolo João. Mártir em Esmirna (~155 d.C.). "Oitenta e seis anos sirvo a Cristo e Ele nunca me fez mal algum." Elo vivo entre os apóstolos e a Igreja do século II.',r:'Martírio de Policarpo'},
+  {id:'justin',f:100,t:165,l:'Justino Mártir',ic:'📜',d:'Primeiro grande apologista cristão. Ex-filósofo platônico convertido. Defendeu o Cristianismo perante os imperadores romanos. Utilizou o conceito de Logos para contextualizar a fé no mundo greco-romano.',r:'Apologia I e II; Diálogo com Trifão'},
+  {id:'irenaeus',f:130,t:202,l:'Ireneu de Lyon',ic:'🛡️',d:'Combateu o gnosticismo com a obra "Contra as Heresias". Afirmou a regra de fé, o cânon das Escrituras e a sucessão apostólica. Discípulo de Policarpo, que foi discípulo de João.',r:'Contra as Heresias'},
+  {id:'tertullian',f:155,t:220,l:'Tertuliano de Cartago',ic:'⚖️',d:'Primeiro teólogo a escrever sistematicamente em latim. Cunhou os termos "Trindade" e "três Pessoas, uma substância". Defensor do Cânon do Novo Testamento.',r:'Apologeticum; De Trinitate'},
+  {id:'origen',f:185,t:253,l:'Orígenes de Alexandria',ic:'📚',d:'Maior erudito bíblico da Igreja Primitiva. Compilou as Hexaplas — seis versões paralelas do Antigo Testamento. Pioneiro da exegese sistemática. Suas especulações metafísicas foram posteriormente condenadas.',r:'Hexaplas; Sobre os Princípios'},
+  {id:'milan',f:313,t:313,l:'Édito de Milão',ic:'🕊️',d:'Constantino e Licínio garantem liberdade religiosa ao Império Romano. O Cristianismo deixa de ser perseguido. Início da era constantiniana — com todos os seus benefícios e perigos para a pureza da Igreja.',r:'Lactâncio: De Mortibus Persecutorum'},
+  {id:'nicea',f:325,t:325,l:'Concílio de Niceia',ic:'✝️',d:'Condenou o arianismo (Ário afirmava que o Filho foi criado). Proclamou o Filho como "consubstancial ao Pai" (homoousios). Redigiu a base do Credo Niceno — fundamento da ortodoxia cristã até hoje.',r:'Atas de Niceia; Atanásio: De Incarnatione'},
+  {id:'athanasius',f:296,t:373,l:'Atanásio de Alexandria',ic:'⛪',d:'"Atanásio contra o mundo." Defensor ferrenho da divindade de Cristo contra o arianismo. Exilado cinco vezes por imperadores arianos. Formulou o cânon do Novo Testamento em sua 39ª Carta Festiva (367 d.C.).',r:'De Incarnatione; 39ª Carta Festiva'},
+  {id:'jerome',f:347,t:420,l:'Jerônimo de Estridão',ic:'📖',d:'Erudito bíblico. Traduziu a Bíblia do hebraico e grego para o latim — a Vulgata, que foi a Bíblia oficial da Igreja Ocidental por 1000 anos. Aprendeu hebraico com rabinos para garantir precisão textual.',r:'Vulgata'},
+  {id:'augustine',f:354,t:430,l:'Agostinho de Hipona',ic:'🧠',d:'Maior teólogo da Igreja Ocidental. Convertido em 386 d.C. "Nos fizeste para Ti, e nosso coração fica inquieto até que descanse em Ti." Desenvolveu as doutrinas da graça soberana, predestinação e pecado original. Base de toda a teologia reformada.',r:'Confissões; A Cidade de Deus; Sobre a Graça e o Livre-Arbítrio'},
+  {id:'chalcedon',f:451,t:451,l:'Concílio de Calcedônia',ic:'✝️',d:'Definiu a doutrina das duas naturezas de Cristo: plena e perfeitamente humano, plena e perfeitamente divino, em uma única Pessoa — sem mistura, sem confusão, sem divisão, sem separação. Fundamento cristológico de toda teologia ortodoxa.',r:'Definição de Calcedônia'},
+  {id:'benedict',f:480,t:547,l:'Bento de Núrsia',ic:'📿',d:'Fundador do monaquismo ocidental. Redigiu a Regra de São Bento. Os mosteiros beneditinos preservaram os manuscritos bíblicos e patrísticos durante os séculos de instabilidade que se seguiram à queda de Roma.',r:'Regra de São Bento'},
+  {id:'anselm',f:1033,t:1109,l:'Anselmo de Cantuária',ic:'💭',d:'"Fé em busca de entendimento" (fides quaerens intellectum). Formulou o argumento ontológico para a existência de Deus. Na obra "Por que Deus se fez homem?" (Cur Deus Homo) desenvolveu a teoria da satisfação vicária — base da soteriologia reformada.',r:'Proslogion; Cur Deus Homo'},
+  {id:'aquinas',f:1225,t:1274,l:'Tomás de Aquino',ic:'📚',d:'Síntese entre fé e razão aristotélica na Suma Teológica. Formulou as cinco vias para a existência de Deus. Seu sistema escolástico dominou a teologia medieval. Lutero e Calvino responderam diretamente ao tomismo em suas formulações da graça.',r:'Suma Teológica; Suma contra os Gentios'},
+  {id:'wycliffe',f:1320,t:1384,l:'João Wycliffe',ic:'📖',d:'"Estrela da manhã da Reforma." Traduziu a Bíblia para o inglês vernacular. Atacou a corrupção papal e a doutrina da transubstanciação. Seus escritos influenciaram diretamente Jan Hus e, por meio dele, Martinho Lutero.',r:'Bíblia Wycliffe; De Veritate Sacrae Scripturae'},
+  {id:'hus',f:1369,t:1415,l:'Jan Hus',ic:'🔥',d:'Reformador tcheco. Pregou a autoridade das Escrituras sobre o papa. Queimado vivo no Concílio de Constança (1415). Antes de morrer: "Queimarão um ganso (hus), mas surgirá um cisne que não poderão queimar" — considerado profecia sobre Lutero.',r:'De Ecclesia; Atas do Concílio de Constança'},
+  {id:'luther',f:1483,t:1546,l:'Martinho Lutero',ic:'⚡',d:'"O justo viverá pela fé." Afixou as 95 Teses em Wittenberg em 1517. Recusou retratação na Dieta de Worms: "Aqui estou, não posso fazer de outro modo." Traduziu a Bíblia para o alemão. Os cinco Solas (Scriptura, Fide, Gratia, Christus, Deo Gloria) são o fundamento da teologia reformada.',r:'95 Teses; Catecismo Menor; De Servo Arbítrio'},
+  {id:'zwingli',f:1484,t:1531,l:'Ulrico Zuínglio',ic:'📜',d:'Reformador de Zurique. Contemporâneo de Lutero. Insistiu na centralidade das Escrituras e reformou a liturgia radicalmente. Divergiu de Lutero sobre a Ceia do Senhor. Morreu em batalha defendendo Zurique contra os cantões católicos.',r:'67 Artigos; Comentário sobre a Verdadeira e Falsa Religião'},
+  {id:'calvin',f:1509,t:1564,l:'João Calvino',ic:'📘',d:'Reformador de Genebra. Autor das "Institutas da Religião Cristã" (1536). Sistematizou a soberania divina, eleição, graça irresistível e perseverança dos santos. Seu pensamento moldou o presbiterianismo, o puritanismo e a tradição reformada em todo o mundo.',r:'Institutas; Comentários Bíblicos; Catecismo de Genebra'},
+];
+
+// --- RENDER ---
+let selDots=new Set();  // ids of all selected dots
+let lastSelId=null;     // which dot's info is in the tooltip
+
+const PERIODS=[
+  {f:-4000,t:-586, bg:'rgba(210,160,60,.09)', lc:'#b88820', l:'Pré-exílico'},
+  {f:-586, t:-538, bg:'rgba(180,55,55,.18)',  lc:'#b43030', l:'Exílio'},
+  {f:-538, t:2025, bg:'rgba(45,155,95,.08)',  lc:'#2a8c50', l:'Pós-exílico'},
+];
+
+function renderPeriodBands(){
+  const tracks=['events','biblical','christianity','israel','prophets-north','prophets-south','kings-north','kings-south','kings-pagan','patristic'];
+  tracks.forEach(tid=>{
+    const tr=document.getElementById('t-'+tid);
+    if(!tr)return;
+    tr.querySelectorAll('.pb').forEach(e=>e.remove());
+    PERIODS.forEach(p=>{
+      const d=document.createElement('div');
+      d.className='pb';
+      d.style.cssText=`position:absolute;left:${px(p.f)}px;top:0;width:${px(p.t)-px(p.f)}px;bottom:0;background:${p.bg};z-index:0;pointer-events:none`;
+      tr.insertBefore(d,tr.firstChild);
+    });
+  });
+  // Period labels in ruler
+  const r=document.getElementById('ruler');
+  r.querySelectorAll('.pb-lbl,.pb-mark').forEach(e=>e.remove());
+  PERIODS.forEach(p=>{
+    const xf=px(p.f),xt=px(p.t);
+    const lbl=document.createElement('div');
+    lbl.className='pb-lbl';
+    lbl.style.cssText=`position:absolute;left:${xf}px;width:${xt-xf}px;bottom:2px;font-size:.44rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:${p.lc};text-align:center;opacity:.8;pointer-events:none;overflow:hidden;white-space:nowrap;padding:0 4px;box-sizing:border-box`;
+    lbl.textContent=p.l;
+    r.appendChild(lbl);
+  });
+  // Fixed markers at exile boundaries
+  const exile=PERIODS.find(p=>p.l==='Exílio');
+  const lc=exile?exile.lc:'#b43030';
+  [{y:-586,l:'586 a.C.'},{y:-538,l:'538 a.C.'}].forEach(m=>{
+    const xp=px(m.y);
+    const tick=document.createElement('div');
+    tick.className='pb-mark';
+    tick.style.cssText=`position:absolute;left:${xp}px;top:0;bottom:0;width:1.5px;background:${lc};opacity:0.55;transform:translateX(-50%);pointer-events:none`;
+    r.appendChild(tick);
+    const lbl=document.createElement('div');
+    lbl.className='pb-mark';
+    lbl.style.cssText=`position:absolute;left:${xp}px;top:5px;font-size:.58rem;font-weight:700;color:${lc};white-space:nowrap;transform:translateX(-50%);pointer-events:none;letter-spacing:.04em;background:var(--surface);padding:0 2px`;
+    lbl.textContent=m.l;
+    r.appendChild(lbl);
+  });
+}
+
+function setW(){
+  const w=tw()+'px';
+  ['inn','ruler','t-empires','t-events','t-biblical','t-christianity','t-israel','t-prophets-north','t-prophets-south','t-kings-north','t-kings-south','t-kings-pagan','t-patristic'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(el)el.style.width=w;
+  });
+}
+
+function renderRuler(){
+  const r=document.getElementById('ruler');
+  r.innerHTML='';
+  r.style.width=tw()+'px';
+  const bands=[
+    {f:-4000,t:-2091,l:'Origens',c:'rgba(90,50,140,'},
+    {f:-2091,t:-1406,l:'Patriarcas & Êxodo',c:'rgba(110,80,30,'},
+    {f:-1406,t:-930,l:'Juízes & Monarquia',c:'rgba(30,70,130,'},
+    {f:-930,t:-538,l:'Profetas & Exílio',c:'rgba(30,90,100,'},
+    {f:-538,t:-400,l:'Restauração',c:'rgba(30,120,70,'},
+    {f:-400,t:-4,l:'Intertestamental',c:'rgba(80,80,100,'},
+    {f:-4,t:100,l:'Novo Testamento',c:'rgba(140,100,0,'},
+  ];
+  bands.forEach(b=>{
+    const d=document.createElement('div');
+    d.className='rband';
+    d.style.cssText=`left:${px(b.f)}px;width:${px(b.t)-px(b.f)}px;background:${b.c}0.06)`;
+    r.appendChild(d);
+    const lb=document.createElement('div');
+    lb.className='eralbl';
+    lb.style.left=(px(b.f)+(px(b.t)-px(b.f))/2)+'px';
+    lb.textContent=b.l;
+    r.appendChild(lb);
+  });
+  const s=sc();
+  let step=500;
+  if(s>1)step=200;if(s>2)step=100;if(s>6)step=50;if(s>15)step=10;
+  const sub=step/5;
+  for(let y=SY;y<=EY;y+=sub){
+    const maj=y%step===0;
+    if(!maj&&s<1)continue;
+    const tk=document.createElement('div');
+    tk.className='rtick '+(maj?'maj':'min');
+    tk.style.left=px(y)+'px';
+    const line=document.createElement('div');
+    line.className='tl';
+    tk.appendChild(line);
+    if(maj){
+      const yl=document.createElement('div');
+      yl.className='yl';
+      yl.textContent=y===0?'1 d.C.':y<0?Math.abs(y)+' a.C.':y+' d.C.';
+      tk.appendChild(yl);
+    }
+    r.appendChild(tk);
+  }
+}
+
+function renderEmpires(){
+  const tr=document.getElementById('t-empires');
+  tr.innerHTML='';
+  const lh=18,lg=3,pv=6;
+  const visible=EMPIRES.filter(e=>!hiddenEmpires.has(e.l));
+
+  // Per-lane range → gray background spanning the gaps
+  const lanes={};
+  visible.forEach(e=>{
+    if(!lanes[e.ln])lanes[e.ln]={f:e.f,t:e.t};
+    else{lanes[e.ln].f=Math.min(lanes[e.ln].f,e.f);lanes[e.ln].t=Math.max(lanes[e.ln].t,e.t);}
+  });
+  Object.entries(lanes).forEach(([ln,rng])=>{
+    const gb=document.createElement('div');
+    const w=Math.max(4,px(rng.t)-px(rng.f));
+    gb.style.cssText=`position:absolute;left:${px(rng.f)}px;width:${w}px;top:${pv+ln*(lh+lg)}px;height:${lh}px;background:var(--border);opacity:0.45;border-radius:3px;pointer-events:none`;
+    tr.appendChild(gb);
+  });
+
+  // Colored bands on top (active periods)
+  visible.forEach(e=>{
+    const d=document.createElement('div');
+    d.className='eband';
+    const w=Math.max(4,px(e.t)-px(e.f));
+    d.style.cssText=`left:${px(e.f)}px;width:${w}px;top:${pv+e.ln*(lh+lg)}px;height:${lh}px;background:${e.c}`;
+    d.innerHTML=`<span>${e.l}</span>`;
+    d.addEventListener('mouseenter',ev=>{
+      showTT(ev,{tag:'Império / Reino',date:fspan(e.f,e.t),name:e.l,desc:null,refs:null},e.c);
+    });
+    d.addEventListener('mouseleave',()=>scheduleHide());
+    d.addEventListener('click',ev=>{ev.stopPropagation();showTT(ev,{tag:'Império / Reino',date:fspan(e.f,e.t),name:e.l,desc:null,refs:null},e.c);});
+    tr.appendChild(d);
+  });
+}
+
+function renderDots(trackId,items,clr,yFn,infoFn,cfg={}){
+  const {append=false,yMin:yMn,yMax:yMx,free=false,showLabels=false}=cfg;
+  const tr=document.getElementById('t-'+trackId);
+  if(!append){tr.querySelectorAll('.dot,.dlbl').forEach(e=>e.remove());tr._rdp=[];}
+  const placed=append?(tr._rdp||[]):[];
+  const trH=tr.offsetHeight||100;
+  const pad=10;
+  const effMin=yMn!==undefined?yMn:pad;
+  const effMax=yMx!==undefined?yMx:trH-pad;
+  const midY=(effMin+effMax)/2;
+  items.forEach(item=>{
+    const xp=yFn(item);
+    let dy=midY;
+    const near=placed.filter(p=>Math.abs(p.x-xp)<32);
+    if(near.length){
+      const used=near.map(p=>p.y);
+      const step=10;
+      const candidates=[];
+      for(let d=0;d<=(effMax-effMin)/2;d+=step){
+        candidates.push(midY-d,midY+d);
+      }
+      const opts=[...new Set(candidates)].filter(o=>o>=effMin&&o<=effMax).sort((a,b)=>Math.abs(a-midY)-Math.abs(b-midY));
+      const vgap=showLabels?30:22;
+      for(const o of opts){if(!used.some(u=>Math.abs(u-o)<vgap)){dy=o;break;}}
+    }
+    placed.push({x:xp,y:dy});
+    const dot=document.createElement('div');
+    dot.className='dot'+(free?' dot-free':'');
+    dot.style.cssText=`left:${xp}px;top:${dy}px`;
+    dot.textContent=item.ic||'•';
+    if(item.pa==='r') dot.style.filter='sepia(1) saturate(10) hue-rotate(310deg)';
+    else if(item.pa==='s') dot.style.filter='grayscale(1) brightness(1.5) contrast(0.7)';
+    dot.dataset.id=item.id;
+    const lblAbove=showLabels&&free&&dy>midY;
+    const lbl=document.createElement('div');
+    lbl.className='dlbl';
+    lbl.style.cssText=`left:${xp}px;top:${lblAbove?dy-22:dy+14}px;opacity:${showLabels?1:0}${lblAbove?';transform:translateX(-50%) translateY(-100%)':''}`;
+    if(showLabels)lbl.dataset.fixed='1';
+    lbl.textContent=item.l;
+
+    dot.addEventListener('mouseenter',()=>{lbl.style.opacity='1';});
+    dot.addEventListener('mouseleave',()=>{if(!selDots.has(item.id)&&!lbl.dataset.fixed)lbl.style.opacity='0';});
+    dot.addEventListener('click',ev=>{
+      ev.stopPropagation();
+      if(selDots.has(item.id)){
+        // deselect this dot only
+        selDots.delete(item.id);
+        dot.classList.remove('sel');
+        clearSelLinesForDot(item.id);
+        lbl.style.opacity='0';
+        if(lastSelId===item.id)hideTT();
+      } else {
+        // add to selection (keep others)
+        selDots.add(item.id);
+        lastSelId=item.id;
+        dot.classList.add('sel');
+        lbl.style.opacity='1';
+        showTT(ev,infoFn(item),clr);
+        drawSelLines(trackId,item,xp,dy,clr);
+      }
+    });
+    tr.appendChild(dot);
+    tr.appendChild(lbl);
+  });
+  tr._rdp=placed;
+}
+
+let hideTimer=null;
+function cancelHide(){if(hideTimer){clearTimeout(hideTimer);hideTimer=null;}}
+function scheduleHide(){cancelHide();hideTimer=setTimeout(hideTT,120);}
+
+function clearAllLabels(){document.querySelectorAll('.dlbl:not([data-fixed])').forEach(l=>l.style.opacity='0');}
+
+// --- SELECTION LINES ---
+let _selByDot=new Map();  // dotId → [elements]
+function clearSelLines(){_selByDot.forEach(els=>els.forEach(e=>e.remove()));_selByDot.clear();}
+function clearSelLinesForDot(dotId){(_selByDot.get(dotId)||[]).forEach(e=>e.remove());_selByDot.delete(dotId);}
+function _addSel(el,dotId){document.getElementById('inn').appendChild(el);if(!_selByDot.has(dotId))_selByDot.set(dotId,[]);_selByDot.get(dotId).push(el);}
+function _sdiv(css){const d=document.createElement('div');d.className='selline';d.style.cssText=css;return d;}
+
+function drawSelLines(trackId,item,xp,dy,clr){
+  const did=item.id;
+  const ruler=document.getElementById('ruler');
+  const track=document.getElementById('t-'+trackId);
+  const rulerH=ruler.offsetHeight;
+  const trackTop=track.offsetTop;
+  const dotY=trackTop+dy;
+
+  const hasRange=item.f!==undefined&&item.t!==undefined&&item.f!==item.t;
+
+  if(hasRange){
+    const xf=px(item.f),xt=px(item.t);
+    _addSel(_sdiv(`left:${xf}px;top:${rulerH-5}px;width:${xt-xf}px;height:5px;background:${clr};opacity:.35;border-radius:2px 2px 0 0`),did);
+    _addSel(_sdiv(`left:${xf}px;top:${rulerH-12}px;width:2px;height:12px;background:${clr};opacity:.7;transform:translateX(-50%)`),did);
+    _addSel(_sdiv(`left:${xt}px;top:${rulerH-12}px;width:2px;height:12px;background:${clr};opacity:.7;transform:translateX(-50%)`),did);
+    const lf=document.createElement('div');lf.className='sel-date';
+    lf.style.cssText=`left:${xf}px;top:${rulerH+3}px;color:${clr}`;lf.textContent=fy(item.f);_addSel(lf,did);
+    const lt=document.createElement('div');lt.className='sel-date';
+    lt.style.cssText=`left:${xt}px;top:${rulerH+3}px;color:${clr}`;lt.textContent=fy(item.t);_addSel(lt,did);
+  }
+
+  _addSel(_sdiv(`left:${xp}px;top:${rulerH}px;width:0;border-left:1.5px dashed ${clr};height:${dotY-rulerH}px;opacity:.65;transform:translateX(-50%)`),did);
+}
+
+function showTT(ev,info,clr){
+  cancelHide();
+  const t=document.getElementById('tt');
+  document.getElementById('tt-tag').textContent=info.tag||'';
+  document.getElementById('tt-tag').style.color=clr||'var(--accent)';
+  document.getElementById('tt-date').textContent=info.date||'';
+  document.getElementById('tt-name').textContent=info.name||'';
+  document.getElementById('tt-desc').textContent=info.desc||'';
+  document.getElementById('tt-refs').textContent=info.refs?'Ref.: '+info.refs:'';
+  t.classList.add('vis');
+  // position — balloon opens downward, anchored below the ruler with room for the arrow
+  const tw2=t.offsetWidth||260;
+  const rulerRect=document.getElementById('ruler').getBoundingClientRect();
+  let lf=ev.clientX-tw2/2;
+  let tp=rulerRect.bottom+18;  // 18px: clears ruler border + arrow (7px) + gap
+  if(lf<6)lf=6;
+  if(lf+tw2>window.innerWidth-6)lf=window.innerWidth-tw2-6;
+  t.style.left=lf+'px';t.style.top=tp+'px';
+  const arr=document.getElementById('tt-arr');
+  arr.style.left=Math.max(10,Math.min(tw2-10,ev.clientX-lf))+'px';
+}
+function hideTT(){
+  document.getElementById('tt').classList.remove('vis');
+}
+function clearSel(){
+  hideTT();
+  document.querySelectorAll('.dot.sel').forEach(d=>d.classList.remove('sel'));
+  selDots.clear();
+  lastSelId=null;
+  clearSelLines();
+  clearAllLabels();
+}
+
+function renderIsraelLine(){
+  const tr=document.getElementById('t-israel');
+  tr.querySelectorAll('.isl-line').forEach(e=>e.remove());
+  const h=tr.offsetHeight||100;
+  const mid=h/2;
+  const upper=Math.round(h*0.3);
+  const lower=Math.round(h*0.7);
+  const xStart=px(-1050);
+  const xSchism=px(-930);
+  const xEndN=px(-722);
+  const xEndS=px(-586);
+  const w=tw();
+  const bend=Math.max(30,Math.min(80,(xSchism-xStart)*0.18));
+  const svg=document.createElementNS('http://www.w3.org/2000/svg','svg');
+  svg.classList.add('isl-line');
+  svg.style.cssText=`position:absolute;left:0;top:0;width:${w}px;height:${h}px;pointer-events:none;z-index:3;overflow:visible`;
+
+  function mp(d,dash){
+    const p=document.createElementNS('http://www.w3.org/2000/svg','path');
+    p.setAttribute('d',d);p.setAttribute('fill','none');
+    p.style.cssText=`stroke:var(--cis);stroke-width:2.2;opacity:0.6${dash?';stroke-dasharray:8 5':''}`;
+    return p;
+  }
+  function svgtxt(x,y,txt,css){
+    const t=document.createElementNS('http://www.w3.org/2000/svg','text');
+    t.setAttribute('x',x);t.setAttribute('y',y);t.style.cssText=css;t.textContent=txt;return t;
+  }
+  function starPts(cx,cy,ro,ri,n){
+    const pts=[];
+    for(let i=0;i<n*2;i++){
+      const r=i%2===0?ro:ri;
+      const a=(Math.PI/n)*i-Math.PI/2;
+      pts.push(`${cx+r*Math.cos(a)},${cy+r*Math.sin(a)}`);
+    }
+    return pts.join(' ');
+  }
+
+  // Pre-monarchy dotted line: Abraão → Monarquia
+  const xAbraam=px(-2091);
+  const xExodo=px(-1446);
+  const xConquista=px(-1380);
+  const xJuizes=px(-1050);
+
+  // Abraão até o Egito — linha pontilhada tênue
+  function mpPre(d){
+    const p=document.createElementNS('http://www.w3.org/2000/svg','path');
+    p.setAttribute('d',d);p.setAttribute('fill','none');
+    p.style.cssText='stroke:var(--cis);stroke-width:1.6;opacity:0.35;stroke-dasharray:6 7';
+    return p;
+  }
+  svg.appendChild(mpPre(`M${xAbraam},${mid} L${xStart},${mid}`));
+
+  // Label "Patriarcas"
+  const xPatMid=(xAbraam+xExodo)/2;
+  svg.appendChild(svgtxt(xPatMid,mid-8,'Patriarcas','font-size:7.5px;font-family:var(--fui);fill:var(--cis);opacity:0.5;font-weight:500;text-anchor:middle'));
+  // Label "Êxodo / Juízes"
+  const xEjMid=(xExodo+xStart)/2;
+  svg.appendChild(svgtxt(xEjMid,mid-8,'Êxodo e Juízes','font-size:7.5px;font-family:var(--fui);fill:var(--cis);opacity:0.5;font-weight:500;text-anchor:middle'));
+
+  // Small dot marker at Abraão
+  const dotA=document.createElementNS('http://www.w3.org/2000/svg','circle');
+  dotA.setAttribute('cx',xAbraam);dotA.setAttribute('cy',mid);dotA.setAttribute('r',3.5);
+  dotA.style.cssText='fill:var(--cis);opacity:0.4';
+  svg.appendChild(dotA);
+
+  // Main + branches
+  svg.appendChild(mp(`M${xStart},${mid} L${xSchism},${mid}`));
+  svg.appendChild(mp(`M${xSchism},${mid} C${xSchism+bend},${mid} ${xSchism+bend},${upper} ${xSchism+bend*2},${upper} L${xEndS},${upper}`));
+  svg.appendChild(mp(`M${xSchism},${mid} C${xSchism+bend},${mid} ${xSchism+bend},${lower} ${xSchism+bend*2},${lower} L${xEndN},${lower}`,true));
+
+  // Branch labels near divergence
+  const lx=xSchism+bend*2+8;
+  svg.appendChild(svgtxt(lx,upper-5,'Judá','font-size:8px;font-family:var(--fui);fill:var(--cis);opacity:0.75;font-weight:600'));
+  svg.appendChild(svgtxt(lx,lower+12,'Israel','font-size:8px;font-family:var(--fui);fill:var(--cis);opacity:0.75;font-weight:600'));
+
+  // Burst markers
+  function addBurst(cx,cy,label,info,bid,textAbove,clr){
+    const fc=clr||'#c43018';
+    const fch=clr?(clr.replace(/^#/,'').length===6?'#'+clr.replace(/^#/,'').replace(/../g,h=>Math.max(0,parseInt(h,16)-24).toString(16).padStart(2,'0')):'#8a1a08'):'#8a1a08';
+    const fch2=clr||'#e04020';
+    const g=document.createElementNS('http://www.w3.org/2000/svg','g');
+    g.style.cssText='pointer-events:all;cursor:pointer';
+    const star=document.createElementNS('http://www.w3.org/2000/svg','polygon');
+    star.setAttribute('points',starPts(cx,cy,12,5,9));
+    star.style.cssText=`fill:${fc};stroke:${fch};stroke-width:0.6;opacity:0.88`;
+    g.appendChild(star);
+    const pts=label.split(' — ');
+    const y1=textAbove?cy-18:cy+17;
+    const y2=textAbove?cy-8:cy+27;
+    g.appendChild(svgtxt(cx,y1,pts[0],'font-size:8px;font-family:var(--fui);fill:var(--fg);font-weight:700;text-anchor:middle;letter-spacing:.02em'));
+    if(pts[1])g.appendChild(svgtxt(cx,y2,pts[1],'font-size:7.5px;font-family:var(--fui);fill:var(--fgd);font-weight:500;text-anchor:middle'));
+    g.addEventListener('click',ev=>{
+      ev.stopPropagation();
+      if(selDots.has(bid)){
+        selDots.delete(bid);
+        star.style.fill=fc;star.style.opacity='0.88';
+        clearSelLinesForDot(bid);
+        hideTT();
+      } else {
+        selDots.add(bid);lastSelId=bid;
+        star.style.fill=fch2;star.style.opacity='1';
+        showTT(ev,info,fc);
+        const ruler=document.getElementById('ruler');
+        const track=document.getElementById('t-israel');
+        const rulerH=ruler.offsetHeight;
+        const absY=track.offsetTop+cy;
+        _addSel(_sdiv(`left:${cx}px;top:${rulerH}px;width:0;border-left:1.5px dashed ${fc};height:${absY-rulerH}px;opacity:.65;transform:translateX(-50%)`),bid);
+      }
+    });
+    g.addEventListener('mouseenter',()=>{if(!selDots.has(bid)){star.style.opacity='1';star.style.fill=fch2;}});
+    g.addEventListener('mouseleave',()=>{if(!selDots.has(bid)){star.style.opacity='0.88';star.style.fill=fc;}});
+    svg.appendChild(g);
+  }
+
+  // Burst: Divisão do Reino (cisma)
+  addBurst(xSchism,mid,'Divisão do Reino — 930 a.C.',{
+    tag:'Cisma de Israel',
+    date:'930 a.C.',
+    name:'Divisão do Reino',
+    desc:'Após a morte de Salomão, Roboão recusa aliviar os impostos impostos pelo pai. As dez tribos do Norte se rebelam sob Jeroboão I, cumprindo a profecia de Aías de Siló. O reino unido de Davi e Salomão se divide: Reino do Norte (Israel/Efraim) com capital em Samaria, e Reino do Sul (Judá) com capital em Jerusalém.',
+    refs:'1 Rs 12; 2 Cr 10; 1 Rs 11:29-39'
+  },'burst-schism',false,'#b87820');
+
+  addBurst(xEndN,lower,'Queda de Samaria — 722 a.C.',{
+    tag:'Julgamento de Israel',
+    date:'722 a.C.',
+    name:'Queda de Samaria',
+    desc:'Sargão II, rei da Assíria, conquista Samaria após 3 anos de sítio iniciado por Salmaneser V. As dez tribos do Norte são deportadas e dispersas pela Assíria — o "Israel perdido". Fim do Reino do Norte. Cumprimento das advertências de Amós, Oséias e Miqueias.',
+    refs:'2 Rs 17; Os 13:16; Am 5:27; Mq 1:6'
+  },'burst-samaria',false);
+  addBurst(xEndS,upper,'Queda de Jerusalém — 586 a.C.',{
+    tag:'Julgamento de Judá',
+    date:'586 a.C.',
+    name:'Queda de Jerusalém',
+    desc:'Nabucadnesar II destrói Jerusalém e o Templo de Salomão após 18 meses de sítio. A população é deportada à Babilônia — início do Exílio. Fim do Reino de Judá e da linhagem real davídica no poder. Cumprimento das profecias de Jeremias e Ezequiel.',
+    refs:'2 Rs 25; Jr 52; Lm 1–5; Ez 33:21'
+  },'burst-jerusalem');
+
+  tr.insertBefore(svg,tr.firstChild);
+}
+
+function renderAll(){
+  clearSel();
+  setW();
+  renderRuler();
+  renderPeriodBands();
+  renderEmpires();
+  renderDots('events',EVENTS,'var(--cv)',e=>px(e.y),e=>({tag:e.tag,date:fy(e.y),name:e.l,desc:e.d,refs:e.r}),{free:true,showLabels:true,yMin:10,yMax:170});
+  renderDots('biblical',BIBLICAL.map(e=>({...e,ic:'🧍'})),'var(--cb)',e=>px((e.f+e.t)/2),e=>({tag:'Personagem Bíblico',date:fspan(e.f,e.t),name:e.l,desc:e.d,refs:e.r}),{yMin:8,yMax:112,free:true,showLabels:true});
+  renderDots('biblical',HISTORICAL.map(e=>({...e,ic:'🧍'})),'var(--ch)',e=>px((e.f+e.t)/2),e=>({tag:e.per,date:fspan(e.f,e.t),name:e.l,desc:e.d,refs:null}),{append:true,yMin:128,yMax:232,free:true,showLabels:true});
+  // divider between biblical (top) and historical (bottom)
+  {const dv=document.createElement('div');dv.style.cssText='position:absolute;left:0;right:0;top:120px;height:1px;background:var(--border);opacity:.6;pointer-events:none';document.getElementById('t-biblical').appendChild(dv);}
+  renderDots('christianity',CHRISTIANITY,'var(--cci)',e=>px((e.f+e.t)/2),e=>({tag:'História do Cristianismo',date:fspan(e.f,e.t),name:e.l,desc:e.d,refs:e.r}));
+  renderDots('israel',ISRAEL,'var(--cis)',e=>px((e.f+e.t)/2),e=>({tag:'História de Israel',date:fspan(e.f,e.t),name:e.l,desc:e.d,refs:e.r}));
+  renderIsraelLine();
+  renderDots('prophets-north',PROPHETS.filter(e=>e.side==='n').map(e=>({...e,ic:'📜'})),'var(--cpr)',e=>px((e.f+e.t)/2),e=>({tag:'Profeta — Norte',date:fspan(e.f,e.t),name:e.l,desc:e.d,refs:e.r}),{free:true,showLabels:true,yMin:8,yMax:72});
+  renderDots('prophets-south',PROPHETS.filter(e=>e.side==='s').map(e=>({...e,ic:'📜'})),'var(--cpr)',e=>px((e.f+e.t)/2),e=>({tag:'Profeta — Sul',date:fspan(e.f,e.t),name:e.l,desc:e.d,refs:e.r}),{free:true,showLabels:true,yMin:8,yMax:170});
+  renderDots('kings-north',KINGS_NORTH.map(e=>({...e,ic:'👑'})),'var(--ckn)',e=>px((e.f+e.t)/2),e=>({tag:'Rei de Israel',date:fspan(e.f,e.t),name:e.l,desc:e.d,refs:e.r}),{free:true,showLabels:true,yMin:8,yMax:92});
+  renderDots('kings-south',KINGS_JUDAH.map(e=>({...e,ic:'👑'})),'var(--cks)',e=>px((e.f+e.t)/2),e=>({tag:'Rei de Judá',date:fspan(e.f,e.t),name:e.l,desc:e.d,refs:e.r}),{free:true,showLabels:true,yMin:8,yMax:92});
+  renderDots('kings-pagan',KINGS_PAGAN.map(e=>({...e,ic:'👑',pa:'r'})),'var(--ch)',e=>px((e.f+e.t)/2),e=>({tag:'Rei Pagão',date:fspan(e.f,e.t),name:e.l,desc:e.d,refs:e.r}),{free:true,showLabels:true,yMin:10,yMax:170});
+  {const dv=document.createElement('div');dv.style.cssText='position:absolute;left:0;right:0;top:100px;height:1px;background:var(--border);opacity:.6;pointer-events:none';document.getElementById('t-kings').appendChild(dv);}
+  renderDots('patristic',PATRISTIC.map(e=>({...e,ic:'🧍'})),'var(--cpa)',e=>px((e.f+e.t)/2),e=>({tag:'Pai da Igreja',date:fspan(e.f,e.t),name:e.l,desc:e.d,refs:e.r}),{free:true});
+}
+
+// FILTER PANEL
+function toggleTrack(tid,on){
+  const ti=document.querySelector(`.ti[data-tid="${tid}"]`);
+  const tr=document.getElementById('t-'+tid);
+  const lb=document.getElementById('li-'+tid);
+  if(ti)ti.classList.toggle('on',on);
+  if(on){tr.classList.remove('off');if(lb)lb.classList.remove('off');}
+  else{tr.classList.add('off');if(lb)lb.classList.add('off');}
+  clearSel();
+}
+
+function buildFilterPanel(){
+  const bd=document.getElementById('fpbody');
+  bd.innerHTML='';
+
+  // TRACK CHECKBOXES
+  const sh1=document.createElement('div');
+  sh1.className='fpsh';
+  sh1.innerHTML='<span class="fpstit">Faixas Cronológicas</span>';
+  bd.appendChild(sh1);
+
+  [{tid:'events',lbl:'Acontecimentos',c:'var(--cv)'},
+   {tid:'biblical',lbl:'Personagens',c:'var(--cb)'},
+   {tid:'christianity',lbl:'Cristianismo',c:'var(--cci)'},
+   {tid:'israel',lbl:'Israel',c:'var(--cis)'},
+   {tid:'prophets-north',lbl:'Profetas — Norte',c:'var(--cpr)'},
+   {tid:'prophets-south',lbl:'Profetas — Sul (Judá)',c:'var(--cpr)'},
+   {tid:'kings-north',lbl:'Reis — Norte (Israel)',c:'var(--ckn)'},
+   {tid:'kings-south',lbl:'Reis — Judá',c:'var(--cks)'},
+   {tid:'kings-pagan',lbl:'Reis Pagãos',c:'var(--ch)'},
+   {tid:'patristic',lbl:'Pais da Igreja',c:'var(--cpa)'}
+  ].forEach(({tid,lbl,c})=>{
+    const el=document.getElementById('t-'+tid);
+    const on=el?!el.classList.contains('off'):true;
+    const row=document.createElement('label');
+    row.className='fprow';
+    row.innerHTML=`<input type="checkbox" ${on?'checked':''}><span class="fplbl" style="color:${c};font-weight:500">${lbl}</span>`;
+    row.querySelector('input').addEventListener('change',ev=>{
+      setTrack(tid,ev.target.checked);
+      if(['kings-north','kings-south','kings-pagan'].includes(tid)){
+        // sync dropdown checkbox
+        const ddcb=document.querySelector(`#dd-reis input[data-subtid="${tid}"]`);
+        if(ddcb)ddcb.checked=ev.target.checked;
+        // re-evaluate via updateReisGroup if available
+        if(typeof updateReisGroup==='function')updateReisGroup();
+      }
+      clearSel();
+    });
+    bd.appendChild(row);
+  });
+
+  // EMPIRE CHECKBOXES
+  const sh2=document.createElement('div');
+  sh2.className='fpsh';
+  sh2.innerHTML='<span class="fpstit">Impérios e Reinos</span><div class="fpsctl"><button class="fpsbtn" data-act="all">Todos</button><button class="fpsbtn" data-act="none">Nenhum</button></div>';
+  bd.appendChild(sh2);
+  sh2.querySelectorAll('.fpsbtn').forEach(btn=>{
+    btn.addEventListener('click',()=>{
+      if(btn.dataset.act==='none') EMPIRES.forEach(e=>hiddenEmpires.add(e.l));
+      else hiddenEmpires.clear();
+      buildFilterPanel();renderEmpires();clearSel();updateFpState();
+    });
+  });
+
+  EMPIRES.forEach(e=>{
+    const on=!hiddenEmpires.has(e.l);
+    const row=document.createElement('label');
+    row.className='fprow';
+    row.innerHTML=`<input type="checkbox" ${on?'checked':''}><span class="fpic" style="display:inline-block;width:10px;height:10px;border-radius:2px;background:${e.c};flex-shrink:0"></span><span class="fplbl">${e.l}</span>`;
+    row.querySelector('input').addEventListener('change',ev=>{
+      ev.target.checked?hiddenEmpires.delete(e.l):hiddenEmpires.add(e.l);
+      renderEmpires();clearSel();updateFpState();
+    });
+    bd.appendChild(row);
+  });
+}
+
+function updateFpState(){
+  const n=hiddenEmpires.size;
+  const cnt=document.getElementById('fpcnt');
+  const fbtn=document.getElementById('fpbtn');
+  cnt.textContent='';
+  fbtn.classList.toggle('active',n>0);
+}
+
+function toggleFp(open){
+  const fp=document.getElementById('fp');
+  const ovl=document.getElementById('fpovl');
+  const show=open!==undefined?open:!fp.classList.contains('open');
+  fp.classList.toggle('open',show);
+  ovl.classList.toggle('open',show);
+}
+
+document.getElementById('fpbtn').addEventListener('click',()=>toggleFp());
+document.getElementById('fpcls').addEventListener('click',()=>toggleFp(false));
+document.getElementById('fpovl').addEventListener('click',()=>toggleFp(false));
+
+function toggleRefP(open){
+  const rp=document.getElementById('refp');
+  const ovl=document.getElementById('refpovl');
+  const show=open!==undefined?open:!rp.classList.contains('open');
+  rp.classList.toggle('open',show);
+  ovl.classList.toggle('open',show);
+}
+document.getElementById('refbtn').addEventListener('click',()=>toggleRefP());
+document.getElementById('refpcls').addEventListener('click',()=>toggleRefP(false));
+document.getElementById('refpovl').addEventListener('click',()=>toggleRefP(false));
+
+// YEAR SEARCH
+function parseYear(raw){
+  const s=raw.trim().replace(/\s+/g,' ');
+  // formats: "-586", "586", "586 a.C.", "586 aC", "100 d.C.", "100 dC", "100 AD", "586 BC"
+  const neg=/a\.?c\.?|bc|antes/i.test(s);
+  const pos=/d\.?c\.?|ad|depois/i.test(s);
+  const num=parseInt(s.replace(/[^\d]/g,''),10);
+  if(isNaN(num))return null;
+  if(neg)return -num;
+  if(pos)return num;
+  // bare negative number
+  if(s.startsWith('-'))return -num;
+  return num;
+}
+function goToYear(){
+  const inp=document.getElementById('syear');
+  const y=parseYear(inp.value);
+  if(y===null||y<SY||y>EY){
+    const srch=document.getElementById('srch');
+    srch.classList.remove('srch-err');
+    void srch.offsetWidth;
+    srch.classList.add('srch-err');
+    return;
+  }
+  scrollToEra(y);
+  inp.blur();
+}
+document.getElementById('sgo').addEventListener('click',goToYear);
+document.getElementById('syear').addEventListener('keydown',ev=>{if(ev.key==='Enter')goToYear();});
+
+// ZOOM — preserva o ano visível no centro da tela
+function zoomAt(delta){
+  const scr=document.getElementById('scr');
+  const centerX=scr.scrollLeft+scr.clientWidth/2;
+  const centerYear=centerX/sc()+SY;  // ano no centro antes do zoom
+  zi=Math.max(0,Math.min(ZS.length-1,zi+delta));
+  document.getElementById('zl').textContent=ZS[zi]+'×';
+  renderAll();clearSel();
+  scr.scrollLeft=Math.max(0,(centerYear-SY)*sc()-scr.clientWidth/2);
+}
+document.getElementById('zi').addEventListener('click',()=>zoomAt(1));
+document.getElementById('zo').addEventListener('click',()=>zoomAt(-1));
+
+// TRACK TOGGLE (simple buttons)
+function setTrack(tid,on){
+  const tr=document.getElementById('t-'+tid);
+  const lb=document.getElementById('li-'+tid);
+  if(tr){if(on)tr.classList.remove('off');else tr.classList.add('off');}
+  if(lb){if(on)lb.classList.remove('off');else lb.classList.add('off');}
+}
+
+document.getElementById('tg').addEventListener('click',ev=>{
+  const ti=ev.target.closest('.ti[data-tid]');
+  if(!ti)return;
+  const id=ti.dataset.tid;
+  ti.classList.toggle('on');
+  setTrack(id,ti.classList.contains('on'));
+  clearSel();
+});
+
+// DROPDOWN — Reis
+let updateReisGroup=()=>{};
+(function(){
+  const btn=document.getElementById('ti-reis');
+  const menu=document.getElementById('dd-reis');
+  const wrap=document.getElementById('wrap-reis');
+
+  const REIS_H={'kings-north':100,'kings-south':100,'kings-pagan':180};
+  updateReisGroup=function(){
+    const checks=menu.querySelectorAll('input[type=checkbox]');
+    const on=Array.from(checks).filter(c=>c.checked).length;
+    const all=checks.length;
+    btn.classList.toggle('on',on>0);
+    btn.classList.toggle('partial',on>0&&on<all);
+    if(on===0)btn.style.opacity='0.35';
+    else btn.style.opacity='';
+    // recalculate height and sub-tag positions
+    let total=0;
+    const order=['kings-north','kings-south','kings-pagan'];
+    order.forEach(id=>{
+      const h=REIS_H[id];
+      const tr=document.getElementById('t-'+id);
+      const tag=document.getElementById('lbt-'+id);
+      const vis=tr&&!tr.classList.contains('off');
+      if(tag){
+        tag.classList.toggle('off',!vis);
+        if(vis)tag.style.top=(total+h/2)+'px';
+      }
+      if(vis)total+=h;
+    });
+    const lbi=document.getElementById('li-kings');
+    if(lbi){lbi.style.height=total+'px';lbi.classList.toggle('off',total===0);}
+  }
+
+  btn.addEventListener('click',ev=>{
+    ev.stopPropagation();
+    menu.classList.toggle('open');
+  });
+
+  menu.querySelectorAll('input[type=checkbox]').forEach(cb=>{
+    cb.addEventListener('change',()=>{
+      setTrack(cb.dataset.subtid,cb.checked);
+      updateReisGroup();
+      clearSel();
+    });
+  });
+
+  document.addEventListener('click',ev=>{
+    if(!wrap.contains(ev.target))menu.classList.remove('open');
+  });
+})();
+
+// DROPDOWN — Profetas
+(function(){
+  const btn=document.getElementById('ti-prophets');
+  const menu=document.getElementById('dd-prophets');
+  const wrap=document.getElementById('wrap-prophets');
+
+  const PROF_H={'prophets-north':80,'prophets-south':180};
+  function updateProfetasGroup(){
+    const checks=menu.querySelectorAll('input[type=checkbox]');
+    const on=Array.from(checks).filter(c=>c.checked).length;
+    const all=checks.length;
+    btn.classList.toggle('on',on>0);
+    btn.classList.toggle('partial',on>0&&on<all);
+    if(on===0)btn.style.opacity='0.35'; else btn.style.opacity='';
+    let total=0;
+    const order=['prophets-north','prophets-south'];
+    order.forEach(id=>{
+      const h=PROF_H[id];
+      const tr=document.getElementById('t-'+id);
+      const tag=document.getElementById('lbt-'+id);
+      const vis=tr&&!tr.classList.contains('off');
+      if(tag){tag.classList.toggle('off',!vis);if(vis)tag.style.top=(total+h/2)+'px';}
+      if(vis)total+=h;
+    });
+    const lbi=document.getElementById('li-prophets');
+    if(lbi){lbi.style.height=total+'px';lbi.classList.toggle('off',total===0);}
+  }
+
+  btn.addEventListener('click',ev=>{ev.stopPropagation();menu.classList.toggle('open');});
+
+  menu.querySelectorAll('input[type=checkbox]').forEach(cb=>{
+    cb.addEventListener('change',()=>{
+      setTrack(cb.dataset.subtid,cb.checked);
+      updateProfetasGroup();
+      clearSel();
+    });
+  });
+
+  document.addEventListener('click',ev=>{
+    if(!wrap.contains(ev.target))menu.classList.remove('open');
+  });
+})();
+
+// DROPDOWN — Impérios
+(function(){
+  const btn=document.getElementById('ti-empires');
+  const menu=document.getElementById('dd-empires');
+  const wrap=document.getElementById('wrap-empires');
+
+  function buildEmpiresDD(){
+    menu.innerHTML='';
+    // Toggle the whole empires track
+    const allItem=document.createElement('label');
+    allItem.className='ti-dditem';
+    const allCb=document.createElement('input');
+    allCb.type='checkbox';allCb.checked=true;allCb.id='dd-all-emp';
+    const allLbl=document.createElement('span');
+    allLbl.className='ti-dditem-lbl';allLbl.style.fontWeight='600';allLbl.textContent='Mostrar todos';
+    allItem.appendChild(allCb);allItem.appendChild(allLbl);
+    menu.appendChild(allItem);
+    const sep=document.createElement('div');sep.className='ti-ddsep';menu.appendChild(sep);
+
+    EMPIRES.forEach(e=>{
+      const row=document.createElement('label');
+      row.className='ti-dditem';
+      const cb=document.createElement('input');
+      cb.type='checkbox';cb.checked=!hiddenEmpires.has(e.l);
+      cb.addEventListener('change',()=>{
+        cb.checked?hiddenEmpires.delete(e.l):hiddenEmpires.add(e.l);
+        renderEmpires();clearSel();updateEmpiresBtn();
+        // sync "all" checkbox
+        const all=menu.querySelectorAll('input[type=checkbox]');
+        allCb.checked=Array.from(all).slice(1).every(c=>c.checked);
+        allCb.indeterminate=!allCb.checked&&Array.from(all).slice(1).some(c=>c.checked);
+      });
+      const dot=document.createElement('div');
+      dot.className='ti-dditem-dot';dot.style.background=e.c;
+      const lbl=document.createElement('span');
+      lbl.className='ti-dditem-lbl';lbl.textContent=e.l;
+      row.appendChild(cb);row.appendChild(dot);row.appendChild(lbl);
+      menu.appendChild(row);
+    });
+
+    allCb.addEventListener('change',()=>{
+      if(allCb.checked)hiddenEmpires.clear();
+      else EMPIRES.forEach(e=>hiddenEmpires.add(e.l));
+      menu.querySelectorAll('input[type=checkbox]').forEach((c,i)=>{if(i>0)c.checked=allCb.checked;});
+      renderEmpires();clearSel();updateEmpiresBtn();
+    });
+  }
+
+  function updateEmpiresBtn(){
+    const n=hiddenEmpires.size;
+    const total=EMPIRES.length;
+    const anyVisible=n<total;
+    btn.classList.toggle('on',anyVisible);
+    btn.classList.toggle('partial',n>0&&n<total);
+    setTrack('empires',anyVisible);
+    // sync allCb
+    const allCb=menu.querySelector('input');
+    if(allCb){allCb.checked=n===0;allCb.indeterminate=n>0&&n<total;}
+  }
+
+  btn.addEventListener('click',ev=>{
+    ev.stopPropagation();
+    if(!menu.children.length)buildEmpiresDD();
+    menu.classList.toggle('open');
+  });
+
+  document.addEventListener('click',ev=>{
+    if(!wrap.contains(ev.target))menu.classList.remove('open');
+  });
+})()
+
+// CLOSE TOOLTIP — X closes balloon only; dashed line stays
+document.getElementById('ttc').addEventListener('click',ev=>{ev.stopPropagation();hideTT();});
+document.addEventListener('click',ev=>{
+  if(!ev.target.closest('.dot')&&!ev.target.closest('.eband')&&!ev.target.closest('.tt'))hideTT();
+});
+
+// THEME
+let uth=null;
+const idk=window.matchMedia('(prefers-color-scheme: dark)').matches;
+document.getElementById('thbtn').addEventListener('click',()=>{
+  const b=document.getElementById('thbtn');
+  if(uth==='dark'||(!uth&&idk)){uth='light';document.documentElement.setAttribute('data-theme','light');b.textContent='☀';}
+  else{uth='dark';document.documentElement.setAttribute('data-theme','dark');b.textContent='☽';}
+});
+
+// ERA JUMP
+function scrollToEra(year){
+  const scr=document.getElementById('scr');
+  scr.scrollTo({left:Math.max(0,px(year)-300),behavior:'smooth'});
+}
+
+// DRAG TO SCROLL
+(()=>{
+  const scr=document.getElementById('scr');
+  let dragging=false,startX=0,scrollX=0;
+  scr.addEventListener('mousedown',ev=>{
+    if(ev.target.closest('.dot,.eband,.tt,.fp,.hd,.tg,.ibtn,.zbtn'))return;
+    dragging=true;startX=ev.clientX;scrollX=scr.scrollLeft;
+    scr.classList.add('dragging');
+  });
+  window.addEventListener('mouseup',()=>{dragging=false;scr.classList.remove('dragging');});
+  window.addEventListener('mousemove',ev=>{
+    if(!dragging)return;
+    ev.preventDefault();
+    scr.scrollLeft=scrollX-(ev.clientX-startX);
+  });
+})();
+
+// INIT — scroll to ~1400 BC area by default
+buildFilterPanel();
+updateFpState();
+renderAll();
+
+// Make label column rows collapsible
+document.querySelectorAll('.lbi[id^="li-"]').forEach(lb=>{
+  lb.addEventListener('click',()=>{
+    const tid=lb.id.replace('li-','');
+    const tr=document.getElementById('t-'+tid);
+    if(!tr)return;
+    const isOn=!tr.classList.contains('off');
+    toggleTrack(tid,!isOn);
+  });
+});
+toggleFp(false);
+setTimeout(()=>{
+  const screl=document.getElementById('scr');
+  screl.scrollLeft=Math.max(0,px(-1200)-100);
+},100);
+</script>

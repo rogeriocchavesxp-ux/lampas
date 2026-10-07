@@ -8,7 +8,7 @@ import { LampasLogo } from '@/components/LampasLogo'
 
 export const NAV_HEIGHT = 52
 
-const HIDE_ON_PATHS = ['/auth/login', '/auth/callback', '/auth/reset', '/']
+const HIDE_ON_PATHS = ['/auth/login', '/auth/callback', '/auth/reset', '/', '/cronologia']
 
 type DropLink    = { label: string; href: string; badge?: string }
 type DropSep     = { sep: true; label: string }
