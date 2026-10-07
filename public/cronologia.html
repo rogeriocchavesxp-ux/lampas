@@ -356,7 +356,16 @@ html{height:100%}
         <label class="ti-dditem"><input type="checkbox" checked data-subtid="kings-pagan"><div class="ti-dditem-dot" style="background:var(--ch)"></div><span class="ti-dditem-lbl">Reis Pagãos</span></label>
       </div>
     </div>
-    <button class="ti on" data-tid="letters" style="color:var(--clt)"><div class="tdot"></div><span class="tlbl">Epístolas NT</span></button>
+    <!-- Cartas com dropdown -->
+    <div class="ti-wrap" id="wrap-letters">
+      <button class="ti on" id="ti-letters" style="color:var(--clt)"><div class="tdot"></div><span class="tlbl">Cartas</span><span class="tarr">▾</span></button>
+      <div class="ti-ddmenu" id="dd-letters">
+        <label class="ti-dditem"><input type="checkbox" checked data-subtid="letters-pauline"><div class="ti-dditem-dot" style="background:var(--clt)"></div><span class="ti-dditem-lbl">Paulinas</span></label>
+        <label class="ti-dditem"><input type="checkbox" checked data-subtid="letters-general"><div class="ti-dditem-dot" style="background:var(--clt)"></div><span class="ti-dditem-lbl">Gerais</span></label>
+        <div class="ti-ddsep"></div>
+        <label class="ti-dditem"><input type="checkbox" checked data-subtid="letters-apoc"><div class="ti-dditem-dot" style="background:var(--clt)"></div><span class="ti-dditem-lbl">Apocalipse</span></label>
+      </div>
+    </div>
     <button class="ti on" data-tid="patristic" style="color:var(--cpa)"><div class="tdot"></div><span class="tlbl">Pais da Igreja</span></button>
   </div>
   <div class="tg-sep"></div>
@@ -396,7 +405,12 @@ html{height:100%}
       <span class="lbi-sub-tag" id="lbt-kings-south" style="top:150px;color:var(--cks)">Judá</span>
       <span class="lbi-sub-tag" id="lbt-kings-pagan" style="top:290px;color:var(--ch)">Pagãos</span>
     </div>
-    <div class="lbi" id="li-letters" style="height:150px"><div class="lbdot" style="background:var(--clt)"></div>Epístolas NT</div>
+    <div class="lbi" id="li-letters" style="height:280px;position:relative">
+      <div class="lbdot" style="background:var(--clt)"></div>Cartas
+      <span class="lbi-sub-tag" id="lbt-letters-pauline" style="top:60px;color:var(--clt)">Paulinas</span>
+      <span class="lbi-sub-tag" id="lbt-letters-general" style="top:170px;color:var(--clt)">Gerais</span>
+      <span class="lbi-sub-tag" id="lbt-letters-apoc" style="top:250px;color:var(--clt)">Apoc.</span>
+    </div>
     <div class="lbi" id="li-patristic" style="height:100px"><div class="lbdot" style="background:var(--cpa)"></div>Pais da Igreja</div>
   </div>
   <div class="scr" id="scr">
@@ -413,7 +427,9 @@ html{height:100%}
       <div class="track" id="t-kings-north" style="height:100px"></div>
       <div class="track" id="t-kings-south" style="height:100px"></div>
       <div class="track" id="t-kings-pagan" style="height:180px"></div>
-      <div class="track" id="t-letters" style="height:150px"></div>
+      <div class="track" id="t-letters-pauline" style="height:120px"></div>
+      <div class="track" id="t-letters-general" style="height:100px"></div>
+      <div class="track" id="t-letters-apoc" style="height:60px"></div>
       <div class="track" id="t-patristic" style="height:100px"></div>
     </div>
   </div>
@@ -791,38 +807,30 @@ const CHRISTIANITY=[
 ];
 
 const LETTERS_NT=[
-  // Epístola de Tiago
-  {id:'lt-james',f:45,t:49,l:'Tiago',ic:'✉️',d:'Escrita por Tiago, irmão do Senhor, líder da Igreja de Jerusalém (~45–49 d.C.). A carta mais prática do NT: fé viva produz obras, controle da língua, cuidado com os pobres. "Sede praticantes da palavra, e não apenas ouvintes." Endereçada às doze tribos na dispersão.',r:'Tiago 1:1'},
-  // Cartas de Paulo — Primeira Viagem / Período Antioquia
-  {id:'lt-gal',f:48,t:52,l:'Gálatas',ic:'✉️',d:'Paulo às igrejas da Galácia (~48–52 d.C.). Defesa ferrenha da justificação pela fé somente, contra os judaizantes que exigiam circuncisão. "Já que pela fé sois todos filhos de Deus em Cristo Jesus... não há judeu nem grego, escravo nem livre, homem nem mulher." Gênese da soteriologia paulina. Lutero: "minha Gálatas".',r:'Gl 1:1; Gl 2:16; Gl 3:26-28; Gl 5:1'},
-  // Cartas de Paulo — Segunda Viagem (Corinto)
-  {id:'lt-1thess',f:49,t:51,l:'1 Tessalonicenses',ic:'✉️',d:'Primeira carta preservada de Paulo (~49–51 d.C.), escrita de Corinto após Sila e Timóteo voltarem com notícias de Tessalônica. A mais antiga do corpus paulino e do NT inteiro. Instrução sobre santidade, amor fraternal e a volta de Cristo: "O próprio Senhor descerá do céu com alarido." Fundação da escatologia paulina.',r:'1 Ts 1:1; 4:13-18; 5:2'},
-  {id:'lt-2thess',f:50,t:52,l:'2 Tessalonicenses',ic:'✉️',d:'Paulo de Corinto (~50–52 d.C.). Corrige mal-entendido escatológico: o Dia do Senhor ainda não chegou. Antes dele virá a apostasia e a revelação do "homem da iniquidade". Exorta à perseverança na perseguição e ao trabalho diligente — "quem não trabalhar, não coma".',r:'2 Ts 2:1-12; 3:10'},
-  // Cartas de Paulo — Terceira Viagem (Éfeso/Macedônia)
-  {id:'lt-1cor',f:53,t:55,l:'1 Coríntios',ic:'✉️',d:'Paulo de Éfeso (~53–55 d.C.). Responde às divisões, imoralidade e erros doutrinários na Igreja de Corinto. Capítulos fundamentais: cap. 13 (hino ao amor), cap. 15 (ressurreição — "se Cristo não ressuscitou, vã é a nossa pregação"). A mais abrangente carta paulina sobre vida comunitária.',r:'1 Co 1:10-17; 13; 15:12-22'},
-  {id:'lt-2cor',f:55,t:57,l:'2 Coríntios',ic:'✉️',d:'Paulo da Macedônia (~55–57 d.C.). A mais autobiográfica das cartas paulinas: defende seu apostolado contra os "superapóstolos" e revela sua teologia do sofrimento. "O meu poder se aperfeiçoa na fraqueza." O catálogo de sofrimentos (cap. 11) é documento histórico sobre o custo do ministério apostólico.',r:'2 Co 1:3-7; 4:7-12; 11:23-33; 12:9'},
-  {id:'lt-rom',f:56,t:58,l:'Romanos',ic:'✉️',d:'Paulo de Corinto (~56–58 d.C.), escrita antes de ir a Roma pela primeira vez. A mais sistemática das cartas paulinas — "o evangelho mais puro de Paulo" (Melanchthon). Desenvolve: todos pecaram, justificação pela fé, vida no Espírito, a soberania divina na eleição (cap. 9–11), ética cristã. Fundamento da Reforma Protestante.',r:'Rm 1:16-17; 3:21-26; 5:1; 8:28-39; 12:1-2'},
-  // Cartas de Paulo — Prisão (Roma)
-  {id:'lt-eph',f:60,t:62,l:'Efésios',ic:'✉️',d:'Paulo na prisão em Roma (~60–62 d.C.). A "epístola mais elevada do NT" (Lutero). Capítulos 1–3: bençãos espirituais, salvação pela graça, o plano eterno de unir judeus e gentios em um só corpo. Capítulos 4–6: vida digna da vocação, o marido como Cristo, a armadura de Deus. Magna carta da eclesiologia.',r:'Ef 1:3-14; 2:8-10; 5:22-33; 6:10-18'},
-  {id:'lt-phil',f:60,t:62,l:'Filipenses',ic:'✉️',d:'Paulo na prisão em Roma (~60–62 d.C.), para a igreja que mais o amava. A carta mais alegre do NT: "Alegrai-vos sempre no Senhor!" O Hino Cristológico (2:5-11) — "Ele esvaziou a si mesmo, assumindo a forma de servo" — é o mais alto texto sobre a kenosis e encarnação. "Para mim, o viver é Cristo e o morrer é ganho."',r:'Fl 2:5-11; 4:4-7; 4:11-13'},
-  {id:'lt-col',f:60,t:62,l:'Colossenses',ic:'✉️',d:'Paulo na prisão em Roma (~60–62 d.C.), contra uma heresia proto-gnóstica em Colossos. Cristo como "imagem do Deus invisível, primogênito de toda a criação... por Ele foram criadas todas as coisas." A supremacia total de Cristo sobre toda filosofia, regulamento e poder espiritual. A mais alta cristologia das cartas paulinas.',r:'Cl 1:15-20; 2:6-10; 3:1-4'},
-  {id:'lt-phm',f:60,t:62,l:'Filemom',ic:'✉️',d:'Paulo na prisão em Roma (~60–62 d.C.). A menor carta paulina — uma nota pessoal a Filemom intercedendo pelo escravo fugitivo Onésimo, agora convertido. "Rogo-te por amor: recebe-o, não mais como escravo, mas como irmão amado." Não decreta a abolição da escravidão, mas lança o princípio que a subverte do interior.',r:'Fm 1:8-21'},
-  // Carta aos Hebreus
-  {id:'lt-heb',f:60,t:70,l:'Hebreus',ic:'✉️',d:'Autor desconhecido (~60–70 d.C.; possivelmente Apolo, Priscila ou Barnabé). Endereçada a judeus cristãos tentados a retornar ao judaísmo. Teologia do sacerdócio de Cristo: Ele é o sumo sacerdote perfeito, o sacrifício definitivo, o mediador da nova aliança. "Jesus Cristo é o mesmo, ontem, hoje e para sempre." O Capítulo 11: o Hall da Fé.',r:'Hb 1:1-4; 4:14-16; 9:11-15; 11; 12:1-2; 13:8'},
-  // Cartas Pastorais de Paulo
-  {id:'lt-1tim',f:62,t:65,l:'1 Timóteo',ic:'✉️',d:'Paulo a Timóteo após a primeira prisão (~62–65 d.C.). Instruções sobre governo da Igreja: qualificações para presbíteros e diáconos, combate à falsa doutrina, oração pública, papel das mulheres. "Fiel é esta palavra... Cristo Jesus veio ao mundo para salvar os pecadores, dos quais eu sou o maior." A fundação do ministério ordenado.',r:'1 Tm 1:15; 2:1-7; 3:1-13; 6:6-10'},
-  {id:'lt-tit',f:62,t:65,l:'Tito',ic:'✉️',d:'Paulo a Tito, na ilha de Creta (~62–65 d.C.). Organizar a Igreja, ordenar presbíteros, combater os "da circuncisão". Fundamento da graça: "Ele nos salvou, não por obras de justiça que tenhamos feito, mas segundo a sua misericórdia." A mais concisa das cartas pastorais. Marco da eclesiologia reformada.',r:'Tt 1:5-9; 2:11-14; 3:4-7'},
-  // Cartas de Pedro
-  {id:'lt-1pet',f:62,t:65,l:'1 Pedro',ic:'✉️',d:'Pedro de Roma (~62–65 d.C.), para cristãos dispersos no Ponto, Galácia, Capadócia, Ásia e Bitínia — sofrendo perseguição. "Sois raça eleita, sacerdócio real, nação santa." Fundamentos para viver como peregrinos no mundo: submissão às autoridades, santidade no sofrimento, esperança viva na ressurreição. Martírio de Pedro ca. 64–68.',r:'1 Pe 1:3-9; 2:9-12; 3:13-17; 4:12-19'},
-  {id:'lt-2tim',f:66,t:68,l:'2 Timóteo',ic:'✉️',d:'Última carta de Paulo, da segunda prisão em Roma (~66–68 d.C.), antes de seu martírio. O testamento do apóstolo: "Combati o bom combate, terminei a carreira, guardei a fé." Exorta Timóteo a ser corajoso, pregar a Palavra em toda circunstância, e suportar o sofrimento. O documento mais pessoal e tocante do corpus paulino.',r:'2 Tm 1:7; 2:1-7; 3:16-17; 4:6-8'},
-  {id:'lt-2pet',f:65,t:68,l:'2 Pedro',ic:'✉️',d:'Pedro (~65–68 d.C.), antes de seu martírio. Adverte contra falsos mestres que negariam a volta de Cristo e viveriam dissoluta­mente. "O Senhor não retarda a sua promessa... mas é longânimo... não querendo que nenhum pereça." Importância das Escrituras: a profecia não veio da vontade humana mas "homens falaram da parte de Deus, movidos pelo Espírito Santo."',r:'2 Pe 1:16-21; 3:3-13'},
-  // Cartas de João
-  {id:'lt-jude',f:65,t:80,l:'Judas',ic:'✉️',d:'Judas, irmão de Tiago e de Jesus (~65–80 d.C.). Breve e urgente: combater os que "transformam a graça do nosso Deus em libertinagem." Refere-se ao livro de Enoque e à Assunção de Moisés. A mais contundente carta contra a antinomia. Termina com uma das mais sublimes doxologias do NT: "Àquele que é poderoso para vos guardar..."',r:'Jd 1:3-4; 24-25'},
-  {id:'lt-1john',f:85,t:95,l:'1 João',ic:'✉️',d:'João, de Éfeso (~85–95 d.C.). A epístola do amor: "Deus é amor." Testa o verdadeiro conhecimento de Deus por três critérios: doutrina correta sobre Cristo (contra o docetismo), amor fraternal e obediência ética. "Nós amamos porque ele nos amou primeiro." A mais próxima teologicamente do Evangelho de João.',r:'1 Jo 1:5-10; 3:16-18; 4:7-12; 5:11-13'},
-  {id:'lt-2john',f:85,t:95,l:'2 João',ic:'✉️',d:'João, de Éfeso (~85–95 d.C.), à "senhora eleita e a seus filhos". A mais curta carta do NT. Alerta sobre falsos mestres que negam a encarnação real de Cristo (docetismo). "Todo aquele que vai além e não permanece na doutrina de Cristo não tem a Deus."',r:'2 Jo 1:7-11'},
-  {id:'lt-3john',f:85,t:95,l:'3 João',ic:'✉️',d:'João, de Éfeso (~85–95 d.C.), a Gaio. Elogia Gaio pela hospitalidade missionária, critica o autoritarismo de Diótrefes que recusava receber os missionários, e recomenda Demétrio. O único lugar do NT com um nome de pessoa — Diótrefes — vinculado a exercício abusivo de liderança.',r:'3 Jo 1:5-8; 9-10'},
-  // Apocalipse
-  {id:'lt-rev',f:95,t:96,l:'Apocalipse',ic:'✉️',d:'João, da ilha de Patmos (~95–96 d.C.), durante a perseguição de Domiciano. Endereçada como carta às sete igrejas da Ásia. Visão cósmica da soberania de Deus sobre a história: o Cordeiro imolado que reina, a queda de Babilônia (Roma), a nova Criação. "Ei-lo que vem com as nuvens." A última palavra das Escrituras: "Vem, Senhor Jesus!"',r:'Ap 1:1-8; 5:9-14; 21:1-5; 22:20'},
+  // Gerais
+  {id:'lt-james',f:45,t:49,cat:'g',l:'Tiago',ic:'✉️',d:'Escrita por Tiago, irmão do Senhor, líder da Igreja de Jerusalém (~45–49 d.C.). A carta mais prática do NT: fé viva produz obras, controle da língua, cuidado com os pobres. "Sede praticantes da palavra, e não apenas ouvintes." Endereçada às doze tribos na dispersão.',r:'Tiago 1:1'},
+  // Paulinas
+  {id:'lt-gal',f:48,t:52,cat:'p',l:'Gálatas',ic:'✉️',d:'Paulo às igrejas da Galácia (~48–52 d.C.). Defesa ferrenha da justificação pela fé somente, contra os judaizantes que exigiam circuncisão. "Já que pela fé sois todos filhos de Deus em Cristo Jesus... não há judeu nem grego, escravo nem livre, homem nem mulher." Gênese da soteriologia paulina. Lutero: "minha Gálatas".',r:'Gl 1:1; Gl 2:16; Gl 3:26-28; Gl 5:1'},
+  {id:'lt-1thess',f:49,t:51,cat:'p',l:'1 Tessalonicenses',ic:'✉️',d:'Primeira carta preservada de Paulo (~49–51 d.C.), escrita de Corinto após Sila e Timóteo voltarem com notícias de Tessalônica. A mais antiga do corpus paulino e do NT inteiro. Instrução sobre santidade, amor fraternal e a volta de Cristo: "O próprio Senhor descerá do céu com alarido." Fundação da escatologia paulina.',r:'1 Ts 1:1; 4:13-18; 5:2'},
+  {id:'lt-2thess',f:50,t:52,cat:'p',l:'2 Tessalonicenses',ic:'✉️',d:'Paulo de Corinto (~50–52 d.C.). Corrige mal-entendido escatológico: o Dia do Senhor ainda não chegou. Antes dele virá a apostasia e a revelação do "homem da iniquidade". Exorta à perseverança na perseguição e ao trabalho diligente — "quem não trabalhar, não coma".',r:'2 Ts 2:1-12; 3:10'},
+  {id:'lt-1cor',f:53,t:55,cat:'p',l:'1 Coríntios',ic:'✉️',d:'Paulo de Éfeso (~53–55 d.C.). Responde às divisões, imoralidade e erros doutrinários na Igreja de Corinto. Capítulos fundamentais: cap. 13 (hino ao amor), cap. 15 (ressurreição — "se Cristo não ressuscitou, vã é a nossa pregação"). A mais abrangente carta paulina sobre vida comunitária.',r:'1 Co 1:10-17; 13; 15:12-22'},
+  {id:'lt-2cor',f:55,t:57,cat:'p',l:'2 Coríntios',ic:'✉️',d:'Paulo da Macedônia (~55–57 d.C.). A mais autobiográfica das cartas paulinas: defende seu apostolado contra os "superapóstolos" e revela sua teologia do sofrimento. "O meu poder se aperfeiçoa na fraqueza." O catálogo de sofrimentos (cap. 11) é documento histórico sobre o custo do ministério apostólico.',r:'2 Co 1:3-7; 4:7-12; 11:23-33; 12:9'},
+  {id:'lt-rom',f:56,t:58,cat:'p',l:'Romanos',ic:'✉️',d:'Paulo de Corinto (~56–58 d.C.), escrita antes de ir a Roma pela primeira vez. A mais sistemática das cartas paulinas — "o evangelho mais puro de Paulo" (Melanchthon). Desenvolve: todos pecaram, justificação pela fé, vida no Espírito, a soberania divina na eleição (cap. 9–11), ética cristã. Fundamento da Reforma Protestante.',r:'Rm 1:16-17; 3:21-26; 5:1; 8:28-39; 12:1-2'},
+  {id:'lt-eph',f:60,t:62,cat:'p',l:'Efésios',ic:'✉️',d:'Paulo na prisão em Roma (~60–62 d.C.). A "epístola mais elevada do NT" (Lutero). Capítulos 1–3: bençãos espirituais, salvação pela graça, o plano eterno de unir judeus e gentios em um só corpo. Capítulos 4–6: vida digna da vocação, o marido como Cristo, a armadura de Deus. Magna carta da eclesiologia.',r:'Ef 1:3-14; 2:8-10; 5:22-33; 6:10-18'},
+  {id:'lt-phil',f:60,t:62,cat:'p',l:'Filipenses',ic:'✉️',d:'Paulo na prisão em Roma (~60–62 d.C.), para a igreja que mais o amava. A carta mais alegre do NT: "Alegrai-vos sempre no Senhor!" O Hino Cristológico (2:5-11) — "Ele esvaziou a si mesmo, assumindo a forma de servo" — é o mais alto texto sobre a kenosis e encarnação. "Para mim, o viver é Cristo e o morrer é ganho."',r:'Fl 2:5-11; 4:4-7; 4:11-13'},
+  {id:'lt-col',f:60,t:62,cat:'p',l:'Colossenses',ic:'✉️',d:'Paulo na prisão em Roma (~60–62 d.C.), contra uma heresia proto-gnóstica em Colossos. Cristo como "imagem do Deus invisível, primogênito de toda a criação... por Ele foram criadas todas as coisas." A supremacia total de Cristo sobre toda filosofia, regulamento e poder espiritual. A mais alta cristologia das cartas paulinas.',r:'Cl 1:15-20; 2:6-10; 3:1-4'},
+  {id:'lt-phm',f:60,t:62,cat:'p',l:'Filemom',ic:'✉️',d:'Paulo na prisão em Roma (~60–62 d.C.). A menor carta paulina — uma nota pessoal a Filemom intercedendo pelo escravo fugitivo Onésimo, agora convertido. "Rogo-te por amor: recebe-o, não mais como escravo, mas como irmão amado." Não decreta a abolição da escravidão, mas lança o princípio que a subverte do interior.',r:'Fm 1:8-21'},
+  {id:'lt-heb',f:60,t:70,cat:'g',l:'Hebreus',ic:'✉️',d:'Autor desconhecido (~60–70 d.C.; possivelmente Apolo, Priscila ou Barnabé). Endereçada a judeus cristãos tentados a retornar ao judaísmo. Teologia do sacerdócio de Cristo: Ele é o sumo sacerdote perfeito, o sacrifício definitivo, o mediador da nova aliança. "Jesus Cristo é o mesmo, ontem, hoje e para sempre." O Capítulo 11: o Hall da Fé.',r:'Hb 1:1-4; 4:14-16; 9:11-15; 11; 12:1-2; 13:8'},
+  {id:'lt-1tim',f:62,t:65,cat:'p',l:'1 Timóteo',ic:'✉️',d:'Paulo a Timóteo após a primeira prisão (~62–65 d.C.). Instruções sobre governo da Igreja: qualificações para presbíteros e diáconos, combate à falsa doutrina, oração pública, papel das mulheres. "Fiel é esta palavra... Cristo Jesus veio ao mundo para salvar os pecadores, dos quais eu sou o maior." A fundação do ministério ordenado.',r:'1 Tm 1:15; 2:1-7; 3:1-13; 6:6-10'},
+  {id:'lt-tit',f:62,t:65,cat:'p',l:'Tito',ic:'✉️',d:'Paulo a Tito, na ilha de Creta (~62–65 d.C.). Organizar a Igreja, ordenar presbíteros, combater os "da circuncisão". Fundamento da graça: "Ele nos salvou, não por obras de justiça que tenhamos feito, mas segundo a sua misericórdia." A mais concisa das cartas pastorais. Marco da eclesiologia reformada.',r:'Tt 1:5-9; 2:11-14; 3:4-7'},
+  {id:'lt-1pet',f:62,t:65,cat:'g',l:'1 Pedro',ic:'✉️',d:'Pedro de Roma (~62–65 d.C.), para cristãos dispersos no Ponto, Galácia, Capadócia, Ásia e Bitínia — sofrendo perseguição. "Sois raça eleita, sacerdócio real, nação santa." Fundamentos para viver como peregrinos no mundo: submissão às autoridades, santidade no sofrimento, esperança viva na ressurreição. Martírio de Pedro ca. 64–68.',r:'1 Pe 1:3-9; 2:9-12; 3:13-17; 4:12-19'},
+  {id:'lt-2tim',f:66,t:68,cat:'p',l:'2 Timóteo',ic:'✉️',d:'Última carta de Paulo, da segunda prisão em Roma (~66–68 d.C.), antes de seu martírio. O testamento do apóstolo: "Combati o bom combate, terminei a carreira, guardei a fé." Exorta Timóteo a ser corajoso, pregar a Palavra em toda circunstância, e suportar o sofrimento. O documento mais pessoal e tocante do corpus paulino.',r:'2 Tm 1:7; 2:1-7; 3:16-17; 4:6-8'},
+  {id:'lt-2pet',f:65,t:68,cat:'g',l:'2 Pedro',ic:'✉️',d:'Pedro (~65–68 d.C.), antes de seu martírio. Adverte contra falsos mestres que negariam a volta de Cristo e viveriam dissoluta­mente. "O Senhor não retarda a sua promessa... mas é longânimo... não querendo que nenhum pereça." Importância das Escrituras: a profecia não veio da vontade humana mas "homens falaram da parte de Deus, movidos pelo Espírito Santo."',r:'2 Pe 1:16-21; 3:3-13'},
+  {id:'lt-jude',f:65,t:80,cat:'g',l:'Judas',ic:'✉️',d:'Judas, irmão de Tiago e de Jesus (~65–80 d.C.). Breve e urgente: combater os que "transformam a graça do nosso Deus em libertinagem." Refere-se ao livro de Enoque e à Assunção de Moisés. A mais contundente carta contra a antinomia. Termina com uma das mais sublimes doxologias do NT: "Àquele que é poderoso para vos guardar..."',r:'Jd 1:3-4; 24-25'},
+  {id:'lt-1john',f:85,t:95,cat:'g',l:'1 João',ic:'✉️',d:'João, de Éfeso (~85–95 d.C.). A epístola do amor: "Deus é amor." Testa o verdadeiro conhecimento de Deus por três critérios: doutrina correta sobre Cristo (contra o docetismo), amor fraternal e obediência ética. "Nós amamos porque ele nos amou primeiro." A mais próxima teologicamente do Evangelho de João.',r:'1 Jo 1:5-10; 3:16-18; 4:7-12; 5:11-13'},
+  {id:'lt-2john',f:85,t:95,cat:'g',l:'2 João',ic:'✉️',d:'João, de Éfeso (~85–95 d.C.), à "senhora eleita e a seus filhos". A mais curta carta do NT. Alerta sobre falsos mestres que negam a encarnação real de Cristo (docetismo). "Todo aquele que vai além e não permanece na doutrina de Cristo não tem a Deus."',r:'2 Jo 1:7-11'},
+  {id:'lt-3john',f:85,t:95,cat:'g',l:'3 João',ic:'✉️',d:'João, de Éfeso (~85–95 d.C.), a Gaio. Elogia Gaio pela hospitalidade missionária, critica o autoritarismo de Diótrefes que recusava receber os missionários, e recomenda Demétrio. O único lugar do NT com um nome de pessoa — Diótrefes — vinculado a exercício abusivo de liderança.',r:'3 Jo 1:5-8; 9-10'},
+  {id:'lt-rev',f:95,t:96,cat:'a',l:'Apocalipse',ic:'✉️',d:'João, da ilha de Patmos (~95–96 d.C.), durante a perseguição de Domiciano. Endereçada como carta às sete igrejas da Ásia. Visão cósmica da soberania de Deus sobre a história: o Cordeiro imolado que reina, a queda de Babilônia (Roma), a nova Criação. "Ei-lo que vem com as nuvens." A última palavra das Escrituras: "Vem, Senhor Jesus!"',r:'Ap 1:1-8; 5:9-14; 21:1-5; 22:20'},
 ];
 
 // --- RENDER ---
@@ -837,7 +845,7 @@ const PERIODS=[
 ];
 
 function renderPeriodBands(){
-  const tracks=['events','biblical','christianity','israel','prophets-north','prophets-south','kings-north','kings-south','kings-pagan','letters','patristic'];
+  const tracks=['events','biblical','christianity','israel','prophets-north','prophets-south','kings-north','kings-south','kings-pagan','letters-pauline','letters-general','letters-apoc','patristic'];
   tracks.forEach(tid=>{
     const tr=document.getElementById('t-'+tid);
     if(!tr)return;
@@ -889,7 +897,7 @@ function renderPeriodBands(){
     lbl.textContent='A.D.';
     r.appendChild(lbl);
     // linha vertical em todas as faixas
-    const allTracks=['t-empires','t-events','t-biblical','t-christianity','t-israel','t-prophets-north','t-prophets-south','t-kings-north','t-kings-south','t-kings-pagan','t-letters','t-patristic'];
+    const allTracks=['t-empires','t-events','t-biblical','t-christianity','t-israel','t-prophets-north','t-prophets-south','t-kings-north','t-kings-south','t-kings-pagan','t-letters-pauline','t-letters-general','t-letters-apoc','t-patristic'];
     allTracks.forEach(tid=>{
       const tr=document.getElementById(tid);
       if(!tr)return;
@@ -904,7 +912,7 @@ function renderPeriodBands(){
 
 function setW(){
   const w=tw()+'px';
-  ['inn','ruler','t-empires','t-events','t-biblical','t-christianity','t-israel','t-prophets-north','t-prophets-south','t-kings-north','t-kings-south','t-kings-pagan','t-letters','t-patristic'].forEach(id=>{
+  ['inn','ruler','t-empires','t-events','t-biblical','t-christianity','t-israel','t-prophets-north','t-prophets-south','t-kings-north','t-kings-south','t-kings-pagan','t-letters-pauline','t-letters-general','t-letters-apoc','t-patristic'].forEach(id=>{
     const el=document.getElementById(id);
     if(el)el.style.width=w;
   });
@@ -1290,7 +1298,9 @@ function renderAll(){
   renderDots('kings-south',KINGS_JUDAH.map(e=>({...e,ic:'👑'})),'var(--cks)',e=>px((e.f+e.t)/2),e=>({tag:'Rei de Judá',date:fspan(e.f,e.t),name:e.l,desc:e.d,refs:e.r}),{free:true,showLabels:true,yMin:8,yMax:92});
   renderDots('kings-pagan',KINGS_PAGAN.map(e=>({...e,ic:'👑',pa:'r'})),'var(--ch)',e=>px((e.f+e.t)/2),e=>({tag:'Rei Pagão',date:fspan(e.f,e.t),name:e.l,desc:e.d,refs:e.r}),{free:true,showLabels:true,yMin:10,yMax:170});
   {const dv=document.createElement('div');dv.style.cssText='position:absolute;left:0;right:0;top:100px;height:1px;background:var(--border);opacity:.6;pointer-events:none';document.getElementById('t-kings').appendChild(dv);}
-  renderDots('letters',LETTERS_NT,'var(--clt)',e=>px((e.f+e.t)/2),e=>({tag:'Epístola NT',date:fspan(e.f,e.t),name:e.l,desc:e.d,refs:e.r}),{free:true,showLabels:true,yMin:8,yMax:142});
+  renderDots('letters-pauline',LETTERS_NT.filter(e=>e.cat==='p'),'var(--clt)',e=>px((e.f+e.t)/2),e=>({tag:'Carta Paulina',date:fspan(e.f,e.t),name:e.l,desc:e.d,refs:e.r}),{free:true,showLabels:true,yMin:8,yMax:112});
+  renderDots('letters-general',LETTERS_NT.filter(e=>e.cat==='g'),'var(--clt)',e=>px((e.f+e.t)/2),e=>({tag:'Carta Geral',date:fspan(e.f,e.t),name:e.l,desc:e.d,refs:e.r}),{free:true,showLabels:true,yMin:8,yMax:92});
+  renderDots('letters-apoc',LETTERS_NT.filter(e=>e.cat==='a'),'var(--clt)',e=>px((e.f+e.t)/2),e=>({tag:'Apocalipse',date:fspan(e.f,e.t),name:e.l,desc:e.d,refs:e.r}),{free:true,showLabels:true,yMin:8,yMax:52});
   renderDots('patristic',PATRISTIC.map(e=>({...e,ic:'🧍'})),'var(--cpa)',e=>px((e.f+e.t)/2),e=>({tag:'Pai da Igreja',date:fspan(e.f,e.t),name:e.l,desc:e.d,refs:e.r}),{free:true});
 }
 
@@ -1324,7 +1334,9 @@ function buildFilterPanel(){
    {tid:'kings-north',lbl:'Reis — Norte (Israel)',c:'var(--ckn)'},
    {tid:'kings-south',lbl:'Reis — Judá',c:'var(--cks)'},
    {tid:'kings-pagan',lbl:'Reis Pagãos',c:'var(--ch)'},
-   {tid:'letters',lbl:'Epístolas NT',c:'var(--clt)'},
+   {tid:'letters-pauline',lbl:'Cartas — Paulinas',c:'var(--clt)'},
+   {tid:'letters-general',lbl:'Cartas — Gerais',c:'var(--clt)'},
+   {tid:'letters-apoc',lbl:'Cartas — Apocalipse',c:'var(--clt)'},
    {tid:'patristic',lbl:'Pais da Igreja',c:'var(--cpa)'}
   ].forEach(({tid,lbl,c})=>{
     const el=document.getElementById('t-'+tid);
@@ -1335,11 +1347,14 @@ function buildFilterPanel(){
     row.querySelector('input').addEventListener('change',ev=>{
       setTrack(tid,ev.target.checked);
       if(['kings-north','kings-south','kings-pagan'].includes(tid)){
-        // sync dropdown checkbox
         const ddcb=document.querySelector(`#dd-reis input[data-subtid="${tid}"]`);
         if(ddcb)ddcb.checked=ev.target.checked;
-        // re-evaluate via updateReisGroup if available
         if(typeof updateReisGroup==='function')updateReisGroup();
+      }
+      if(['letters-pauline','letters-general','letters-apoc'].includes(tid)){
+        const ddcb=document.querySelector(`#dd-letters input[data-subtid="${tid}"]`);
+        if(ddcb)ddcb.checked=ev.target.checked;
+        if(typeof updateCartasGroup==='function')updateCartasGroup();
       }
       clearSel();
     });
@@ -1558,6 +1573,40 @@ let updateReisGroup=()=>{};
   });
 })();
 
+// DROPDOWN — Cartas NT
+let updateCartasGroup=()=>{};
+(function(){
+  const btn=document.getElementById('ti-letters');
+  const menu=document.getElementById('dd-letters');
+  const wrap=document.getElementById('wrap-letters');
+  const CARTAS_H={'letters-pauline':120,'letters-general':100,'letters-apoc':60};
+  updateCartasGroup=function(){
+    const checks=menu.querySelectorAll('input[type=checkbox]');
+    const on=Array.from(checks).filter(c=>c.checked).length;
+    const all=checks.length;
+    btn.classList.toggle('on',on>0);
+    btn.classList.toggle('partial',on>0&&on<all);
+    if(on===0)btn.style.opacity='0.35'; else btn.style.opacity='';
+    let total=0;
+    const order=['letters-pauline','letters-general','letters-apoc'];
+    order.forEach(id=>{
+      const h=CARTAS_H[id];
+      const tr=document.getElementById('t-'+id);
+      const tag=document.getElementById('lbt-'+id);
+      const vis=tr&&!tr.classList.contains('off');
+      if(tag){tag.classList.toggle('off',!vis);if(vis)tag.style.top=(total+h/2)+'px';}
+      if(vis)total+=h;
+    });
+    const lbi=document.getElementById('li-letters');
+    if(lbi){lbi.style.height=total+'px';lbi.classList.toggle('off',total===0);}
+  };
+  btn.addEventListener('click',ev=>{ev.stopPropagation();menu.classList.toggle('open');});
+  menu.querySelectorAll('input[type=checkbox]').forEach(cb=>{
+    cb.addEventListener('change',()=>{setTrack(cb.dataset.subtid,cb.checked);updateCartasGroup();clearSel();});
+  });
+  document.addEventListener('click',ev=>{if(!wrap.contains(ev.target))menu.classList.remove('open');});
+})();
+
 // DROPDOWN — Impérios
 (function(){
   const btn=document.getElementById('ti-empires');
@@ -1671,6 +1720,7 @@ function scrollToEra(year){
 buildFilterPanel();
 updateFpState();
 renderAll();
+updateCartasGroup();
 
 // Make label column rows collapsible
 document.querySelectorAll('.lbi[id^="li-"]').forEach(lb=>{
