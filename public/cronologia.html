@@ -175,6 +175,41 @@ html{height:100%}
 .track{flex-shrink:0;position:relative;border-bottom:1px solid var(--border);background:var(--surface);overflow:hidden;transition:height .25s}
 .track.off{height:0!important;border-bottom:none;overflow:hidden!important}
 
+/* RANGE SELECTION */
+.rng-fill{position:absolute;top:0;bottom:0;pointer-events:none;z-index:1;background:color-mix(in srgb,var(--accent) 9%,transparent)}
+.rng-line{position:absolute;top:0;bottom:0;width:0;border-left:2px dashed var(--accent);opacity:.8;pointer-events:none;z-index:4;transform:translateX(-1px)}
+.rng-line.rng-pending{opacity:.5;border-left-style:dotted}
+.rng-cursor{cursor:crosshair!important}
+.rng-panel{
+  position:fixed;bottom:0;left:0;right:0;z-index:600;
+  background:var(--surface);border-top:2px solid var(--accent);
+  box-shadow:0 -6px 28px rgba(0,0,0,.18);
+  max-height:44vh;display:flex;flex-direction:column;
+  transition:transform .22s cubic-bezier(.4,0,.2,1);
+}
+.rng-panel.rng-hidden{transform:translateY(100%)}
+.rng-head{
+  display:flex;align-items:center;gap:12px;padding:10px 16px;
+  border-bottom:1px solid var(--border);flex-shrink:0;
+}
+.rng-htitle{font-family:var(--ff);font-size:1.05rem;font-weight:600;color:var(--fg)}
+.rng-hdur{font-size:.68rem;color:var(--accent);font-weight:600;font-variant-numeric:tabular-nums;letter-spacing:.04em}
+.rng-hcount{font-size:.62rem;color:var(--fgd);margin-left:4px}
+.rng-hclose{margin-left:auto;width:28px;height:28px;border:1px solid var(--border);background:var(--s2);border-radius:50%;cursor:pointer;font-size:.8rem;display:flex;align-items:center;justify-content:center;color:var(--fgm);flex-shrink:0}
+.rng-hclose:hover{background:var(--al);color:var(--fg)}
+.rng-body{overflow-y:auto;padding:10px 16px 14px;display:flex;flex-direction:column;gap:8px}
+.rng-cat{display:flex;flex-direction:column;gap:5px}
+.rng-cat-lbl{font-size:.55rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--fgd);padding-bottom:2px;border-bottom:1px solid var(--border)}
+.rng-items{display:flex;flex-wrap:wrap;gap:5px}
+.rng-item{
+  display:inline-flex;align-items:center;gap:5px;
+  padding:3px 10px 3px 7px;border-radius:9999px;
+  font-size:.65rem;background:var(--s2);border:1px solid var(--border);
+  color:var(--fgm);white-space:nowrap;cursor:default;
+}
+.rng-item span{font-size:.72rem}
+.rng-item:hover{background:var(--al);color:var(--fg)}
+
 /* EMPIRE BANDS */
 .eband{
   position:absolute;border-radius:2px;display:flex;align-items:center;padding:0 5px;
@@ -1804,4 +1839,139 @@ setTimeout(()=>{
   const screl=document.getElementById('scr');
   screl.scrollLeft=Math.max(0,px(-1200)-100);
 },100);
+
+// ── RANGE SELECTION ──────────────────────────────────────
+(function(){
+  const scr=document.getElementById('scr');
+  const inn=document.getElementById('inn');
+  let rS=null,rE=null;
+
+  function yearFromEv(ev){
+    const rect=scr.getBoundingClientRect();
+    const x=ev.clientX-rect.left+scr.scrollLeft;
+    return Math.round(SY+x/sc());
+  }
+
+  function drawRng(){
+    inn.querySelectorAll('.rng-fill,.rng-line').forEach(e=>e.remove());
+    if(rS===null)return;
+    const x1=px(rS);
+    const l1=document.createElement('div');
+    l1.className='rng-line'+(rE===null?' rng-pending':'');
+    l1.style.left=x1+'px';
+    inn.appendChild(l1);
+    if(rE!==null){
+      const x2=px(rE);
+      const xa=Math.min(x1,x2),xb=Math.max(x1,x2);
+      const fill=document.createElement('div');
+      fill.className='rng-fill';
+      fill.style.cssText='left:'+xa+'px;width:'+(xb-xa)+'px';
+      inn.insertBefore(fill,inn.firstChild);
+      const l2=document.createElement('div');
+      l2.className='rng-line';
+      l2.style.left=x2+'px';
+      inn.appendChild(l2);
+      showRngPanel(Math.min(rS,rE),Math.max(rS,rE));
+    }
+  }
+
+  function collectItems(y1,y2){
+    const out=[];
+    const addPt=(arr,cat,ic_def)=>arr.forEach(e=>{
+      if(e.y>=y1&&e.y<=y2)out.push({_y:e.y,_cat:cat,l:e.l,ic:e.ic||ic_def,tag:e.tag||cat});
+    });
+    const addRng=(arr,cat,ic_def)=>arr.forEach(e=>{
+      const ef=e.f??e.y,et=e.t??e.y;
+      if(ef<=y2&&et>=y1)out.push({_y:Math.max(ef,y1),_cat:cat,l:e.l,ic:e.ic||ic_def,tag:e.tag||e.per||cat});
+    });
+    addPt(EVENTS,'Evento','📌');
+    addPt(INSTITUTIONS,'Instituição','🏛️');
+    addRng(BIBLICAL,'Personagem','🧍');
+    addRng(HISTORICAL,'Histórico','🧍');
+    addRng(PROPHETS,'Profeta','📜');
+    addRng(KINGS_PAGAN,'Rei / Governante','👑');
+    addRng(KINGS_NORTH,'Rei Norte','👑');
+    addRng(KINGS_JUDAH,'Rei Judá','👑');
+    addRng(CHRISTIANITY,'Cristianismo','✝️');
+    addRng(PATRISTIC,'Patrística','🧍');
+    addRng(LETTERS_NT,'Carta NT','✉️');
+    out.sort((a,b)=>a._y-b._y);
+    // deduplicate by label
+    const seen=new Set();
+    return out.filter(i=>{if(seen.has(i.l))return false;seen.add(i.l);return true;});
+  }
+
+  const CAT_ORDER=['Evento','Instituição','Aliança','Templo','Sacerdócio','Igreja','Personagem','Profeta','Rei Norte','Rei Judá','Rei / Governante','Cristianismo','Carta NT','Patrística','Histórico','Império','Fim de Templo','Fim de Instituição','Fim de Império'];
+  const CAT_COLOR={
+    'Evento':'var(--cv)','Instituição':'var(--cin)','Aliança':'var(--cb)','Templo':'var(--cpa)',
+    'Sacerdócio':'var(--cks)','Igreja':'var(--cci)','Personagem':'var(--cb)','Profeta':'var(--cpr)',
+    'Rei Norte':'var(--ckn)','Rei Judá':'var(--cks)','Rei / Governante':'var(--ch)',
+    'Cristianismo':'var(--cci)','Carta NT':'var(--clt)','Patrística':'var(--cpa)',
+    'Histórico':'var(--ch)','Império':'var(--ce)',
+    'Fim de Templo':'var(--cpa)','Fim de Instituição':'var(--cin)','Fim de Império':'var(--ce)',
+  };
+
+  function showRngPanel(y1,y2){
+    let panel=document.getElementById('rng-panel');
+    if(!panel){panel=document.createElement('div');panel.id='rng-panel';panel.className='rng-panel rng-hidden';document.body.appendChild(panel);}
+    const span=y2-y1;
+    const durStr=span===0?'mesmo ano':span===1?'1 ano':span+' anos';
+    const items=collectItems(y1,y2);
+    // group by category tag
+    const groups={};
+    items.forEach(i=>{
+      const k=i.tag;
+      if(!groups[k])groups[k]=[];
+      groups[k].push(i);
+    });
+    const sortedKeys=Object.keys(groups).sort((a,b)=>{
+      const ia=CAT_ORDER.indexOf(a),ib=CAT_ORDER.indexOf(b);
+      return (ia<0?99:ia)-(ib<0?99:ib);
+    });
+    const bodyHTML=sortedKeys.map(cat=>{
+      const c=CAT_COLOR[cat]||'var(--fgd)';
+      const its=groups[cat].map(i=>`<span class="rng-item" title="${cat}"><span>${i.ic}</span>${i.l}</span>`).join('');
+      return `<div class="rng-cat">
+        <div class="rng-cat-lbl" style="color:${c}">${cat}</div>
+        <div class="rng-items">${its}</div>
+      </div>`;
+    }).join('');
+    panel.innerHTML=`<div class="rng-head">
+      <div>
+        <div class="rng-htitle">${fy(y1)} → ${fy(y2)}</div>
+        <span class="rng-hdur">${durStr}</span><span class="rng-hcount">• ${items.length} itens</span>
+      </div>
+      <button class="rng-hclose" onclick="window._clearRng()">✕</button>
+    </div>
+    <div class="rng-body">${bodyHTML||'<span style="color:var(--fgd);font-size:.72rem">Nenhum item neste intervalo.</span>'}</div>`;
+    requestAnimationFrame(()=>panel.classList.remove('rng-hidden'));
+  }
+
+  function clearRng(){
+    rS=null;rE=null;
+    inn.querySelectorAll('.rng-fill,.rng-line').forEach(e=>e.remove());
+    const panel=document.getElementById('rng-panel');
+    if(panel){panel.classList.add('rng-hidden');setTimeout(()=>panel.remove(),230);}
+    scr.classList.remove('rng-cursor');
+  }
+  window._clearRng=clearRng;
+
+  scr.addEventListener('click',ev=>{
+    if(ev.target.closest('.dot,.tt,#rng-panel,.tg,.hd,.ti-wrap,button,.lbi,.zbtn,.ibtn,.ejump,.srch,.fp')) return;
+    const y=yearFromEv(ev);
+    if(rE!==null){clearRng();return;}
+    if(rS===null){rS=y;scr.classList.add('rng-cursor');}
+    else{rE=y;scr.classList.remove('rng-cursor');}
+    drawRng();
+  });
+
+  // update line positions on zoom/resize
+  window.addEventListener('resize',()=>{if(rS!==null)drawRng();});
+  document.addEventListener('rng-redraw',()=>{if(rS!==null)drawRng();});
+  // hook into setW to re-draw after zoom
+  const _origSetW=setW;
+  window.setW=function(){_origSetW();if(rS!==null)drawRng();document.dispatchEvent(new Event('rng-redraw'));};
+
+  document.addEventListener('keydown',ev=>{if(ev.key==='Escape')clearRng();});
+})();
 </script>
