@@ -210,6 +210,42 @@ html{height:100%}
 .rng-item span{font-size:.72rem}
 .rng-item:hover{background:var(--al);color:var(--fg)}
 
+/* STUDY MODAL */
+.study-ov{position:fixed;inset:0;z-index:800;background:rgba(0,0,0,.6);display:flex;align-items:flex-start;justify-content:center;padding:20px 16px;overflow-y:auto;backdrop-filter:blur(4px)}
+.study-ov.sh{display:none}
+.study-modal{background:var(--surface);border-radius:10px;width:100%;max-width:780px;box-shadow:0 24px 64px rgba(0,0,0,.35);margin:auto;overflow:hidden;position:relative}
+.sm-head{padding:20px 24px 16px;border-bottom:1px solid var(--border);position:sticky;top:0;background:var(--surface);z-index:2}
+.sm-supertitle{font-size:.58rem;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);margin-bottom:3px}
+.sm-title{font-family:var(--ff);font-size:1.45rem;font-weight:700;line-height:1.2;color:var(--fg)}
+.sm-ref{font-size:.7rem;color:var(--fgd);font-style:italic;margin-top:4px}
+.sm-close-btn{position:absolute;top:14px;right:14px;width:30px;height:30px;border-radius:50%;border:1px solid var(--border);background:var(--s2);cursor:pointer;font-size:.85rem;display:flex;align-items:center;justify-content:center;color:var(--fgm);line-height:1}
+.sm-close-btn:hover{background:var(--al);color:var(--fg)}
+.sm-body{padding:18px 24px 36px;display:flex;flex-direction:column;gap:18px}
+.sm-intro{background:var(--al);border-left:3px solid var(--accent);border-radius:0 6px 6px 0;padding:11px 15px;font-size:.81rem;line-height:1.75;color:var(--fgm);font-style:italic}
+.sm-sec{display:flex;flex-direction:column;gap:9px}
+.sm-sec-head{display:flex;align-items:center;gap:8px;padding-bottom:6px;border-bottom:1px solid var(--border)}
+.sm-sec-icon{font-size:1.15rem}
+.sm-sec-title{font-family:var(--ff);font-size:1rem;font-weight:600;color:var(--fg)}
+.sm-items{display:flex;flex-direction:column;gap:7px}
+.sm-item{background:var(--s2);border-radius:7px;padding:9px 13px;border-left:3px solid color-mix(in srgb,var(--accent) 45%,transparent)}
+.sm-iname{font-size:.8rem;font-weight:600;color:var(--fg);display:flex;align-items:center;gap:7px;flex-wrap:wrap;margin-bottom:2px}
+.sm-tipo{font-size:.58rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;padding:1px 7px;border-radius:9999px;background:color-mix(in srgb,var(--accent) 15%,transparent);color:var(--accent);white-space:nowrap}
+.sm-itext{font-size:.77rem;line-height:1.65;color:var(--fgm)}
+.sm-subitems{display:flex;flex-direction:column;gap:4px;margin-top:6px;padding-top:6px;border-top:1px solid var(--border)}
+.sm-subitem{font-size:.74rem;line-height:1.6;color:var(--fgm);padding-left:9px;border-left:2px solid var(--border)}
+.sm-subname{font-weight:600;color:var(--fg);margin-right:4px}
+.sm-synth{background:color-mix(in srgb,var(--accent) 6%,transparent);border:1px solid color-mix(in srgb,var(--accent) 22%,transparent);border-radius:8px;padding:13px 15px}
+.sm-synth-text{font-size:.79rem;line-height:1.75;color:var(--fgm);margin-bottom:8px}
+.sm-synth ul{list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:5px}
+.sm-synth li{font-size:.77rem;line-height:1.65;color:var(--fgm);padding-left:13px;position:relative}
+.sm-synth li::before{content:'→';position:absolute;left:0;color:var(--accent);font-size:.65rem;top:.2em}
+.sm-refs-box{border-top:1px solid var(--border);padding-top:12px;display:flex;flex-direction:column;gap:5px}
+.sm-refs-title{font-size:.62rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--fgd)}
+.sm-refs-link{font-size:.76rem;color:var(--accent);text-decoration:none;word-break:break-all}
+.sm-refs-link:hover{text-decoration:underline}
+.tt-study{display:block;width:100%;margin-top:10px;padding:6px 12px;background:color-mix(in srgb,var(--accent) 10%,transparent);border:1px solid color-mix(in srgb,var(--accent) 30%,transparent);border-radius:5px;color:var(--accent);font-size:.72rem;font-weight:600;cursor:pointer;text-align:left;letter-spacing:.03em}
+.tt-study:hover{background:color-mix(in srgb,var(--accent) 18%,transparent)}
+
 /* EMPIRE BANDS */
 .eband{
   position:absolute;border-radius:2px;display:flex;align-items:center;padding:0 5px;
@@ -548,6 +584,7 @@ html{height:100%}
   <div class="tt-name" id="tt-name"></div>
   <div class="tt-desc" id="tt-desc"></div>
   <div class="tt-refs" id="tt-refs"></div>
+  <button class="tt-study" id="tt-study" hidden>📖 Ver estudo completo</button>
 </div>
 
 <script>
@@ -671,7 +708,7 @@ const INSTITUTIONS=[
   {id:'in-melki',y:-2000,l:'Sacerdócio de Melquisedeque',ic:'👑',tag:'Sacerdócio',d:'Melquisedeque, "rei de Salém" e "sacerdote do Deus Altíssimo", abençoa Abraão e recebe o dízimo (Gn 14:18). Tipo do sacerdócio eterno de Cristo: "Tu és sacerdote para sempre, segundo a ordem de Melquisedeque." (Sl 110:4; Hb 5–7)',r:'Gn 14:18-20; Sl 110:4; Hb 5–7'},
   {id:'in-pascoa',y:-1446,l:'Páscoa',ic:'🐑',tag:'Instituição',d:'"Este dia vos será por memorial... o guardareis como festa ao Senhor." (Êx 12:14). Instituída na noite do Êxodo: o sangue do cordeiro nos umbrais protege dos juízos. Cristo é "nossa Páscoa imolada." (1 Co 5:7)',r:'Êx 12; 1 Co 5:7'},
   {id:'in-torah',y:-1445,l:'Lei (Torá) — Aliança Mosaica',ic:'📜',tag:'Aliança',d:'Os Dez Mandamentos e a Lei mosaica são entregues no Sinai. Aliança condicional com Israel como nação sacerdotal. "Sede santos, porque eu, o Senhor vosso Deus, sou santo." (Lv 19:2). Pedagogo que conduz a Cristo (Gl 3:24).',r:'Êx 19–24; Lv 19:2; Gl 3:24'},
-  {id:'in-tabernaculo',y:-1445,l:'Tabernáculo (Mishkan)',ic:'⛺',tag:'Templo',d:'"Farão um santuário para mim, e habitarei no meio deles." (Êx 25:8). O Tabernáculo é a habitação portátil de Deus em meio ao povo — antecipa o Templo e a encarnação: "o Verbo habitou (eskênosen — tabernaculou) entre nós." (Jo 1:14)',r:'Êx 25–40; Jo 1:14; Hb 8–9'},
+  {id:'in-tabernaculo',y:-1445,l:'Tabernáculo (Mishkan)',ic:'⛺',tag:'Templo',d:'"Farão um santuário para mim, e habitarei no meio deles." (Êx 25:8). O Tabernáculo é a habitação portátil de Deus em meio ao povo — antecipa o Templo e a encarnação: "o Verbo habitou (eskênosen — tabernaculou) entre nós." (Jo 1:14)',r:'Êx 25–40; Jo 1:14; Hb 8–9',study:'tabernaculo'},
   {id:'in-sacerd-levit',y:-1445,l:'Sacerdócio Levítico',ic:'🕎',tag:'Sacerdócio',d:'Arão e seus filhos são consagrados como sacerdotes. Os levitas são separados para o serviço do Tabernáculo. Todo o sistema sacrificial aponta para Cristo como o Sumo-Sacerdote definitivo que "entrou uma vez para sempre no santo dos santos." (Hb 9:12)',r:'Lv 8; Nm 3; Hb 7–10'},
   {id:'in-monarquia',y:-1050,l:'Monarquia de Israel',ic:'👑',tag:'Instituição',d:'Israel pede um rei: "Coloca sobre nós um rei que nos governe como as demais nações." (1 Sm 8:5). Saul é ungido como primeiro rei. A monarquia davídica prepara o caminho para o Rei messiânico — "o filho de Davi." (Mt 1:1)',r:'1 Sm 8–10; Mt 1:1'},
   {id:'in-templo1',y:-966,l:'1º Templo (Salomão)',ic:'🏛️',tag:'Templo',d:'Salomão constrói o Primeiro Templo em Jerusalém em 7 anos. A Shekinah (glória de Deus) o preenche: "o templo foi cheio da nuvem da glória do SENHOR." (1 Rs 8:10-11). Centro da adoração de Israel por ~380 anos, até 586 a.C.',r:'1 Rs 5–8'},
@@ -944,6 +981,101 @@ const PERIODS=[
   {f:0,    t:2025, bg:'rgba(190,140,80,.10)', lc:'#8a5a20', l:'Novo Testamento'},
 ];
 
+const FULL_STUDIES={
+  tabernaculo:{
+    supertitle:'Estudo Tipológico',
+    title:'O Tabernáculo',
+    ref:'Êx 25–40 · Hb 8–10 · Jo 1:14',
+    intro:'O Tabernáculo (o Santuário Terrestre ordenado em Êxodo 25:8-9) representa a iniciativa de Deus em habitar no meio do Seu povo, rompendo a separação provocada pelo pecado. Funcionando como um templo itinerante no deserto — o palácio de Yahweh —, apresenta estrutura tripartite que espelha a ordem cósmica: o Pátio Externo (a terra habitada), o Lugar Santo (os céus visíveis) e o Santo dos Santos (o trono celeste de Deus). As doze tribos armavam suas tendas ao redor do Santuário, demonstrando que a presença divina deve ser o centro absoluto de toda a vida do crente.',
+    sections:[
+      {id:'estrutura',icon:'🪵',title:'1. Estrutura, Materiais e Coberturas',items:[
+        {name:'Madeira de Acácia (Shittim)',tipo:'Nossa Natureza Humana',text:'Árvore do deserto, dura e cheia de nós — simboliza a nossa natureza humana pecaminosa. O corte da árvore e o seccionamento de suas raízes indicam que é preciso morrer para o mundo antes de se tornar habitação de Deus.'},
+        {name:'Tábuas de Tamanhos Iguais',tipo:'Igualdade diante de Deus',text:'Todas as tábuas foram serradas no mesmo padrão, ensinando que para Deus somos todos iguais, sem acepção de pessoas.'},
+        {name:'Engastes (Encaixes)',tipo:'A Igreja Aliançada',text:'As tábuas possuíam conexões umas com as outras, mostrando que o povo de Deus não deve estar apenas junto, mas aliançado — pertencendo uns aos outros.'},
+        {name:'Posição Vertical',tipo:'Igreja Ativa',text:'As tábuas eram erguidas de pé, simbolizando que Deus deseja uma igreja ativa, de pé e em ação.'},
+        {name:'Bases de Prata',tipo:'Alicerce na Redenção',text:'A prata é o símbolo bíblico da redenção. As tábuas não tocam a areia do deserto (o mundo), mas firmam-se em bases de prata: a Igreja está no mundo, mas alicerçada na redenção de Cristo.'},
+        {name:'Revestimento de Ouro',tipo:'Glória e Justiça Divina',text:'O ouro representa a glória divina e a justiça de Deus. A madeira revestida de ouro ensina que, quando Deus nos contempla, não vê a nossa natureza pecaminosa, mas a justiça de Cristo que nos cobre.'},
+        {name:'As Quatro Camadas da Tenda',tipo:'Proteção e Glória',sub:[
+          {name:'1ª camada — interior',text:'Linho fino retorcido com querubins bordados em azul, púrpura e carmesim.'},
+          {name:'2ª camada',text:'Tecido de pelos de cabra — proteção sobre a beleza interior.'},
+          {name:'3ª camada',text:'Peles de carneiro tingidas de vermelho — alusão ao sacrifício e ao sangue.'},
+          {name:'4ª camada — exterior',text:'Peles de animais marinhos/teixões, conferindo proteção contra as intempéries do deserto.'},
+        ]},
+      ]},
+      {id:'patio',icon:'🚪',title:'2. O Pátio Externo (Átrio)',items:[
+        {name:'A Porta de Entrada',tipo:'Cristo — o Único Caminho',text:'"Eu sou a porta; se alguém entrar por mim, será salvo." (Jo 10:9). Era o único acesso ao pátio. Aponta tipologicamente para Jesus como a única porta de acesso à presença de Deus.'},
+        {name:'O Altar de Bronze (Holocausto)',tipo:'A Cruz de Cristo',text:'Peça quadrada de madeira revestida de bronze com chifres nos cantos. Aponta para o juízo de Deus sobre o pecado e para a cruz de Cristo: ninguém se aproxima de Deus sem o sacrifício expiatório.'},
+        {name:'A Bacia de Bronze',tipo:'Purificação pela Palavra',text:'Grande recipiente com água entre o altar e o santuário, para lavagem ritual dos sacerdotes. Simboliza que os crentes, já redimidos, precisam da purificação contínua pela Palavra. (Ef 5:26; Jo 15:3)'},
+      ]},
+      {id:'lugar-santo',icon:'🕎',title:'3. O Lugar Santo',items:[
+        {name:'Mesa dos Pães da Proposição',tipo:'Cristo — Pão da Vida',text:'Revestida de ouro, continha doze pães trocados a cada sábado. Aponta para Jesus como o Pão da Vida e para a comunhão espiritual. (Jo 6:35)'},
+        {name:'Candelabro de Ouro (Menorá)',tipo:'Cristo — Luz do Mundo',text:'Peça de ouro puro com sete hastes mantida continuamente acesa com azeite puro. Aponta para Jesus como a Luz do Mundo e para a Igreja que deve refletir essa luz. O azeite = o Espírito Santo.'},
+        {name:'Altar de Incenso',tipo:'Intercessão de Cristo',text:'Localizado diante do véu. O incenso perfumado simboliza a vida de oração dos santos subindo ao trono celestial. Cristo é nosso Sumo Sacerdote e Intercessor. (Ap 8:3-4)'},
+        {name:'O Véu',tipo:'A Carne de Cristo',text:'Cortina pesada separando o Lugar Santo do Santo dos Santos. Simboliza a carne de Cristo. Quando Jesus morreu, o véu rasgou-se de alto a baixo — acesso direto à presença de Deus. (Mt 27:51; Hb 10:19-20)'},
+      ]},
+      {id:'santos-santos',icon:'✨',title:'4. O Santo dos Santos',items:[
+        {name:'Arca da Aliança',tipo:'A Pessoa de Cristo',text:'Caixa de madeira de acácia coberta de ouro por dentro e por fora. Representa Cristo: humanidade (madeira) + divindade gloriosa (ouro). Uma só pessoa, duas naturezas — o Verbo encarnado. (Jo 1:14)'},
+        {name:'O Propiciatório',tipo:'Redenção — obra exclusiva de Deus',text:'Tampa da Arca, feita inteiramente de ouro puro. Demonstra que a redenção é exclusiva de Deus. No Dia da Expiação o sangue era aspergido aqui para cobrir a Lei e aplacar a ira de Deus. (Rm 3:25; 1 Jo 2:2)'},
+        {name:'Os Querubins da Glória',tipo:'Guardiões do Espaço Sagrado',text:'Esculpidos em ouro junto ao propiciatório, asas estendidas e rostos voltados para a tampa. Guardiões do espaço sagrado (como no Éden) e testemunhos da exaltação da glória divina na expiação. (Gn 3:24; Hb 9:5)'},
+        {name:'Os Três Elementos no Interior da Arca',tipo:'Testemunhos da Redenção',sub:[
+          {name:'As Tábuas da Lei',text:'Apontam para Jesus como o Verbo vivo que cumpriu perfeitamente toda a Escritura. (Mt 5:17; Jo 1:1)'},
+          {name:'O Vaso com Maná',text:'Aponta para Jesus como o pão celestial definitivo que concede a vida eterna. (Jo 6:48-51)'},
+          {name:'A Vara de Arão que Floresceu',text:'A vara seca que brotou e gerou amêndoas simboliza morte e ressurreição de Cristo. (Rm 8:29; Nm 17:8)'},
+        ]},
+      ]},
+      {id:'sintese',icon:'✝️',title:'5. Síntese Tipológica e Cumprimento no NT',synth:true,
+       text:'Toda a estrutura e liturgia do Tabernáculo funcionavam como uma "parábola" pedagógica para a antiga aliança (Hb 9), pregando o Evangelho de forma sombria e figurativa até a chegada de Cristo. Com a vinda de Jesus e Seu sacrifício perfeito, de uma vez por todas, o sistema sacrificial caducou.',
+       items:[
+        {name:'Cristo é o Tabernáculo e Sumo Sacerdote Definitivo',text:'Adentrou o verdadeiro Santuário Celestial e ofereceu o Seu próprio sangue — não anualmente como os levitas, mas uma vez para sempre. (Hb 9:11-12; 10:11-14)'},
+        {name:'O crente e a Igreja são o Templo vivo do Espírito Santo',text:'Não precisamos de um lugar físico separado — Deus habita em cada crente e na comunidade reunida em Seu nome. (1 Co 3:16; 6:19; Ef 2:21-22)'},
+        {name:'Consumação em Apocalipse 21:3',text:'"Vi o tabernáculo de Deus com os homens." Não haverá templo físico na Nova Criação — o próprio Deus habitará plenamente com a humanidade redimida para sempre. (Ap 21:3,22)'},
+      ]},
+    ],
+    links:[
+      {label:'Voltos ao Evangelho — O Tabernáculo, a Casa de Deus',url:'https://voltemosaoevangelho.com/blog/2018/10/o-tabernaculo-a-casa-de-deus/'},
+    ],
+  },
+};
+
+function openStudy(studyId){
+  const data=FULL_STUDIES[studyId];
+  if(!data)return;
+  let ov=document.getElementById('study-overlay');
+  if(!ov){
+    ov=document.createElement('div');
+    ov.id='study-overlay';
+    ov.className='study-ov';
+    ov.addEventListener('click',ev=>{if(ev.target===ov)closeStudy();});
+    document.body.appendChild(ov);
+  }
+  function ri(it){
+    const tipoH=it.tipo?`<span class="sm-tipo">${it.tipo}</span>`:'';
+    const subH=it.sub?`<div class="sm-subitems">${it.sub.map(s=>`<div class="sm-subitem"><span class="sm-subname">${s.name}:</span> ${s.text}</div>`).join('')}</div>`:'';
+    return `<div class="sm-item"><div class="sm-iname">${it.name} ${tipoH}</div>${it.text?`<div class="sm-itext">${it.text}</div>`:''}${subH}</div>`;
+  }
+  const secsH=data.sections.map(sec=>{
+    if(sec.synth){
+      return `<div class="sm-sec"><div class="sm-sec-head"><span class="sm-sec-icon">${sec.icon}</span><span class="sm-sec-title">${sec.title}</span></div>
+        <div class="sm-synth"><div class="sm-synth-text">${sec.text}</div><ul>${sec.items.map(it=>`<li><strong>${it.name}:</strong> ${it.text}</li>`).join('')}</ul></div></div>`;
+    }
+    return `<div class="sm-sec"><div class="sm-sec-head"><span class="sm-sec-icon">${sec.icon}</span><span class="sm-sec-title">${sec.title}</span></div><div class="sm-items">${sec.items.map(ri).join('')}</div></div>`;
+  }).join('');
+  const linksH=data.links&&data.links.length?`<div class="sm-refs-box"><div class="sm-refs-title">Referências</div>${data.links.map(l=>`<a class="sm-refs-link" href="${l.url}" target="_blank" rel="noopener">${l.label}</a>`).join('')}</div>`:'';
+  ov.innerHTML=`<div class="study-modal"><div class="sm-head">
+    <div class="sm-supertitle">${data.supertitle}</div>
+    <div class="sm-title">${data.title}</div>
+    <div class="sm-ref">${data.ref}</div>
+    <button class="sm-close-btn" onclick="closeStudy()">✕</button>
+  </div><div class="sm-body"><div class="sm-intro">${data.intro}</div>${secsH}${linksH}</div></div>`;
+  ov.classList.remove('sh');
+  document.body.style.overflow='hidden';
+}
+function closeStudy(){
+  const ov=document.getElementById('study-overlay');
+  if(ov)ov.classList.add('sh');
+  document.body.style.overflow='';
+}
+
 function renderPeriodBands(){
   const tracks=['events','biblical','institutions','christianity','israel','prophets-north','prophets-south','kings-north','kings-south','kings-pagan','letters-pauline','letters-general','letters-apoc','patristic'];
   tracks.forEach(tid=>{
@@ -1213,6 +1345,8 @@ function showTT(ev,info,clr){
   document.getElementById('tt-name').textContent=info.name||'';
   document.getElementById('tt-desc').textContent=info.desc||'';
   document.getElementById('tt-refs').textContent=info.refs?'Ref.: '+info.refs:'';
+  const sb=document.getElementById('tt-study');
+  if(info.study){sb.hidden=false;sb.onclick=()=>openStudy(info.study);}else{sb.hidden=true;sb.onclick=null;}
   t.classList.add('vis');
   // position — balloon opens downward, anchored below the ruler with room for the arrow
   const tw2=t.offsetWidth||260;
@@ -1389,7 +1523,7 @@ function renderAll(){
   renderDots('biblical',HISTORICAL.map(e=>({...e,ic:'🧍'})),'var(--ch)',e=>px((e.f+e.t)/2),e=>({tag:e.per,date:fspan(e.f,e.t),name:e.l,desc:e.d,refs:null}),{append:true,yMin:128,yMax:232,free:true,showLabels:true});
   // divider between biblical (top) and historical (bottom)
   {const dv=document.createElement('div');dv.style.cssText='position:absolute;left:0;right:0;top:120px;height:1px;background:var(--border);opacity:.6;pointer-events:none';document.getElementById('t-biblical').appendChild(dv);}
-  renderDots('institutions',INSTITUTIONS,'var(--cin)',e=>px(e.y),e=>({tag:e.tag||'Instituição',date:fy(e.y),name:e.l,desc:e.d,refs:e.r}),{free:true,showLabels:true,yMin:8,yMax:92});
+  renderDots('institutions',INSTITUTIONS,'var(--cin)',e=>px(e.y),e=>({tag:e.tag||'Instituição',date:fy(e.y),name:e.l,desc:e.d,refs:e.r,study:e.study||null}),{free:true,showLabels:true,yMin:8,yMax:92});
   renderDots('christianity',CHRISTIANITY,'var(--cci)',e=>px((e.f+e.t)/2),e=>({tag:'História do Cristianismo',date:fspan(e.f,e.t),name:e.l,desc:e.d,refs:e.r}));
   renderDots('israel',ISRAEL,'var(--cis)',e=>px((e.f+e.t)/2),e=>({tag:'História de Israel',date:fspan(e.f,e.t),name:e.l,desc:e.d,refs:e.r}));
   renderIsraelLine();
@@ -1972,6 +2106,6 @@ setTimeout(()=>{
   const _origSetW=setW;
   window.setW=function(){_origSetW();if(rS!==null)drawRng();document.dispatchEvent(new Event('rng-redraw'));};
 
-  document.addEventListener('keydown',ev=>{if(ev.key==='Escape')clearRng();});
+  document.addEventListener('keydown',ev=>{if(ev.key==='Escape'){closeStudy();clearRng();}});
 })();
 </script>
