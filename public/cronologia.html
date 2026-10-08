@@ -1938,15 +1938,16 @@ function scrollToEra(year){
 // DRAG TO SCROLL
 (()=>{
   const scr=document.getElementById('scr');
-  let dragging=false,startX=0,scrollX=0;
+  let dragging=false,startX=0,scrollX=0,dragMoved=false;
   scr.addEventListener('mousedown',ev=>{
     if(ev.target.closest('.dot,.eband,.tt,.fp,.hd,.tg,.ibtn,.zbtn'))return;
-    dragging=true;startX=ev.clientX;scrollX=scr.scrollLeft;
+    dragging=true;dragMoved=false;startX=ev.clientX;scrollX=scr.scrollLeft;
     scr.classList.add('dragging');
   });
   window.addEventListener('mouseup',()=>{dragging=false;scr.classList.remove('dragging');});
   window.addEventListener('mousemove',ev=>{
     if(!dragging)return;
+    if(Math.abs(ev.clientX-startX)>4)dragMoved=true;
     ev.preventDefault();
     scr.scrollLeft=scrollX-(ev.clientX-startX);
   });
@@ -2091,7 +2092,8 @@ setTimeout(()=>{
   window._clearRng=clearRng;
 
   scr.addEventListener('click',ev=>{
-    if(ev.target.closest('.dot,.tt,#rng-panel,.tg,.hd,.ti-wrap,button,.lbi,.zbtn,.ibtn,.ejump,.srch,.fp')) return;
+    if(ev.target.closest('.dot,.tt,#rng-panel,.tg,.hd,button,.lbi,.zbtn,.ibtn,.ejump,.srch,.fp')) return;
+    if(dragMoved){dragMoved=false;return;}
     const y=yearFromEv(ev);
     if(rE!==null){clearRng();return;}
     if(rS===null){rS=y;scr.classList.add('rng-cursor');}
