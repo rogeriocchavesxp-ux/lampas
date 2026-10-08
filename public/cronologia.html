@@ -7,20 +7,20 @@
   --accent:#2a4f7a;--al:rgba(42,79,122,.09);
   --ff:'Cormorant Garamond',Georgia,serif;
   --fui:'IBM Plex Sans',system-ui,sans-serif;
-  --ce:#7a5030;--cv:#8a6a00;--cb:#2a4f7a;--ch:#7a1c2e;--cci:#6b3fa0;--cis:#1a6b3a;--cpr:#8b4a00;--cpa:#1a5a60;--ckn:#7a4020;--cks:#4a3080;--clt:#7a2a4a;
+  --ce:#7a5030;--cv:#8a6a00;--cb:#2a4f7a;--ch:#7a1c2e;--cci:#6b3fa0;--cis:#1a6b3a;--cpr:#8b4a00;--cpa:#1a5a60;--ckn:#7a4020;--cks:#4a3080;--clt:#7a2a4a;--cin:#3a5030;
 }
 @media(prefers-color-scheme:dark){:root:not([data-theme="light"]){
   --bg:#0f1520;--surface:#172030;--s2:#1e2a3a;--border:#2a3848;
   --fg:#e4dfd4;--fgm:#aab0bc;--fgd:#7a8494;
   --accent:#6a9cd4;--al:rgba(106,156,212,.1);
-  --ce:#c4904a;--cv:#d4aa30;--cb:#6a9cd4;--ch:#d06070;--cci:#c090e0;--cis:#60d090;--cpr:#e0a050;--cpa:#50b8c0;--ckn:#e08050;--cks:#9070d0;--clt:#d06090;
+  --ce:#c4904a;--cv:#d4aa30;--cb:#6a9cd4;--ch:#d06070;--cci:#c090e0;--cis:#60d090;--cpr:#e0a050;--cpa:#50b8c0;--ckn:#e08050;--cks:#9070d0;--clt:#d06090;--cin:#70b868;
   color-scheme:dark;
 }}
 :root[data-theme="dark"]{
   --bg:#0f1520;--surface:#172030;--s2:#1e2a3a;--border:#2a3848;
   --fg:#e4dfd4;--fgm:#aab0bc;--fgd:#7a8494;
   --accent:#6a9cd4;--al:rgba(106,156,212,.1);
-  --ce:#c4904a;--cv:#d4aa30;--cb:#6a9cd4;--ch:#d06070;--cci:#c090e0;--cis:#60d090;--cpr:#e0a050;--cpa:#50b8c0;--ckn:#e08050;--cks:#9070d0;--clt:#d06090;
+  --ce:#c4904a;--cv:#d4aa30;--cb:#6a9cd4;--ch:#d06070;--cci:#c090e0;--cis:#60d090;--cpr:#e0a050;--cpa:#50b8c0;--ckn:#e08050;--cks:#9070d0;--clt:#d06090;--cin:#70b868;
   color-scheme:dark;
 }
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
@@ -336,6 +336,7 @@ html{height:100%}
     </div>
     <button class="ti on" data-tid="events" style="color:var(--cv)"><div class="tdot"></div><span class="tlbl">Acontecimentos</span></button>
     <button class="ti on" data-tid="biblical" style="color:var(--cb)"><div class="tdot"></div><span class="tlbl">Personagens</span></button>
+    <button class="ti on" data-tid="institutions" style="color:var(--cin)"><div class="tdot"></div><span class="tlbl">Instituições</span></button>
     <button class="ti on" data-tid="christianity" style="color:var(--cci)"><div class="tdot"></div><span class="tlbl">Cristianismo</span></button>
     <button class="ti on" data-tid="israel" style="color:var(--cis)"><div class="tdot"></div><span class="tlbl">Israel</span></button>
     <!-- Profetas com dropdown -->
@@ -392,6 +393,7 @@ html{height:100%}
     <div class="lbi" id="li-events" style="height:180px"><div class="lbdot" style="background:var(--cv)"></div>Acontecimentos</div>
     <div class="lbi" id="li-biblical" style="height:240px"><div class="lbdot" style="background:linear-gradient(to bottom,var(--cb) 50%,var(--ch) 50%)"></div>Personagens</div>
     <div class="lbi off" id="li-historical" style="height:0;border-bottom:none;padding:0"></div>
+    <div class="lbi" id="li-institutions" style="height:100px"><div class="lbdot" style="background:var(--cin)"></div>Instituições</div>
     <div class="lbi" id="li-christianity" style="height:100px"><div class="lbdot" style="background:var(--cci)"></div>Cristianismo</div>
     <div class="lbi" id="li-israel" style="height:100px"><div class="lbdot" style="background:var(--cis)"></div>Israel</div>
     <div class="lbi" id="li-prophets" style="height:260px;position:relative">
@@ -420,6 +422,7 @@ html{height:100%}
       <div class="track" id="t-events" style="height:180px"></div>
       <div class="track" id="t-biblical" style="height:240px"></div>
       <div class="track off" id="t-historical" style="height:100px"></div>
+      <div class="track" id="t-institutions" style="height:100px"></div>
       <div class="track" id="t-christianity" style="height:100px"></div>
       <div class="track" id="t-israel" style="height:100px;overflow:visible"></div>
       <div class="track" id="t-prophets-north" style="height:80px"></div>
@@ -616,6 +619,39 @@ const BIBLICAL=[
   {id:'paul',f:5,t:67,l:'Paulo',ic:'✉️',d:'Apóstolo aos gentios. Ex-fariseu convertido na estrada de Damasco. Três viagens missionárias. Fundou igrejas pelo mundo greco-romano. Escreveu 13 epístolas canônicas.',r:'At 9–28; Epístolas Paulinas'},
   {id:'timothy',f:17,t:97,l:'Timóteo',ic:'🙏',d:'Discípulo e filho espiritual de Paulo. Mãe judia (Eunice) e avó Lóide. Circuncidado por Paulo para o ministério. Acompanhou Paulo nas segunda e terceira viagens. Bispo de Éfeso. Paulo lhe endereça duas epístolas pastorais. "Filho amado e fiel no Senhor." (1 Co 4:17)',r:'At 16:1-3; 1 Tm; 2 Tm; Fp 2:19-22'},
   {id:'john',f:5,t:100,l:'João Apóstolo',ic:'📖',d:'Apóstolo amado. 4º Evangelho, três epístolas e o Apocalipse. Exilado em Patmos por Domiciano (~95 d.C.). Único apóstolo que não morreu como mártir.',r:'Jo; 1–3 Jo; Ap'},
+];
+
+const INSTITUTIONS=[
+  // Instituições bíblicas
+  {id:'in-familia',y:-4000,l:'Família',ic:'🏠',tag:'Instituição',d:'"Portanto, deixará o homem o seu pai e a sua mãe, e se unirá à sua mulher." (Gn 2:24). A família é a primeira instituição estabelecida por Deus — fundamento de toda sociedade humana e tipo da aliança entre Cristo e a Igreja.',r:'Gn 2:18-24; Ef 5:31-32'},
+  {id:'in-altar',y:-3870,l:'Altar / Sacrifício',ic:'🔥',tag:'Instituição',d:'Caim e Abel trazem ofertas a Deus — primeiro registro de culto sacrificial. Noé erige altar após o Dilúvio (Gn 8:20). Abraão constrói altares em Canaã. O sistema sacrificial aponta para Cristo, "o Cordeiro de Deus que tira o pecado do mundo." (Jo 1:29)',r:'Gn 4:3-4; 8:20; Jo 1:29'},
+  {id:'in-alianca-noe',y:-2350,l:'Aliança Noética',ic:'🌈',tag:'Aliança',d:'Após o Dilúvio, Deus firma aliança com Noé, sua família e toda a criação: "nunca mais destruirei toda carne por dilúvio." O arco-íris é o sinal eterno. Fundamento da preservação providencial da humanidade.',r:'Gn 9:8-17'},
+  {id:'in-circuncisao',y:-2091,l:'Aliança Abraâmica / Circuncisão',ic:'✡️',tag:'Aliança',d:'"Este é o sinal da aliança entre mim e vós." (Gn 17:11). A circuncisão institui a marca do povo de Deus. Deus promete terra, descendência incontável e bênção a todas as nações — cumprida em Cristo (Gl 3:16).',r:'Gn 17; Gl 3:16'},
+  {id:'in-melki',y:-2000,l:'Sacerdócio de Melquisedeque',ic:'👑',tag:'Sacerdócio',d:'Melquisedeque, "rei de Salém" e "sacerdote do Deus Altíssimo", abençoa Abraão e recebe o dízimo (Gn 14:18). Tipo do sacerdócio eterno de Cristo: "Tu és sacerdote para sempre, segundo a ordem de Melquisedeque." (Sl 110:4; Hb 5–7)',r:'Gn 14:18-20; Sl 110:4; Hb 5–7'},
+  {id:'in-pascoa',y:-1446,l:'Páscoa',ic:'🐑',tag:'Instituição',d:'"Este dia vos será por memorial... o guardareis como festa ao Senhor." (Êx 12:14). Instituída na noite do Êxodo: o sangue do cordeiro nos umbrais protege dos juízos. Cristo é "nossa Páscoa imolada." (1 Co 5:7)',r:'Êx 12; 1 Co 5:7'},
+  {id:'in-torah',y:-1445,l:'Lei (Torá) — Aliança Mosaica',ic:'📜',tag:'Aliança',d:'Os Dez Mandamentos e a Lei mosaica são entregues no Sinai. Aliança condicional com Israel como nação sacerdotal. "Sede santos, porque eu, o Senhor vosso Deus, sou santo." (Lv 19:2). Pedagogo que conduz a Cristo (Gl 3:24).',r:'Êx 19–24; Lv 19:2; Gl 3:24'},
+  {id:'in-tabernaculo',y:-1445,l:'Tabernáculo (Mishkan)',ic:'⛺',tag:'Templo',d:'"Farão um santuário para mim, e habitarei no meio deles." (Êx 25:8). O Tabernáculo é a habitação portátil de Deus em meio ao povo — antecipa o Templo e a encarnação: "o Verbo habitou (eskênosen — tabernaculou) entre nós." (Jo 1:14)',r:'Êx 25–40; Jo 1:14; Hb 8–9'},
+  {id:'in-sacerd-levit',y:-1445,l:'Sacerdócio Levítico',ic:'🕎',tag:'Sacerdócio',d:'Arão e seus filhos são consagrados como sacerdotes. Os levitas são separados para o serviço do Tabernáculo. Todo o sistema sacrificial aponta para Cristo como o Sumo-Sacerdote definitivo que "entrou uma vez para sempre no santo dos santos." (Hb 9:12)',r:'Lv 8; Nm 3; Hb 7–10'},
+  {id:'in-monarquia',y:-1050,l:'Monarquia de Israel',ic:'👑',tag:'Instituição',d:'Israel pede um rei: "Coloca sobre nós um rei que nos governe como as demais nações." (1 Sm 8:5). Saul é ungido como primeiro rei. A monarquia davídica prepara o caminho para o Rei messiânico — "o filho de Davi." (Mt 1:1)',r:'1 Sm 8–10; Mt 1:1'},
+  {id:'in-templo1',y:-966,l:'1º Templo (Salomão)',ic:'🏛️',tag:'Templo',d:'Salomão constrói o Primeiro Templo em Jerusalém em 7 anos. A Shekinah (glória de Deus) o preenche: "o templo foi cheio da nuvem da glória do SENHOR." (1 Rs 8:10-11). Centro da adoração de Israel por ~380 anos, até 586 a.C.',r:'1 Rs 5–8'},
+  {id:'in-sinagoga',y:-586,l:'Sinagoga',ic:'🕍',tag:'Instituição',d:'A sinagoga surge durante o exílio babilônico como instituição de ensino e oração, em substituição ao Templo destruído. Sobreviveu à diáspora e moldou o judaísmo. Jesus e Paulo ensinavam nas sinagogas. "Como de costume, Paulo entrou..." (At 17:2)',r:'At 17:2; Lc 4:16'},
+  {id:'in-templo2',y:-516,l:'2º Templo (Zorobabel)',ic:'🏛️',tag:'Templo',d:'O Segundo Templo é concluído sob Zorobabel, 70 anos após a destruição do primeiro — cumprindo Jeremias. Menor em glória material, mas Ageu promete: "a glória desta última casa será maior que a da primeira." (Ag 2:9)',r:'Esd 6; Ag 2:9'},
+  {id:'in-sinedrio',y:-200,l:'Sinédrio',ic:'⚖️',tag:'Instituição',d:'O Sinédrio de 71 membros — supremo tribunal religioso e civil judeu. Jesus foi julgado diante dele (Mt 26:57-68). Paulo compareceu duas vezes (At 22:30; 23:6). Dissolvido após a destruição de Jerusalém em 70 d.C.',r:'Mt 26:57-68; At 22:30'},
+  {id:'in-templo3',y:-20,l:'Templo de Herodes',ic:'🏛️',tag:'Templo',d:'Herodes, o Grande, expande e embeleza o Segundo Templo (~20 a.C.). "Em quarenta e seis anos este templo foi edificado." (Jo 2:20). Uma das maiores obras arquitetônicas da Antiguidade. Jesus o profetiza destruído (Mt 24:2). Tito o destrói em 70 d.C.',r:'Jo 2:20; Mc 13:1-2; Mt 24:2'},
+  {id:'in-igreja',y:30,l:'Igreja (Ekklesia)',ic:'✝️',tag:'Instituição',d:'"Edificarei a minha igreja, e as portas do inferno não prevalecerão contra ela." (Mt 16:18). A Igreja nasce no Pentecostes com o derramamento do Espírito. Corpo de Cristo, coluna da verdade, herdeira das promessas abraâmicas. "Não sois mais estrangeiros." (Ef 2:19)',r:'Mt 16:18; At 2; Ef 2:19-22'},
+  {id:'in-ceia',y:30,l:'Ceia do Senhor',ic:'🍞',tag:'Instituição',d:'"Fazei isso em memória de mim." (Lc 22:19). Instituída por Jesus na noite em que foi traído. Memorial da Nova Aliança — proclama a morte do Senhor até que Ele venha. Coração do culto cristão desde o primeiro século.',r:'Lc 22:14-23; 1 Co 11:23-26'},
+  {id:'in-concilio-jer',y:49,l:'Concílio de Jerusalém',ic:'🌍',tag:'Igreja',d:'Primeiro concílio da Igreja — decide que os gentios não precisam ser circuncidados para a salvação. "Foi resolvido pelo Espírito Santo e por nós." (At 15:28). Estabelece o modelo conciliar de governo eclesiástico e a universalidade do Evangelho.',r:'At 15'},
+  // Impérios e reinos — fundação
+  {id:'in-egito-ant',y:-2686,l:'Egito: Reino Antigo',ic:'🏺',tag:'Império',d:'Fundação do Reino Antigo (~2686 a.C.) — era das grandes pirâmides. Contemporâneo de Abraão. O Egito é o pano de fundo providencial da vida de José e do Êxodo. "Chamei meu filho do Egito." (Os 11:1; Mt 2:15)',r:'Gn 12:10; 37–50; Êx 1–15'},
+  {id:'in-ur3',y:-2112,l:'3ª Dinastia de Ur',ic:'🏺',tag:'Império',d:'Fundação da Terceira Dinastia de Ur (~2112 a.C.) — apogeu da civilização suméria. Abraão nasceu em "Ur dos Caldeus" (Gn 11:28-31). A grande civilização mesopotâmica que Abraão abandonou por fé (Hb 11:8).',r:'Gn 11:28-31; Hb 11:8'},
+  {id:'in-bab-ant',y:-1895,l:'Babilônia Antiga',ic:'🏺',tag:'Império',d:'Fundação da Babilônia Antiga (~1895 a.C.) — período de Hamurábi. O código de leis ilumina o contexto jurídico do período patriarcal. Contemporânea da escravidão de Israel no Egito.',r:'Gn 15:7'},
+  {id:'in-egito-novo',y:-1550,l:'Egito: Reino Novo',ic:'🏺',tag:'Império',d:'Fundação do Reino Novo (~1550 a.C.) — época do Êxodo. Faraós como Tutmés III e Ramsés II pertencem a este período. A maior potência do Oriente Médio quando Moisés liderou a libertação de Israel.',r:'Êx 1–15'},
+  {id:'in-assiria',y:-934,l:'Império Assírio',ic:'⚔️',tag:'Império',d:'Fundação do Império Neoassírio (~934 a.C.). Instrumentos do juízo divino: destruiu o Reino do Norte de Israel (722 a.C.) e ameaçou Jerusalém sob Ezequias (701 a.C.). Isaías, Oséias, Amós e Naum profetizaram neste contexto.',r:'2 Rs 17; 2 Rs 19; Is 10:5'},
+  {id:'in-neobab',y:-626,l:'Babilônia Neobabilônica',ic:'🏺',tag:'Império',d:'Fundação do Império Neobabilônico (~626 a.C.) — Nabopolassar e depois Nabucadnesar II. Destruiu Jerusalém e o Templo (586 a.C.) e deportou Israel. O Exílio babilônico — o grande julgamento e purificação de Israel. Contexto de Daniel, Ezequiel, Jeremias.',r:'2 Rs 25; Dn 1; Jr 29'},
+  {id:'in-persia',y:-550,l:'Império Persa',ic:'🌐',tag:'Império',d:'Fundação do Império Persa por Ciro, o Grande (~550 a.C.). Conquistou a Babilônia (539 a.C.) e emitiu o decreto de retorno dos exilados. Isaías o nomeou 150 anos antes (Is 44:28). Contexto de Esdras, Neemias, Ester, Daniel e Malaquias.',r:'Esd 1; Is 44:28; 45:1'},
+  {id:'in-grecia',y:-336,l:'Império Macedônio',ic:'⚔️',tag:'Império',d:'Alexandre Magno funda o Império Macedônio (~336 a.C.). A helenização criou a língua grega koiné — veículo providencial do NT — e unificou culturalmente o Mediterrâneo. Daniel profetizou o "bode" de Ocidente (Dn 8:5-8).',r:'Dn 8:5-8; 11:3'},
+  {id:'in-roma',y:-509,l:'República Romana',ic:'🦅',tag:'Império',d:'Fundação da República Romana (~509 a.C.). A Pax Romana, as estradas e o direito romano prepararam providencialmente o mundo para a pregação do Evangelho. "Saiu um decreto de César Augusto." (Lc 2:1). Paulo usou a cidadania romana a serviço do Evangelho.',r:'Lc 2:1; At 22:25-28; Rm 13:1'},
+  {id:'in-asmoneia',y:-164,l:'Dinastia Asmoneia',ic:'⚔️',tag:'Império',d:'Judas Macabeu funda a Dinastia Asmoneia (~164 a.C.) após a vitória sobre Antíoco IV Epifânio. Período de independência judaica que durou um século, até a conquista romana de 63 a.C. Origem da festa de Chanucá (Jo 10:22).',r:'1 Mc; Jo 10:22'},
 ];
 
 const HISTORICAL=[
@@ -846,7 +882,7 @@ const PERIODS=[
 ];
 
 function renderPeriodBands(){
-  const tracks=['events','biblical','christianity','israel','prophets-north','prophets-south','kings-north','kings-south','kings-pagan','letters-pauline','letters-general','letters-apoc','patristic'];
+  const tracks=['events','biblical','institutions','christianity','israel','prophets-north','prophets-south','kings-north','kings-south','kings-pagan','letters-pauline','letters-general','letters-apoc','patristic'];
   tracks.forEach(tid=>{
     const tr=document.getElementById('t-'+tid);
     if(!tr)return;
@@ -898,7 +934,7 @@ function renderPeriodBands(){
     lbl.textContent='A.D.';
     r.appendChild(lbl);
     // linha vertical em todas as faixas
-    const allTracks=['t-empires','t-events','t-biblical','t-christianity','t-israel','t-prophets-north','t-prophets-south','t-kings-north','t-kings-south','t-kings-pagan','t-letters-pauline','t-letters-general','t-letters-apoc','t-patristic'];
+    const allTracks=['t-empires','t-events','t-biblical','t-institutions','t-christianity','t-israel','t-prophets-north','t-prophets-south','t-kings-north','t-kings-south','t-kings-pagan','t-letters-pauline','t-letters-general','t-letters-apoc','t-patristic'];
     allTracks.forEach(tid=>{
       const tr=document.getElementById(tid);
       if(!tr)return;
@@ -913,7 +949,7 @@ function renderPeriodBands(){
 
 function setW(){
   const w=tw()+'px';
-  ['inn','ruler','t-empires','t-events','t-biblical','t-christianity','t-israel','t-prophets-north','t-prophets-south','t-kings-north','t-kings-south','t-kings-pagan','t-letters-pauline','t-letters-general','t-letters-apoc','t-patristic'].forEach(id=>{
+  ['inn','ruler','t-empires','t-events','t-biblical','t-institutions','t-christianity','t-israel','t-prophets-north','t-prophets-south','t-kings-north','t-kings-south','t-kings-pagan','t-letters-pauline','t-letters-general','t-letters-apoc','t-patristic'].forEach(id=>{
     const el=document.getElementById(id);
     if(el)el.style.width=w;
   });
@@ -1290,6 +1326,7 @@ function renderAll(){
   renderDots('biblical',HISTORICAL.map(e=>({...e,ic:'🧍'})),'var(--ch)',e=>px((e.f+e.t)/2),e=>({tag:e.per,date:fspan(e.f,e.t),name:e.l,desc:e.d,refs:null}),{append:true,yMin:128,yMax:232,free:true,showLabels:true});
   // divider between biblical (top) and historical (bottom)
   {const dv=document.createElement('div');dv.style.cssText='position:absolute;left:0;right:0;top:120px;height:1px;background:var(--border);opacity:.6;pointer-events:none';document.getElementById('t-biblical').appendChild(dv);}
+  renderDots('institutions',INSTITUTIONS,'var(--cin)',e=>px(e.y),e=>({tag:e.tag||'Instituição',date:fy(e.y),name:e.l,desc:e.d,refs:e.r}),{free:true,showLabels:true,yMin:8,yMax:92});
   renderDots('christianity',CHRISTIANITY,'var(--cci)',e=>px((e.f+e.t)/2),e=>({tag:'História do Cristianismo',date:fspan(e.f,e.t),name:e.l,desc:e.d,refs:e.r}));
   renderDots('israel',ISRAEL,'var(--cis)',e=>px((e.f+e.t)/2),e=>({tag:'História de Israel',date:fspan(e.f,e.t),name:e.l,desc:e.d,refs:e.r}));
   renderIsraelLine();
@@ -1328,6 +1365,7 @@ function buildFilterPanel(){
 
   [{tid:'events',lbl:'Acontecimentos',c:'var(--cv)'},
    {tid:'biblical',lbl:'Personagens',c:'var(--cb)'},
+   {tid:'institutions',lbl:'Instituições',c:'var(--cin)'},
    {tid:'christianity',lbl:'Cristianismo',c:'var(--cci)'},
    {tid:'israel',lbl:'Israel',c:'var(--cis)'},
    {tid:'prophets-north',lbl:'Profetas — Norte',c:'var(--cpr)'},
