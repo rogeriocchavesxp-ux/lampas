@@ -389,10 +389,10 @@ html{height:100%}
 }
 .srch-txt-clr:hover{color:var(--fg)}
 .srch-drop{
-  position:absolute;top:calc(100% + 6px);left:0;min-width:320px;
+  position:fixed;min-width:320px;
   background:var(--surface);border:1px solid var(--border);
   border-radius:8px;box-shadow:0 8px 28px rgba(0,0,0,.22);
-  max-height:440px;overflow-y:auto;z-index:700;
+  max-height:440px;overflow-y:auto;z-index:9999;
   display:none;
 }
 .srch-drop.open{display:block}
@@ -2314,19 +2314,27 @@ setTimeout(()=>{
     },380);
   }
 
+  function positionDrop(){
+    const r=wrap.getBoundingClientRect();
+    drop.style.top=(r.bottom+6)+'px';
+    drop.style.left=r.left+'px';
+  }
+
   function renderDrop(groups){
     if(!groups.length){
       drop.innerHTML='<div class="srch-drop-empty">Nenhum resultado encontrado</div>';
+      positionDrop();
       drop.classList.add('open');
       return;
     }
     let total=0;
-    const html=groups.map(g=>{
+    const html=groups.map((g,gi)=>{
       total+=g.hits.length;
-      const rows=g.hits.map((r,i)=>`<button class="srch-item" data-gid="${groups.indexOf(g)}" data-idx="${i}"><span class="srch-item-ic">${r.ic}</span><div class="srch-item-body"><div class="srch-item-name">${r.label}</div><div class="srch-item-meta">${fmtY(r.year)}</div></div><span class="srch-item-tag">${r.tag}</span></button>`).join('');
+      const rows=g.hits.map((r,i)=>`<button class="srch-item" data-gid="${gi}" data-idx="${i}"><span class="srch-item-ic">${r.ic}</span><div class="srch-item-body"><div class="srch-item-name">${r.label}</div><div class="srch-item-meta">${fmtY(r.year)}</div></div><span class="srch-item-tag">${r.tag}</span></button>`).join('');
       return`<div class="srch-section-lbl">${g.label}</div>${rows}`;
     }).join('');
     drop.innerHTML=html+(total>1?`<div class="srch-count">${total} resultado${total>1?'s':''}</div>`:'');
+    positionDrop();
     drop.classList.add('open');
     drop.querySelectorAll('.srch-item').forEach(btn=>{
       const gid=+btn.dataset.gid,idx=+btn.dataset.idx;
@@ -2357,7 +2365,7 @@ setTimeout(()=>{
     const items=[...drop.querySelectorAll('.srch-item')];
     if(ev.key==='ArrowDown'){ev.preventDefault();(items[0]||inp).focus();}
     else if(ev.key==='Escape'){closeDrop();inp.blur();}
-    else if(ev.key==='Enter'&&items.length===1){items[0].click();}
+    else if(ev.key==='Enter'&&items.length){items[0].click();}
   });
 
   drop.addEventListener('keydown',ev=>{
