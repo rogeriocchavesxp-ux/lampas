@@ -243,6 +243,23 @@ html{height:100%}
 .sm-refs-title{font-size:.62rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--fgd)}
 .sm-refs-link{font-size:.76rem;color:var(--accent);text-decoration:none;word-break:break-all}
 .sm-refs-link:hover{text-decoration:underline}
+.sm-gallery{display:flex;flex-direction:column;border:1px solid var(--border);border-radius:10px;overflow:hidden}
+.sm-gallery-hd{padding:9px 14px;background:var(--s2);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px}
+.sm-gallery-lbl{font-size:.55rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--fgd)}
+.sm-gallery-ttl{font-family:var(--ff);font-size:.9rem;font-weight:600;color:var(--fg)}
+.sm-sl-imgwrap{background:#0c0a06;display:flex;align-items:center;justify-content:center;min-height:200px;max-height:360px;overflow:hidden}
+.sm-sl-imgwrap img{width:100%;max-height:360px;object-fit:contain;display:block;transition:opacity .2s}
+.sm-sl-nav{display:flex;align-items:center;justify-content:space-between;padding:7px 12px;background:var(--s2);border-top:1px solid var(--border)}
+.sm-sl-btn{width:30px;height:30px;border-radius:6px;border:1px solid var(--border);background:var(--surface);color:var(--fgm);cursor:pointer;font-size:.85rem;display:flex;align-items:center;justify-content:center;line-height:1}
+.sm-sl-btn:hover:not(:disabled){background:var(--al);color:var(--fg)}
+.sm-sl-btn:disabled{opacity:.3;cursor:default}
+.sm-sl-counter{font-size:.66rem;color:var(--fgd);font-variant-numeric:tabular-nums;letter-spacing:.04em}
+.sm-sl-info{padding:12px 16px 16px;display:flex;flex-direction:column;gap:9px}
+.sm-sl-name{font-family:var(--ff);font-size:1rem;font-weight:700;color:var(--fg);line-height:1.25}
+.sm-sl-ref{font-size:.6rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--accent);margin-top:1px}
+.sm-sl-block{display:flex;flex-direction:column;gap:3px}
+.sm-sl-blbl{font-size:.54rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--fgd)}
+.sm-sl-btxt{font-size:.77rem;line-height:1.7;color:var(--fgm)}
 .tt-study{display:block;width:100%;margin-top:10px;padding:6px 12px;background:color-mix(in srgb,var(--accent) 10%,transparent);border:1px solid color-mix(in srgb,var(--accent) 30%,transparent);border-radius:5px;color:var(--accent);font-size:.72rem;font-weight:600;cursor:pointer;text-align:left;letter-spacing:.03em}
 .tt-study:hover{background:color-mix(in srgb,var(--accent) 18%,transparent)}
 
@@ -351,6 +368,63 @@ html{height:100%}
 }
 @media(prefers-reduced-motion:reduce){*{transition:none!important}}
 
+/* TEXT SEARCH */
+.srch-txt{
+  position:relative;display:flex;align-items:center;gap:5px;
+  background:var(--s2);border:1px solid var(--border);border-radius:6px;
+  padding:0 9px;height:30px;transition:border-color .15s;
+}
+.srch-txt:focus-within{border-color:var(--accent)}
+.srch-txt-ic{font-size:.8rem;color:var(--fgd);flex-shrink:0;line-height:1;user-select:none}
+#stxt{
+  background:none;border:none;outline:none;
+  font-size:.73rem;color:var(--fg);width:175px;
+  font-family:var(--fs);
+}
+#stxt::placeholder{color:var(--fgd)}
+.srch-txt-clr{
+  background:none;border:none;color:var(--fgd);cursor:pointer;
+  padding:0;font-size:.78rem;line-height:1;flex-shrink:0;
+  transition:color .1s;
+}
+.srch-txt-clr:hover{color:var(--fg)}
+.srch-drop{
+  position:absolute;top:calc(100% + 6px);left:0;min-width:320px;
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:8px;box-shadow:0 8px 28px rgba(0,0,0,.22);
+  max-height:440px;overflow-y:auto;z-index:700;
+  display:none;
+}
+.srch-drop.open{display:block}
+.srch-drop-empty{padding:16px 14px;font-size:.73rem;color:var(--fgd);text-align:center}
+.srch-section-lbl{
+  font-size:.52rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;
+  color:var(--fgd);padding:8px 14px 4px;
+  background:var(--surface);border-bottom:1px solid var(--border);
+}
+.srch-item{
+  display:flex;align-items:center;gap:9px;padding:7px 14px;
+  cursor:pointer;transition:background .1s;border:none;width:100%;
+  background:none;text-align:left;
+}
+.srch-item:hover,.srch-item:focus{background:var(--al);outline:none}
+.srch-item-ic{font-size:1.05rem;flex-shrink:0;width:22px;text-align:center;line-height:1}
+.srch-item-body{flex:1;min-width:0}
+.srch-item-name{font-size:.78rem;font-weight:600;color:var(--fg);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.srch-item-meta{font-size:.63rem;color:var(--fgd);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:1px}
+.srch-item-tag{
+  font-size:.55rem;font-weight:700;letter-spacing:.07em;text-transform:uppercase;
+  padding:2px 7px;border-radius:9999px;background:var(--s2);
+  color:var(--fgm);flex-shrink:0;white-space:nowrap;
+}
+.srch-count{font-size:.62rem;color:var(--fgd);padding:8px 14px 6px;border-top:1px solid var(--border)}
+@keyframes srch-flash{
+  0%{transform:translate(-50%,-50%) scale(2.5);box-shadow:0 0 0 4px var(--accent),0 0 16px var(--accent)}
+  50%{transform:translate(-50%,-50%) scale(1.7);box-shadow:0 0 0 2px var(--accent)}
+  100%{transform:translate(-50%,-50%) scale(1);box-shadow:0 1px 4px rgba(0,0,0,.12)}
+}
+.dot.srch-flash{animation:srch-flash .9s ease-out forwards;z-index:10}
+
 /* REFERENCES PANEL */
 .refp{
   position:fixed;left:0;top:0;bottom:0;width:320px;z-index:400;
@@ -390,6 +464,12 @@ html{height:100%}
     <div class="srch" id="srch">
       <input type="text" id="syear" placeholder="Ano (ex: 586 a.C.)" autocomplete="off" spellcheck="false">
       <button id="sgo" title="Ir para o ano">→</button>
+    </div>
+    <div class="srch-txt" id="srch-txt">
+      <span class="srch-txt-ic">🔍</span>
+      <input type="text" id="stxt" placeholder="Buscar evento, pessoa..." autocomplete="off" spellcheck="false">
+      <button class="srch-txt-clr" id="stxt-clr" hidden>✕</button>
+      <div class="srch-drop" id="srch-drop"></div>
     </div>
     <button class="ibtn" id="refbtn" style="width:auto;padding:0 8px;font-size:.65rem;letter-spacing:.04em;gap:4px;display:flex;align-items:center">📚 Referências</button>
     <button class="ibtn" id="fpbtn" style="width:auto;padding:0 8px;font-size:.65rem;letter-spacing:.04em;gap:4px;display:flex;align-items:center">☰ Filtros</button>
@@ -2092,7 +2172,7 @@ setTimeout(()=>{
   window._clearRng=clearRng;
 
   scr.addEventListener('click',ev=>{
-    if(ev.target.closest('.dot,.tt,#rng-panel,.tg,.hd,button,.lbi,.zbtn,.ibtn,.ejump,.srch,.fp')) return;
+    if(ev.target.closest('.dot,.tt,#rng-panel,.tg,.hd,button,.lbi,.zbtn,.ibtn,.ejump,.srch,.srch-txt,.fp')) return;
     if(dragMoved){dragMoved=false;return;}
     const y=yearFromEv(ev);
     if(rE!==null){clearRng();return;}
@@ -2109,5 +2189,120 @@ setTimeout(()=>{
   window.setW=function(){_origSetW();if(rS!==null)drawRng();document.dispatchEvent(new Event('rng-redraw'));};
 
   document.addEventListener('keydown',ev=>{if(ev.key==='Escape'){closeStudy();clearRng();}});
+})();
+
+// ── TEXT SEARCH ────────────────────────────────────────────────────────────
+(function(){
+  const inp=document.getElementById('stxt');
+  const drop=document.getElementById('srch-drop');
+  const clrBtn=document.getElementById('stxt-clr');
+  const wrap=document.getElementById('srch-txt');
+
+  function norm(s){return(s||'').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'');}
+  function fmtY(y){if(y<=-4000)return'Origem';if(y<0)return Math.abs(y)+' a.C.';if(y===0)return'1 d.C.';return y+' d.C.';}
+
+  const SECTIONS=[
+    {label:'Acontecimentos',items:EVENTS.map(e=>({id:e.id,ic:e.ic||'📌',label:e.l,tag:e.tag||'Evento',year:e.y,text:norm(e.l+' '+(e.d||'')+' '+(e.r||'')+' '+(e.tag||'')),track:'events'}))},
+    {label:'Personagens Bíblicos',items:BIBLICAL.map(e=>({id:e.id,ic:e.ic||'🧍',label:e.l,tag:'Personagem',year:e.f,text:norm(e.l+' '+(e.d||'')+' '+(e.r||'')),track:'biblical'}))},
+    {label:'Profetas',items:PROPHETS.map(e=>({id:e.id,ic:e.ic||'📜',label:e.l,tag:'Profeta',year:e.f,text:norm(e.l+' '+(e.d||'')+' '+(e.r||'')),track:e.side==='n'?'prophets-north':'prophets-south'}))},
+    {label:'Instituições',items:INSTITUTIONS.map(e=>({id:e.id,ic:e.ic||'🏛️',label:e.l,tag:e.tag||'Instituição',year:e.y,text:norm(e.l+' '+(e.d||'')+' '+(e.r||'')+' '+(e.tag||'')),track:'institutions'}))},
+    {label:'Reis — Judá',items:KINGS_JUDAH.map(e=>({id:e.id,ic:'👑',label:e.l,tag:'Rei Judá',year:e.f,text:norm(e.l+' '+(e.d||'')),track:'kings-south'}))},
+    {label:'Reis — Norte',items:KINGS_NORTH.map(e=>({id:e.id,ic:'👑',label:e.l,tag:'Rei Norte',year:e.f,text:norm(e.l+' '+(e.d||'')),track:'kings-north'}))},
+    {label:'Reis / Governantes',items:KINGS_PAGAN.map(e=>({id:e.id,ic:e.ic||'👑',label:e.l,tag:'Governante',year:e.f,text:norm(e.l+' '+(e.d||'')),track:'kings-pagan'}))},
+    {label:'Cartas NT',items:LETTERS_NT.map(e=>({id:e.id,ic:'✉️',label:e.l,tag:{p:'Paulina',g:'Geral',a:'Apocalipse'}[e.cat]||'Carta NT',year:e.f,text:norm(e.l+' '+(e.d||'')+' '+(e.r||'')),track:{p:'letters-pauline',g:'letters-general',a:'letters-apoc'}[e.cat]||'letters-pauline'}))},
+    {label:'Padres da Igreja',items:PATRISTIC.map(e=>({id:e.id,ic:e.ic||'✝️',label:e.l,tag:'Patrística',year:e.f,text:norm(e.l+' '+(e.d||'')+' '+(e.r||'')),track:'patristic'}))},
+    {label:'Cristianismo',items:CHRISTIANITY.map(e=>({id:e.id,ic:e.ic||'✝️',label:e.l,tag:'Cristianismo',year:e.f,text:norm(e.l+' '+(e.d||'')),track:'christianity'}))},
+    {label:'Histórico',items:HISTORICAL.map(e=>({id:e.id,ic:e.ic||'🧍',label:e.l,tag:e.per||'Histórico',year:e.f,text:norm(e.l+' '+(e.d||'')+' '+(e.per||'')),track:'historical'}))},
+    {label:'Impérios e Reinos',items:EMPIRES.map(e=>({id:'emp-'+e.l,ic:'🏛️',label:e.l,tag:'Império',year:e.f,text:norm(e.l),track:'empires',noFlash:true}))},
+  ];
+
+  function search(q){
+    const qn=norm(q);
+    const results=[];
+    SECTIONS.forEach(sec=>{
+      const hits=sec.items.filter(it=>it.text.includes(qn));
+      if(hits.length)results.push({label:sec.label,hits:hits.slice(0,8)});
+    });
+    return results;
+  }
+
+  function scrollAndFlash(item){
+    const scr=document.getElementById('scr');
+    scr.scrollTo({left:Math.max(0,px(item.year)-320),behavior:'smooth'});
+    closeDrop();
+    inp.value=item.label;
+    clrBtn.hidden=false;
+    if(item.noFlash)return;
+    setTimeout(()=>{
+      const dot=document.querySelector('.dot[data-id="'+item.id+'"]');
+      if(!dot)return;
+      dot.classList.remove('srch-flash');
+      void dot.offsetWidth;
+      dot.classList.add('srch-flash');
+      dot.addEventListener('animationend',()=>dot.classList.remove('srch-flash'),{once:true});
+    },380);
+  }
+
+  function renderDrop(groups){
+    if(!groups.length){
+      drop.innerHTML='<div class="srch-drop-empty">Nenhum resultado encontrado</div>';
+      drop.classList.add('open');
+      return;
+    }
+    let total=0;
+    const html=groups.map(g=>{
+      total+=g.hits.length;
+      const rows=g.hits.map((r,i)=>`<button class="srch-item" data-gid="${groups.indexOf(g)}" data-idx="${i}"><span class="srch-item-ic">${r.ic}</span><div class="srch-item-body"><div class="srch-item-name">${r.label}</div><div class="srch-item-meta">${fmtY(r.year)}</div></div><span class="srch-item-tag">${r.tag}</span></button>`).join('');
+      return`<div class="srch-section-lbl">${g.label}</div>${rows}`;
+    }).join('');
+    drop.innerHTML=html+(total>1?`<div class="srch-count">${total} resultado${total>1?'s':''}</div>`:'');
+    drop.classList.add('open');
+    drop.querySelectorAll('.srch-item').forEach(btn=>{
+      const gid=+btn.dataset.gid,idx=+btn.dataset.idx;
+      btn.addEventListener('click',()=>scrollAndFlash(groups[gid].hits[idx]));
+    });
+  }
+
+  function closeDrop(){drop.classList.remove('open');}
+
+  let debT;
+  inp.addEventListener('input',()=>{
+    clearTimeout(debT);
+    const v=inp.value.trim();
+    clrBtn.hidden=!v;
+    if(!v){closeDrop();return;}
+    debT=setTimeout(()=>renderDrop(search(v)),160);
+  });
+
+  inp.addEventListener('focus',()=>{
+    if(inp.value.trim()&&!drop.classList.contains('open'))renderDrop(search(inp.value.trim()));
+  });
+
+  clrBtn.addEventListener('click',()=>{
+    inp.value='';clrBtn.hidden=true;closeDrop();inp.focus();
+  });
+
+  inp.addEventListener('keydown',ev=>{
+    const items=[...drop.querySelectorAll('.srch-item')];
+    if(ev.key==='ArrowDown'){ev.preventDefault();(items[0]||inp).focus();}
+    else if(ev.key==='Escape'){closeDrop();inp.blur();}
+    else if(ev.key==='Enter'&&items.length===1){items[0].click();}
+  });
+
+  drop.addEventListener('keydown',ev=>{
+    const items=[...drop.querySelectorAll('.srch-item')];
+    const cur=document.activeElement;
+    const idx=items.indexOf(cur);
+    if(ev.key==='ArrowDown'){ev.preventDefault();items[(idx+1)%items.length].focus();}
+    else if(ev.key==='ArrowUp'){ev.preventDefault();idx===0?inp.focus():items[idx-1].focus();}
+    else if(ev.key==='Escape'){closeDrop();inp.focus();}
+  });
+
+  document.addEventListener('click',ev=>{
+    if(!wrap.contains(ev.target))closeDrop();
+  });
+
+  // also close on range-selection click that passes through srch-txt check
+  document.getElementById('scr').addEventListener('click',()=>closeDrop(),{capture:false});
 })();
 </script>
