@@ -2322,11 +2322,12 @@ setTimeout(()=>{
 })();
 
 // ── TEXT SEARCH ────────────────────────────────────────────────────────────
-(function(){
+try{(function(){
   const inp=document.getElementById('stxt');
   const drop=document.getElementById('srch-drop');
   const clrBtn=document.getElementById('stxt-clr');
   const wrap=document.getElementById('srch-txt');
+  if(!inp||!drop||!clrBtn||!wrap){console.error('[busca] elemento DOM ausente',{inp,drop,clrBtn,wrap});return;}
 
   function norm(s){return(s||'').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'');}
   function fmtY(y){if(y<=-4000)return'Origem';if(y<0)return Math.abs(y)+' a.C.';if(y===0)return'1 d.C.';return y+' d.C.';}
@@ -2447,5 +2448,7 @@ setTimeout(()=>{
 
   // also close on range-selection click that passes through srch-txt check
   document.getElementById('scr').addEventListener('click',()=>closeDrop(),{capture:false});
-})();
+  inp.dataset.srchReady='1';
+  console.log('[busca] inicializado com sucesso —',SECTIONS.reduce((n,s)=>n+s.items.length,0),'itens indexados');
+})();}catch(e){console.error('[busca] erro ao inicializar:',e);const w=document.getElementById('srch-txt');if(w){w.title='Erro na busca: '+e.message;w.style.outline='2px solid red';}}
 </script>
