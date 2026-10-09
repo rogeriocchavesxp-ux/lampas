@@ -36,6 +36,7 @@ html{height:100%}
 .htitle{font-family:var(--ff);font-size:clamp(1rem,2vw,1.35rem);font-weight:600;line-height:1.1}
 .hsubt{font-size:.62rem;font-weight:300;letter-spacing:.1em;text-transform:uppercase;color:var(--fgd);margin-top:2px}
 .hright{display:flex;align-items:center;gap:6px}
+.hic{font-size:2rem;line-height:1;margin-right:8px;opacity:.8;flex-shrink:0;filter:sepia(.3)}
 .zbtn{
   width:26px;height:26px;background:var(--s2);border:1px solid var(--border);color:var(--fgm);
   border-radius:3px;cursor:pointer;font-size:1rem;display:flex;align-items:center;justify-content:center;
@@ -108,17 +109,33 @@ html{height:100%}
   opacity:.7;pointer-events:none;
 }
 .lbi-sub-tag.off{opacity:0;}
-/* ERA JUMP */
+/* ERA JUMP / PERIODS BAR */
+.peribar{
+  display:flex;align-items:center;gap:5px;flex-wrap:wrap;
+  padding:5px 14px;background:var(--bg);border-bottom:1px solid var(--border);flex-shrink:0;
+}
+.peri-hd{display:flex;align-items:center;gap:6px;margin-right:4px;flex-shrink:0}
+.peri-ic{font-size:.9rem;opacity:.55;line-height:1}
 .ejump{display:flex;align-items:center;gap:4px;flex-wrap:wrap}
-.ej-lbl{font-size:.58rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--fgd);white-space:nowrap;padding-right:4px;user-select:none}
+.ej-lbl{font-size:.58rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--fgd);white-space:nowrap;padding-right:4px;user-select:none}
 .ej-btn{
-  font-size:.62rem;padding:3px 9px;border-radius:9999px;cursor:pointer;
+  font-size:.62rem;padding:4px 12px;border-radius:4px;cursor:pointer;
   background:var(--s2);border:1px solid var(--border);color:var(--fgm);
   white-space:nowrap;transition:background .12s,color .12s,border-color .12s;
 }
 .ej-btn:hover{background:var(--al);color:var(--fg);border-color:var(--accent)}
 .ej-btn.hi{background:color-mix(in srgb,var(--accent) 15%,transparent);
   border-color:var(--accent);color:var(--accent);font-weight:600}
+/* CATEGORY PILL ICON */
+.tic-ic{font-size:.8rem;line-height:1;flex-shrink:0;margin-left:1px}
+/* OTHER CATEGORIES BUTTON */
+.ti-other{
+  display:inline-flex;align-items:center;gap:4px;cursor:pointer;user-select:none;
+  padding:4px 11px;border-radius:9999px;border:1.5px dashed var(--border);
+  font-size:.68rem;font-weight:500;background:transparent;color:var(--fgd);
+  transition:all .18s;
+}
+.ti-other:hover{border-color:var(--accent);color:var(--accent)}
 
 /* TIMELINE LAYOUT */
 .wrap{display:flex;flex:1;overflow:hidden;min-height:0}
@@ -142,6 +159,7 @@ html{height:100%}
 }
 .lbi.off::after{transform:rotate(-90deg)}
 .lbdot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+.lbi-ic{font-size:.8rem;line-height:1;flex-shrink:0;opacity:.65}
 
 /* SCROLL AREA */
 .scr{flex:1;min-width:0;overflow:auto;-webkit-overflow-scrolling:touch;position:relative;cursor:grab}
@@ -454,9 +472,12 @@ html{height:100%}
 </style>
 
 <div class="hd">
-  <div>
-    <div class="htitle">Cronologia da História</div>
-    <div class="hsubt">Da Criação ao Século XX · Linha do Tempo Horizontal</div>
+  <div style="display:flex;align-items:center">
+    <span class="hic">📖</span>
+    <div>
+      <div class="htitle">Cronologia da História</div>
+      <div class="hsubt">Da Criação ao Século XX · Linha do Tempo Horizontal</div>
+    </div>
   </div>
   <div class="hright">
     <button class="zbtn" id="zo">−</button>
@@ -468,7 +489,7 @@ html{height:100%}
     </div>
     <div class="srch-txt" id="srch-txt">
       <span class="srch-txt-ic">🔍</span>
-      <input type="text" id="stxt" placeholder="Buscar evento, pessoa..." autocomplete="off" spellcheck="false">
+      <input type="text" id="stxt" placeholder="Buscar por pessoa, evento, lugar..." autocomplete="off" spellcheck="false">
       <button class="srch-txt-clr" id="stxt-clr" hidden>✕</button>
       <div class="srch-drop" id="srch-drop"></div>
     </div>
@@ -479,21 +500,21 @@ html{height:100%}
 </div>
 
 <div class="tg" id="tg">
-  <span class="tg-lbl">Faixas:</span>
+  <span class="tg-lbl">— CATEGORIAS</span>
   <div class="tg-section">
     <!-- Impérios com dropdown -->
     <div class="ti-wrap" id="wrap-empires">
-      <button class="ti on" id="ti-empires" style="color:var(--ce)"><div class="tdot"></div><span class="tlbl">Impérios</span><span class="tarr">▾</span></button>
+      <button class="ti on" id="ti-empires" style="color:var(--ce)"><div class="tdot"></div><span class="tic-ic">👑</span><span class="tlbl">Impérios</span><span class="tarr">▾</span></button>
       <div class="ti-ddmenu" id="dd-empires"></div>
     </div>
-    <button class="ti on" data-tid="events" style="color:var(--cv)"><div class="tdot"></div><span class="tlbl">Acontecimentos</span></button>
-    <button class="ti on" data-tid="biblical" style="color:var(--cb)"><div class="tdot"></div><span class="tlbl">Personagens</span></button>
-    <button class="ti on" data-tid="institutions" style="color:var(--cin)"><div class="tdot"></div><span class="tlbl">Instituições</span></button>
-    <button class="ti on" data-tid="christianity" style="color:var(--cci)"><div class="tdot"></div><span class="tlbl">Cristianismo</span></button>
-    <button class="ti on" data-tid="israel" style="color:var(--cis)"><div class="tdot"></div><span class="tlbl">Israel</span></button>
+    <button class="ti on" data-tid="events" style="color:var(--cv)"><div class="tdot"></div><span class="tic-ic">🏛️</span><span class="tlbl">Acontecimentos</span></button>
+    <button class="ti on" data-tid="biblical" style="color:var(--cb)"><div class="tdot"></div><span class="tic-ic">🧍</span><span class="tlbl">Personagens</span></button>
+    <button class="ti on" data-tid="institutions" style="color:var(--cin)"><div class="tdot"></div><span class="tic-ic">🏛️</span><span class="tlbl">Instituições</span></button>
+    <button class="ti on" data-tid="christianity" style="color:var(--cci)"><div class="tdot"></div><span class="tic-ic">✝️</span><span class="tlbl">Cristianismo</span></button>
+    <button class="ti on" data-tid="israel" style="color:var(--cis)"><div class="tdot"></div><span class="tic-ic">✡️</span><span class="tlbl">Israel</span></button>
     <!-- Profetas com dropdown -->
     <div class="ti-wrap" id="wrap-prophets">
-      <button class="ti on" id="ti-prophets" style="color:var(--cpr)"><div class="tdot"></div><span class="tlbl">Profetas</span><span class="tarr">▾</span></button>
+      <button class="ti on" id="ti-prophets" style="color:var(--cpr)"><div class="tdot"></div><span class="tic-ic">📜</span><span class="tlbl">Profetas</span><span class="tarr">▾</span></button>
       <div class="ti-ddmenu" id="dd-prophets">
         <label class="ti-dditem"><input type="checkbox" checked data-subtid="prophets-north"><div class="ti-dditem-dot" style="background:var(--cpr)"></div><span class="ti-dditem-lbl">Norte (Israel)</span></label>
         <label class="ti-dditem"><input type="checkbox" checked data-subtid="prophets-south"><div class="ti-dditem-dot" style="background:var(--cpr)"></div><span class="ti-dditem-lbl">Sul (Judá)</span></label>
@@ -501,7 +522,7 @@ html{height:100%}
     </div>
     <!-- Reis com dropdown -->
     <div class="ti-wrap" id="wrap-reis">
-      <button class="ti on" id="ti-reis" style="color:var(--ckn)"><div class="tdot"></div><span class="tlbl">Reis</span><span class="tarr">▾</span></button>
+      <button class="ti on" id="ti-reis" style="color:var(--ckn)"><div class="tdot"></div><span class="tic-ic">👑</span><span class="tlbl">Reis</span><span class="tarr">▾</span></button>
       <div class="ti-ddmenu" id="dd-reis">
         <label class="ti-dditem"><input type="checkbox" checked data-subtid="kings-north"><div class="ti-dditem-dot" style="background:var(--ckn)"></div><span class="ti-dditem-lbl">Norte (Israel)</span></label>
         <label class="ti-dditem"><input type="checkbox" checked data-subtid="kings-south"><div class="ti-dditem-dot" style="background:var(--cks)"></div><span class="ti-dditem-lbl">Judá</span></label>
@@ -511,7 +532,7 @@ html{height:100%}
     </div>
     <!-- Cartas com dropdown -->
     <div class="ti-wrap" id="wrap-letters">
-      <button class="ti on" id="ti-letters" style="color:var(--clt)"><div class="tdot"></div><span class="tlbl">Cartas</span><span class="tarr">▾</span></button>
+      <button class="ti on" id="ti-letters" style="color:var(--clt)"><div class="tdot"></div><span class="tic-ic">✉️</span><span class="tlbl">Cartas</span><span class="tarr">▾</span></button>
       <div class="ti-ddmenu" id="dd-letters">
         <label class="ti-dditem"><input type="checkbox" checked data-subtid="letters-pauline"><div class="ti-dditem-dot" style="background:var(--clt)"></div><span class="ti-dditem-lbl">Paulinas</span></label>
         <label class="ti-dditem"><input type="checkbox" checked data-subtid="letters-general"><div class="ti-dditem-dot" style="background:var(--clt)"></div><span class="ti-dditem-lbl">Gerais</span></label>
@@ -519,11 +540,17 @@ html{height:100%}
         <label class="ti-dditem"><input type="checkbox" checked data-subtid="letters-apoc"><div class="ti-dditem-dot" style="background:var(--clt)"></div><span class="ti-dditem-lbl">Apocalipse</span></label>
       </div>
     </div>
-    <button class="ti on" data-tid="patristic" style="color:var(--cpa)"><div class="tdot"></div><span class="tlbl">Pais da Igreja</span></button>
+    <button class="ti on" data-tid="patristic" style="color:var(--cpa)"><div class="tdot"></div><span class="tic-ic">✝️</span><span class="tlbl">Pais da Igreja</span></button>
+    <button class="ti-other" id="ti-hist-toggle" title="Mostrar/ocultar Personagens Históricos">+ Outras categorias</button>
   </div>
-  <div class="tg-sep"></div>
+</div>
+
+<div class="peribar" id="peribar">
+  <div class="peri-hd">
+    <span class="peri-ic">🧭</span>
+    <span class="ej-lbl">— PERÍODOS</span>
+  </div>
   <div class="ejump">
-    <span class="ej-lbl">Ir para:</span>
     <button class="ej-btn" onclick="scrollToEra(-3900)">Criação</button>
     <button class="ej-btn" onclick="scrollToEra(-2091)">Patriarcas</button>
     <button class="ej-btn" onclick="scrollToEra(-1446)">Êxodo</button>
@@ -541,31 +568,31 @@ html{height:100%}
 <div class="wrap">
   <div class="lblcol" id="lc">
     <div class="lblr"></div>
-    <div class="lbi" id="li-empires" style="height:174px"><div class="lbdot" style="background:var(--ce)"></div>Impérios e Reinos</div>
-    <div class="lbi" id="li-events" style="height:180px"><div class="lbdot" style="background:var(--cv)"></div>Acontecimentos</div>
-    <div class="lbi" id="li-biblical" style="height:240px"><div class="lbdot" style="background:linear-gradient(to bottom,var(--cb) 50%,var(--ch) 50%)"></div>Personagens</div>
+    <div class="lbi" id="li-empires" style="height:174px"><div class="lbdot" style="background:var(--ce)"></div><span class="lbi-ic">👑</span>Impérios e Reinos</div>
+    <div class="lbi" id="li-events" style="height:180px"><div class="lbdot" style="background:var(--cv)"></div><span class="lbi-ic">🏛️</span>Acontecimentos</div>
+    <div class="lbi" id="li-biblical" style="height:240px"><div class="lbdot" style="background:linear-gradient(to bottom,var(--cb) 50%,var(--ch) 50%)"></div><span class="lbi-ic">🧍</span>Personagens</div>
     <div class="lbi off" id="li-historical" style="height:0;border-bottom:none;padding:0"></div>
-    <div class="lbi" id="li-institutions" style="height:100px"><div class="lbdot" style="background:var(--cin)"></div>Instituições</div>
-    <div class="lbi" id="li-christianity" style="height:100px"><div class="lbdot" style="background:var(--cci)"></div>Cristianismo</div>
-    <div class="lbi" id="li-israel" style="height:100px"><div class="lbdot" style="background:var(--cis)"></div>Israel</div>
+    <div class="lbi" id="li-institutions" style="height:100px"><div class="lbdot" style="background:var(--cin)"></div><span class="lbi-ic">🏛️</span>Instituições</div>
+    <div class="lbi" id="li-christianity" style="height:100px"><div class="lbdot" style="background:var(--cci)"></div><span class="lbi-ic">✝️</span>Cristianismo</div>
+    <div class="lbi" id="li-israel" style="height:100px"><div class="lbdot" style="background:var(--cis)"></div><span class="lbi-ic">✡️</span>Israel</div>
     <div class="lbi" id="li-prophets" style="height:260px;position:relative">
-      <div class="lbdot" style="background:var(--cpr)"></div>Profetas
+      <div class="lbdot" style="background:var(--cpr)"></div><span class="lbi-ic">📜</span>Profetas
       <span class="lbi-sub-tag" id="lbt-prophets-north" style="top:40px;color:var(--cpr)">Norte</span>
       <span class="lbi-sub-tag" id="lbt-prophets-south" style="top:170px;color:var(--cpr)">Sul</span>
     </div>
     <div class="lbi" id="li-kings" style="height:380px;position:relative">
-      <div class="lbdot" style="background:linear-gradient(to bottom,var(--ckn) 33%,var(--cks) 66%,var(--ch) 100%)"></div>Reis
+      <div class="lbdot" style="background:linear-gradient(to bottom,var(--ckn) 33%,var(--cks) 66%,var(--ch) 100%)"></div><span class="lbi-ic">👑</span>Reis
       <span class="lbi-sub-tag" id="lbt-kings-north" style="top:50px;color:var(--ckn)">Norte</span>
       <span class="lbi-sub-tag" id="lbt-kings-south" style="top:150px;color:var(--cks)">Judá</span>
       <span class="lbi-sub-tag" id="lbt-kings-pagan" style="top:290px;color:var(--ch)">Pagãos</span>
     </div>
     <div class="lbi" id="li-letters" style="height:280px;position:relative">
-      <div class="lbdot" style="background:var(--clt)"></div>Cartas
+      <div class="lbdot" style="background:var(--clt)"></div><span class="lbi-ic">✉️</span>Cartas
       <span class="lbi-sub-tag" id="lbt-letters-pauline" style="top:60px;color:var(--clt)">Paulinas</span>
       <span class="lbi-sub-tag" id="lbt-letters-general" style="top:170px;color:var(--clt)">Gerais</span>
       <span class="lbi-sub-tag" id="lbt-letters-apoc" style="top:250px;color:var(--clt)">Apoc.</span>
     </div>
-    <div class="lbi" id="li-patristic" style="height:100px"><div class="lbdot" style="background:var(--cpa)"></div>Pais da Igreja</div>
+    <div class="lbi" id="li-patristic" style="height:100px"><div class="lbdot" style="background:var(--cpa)"></div><span class="lbi-ic">✝️</span>Pais da Igreja</div>
   </div>
   <div class="scr" id="scr">
     <div class="inner" id="inn">
@@ -1822,6 +1849,20 @@ document.getElementById('refbtn').addEventListener('click',()=>toggleRefP());
 document.getElementById('refpcls').addEventListener('click',()=>toggleRefP(false));
 document.getElementById('refpovl').addEventListener('click',()=>toggleRefP(false));
 
+// OUTRAS CATEGORIAS (histórico toggle)
+(function(){
+  const btn=document.getElementById('ti-hist-toggle');
+  if(!btn)return;
+  let histOn=false;
+  btn.addEventListener('click',()=>{
+    histOn=!histOn;
+    toggleTrack('historical',histOn);
+    btn.textContent=histOn?'− Outras categorias':'+ Outras categorias';
+    btn.style.borderColor=histOn?'var(--accent)':'';
+    btn.style.color=histOn?'var(--accent)':'';
+  });
+})();
+
 // YEAR SEARCH
 function parseYear(raw){
   const s=raw.trim().replace(/\s+/g,' ');
@@ -2260,7 +2301,7 @@ setTimeout(()=>{
   window._clearRng=clearRng;
 
   scr.addEventListener('click',ev=>{
-    if(ev.target.closest('.dot,.tt,#rng-panel,.tg,.hd,button,.lbi,.zbtn,.ibtn,.ejump,.srch,.srch-txt,.fp')) return;
+    if(ev.target.closest('.dot,.tt,#rng-panel,.tg,.hd,button,.lbi,.zbtn,.ibtn,.ejump,.srch,.srch-txt,.fp,.peribar')) return;
     if(dragMoved){dragMoved=false;return;}
     const y=yearFromEv(ev);
     if(rE!==null){clearRng();return;}
