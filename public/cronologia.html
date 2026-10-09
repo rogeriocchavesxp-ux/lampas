@@ -1,3 +1,4 @@
+<meta charset="UTF-8">
 <title>Cronologia da História</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600;700&family=IBM+Plex+Sans:wght@300;400;500&display=swap">
 <style>
@@ -1727,7 +1728,6 @@ function renderAll(){
   renderDots('kings-north',KINGS_NORTH.map(e=>({...e,ic:'👑'})),'var(--ckn)',e=>px((e.f+e.t)/2),e=>({tag:'Rei de Israel',date:fspan(e.f,e.t),name:e.l,desc:e.d,refs:e.r}),{free:true,showLabels:true,yMin:8,yMax:92});
   renderDots('kings-south',KINGS_JUDAH.map(e=>({...e,ic:'👑'})),'var(--cks)',e=>px((e.f+e.t)/2),e=>({tag:'Rei de Judá',date:fspan(e.f,e.t),name:e.l,desc:e.d,refs:e.r}),{free:true,showLabels:true,yMin:8,yMax:92});
   renderDots('kings-pagan',KINGS_PAGAN.map(e=>({...e,ic:'👑',pa:'r'})),'var(--ch)',e=>px((e.f+e.t)/2),e=>({tag:'Rei Pagão',date:fspan(e.f,e.t),name:e.l,desc:e.d,refs:e.r}),{free:true,showLabels:true,yMin:10,yMax:170});
-  {const dv=document.createElement('div');dv.style.cssText='position:absolute;left:0;right:0;top:100px;height:1px;background:var(--border);opacity:.6;pointer-events:none';document.getElementById('t-kings').appendChild(dv);}
   renderDots('letters-pauline',LETTERS_NT.filter(e=>e.cat==='p'),'var(--clt)',e=>px((e.f+e.t)/2),e=>({tag:'Carta Paulina',date:fspan(e.f,e.t),name:e.l,desc:e.d,refs:e.r}),{free:true,showLabels:true,yMin:8,yMax:112});
   renderDots('letters-general',LETTERS_NT.filter(e=>e.cat==='g'),'var(--clt)',e=>px((e.f+e.t)/2),e=>({tag:'Carta Geral',date:fspan(e.f,e.t),name:e.l,desc:e.d,refs:e.r}),{free:true,showLabels:true,yMin:8,yMax:92});
   renderDots('letters-apoc',LETTERS_NT.filter(e=>e.cat==='a'),'var(--clt)',e=>px((e.f+e.t)/2),e=>({tag:'Apocalipse',date:fspan(e.f,e.t),name:e.l,desc:e.d,refs:e.r}),{free:true,showLabels:true,yMin:8,yMax:52});
@@ -2337,7 +2337,7 @@ try{(function(){
   const wrap=document.getElementById('srch-txt');
   if(!inp||!drop||!clrBtn||!wrap){console.error('[busca] elemento DOM ausente',{inp,drop,clrBtn,wrap});return;}
 
-  function norm(s){return(s||'').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'');}
+  function norm(s){return(s||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');}
   function fmtY(y){if(y<=-4000)return'Origem';if(y<0)return Math.abs(y)+' a.C.';if(y===0)return'1 d.C.';return y+' d.C.';}
 
   const SECTIONS=[
