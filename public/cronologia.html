@@ -1750,10 +1750,18 @@ function buildFilterPanel(){
   bd.innerHTML='';
 
   // TRACK CHECKBOXES
+  const ALL_TIDS=['events','biblical','institutions','christianity','israel','prophets-north','prophets-south','kings-north','kings-south','kings-pagan','letters-pauline','letters-general','letters-apoc','patristic'];
   const sh1=document.createElement('div');
   sh1.className='fpsh';
-  sh1.innerHTML='<span class="fpstit">Faixas Cronológicas</span>';
+  sh1.innerHTML='<span class="fpstit">Faixas Cronológicas</span><div class="fpsctl"><button class="fpsbtn" data-act="all">Todos</button><button class="fpsbtn" data-act="none">Nenhum</button></div>';
   bd.appendChild(sh1);
+  sh1.querySelectorAll('.fpsbtn').forEach(btn=>{
+    btn.addEventListener('click',()=>{
+      const on=btn.dataset.act==='all';
+      ALL_TIDS.forEach(tid=>setTrack(tid,on));
+      buildFilterPanel();clearSel();
+    });
+  });
 
   [{tid:'events',lbl:'Acontecimentos',c:'var(--cv)'},
    {tid:'biblical',lbl:'Personagens',c:'var(--cb)'},
