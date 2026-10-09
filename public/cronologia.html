@@ -260,6 +260,7 @@ html{height:100%}
 .sm-sl-block{display:flex;flex-direction:column;gap:3px}
 .sm-sl-blbl{font-size:.54rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--fgd)}
 .sm-sl-btxt{font-size:.77rem;line-height:1.7;color:var(--fgm)}
+.sm-sl-verse{font-size:.77rem;line-height:1.75;color:var(--fg);font-style:italic;border-left:2px solid var(--accent);padding-left:10px}
 .tt-study{display:block;width:100%;margin-top:10px;padding:6px 12px;background:color-mix(in srgb,var(--accent) 10%,transparent);border:1px solid color-mix(in srgb,var(--accent) 30%,transparent);border-radius:5px;color:var(--accent);font-size:.72rem;font-weight:600;cursor:pointer;text-align:left;letter-spacing:.03em}
 .tt-study:hover{background:color-mix(in srgb,var(--accent) 18%,transparent)}
 
@@ -1067,42 +1068,54 @@ const FULL_STUDIES={
     title:'O Tabernáculo',
     ref:'Êx 25–40 · Hb 8–10 · Jo 1:14',
     slides:[
+      {img:'img/tabernaculo/tabernaculo_realista.png',
+       name:'O Tabernáculo no Deserto — Mishkan',ref:'Êx 25:8-9',
+       verse:'"Farão um santuário para mim, e habitarei no meio deles. Conforme tudo o que eu te mostrar, o modelo do tabernáculo e o modelo de todos os seus utensílios, assim o fareis." (Êx 25:8-9)',
+       desc:'O Mishkan ("habitação") era o santuário portátil de Deus no deserto, erguido em 1 de Nisã do segundo ano após o Êxodo (Êx 40:17). Estrutura tripartite: o Átrio, o Lugar Santo e o Santo dos Santos. As doze tribos acampavam ao redor, com a presença de Deus no centro. Aponta para a encarnação: "o Verbo tabernaculou entre nós" (Jo 1:14); e para a Nova Criação: "o tabernáculo de Deus está com os homens" (Ap 21:3).'},
+      {img:'img/tabernaculo/image-1.jpg',
+       name:'O Átrio — A Cerca de Linho',ref:'Êx 27:9-12',
+       verse:'"Farás o pátio do tabernáculo. Para o lado meridional, ao sul, haverá cortinas de linho fino torcido para o pátio, de cem côvados de comprimento de um lado; as suas vinte colunas e as suas vinte bases serão de bronze; os ganchos das colunas e seus arames serão de prata." (Êx 27:9-10)',
+       desc:'Área retangular de 100 × 50 cúbitos (≈ 45 × 22 m), cercada por cortinas de linho fino branco em 60 colunas de bronze com bases de bronze e capitéis e ganchos de prata. Separava o espaço profano do sagrado. A única abertura ficava a leste. A cerca branca representa a santidade de Deus — impenetrável sem a via designada (a porta).'},
       {img:'img/tabernaculo/tabernaculo_patio.jpg',
-       name:'O Átrio — O Pátio Externo',ref:'Êx 27:9-19',
-       hist:'Cerca de linho fino com 100 cúbitos de comprimento e 50 de largura (≈ 45m × 22m), formada por 60 colunas de bronze com bases de bronze e capitéis e ganchos de prata. Envolvia toda a área sagrada, separando o espaço profano do espaço consagrado. A única abertura era a porta a leste — 20 cúbitos de largura, adornada com bordados em azul, púrpura, carmesim e linho branco.',
-       tip:'A separação clara entre profano e sagrado ensina que Deus é santo e não pode ser abordado de qualquer maneira. A única porta leste aponta para Cristo: "Eu sou a porta; se alguém entrar por mim, será salvo." (Jo 10:9). Não há outro caminho.'},
+       name:'A Porta do Átrio — O Portão Leste',ref:'Êx 27:16',
+       verse:'"Para a porta do pátio haverá uma cortina de vinte côvados, de azul, e púrpura, e carmesim, e linho fino torcido, lavrada com bordado, com quatro colunas e suas quatro bases." (Êx 27:16)',
+       desc:'Única abertura no átrio, a leste (lado do sol nascente), com 20 cúbitos de largura (≈ 9 m). A cortina bordada em azul (lei/céu), púrpura (realeza), carmesim (sangue/sacrifício) e linho branco (santidade/justiça) concentrava as quatro cores sagradas do complexo. Prefigura Cristo: "Eu sou a porta; se alguém entrar por mim, será salvo." (Jo 10:9). Não há outro caminho.'},
       {img:'img/tabernaculo/altar_de_bronze.png',
-       name:'Altar de Bronze (Altar do Holocausto)',ref:'Êx 27:1-8',
-       hist:'Primeira peça encontrada ao entrar no átrio. Cubo de 5 × 5 cúbitos (≈ 2,2m de lado), 3 cúbitos de altura, de madeira de acácia revestida de bronze, com chifres de bronze nos quatro cantos. Possuía grelha de bronze, vasos para cinzas e instrumentos litúrgicos. Aqui todos os sacrifícios animais eram oferecidos e queimados. O fogo era contínuo — nunca devia se apagar (Lv 6:13).',
-       tip:'O juízo de Deus sobre o pecado não pode ser ignorado — é o primeiro elemento que o adorador encontrava. Aponta diretamente para a Cruz de Cristo: o lugar onde a ira de Deus foi satisfeita e o sacrifício foi consumado. "Sem derramamento de sangue não há remissão." (Hb 9:22). Os chifres = força e poder do sacrifício expiador.'},
+       name:'O Altar de Bronze — Altar do Holocausto',ref:'Êx 27:1-2',
+       verse:'"Farás também o altar de madeira de acácia; de cinco côvados o seu comprimento e cinco côvados a sua largura — quadrado será o altar — e de três côvados a sua altura. Farás os seus chifres nos quatro cantos; os seus chifres serão dele próprio; e o cobrirás de bronze." (Êx 27:1-2)',
+       desc:'Primeira peça ao entrar no átrio: cubo de acácia revestida de bronze (5 × 5 × 3 cúbitos) com chifres nos quatro cantos, grelha de bronze e instrumentos litúrgicos. O fogo era contínuo — nunca se apagava (Lv 6:13). Ninguém chegava à presença de Deus sem o altar. Aponta para a Cruz: o lugar onde a ira de Deus sobre o pecado foi satisfeita. "Sem derramamento de sangue não há remissão." (Hb 9:22)'},
       {img:'img/tabernaculo/bacia_de_bronze.png',
-       name:'Bacia de Bronze (Pia de Lavação)',ref:'Êx 30:17-21',
-       hist:'Grande recipiente circular de bronze polido, posicionado entre o Altar do Holocausto e a entrada da tenda, sem medidas especificadas na Escritura. Era feita dos espelhos de bronze das mulheres que serviam à entrada (Êx 38:8). Os sacerdotes lavavam mãos e pés antes de entrar no Tabernáculo e antes de oficiar no altar — pena de morte caso não o fizessem (Êx 30:20-21).',
-       tip:'A redenção pelo sangue (altar) precede a purificação pela água (bacia). Aponta para a santificação contínua do crente pela Palavra de Deus (Ef 5:26; Jo 15:3) e para o batismo como sinal de lavagem regeneradora. O espelho de bronze = a Palavra que nos revela como somos. Cristo lavou os pés dos discípulos: "Quem está lavado não precisa senão que lhe lavem os pés." (Jo 13:10)'},
+       name:'A Bacia de Bronze — Pia de Lavação',ref:'Êx 30:18-20',
+       verse:'"Farás também uma pia de bronze, com seu pé de bronze, para se lavarem; e a porás entre a tenda da congregação e o altar; e porás água nela. Arão e seus filhos lavarão nela as suas mãos e os seus pés. Quando entrarem na tenda da congregação, lavarão com água, para que não morram." (Êx 30:18-20)',
+       desc:'Recipiente de bronze polido feito dos espelhos das mulheres que serviam à entrada (Êx 38:8), posicionado entre o altar e a tenda. Os sacerdotes lavavam mãos e pés antes de ministrar — pena de morte em caso de omissão. A redenção pelo sangue (altar) precede a purificação pela água (bacia). Prefigura a santificação contínua pela Palavra (Ef 5:26) e Cristo lavando os pés dos discípulos (Jo 13:10).'},
       {img:'img/tabernaculo/tabernaculo_interior.png',
-       name:'A Tenda — Estrutura e Coberturas',ref:'Êx 26:1-37',
-       hist:'Estrutura de tábuas de acácia douradas (10 cúbitos × 1,5 cúbito cada), erguidas verticalmente e travadas por barras horizontais. Quatro camadas de cobertura: (1ª) linho fino com querubins bordados em azul, púrpura e carmesim; (2ª) pelos de cabra; (3ª) peles de carneiro tingidas de vermelho; (4ª) peles de teixugos/focas como proteção externa. A beleza estava no interior — invisível de fora.',
-       tip:'A beleza da presença de Deus é interior, não exterior. A tenda sem forma ou formosura exterior (Is 53:2) aponta para Cristo: desprezado por fora, mas pleno de glória por dentro. As bases de prata (metal da redenção) = a Igreja está alicerçada na redenção. O ouro das tábuas = a justiça divina. As quatro camadas = proteção plena: nada penetra a habitação de Deus sem Sua permissão.'},
+       name:'As Tábuas de Acácia e as Bases de Prata',ref:'Êx 26:15-19',
+       verse:'"Farás tábuas para o tabernáculo, de madeira de acácia, que fiquem em pé. O comprimento de cada tábua será de dez côvados, e de côvado e meio a largura de cada tábua. Cada tábua terá dois encaixes, um diante do outro; assim farás todas as tábuas do tabernáculo... e farás para as tábuas quarenta bases de prata; duas bases debaixo de uma tábua para os seus dois encaixes." (Êx 26:15-19)',
+       desc:'48 tábuas de acácia revestidas de ouro (≈ 4,5 m × 67 cm cada), erguidas verticalmente e travadas por cinco barras de acácia revestida de ouro. Cada tábua se encaixava em duas bases de prata (96 bases no total). A madeira = natureza humana; o ouro = glória divina cobrindo-a. As bases de prata (metal da redenção) significam: a Igreja não repousa no mundo, mas no sacrifício redentor de Cristo.'},
+      {img:'img/tabernaculo/tabernaculo_interior.png',
+       name:'As Quatro Coberturas da Tenda',ref:'Êx 26:1,7,14',
+       verse:'"Farás o tabernáculo com dez cortinas de linho fino torcido e azul, e púrpura, e carmesim; com querubins de obra prima as farás... Farás também cortinas de pelos de cabra, para cobertura sobre o tabernáculo... E farás uma cobertura para a tenda, de peles de carneiro tingidas de vermelho, e uma cobertura de peles de texugos por cima." (Êx 26:1,7,14)',
+       desc:'Quatro camadas de cobertura, de dentro para fora: (1ª) linho fino com querubins bordados em azul, púrpura e carmesim — a glória visível apenas de dentro; (2ª) pelos de cabra — proteção; (3ª) peles de carneiro tingidas de vermelho — o sacrifício; (4ª) peles de texugos — proteção contra o deserto. A beleza estava no interior, invisível de fora — como Cristo: "sem forma nem formosura" por fora (Is 53:2), mas pleno de glória por dentro.'},
       {img:'img/tabernaculo/mesa_paes_proposicao.png',
-       name:'Mesa dos Pães da Proposição',ref:'Êx 25:23-30',
-       hist:'Mesa de madeira de acácia revestida de ouro, 2 × 1 × 1,5 cúbitos, no lado norte do Lugar Santo. Sobre ela repousavam 12 pães (challot) dispostos em duas fileiras de seis, trocados a cada sábado pelos sacerdotes. Os pães velhos eram comidos exclusivamente pelos sacerdotes (Lv 24:5-9). O pão era assado com incenso puro.',
-       tip:'Os 12 pães = as 12 tribos de Israel permanentemente diante de Deus. Aponta para Cristo como "o Pão da Vida" que desceu do céu para saciar a fome espiritual da humanidade (Jo 6:35,51). A troca semanal = comunhão contínua e renovada. O incenso sobre o pão = a oração que santifica o alimento. A Mesa também prefigura a Ceia do Senhor: "Faça isto em memória de mim." (Lc 22:19)'},
+       name:'Mesa dos Pães da Proposição',ref:'Êx 25:23-25,30',
+       verse:'"Farás também uma mesa de madeira de acácia; de dois côvados o seu comprimento, e de um côvado a sua largura, e de côvado e meio a sua altura; e a cobrirás de ouro puro... E porás sobre a mesa o pão da proposição perante mim continuamente." (Êx 25:23-24,30)',
+       desc:'Mesa de acácia revestida de ouro, no lado norte do Lugar Santo. Sobre ela: 12 pães (challot) em duas fileiras de seis, trocados a cada sábado — os pães velhos eram comidos pelos sacerdotes (Lv 24:5-9). Os 12 pães = as 12 tribos permanentemente diante de Deus. Prefigura Cristo: "Eu sou o pão da vida; quem vem a mim nunca terá fome." (Jo 6:35). A Ceia do Senhor cumpre e renova esse símbolo (Lc 22:19).'},
       {img:'img/tabernaculo/menora_de_ouro.png',
-       name:'Menorá — Candelabro de Ouro',ref:'Êx 25:31-40',
-       hist:'Única fonte de luz no Lugar Santo (sem janelas). Feita de um talento de ouro puro batido (≈ 34 kg), com haste central e seis braços, num total de sete lâmpadas com azeite de oliva puro e batido. Os sacerdotes preparavam as lâmpadas de manhã e à tarde. Sua ornamentação incluía taças em forma de flor de amêndoa, botões e flores — tudo de ouro puro (Êx 25:34-36).',
-       tip:'"Eu sou a luz do mundo; quem me segue não andará em trevas." (Jo 8:12). A Menorá aponta para Cristo como a única luz no Lugar Santo. O azeite = o Espírito Santo, que capacita a Igreja a brilhar. Os sete braços = plenitude da luz e do Espírito (Ap 1:12-13; Zc 4:1-6). A amêndoa: primeira árvore a florescer no inverno, símbolo de ressurreição. A Igreja é chamada a refletir essa luz (Mt 5:14-16).'},
+       name:'A Menorá — Candelabro de Ouro',ref:'Êx 25:31-32,37',
+       verse:'"Farás também um candelabro de ouro puro; de ouro batido se fará o candelabro; o seu fuste, os seus ramos, as suas taças, os seus botões e as suas flores serão do mesmo... Farás também as suas sete lâmpadas; e as suas lâmpadas se acenderão, e iluminarão para a parte anterior." (Êx 25:31-32,37)',
+       desc:'Única fonte de luz no Lugar Santo (sem janelas). Um talento de ouro puro batido (≈ 34 kg), seis braços e haste central, ornamentada com taças em forma de flor de amêndoa, botões e flores. Azeite de oliva puro e batido, preparado pelos sacerdotes manhã e tarde. Prefigura Cristo: "Eu sou a luz do mundo." (Jo 8:12). O azeite = o Espírito Santo; os sete braços = plenitude (Ap 4:5; Zc 4:6). A Igreja reflete essa luz (Mt 5:14).'},
       {img:'img/tabernaculo/altar_de_incenso.png',
-       name:'Altar de Incenso',ref:'Êx 30:1-10',
-       hist:'Pequeno altar de madeira de acácia revestida de ouro, 1 × 1 cúbito e 2 cúbitos de altura, com chifres e uma moldura de ouro ao redor. Posicionado diante do véu, no centro do Lugar Santo. Uma mistura especial e exclusiva de incenso (quatro especiarias: estoraque, ônica, gálbano e olíbano) queimava continuamente (Êx 30:34-38). Uma vez por ano, no Dia da Expiação, seu altar recebia sangue do sumo sacerdote.',
-       tip:'"O incenso aromático subiu das mãos do anjo diante de Deus juntamente com as orações dos santos." (Ap 8:3-4). Aponta para a vida de oração contínua e para a intercessão permanente de Cristo ao Pai (Hb 7:25; Rm 8:34). A posição diante do véu = intimidade máxima com Deus no espaço acessível aos sacerdotes. O incenso exclusivo = a oração não pode ser misturada com elementos mundanos ou falsos.'},
+       name:'O Altar de Incenso',ref:'Êx 30:1,7-8',
+       verse:'"Farás também um altar para queimar o incenso; de madeira de acácia o farás... Sobre ele Arão queimará incenso aromático; todas as manhãs, quando preparar as lâmpadas, o queimará. E quando Arão acender as lâmpadas entre as duas tardinheiras, o queimará; incenso perpétuo perante o Senhor pelas vossas gerações." (Êx 30:1,7-8)',
+       desc:'Altar de acácia revestida de ouro (1 × 1 × 2 cúbitos) com chifres, posicionado diante do véu. Incenso especial de 4 especiarias (estoraque, ônica, gálbano e olíbano) queimava continuamente. "O incenso subiu das mãos do anjo juntamente com as orações dos santos." (Ap 8:4). Prefigura a intercessão perpétua de Cristo: "Ele vive sempre para interceder." (Hb 7:25). O incenso exclusivo ensinava: a oração não se mistura com adoração falsa (Êx 30:37-38).'},
       {img:'img/tabernaculo/tabernaculo_santo_dos_santos.png',
-       name:'O Véu e o Santo dos Santos',ref:'Êx 26:31-35',
-       hist:'O Véu era uma cortina espessa de linho fino torcido, tecida com fios de azul, púrpura e carmesim, com querubins bordados. Separava o Lugar Santo do Santo dos Santos (10 × 10 × 10 cúbitos — cubo perfeito). O sumo sacerdote cruzava o véu apenas uma vez por ano no Yom Kippur (Dia da Expiação), com sangue, incenso e em completo silêncio. Uma segunda entrada significava morte imediata.',
-       tip:'O rasgamento do véu de cima a baixo na morte de Cristo (Mt 27:51; Mc 15:38) foi o ato inaugural do Novo Pacto: o acesso direto à presença de Deus agora está aberto a todos os crentes. "Temos, pois, irmãos, plena confiança para entrar no Santo dos Santos pelo sangue de Jesus, pelo caminho novo e vivo que Ele nos consagrou através do véu, isto é, da Sua carne." (Hb 10:19-20). O véu = a carne de Cristo, rasgada por nós.'},
+       name:'O Véu — Divisa entre os Compartimentos',ref:'Êx 26:31-33',
+       verse:'"Farás também um véu de azul, e púrpura, e carmesim, e linho fino torcido; de obra prima se fará com querubins. E pendu-lo-ás sobre quatro colunas de madeira de acácia cobertas de ouro... e o véu vos fará separação entre o lugar santo e o lugar santíssimo." (Êx 26:31-33)',
+       desc:'Cortina espessa bordada com querubins, suspensa em quatro colunas de ouro sobre bases de prata. Somente o sumo sacerdote, uma vez por ano no Yom Kippur, atravessava o véu — com sangue, incenso e em silêncio absoluto (Lv 16). Na morte de Cristo, "o véu do templo rasgou-se em dois, de alto a baixo" (Mt 27:51). "Temos plena confiança para entrar no Santo dos Santos pelo sangue de Jesus, pelo caminho novo e vivo que Ele nos consagrou através do véu, isto é, da sua carne." (Hb 10:19-20)'},
       {img:'img/tabernaculo/arca_da_alianca.png',
-       name:'Arca da Aliança e o Propiciatório',ref:'Êx 25:10-22',
-       hist:'Única peça do Santo dos Santos. Caixa de madeira de acácia com 2,5 × 1,5 × 1,5 cúbitos, revestida de ouro por dentro e por fora, com anel de ouro e varas para o transporte. A tampa (Propiciatório/Kapporeth) era de ouro puro, com dois querubins de ouro batido com asas estendidas se entreolhando. No interior: as tábuas da Lei (Dt 10:5), o vaso com maná (Hb 9:4) e a vara de Arão que floresceu (Nm 17:10).',
-       tip:'A Arca = a Pessoa de Cristo: madeira (humanidade) + ouro (divindade) = um só ser. O Propiciatório = o lugar onde a justiça de Deus (as tábuas da Lei) e a misericórdia de Deus (o sangue do sacrifício) se encontram. "A Deus o propôs como propiciação, pelo Seu sangue, mediante a fé." (Rm 3:25). Os três itens: a Lei (Cristo cumpriu a Lei), o maná (Cristo é o pão celestial), a vara ressuscitada (Cristo ressuscitou). A Shekinah repousava entre os querubins — ali estava o trono de Deus na terra.'},
+       name:'A Arca da Aliança e o Propiciatório',ref:'Êx 25:10-11,22',
+       verse:'"Farão uma arca de madeira de acácia; de dois côvados e meio o seu comprimento, e de um côvado e meio a sua largura, e de um côvado e meio a sua altura. E a cobrirás de ouro puro; por dentro e por fora a cobrirás... E falarás comigo de cima do propiciatório, de entre os dois querubins que estão sobre a arca do testemunho." (Êx 25:10-11,22)',
+       desc:'Única peça do Santo dos Santos: caixa de acácia revestida de ouro por dentro e por fora, com varas fixas de transporte. Tampa (Propiciatório/Kapporeth) de ouro puro com dois querubins de ouro batido com asas estendidas. No interior: as tábuas da Lei (Dt 10:5), o vaso com maná (Hb 9:4) e a vara de Arão que floresceu (Nm 17:10). A Shekinah repousava entre os querubins. Prefigura Cristo: madeira (humanidade) + ouro (divindade); o Propiciatório onde a Lei e a misericórdia se encontram (Rm 3:25).'},
     ],
     intro:'O Tabernáculo (o Santuário Terrestre ordenado em Êxodo 25:8-9) representa a iniciativa de Deus em habitar no meio do Seu povo, rompendo a separação provocada pelo pecado. Funcionando como um templo itinerante no deserto — o palácio de Yahweh —, apresenta estrutura tripartite que espelha a ordem cósmica: o Pátio Externo (a terra habitada), o Lugar Santo (os céus visíveis) e o Santo dos Santos (o trono celeste de Deus). As doze tribos armavam suas tendas ao redor do Santuário, demonstrando que a presença divina deve ser o centro absoluto de toda a vida do crente.',
     sections:[
@@ -1189,8 +1202,8 @@ function openStudy(studyId){
     </div>
     <div class="sm-sl-info">
       <div><div id="sm-sl-name" class="sm-sl-name"></div><div id="sm-sl-ref" class="sm-sl-ref"></div></div>
-      <div class="sm-sl-block"><div class="sm-sl-blbl">Contexto Histórico</div><div id="sm-sl-hist" class="sm-sl-btxt"></div></div>
-      <div class="sm-sl-block"><div class="sm-sl-blbl">Tipologia — Cristo</div><div id="sm-sl-tip" class="sm-sl-btxt"></div></div>
+      <div class="sm-sl-block"><div class="sm-sl-blbl">Texto Bíblico</div><div id="sm-sl-verse" class="sm-sl-verse"></div></div>
+      <div class="sm-sl-block"><div class="sm-sl-blbl">Significado</div><div id="sm-sl-desc" class="sm-sl-btxt"></div></div>
     </div>
   </div>`:'';
   ov.innerHTML=`<div class="study-modal"><div class="sm-head">
@@ -1214,7 +1227,7 @@ function _tabRender(i){
   if(img){img.style.opacity='0';setTimeout(()=>{img.src=s.img;img.style.opacity='1';},150);}
   const set=(id,v)=>{const el=document.getElementById(id);if(el)el.textContent=v;};
   set('sm-sl-name',s.name);set('sm-sl-ref',s.ref);
-  set('sm-sl-hist',s.hist);set('sm-sl-tip',s.tip);
+  set('sm-sl-verse',s.verse||'');set('sm-sl-desc',s.desc||'');
   set('sm-sl-counter',`${i+1} / ${n}`);
   const pb=document.getElementById('sm-sl-prev');const nb=document.getElementById('sm-sl-next');
   if(pb)pb.disabled=i===0;if(nb)nb.disabled=i===n-1;
