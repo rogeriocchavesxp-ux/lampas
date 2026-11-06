@@ -6,8 +6,9 @@ export const metadata: Metadata = {
   title: 'Devocional — Lampas',
 }
 
-export default function DevocionalPage({ params }: { params: { id: string } }) {
-  const num = parseInt(params.id, 10)
+export default async function DevocionalPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params
+  const num = parseInt(id, 10)
 
   return (
     <div className={styles.root}>
