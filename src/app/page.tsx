@@ -228,7 +228,27 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* 9. Chamada final */}
+      {/* 9. A origem do projeto */}
+      <section className="hp-section">
+        <div className="hp-wrap">
+          <p className="hp-eyebrow">A origem do projeto</p>
+          <h2 className="hp-section-title">Como surgiu</h2>
+          <p className="hp-body">
+            Sempre tive o desejo de preparar uma devocional que conectasse todos os livros da Bíblia — que ao mesmo tempo alimentasse a fé e ensinasse que a Escritura é um único livro, com um único fio, apontando para um único Salvador. Mas nunca consegui vencer o desafio de escrever diariamente.
+          </p>
+          <p className="hp-body">
+            A Margarete Hensler, esposa do meu amigo de infância André Roberti e mãe da Bella e da Mariah, sempre insistiu para que eu produzisse algo. Já em 2024 ela sinalizou um desejo intenso de aprender sobre a Bíblia. Fizemos devocionais e pequenos grupos, mas nunca houve algo que pudesse beneficiar outras pessoas além de nós.
+          </p>
+          <p className="hp-body">
+            Há cerca de quinze dias, ela me mandou um áudio dizendo que estava ouvindo estudos bíblicos, mas que aquilo não a estava alimentando — sentia que faltava algo. Então me pediu um encontro semanal online com ela e o André. Fizemos o primeiro encontro, e antes do segundo ela publicou um vídeo no Instagram falando da experiência e convidando outras pessoas. Depois me avisou, um pouco preocupada, pedindo desculpas por não ter me consultado antes. Mas o que ela fez foi correto: compartilhar o evangelho.
+          </p>
+          <p className="hp-body">
+            Foi isso que me forçou a pensar em uma estrutura, em um método, em um material que outros possam seguir e do qual se beneficiar. Quero aqui expressar minha gratidão a esse casal e à insistência da Margarete. Este projeto está nascendo por causa da perseverança dela em aprender da Palavra de Deus. Isso alegra imensamente o meu coração: ver pessoas ansiando, sedentas por conhecer mais de Jesus Cristo.
+          </p>
+        </div>
+      </section>
+
+      {/* 10. Chamada final */}
       <section className="hp-cta-section" id="comecar">
         <div className="hp-wrap">
           <p className="hp-cta-big">Uma página por dia. Um ano inteiro. Toda a Bíblia apontando para Cristo.</p>
