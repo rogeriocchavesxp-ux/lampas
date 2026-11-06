@@ -236,7 +236,7 @@ export default function HomePage() {
       <footer className="hp-footer">
         <div className="hp-wrap">
           <nav className="hp-foot-nav" aria-label="Links do rodapé">
-            <a href="#plano">Plano de leitura</a>
+            <Link href="/plano-de-leitura">Plano de leitura</Link>
             <a href="#">Introduções às seções</a>
             <a href="#">Perguntas</a>
             <a href="#">Calendário</a>

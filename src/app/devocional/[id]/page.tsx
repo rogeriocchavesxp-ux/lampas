@@ -1,7 +1,7 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
-import { notFound } from 'next/navigation'
 import { devocionais, type Devocional } from '@/data/devocionais'
+import { DevocionalTrilhas } from './DevocionalTrilhas'
 import '../../homepage.css'
 import './devocional.css'
 
@@ -24,13 +24,6 @@ const HISTORIA_LABEL: Record<Devocional['historia'], string> = {
   consumacao: 'Consumação',
 }
 
-const DESTAQUE_LABEL: Record<string, string> = {
-  familia: 'Família',
-  homem:   'Homem',
-  mulher:  'Mulher',
-  coisas:  'Coisas',
-}
-
 export default async function DevocionalPage({ params }: Props) {
   const { id } = await params
   const num = parseInt(id, 10)
@@ -47,23 +40,19 @@ export default async function DevocionalPage({ params }: Props) {
         </header>
         <main className="dv-main">
           <div className="dv-wrap">
-            <p className="dv-eyebrow">Devocional Anual 2027 · {num}ª</p>
+            <p className="dv-meta">Devocional {num}</p>
             <h1 className="dv-title">Em preparação</h1>
-            <p className="dv-body">
-              O conteúdo desta devocional estará disponível em 2027. Acompanhe o lançamento.
+            <p style={{ color: 'var(--dv-muted)', fontSize: '0.95rem' }}>
+              O conteúdo desta devocional estará disponível em 2027.
             </p>
-            <div className="dv-ctas">
-              <Link href="/" className="dv-btn">← Voltar à página inicial</Link>
+            <div style={{ marginTop: '1.5rem' }}>
+              <Link href="/" className="dv-nav-link">← Voltar ao início</Link>
             </div>
           </div>
         </main>
       </div>
     )
   }
-
-  const destaqueTexto = d.destaques.length === 1
-    ? `Hoje o texto fala especialmente à ${DESTAQUE_LABEL[d.destaques[0]]}`
-    : `Hoje o texto fala especialmente ao ${DESTAQUE_LABEL[d.destaques[0]]} e à ${DESTAQUE_LABEL[d.destaques[1]]}`
 
   return (
     <div className="dv-root">
@@ -78,28 +67,31 @@ export default async function DevocionalPage({ params }: Props) {
       <main className="dv-main">
         <div className="dv-wrap">
 
-          {/* Navegação */}
-          <nav className="dv-nav-dias" aria-label="Navegação entre dias">
-            {num > 1 && (
-              <Link href={`/devocional/${num - 1}`} className="dv-nav-link">← Dia anterior</Link>
+          {/* Navegação superior */}
+          <nav className="dv-nav" aria-label="Navegação entre dias">
+            {num > 1 ? (
+              <Link href={`/devocional/${num - 1}`} className="dv-nav-link">← Anterior</Link>
+            ) : (
+              <span />
             )}
-            <Link href="/devocional/2" className="dv-nav-link dv-nav-next">Próximo dia →</Link>
+            <Link href={`/devocional/${num + 1}`} className="dv-nav-link">Próximo →</Link>
           </nav>
 
           {/* Metadados */}
-          <p className="dv-eyebrow">
-            {d.diaSemana.charAt(0).toUpperCase() + d.diaSemana.slice(1)}, {d.data.split('-').reverse().join('/')} · Semana {d.semana} · {d.unidade}
+          <p className="dv-meta">
+            {d.diaSemana.charAt(0).toUpperCase() + d.diaSemana.slice(1)}, {d.data.split('-').reverse().join('/')}
+            {d.semana > 0 && ` · Semana ${d.semana} · ${d.unidade}`}
           </p>
 
-          {/* Etiquetas */}
+          {/* Tags */}
           <div className="dv-tags">
-            <span className="dv-tag dv-tag-historia">Na história da salvação: <strong>{HISTORIA_LABEL[d.historia]}</strong></span>
-            <span className="dv-tag dv-tag-pergunta">A pergunta de hoje: <strong>{d.pergunta.texto}</strong></span>
+            <span className="dv-tag dv-tag-historia">{HISTORIA_LABEL[d.historia]}</span>
+            <span className="dv-tag dv-tag-pergunta">{d.pergunta.texto}</span>
           </div>
 
-          {/* Título e leitura */}
+          {/* Título */}
           <h1 className="dv-title">{d.titulo}</h1>
-          <p className="dv-leitura">Leitura: <strong>{d.leitura}</strong></p>
+          <p className="dv-leitura">{d.leitura}</p>
 
           {/* Versículo-chave */}
           <blockquote className="dv-versiculo">
@@ -107,157 +99,50 @@ export default async function DevocionalPage({ params }: Props) {
             <cite>{d.versiculoChave.referencia} — ARA</cite>
           </blockquote>
 
-          {/* Selo de destaque */}
-          <div className="dv-destaque-selo">
-            <span className="dv-destaque-ico" aria-hidden="true">★</span>
-            {destaqueTexto}
+          {/* Corpo — texto corrido */}
+          <div className="dv-corpo">
+            <p className="dv-secao-label">Para começar</p>
+            <p>{d.paraComecar}</p>
+
+            <p className="dv-secao-label">O texto</p>
+            <p>{d.oTexto}</p>
+
+            <p className="dv-secao-label">A verdade central</p>
+            <div className="dv-verdade">
+              <p style={{ margin: 0 }}>{d.verdadeCentral}</p>
+            </div>
+
+            <p className="dv-secao-label">Cristo no texto</p>
+            <p>{d.cristoNoTexto}</p>
+
+            <p className="dv-secao-label">Para hoje</p>
+            <ul className="dv-lista">
+              {d.paraHoje.map((item, i) => <li key={i}>{item}</li>)}
+            </ul>
           </div>
 
-          {/* Para começar */}
-          <section className="dv-bloco">
-            <h2 className="dv-bloco-titulo">Para começar</h2>
-            <p>{d.paraComecar}</p>
-          </section>
-
-          {/* O texto */}
-          <section className="dv-bloco">
-            <h2 className="dv-bloco-titulo">O texto</h2>
-            <p>{d.oTexto}</p>
-          </section>
-
-          {/* A verdade central */}
-          <section className="dv-bloco dv-bloco-destaque">
-            <h2 className="dv-bloco-titulo">A verdade central</h2>
-            <p>{d.verdadeCentral}</p>
-          </section>
-
-          {/* Cristo no texto */}
-          <section className="dv-bloco">
-            <h2 className="dv-bloco-titulo">Cristo no texto</h2>
-            <p>{d.cristoNoTexto}</p>
-          </section>
-
-          {/* Para hoje */}
-          <section className="dv-bloco">
-            <h2 className="dv-bloco-titulo">Para hoje</h2>
-            <ul className="dv-lista">
-              {d.paraHoje.map((item, i) => (
-                <li key={i}>{item}</li>
-              ))}
-            </ul>
-          </section>
-
           {/* Pergunta do dia */}
-          <section className="dv-bloco dv-bloco-pergunta">
-            <p className="dv-pergunta-label">Pergunta do dia</p>
+          <div className="dv-pergunta-bloco">
+            <p style={{ fontSize: '0.62rem', fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--dv-accent)', marginBottom: '0.4rem' }}>Pergunta do dia</p>
             <p className="dv-pergunta">{d.perguntaDoDia}</p>
-          </section>
+          </div>
 
           {/* Oração */}
-          <section className="dv-bloco dv-bloco-oracao">
-            <h2 className="dv-bloco-titulo">Oração</h2>
+          <p className="dv-secao-label">Oração</p>
+          <div className="dv-oracao-bloco">
             <p className="dv-oracao-texto">{d.oracao}</p>
-          </section>
+          </div>
 
-          {/* Trilhas */}
-          <section className="dv-trilhas">
-            <h2 className="dv-trilhas-titulo">Ir mais fundo — escolha a sua trilha</h2>
-            <div className="dv-trilha-grid">
-
-              {/* Homem */}
-              <div className={`dv-trilha-card dv-trilha-homem${d.destaques.includes('homem') ? ' dv-trilha-em-destaque' : ''}`}>
-                {d.destaques.includes('homem') && <span className="dv-trilha-badge">Destaque hoje</span>}
-                <h3 className="dv-trilha-nome">Homem</h3>
-                {d.trilhas.homem.destaque ? (
-                  <>
-                    <p className="dv-trilha-secao-label">O espelho</p>
-                    <p>{d.trilhas.homem.espelho}</p>
-                    <p className="dv-trilha-secao-label">A consequência</p>
-                    <p>{d.trilhas.homem.consequencia}</p>
-                    <p className="dv-trilha-secao-label">A graça</p>
-                    <p>{d.trilhas.homem.graca}</p>
-                    <p className="dv-trilha-secao-label">O passo</p>
-                    <p>{d.trilhas.homem.passo}</p>
-                  </>
-                ) : (
-                  <p>{d.trilhas.homem.texto}</p>
-                )}
-                <p className="dv-trilha-pergunta">{d.trilhas.homem.pergunta}</p>
-              </div>
-
-              {/* Família */}
-              <div className={`dv-trilha-card dv-trilha-familia${d.destaques.includes('familia') ? ' dv-trilha-em-destaque' : ''}`}>
-                {d.destaques.includes('familia') && <span className="dv-trilha-badge">Destaque hoje</span>}
-                <h3 className="dv-trilha-nome">Família</h3>
-                {d.trilhas.familia.destaque ? (
-                  <>
-                    <p className="dv-trilha-secao-label">O espelho</p>
-                    <p>{d.trilhas.familia.espelho}</p>
-                    <p className="dv-trilha-secao-label">A consequência</p>
-                    <p>{d.trilhas.familia.consequencia}</p>
-                    <p className="dv-trilha-secao-label">A graça</p>
-                    <p>{d.trilhas.familia.graca}</p>
-                    <p className="dv-trilha-secao-label">O passo</p>
-                    <p>{d.trilhas.familia.passo}</p>
-                  </>
-                ) : (
-                  <p>{d.trilhas.familia.texto}</p>
-                )}
-                <p className="dv-trilha-pergunta">{d.trilhas.familia.pergunta}</p>
-              </div>
-
-              {/* Mulher */}
-              <div className={`dv-trilha-card dv-trilha-mulher${d.destaques.includes('mulher') ? ' dv-trilha-em-destaque' : ''}`}>
-                {d.destaques.includes('mulher') && <span className="dv-trilha-badge">Destaque hoje</span>}
-                <h3 className="dv-trilha-nome">Mulher</h3>
-                {d.trilhas.mulher.destaque ? (
-                  <>
-                    <p className="dv-trilha-secao-label">O espelho</p>
-                    <p>{d.trilhas.mulher.espelho}</p>
-                    <p className="dv-trilha-secao-label">A consequência</p>
-                    <p>{d.trilhas.mulher.consequencia}</p>
-                    <p className="dv-trilha-secao-label">A graça</p>
-                    <p>{d.trilhas.mulher.graca}</p>
-                    <p className="dv-trilha-secao-label">O passo</p>
-                    <p>{d.trilhas.mulher.passo}</p>
-                  </>
-                ) : (
-                  <p>{d.trilhas.mulher.texto}</p>
-                )}
-                <p className="dv-trilha-pergunta">{d.trilhas.mulher.pergunta}</p>
-              </div>
-
-              {/* Coisas */}
-              <div className={`dv-trilha-card dv-trilha-coisas${d.destaques.includes('coisas') ? ' dv-trilha-em-destaque' : ''}`}>
-                {d.destaques.includes('coisas') && <span className="dv-trilha-badge">Destaque hoje</span>}
-                <h3 className="dv-trilha-nome">Coisas{'tema' in d.trilhas.coisas && d.trilhas.coisas.tema ? ` · ${d.trilhas.coisas.tema.charAt(0).toUpperCase() + d.trilhas.coisas.tema.slice(1)}` : ''}</h3>
-                {d.trilhas.coisas.destaque ? (
-                  <>
-                    <p className="dv-trilha-secao-label">O espelho</p>
-                    <p>{d.trilhas.coisas.espelho}</p>
-                    <p className="dv-trilha-secao-label">A consequência</p>
-                    <p>{d.trilhas.coisas.consequencia}</p>
-                    <p className="dv-trilha-secao-label">A graça</p>
-                    <p>{d.trilhas.coisas.graca}</p>
-                    <p className="dv-trilha-secao-label">O passo</p>
-                    <p>{d.trilhas.coisas.passo}</p>
-                  </>
-                ) : (
-                  <p>{d.trilhas.coisas.texto}</p>
-                )}
-                <p className="dv-trilha-pergunta">{d.trilhas.coisas.pergunta}</p>
-              </div>
-
-            </div>
-          </section>
+          {/* Trilhas — abas interativas */}
+          <DevocionalTrilhas d={d} />
 
           {/* Navegação inferior */}
-          <nav className="dv-nav-dias dv-nav-bottom" aria-label="Próxima devocional">
-            <Link href="/devocional/2" className="hp-btn hp-btn-primary dv-nav-prox">
-              <span className="hp-btn-label">2ª Devocional</span>
+          <div className="dv-nav-bottom">
+            <Link href={`/devocional/${num + 1}`} className="hp-btn hp-btn-primary">
+              <span className="hp-btn-label">{num + 1}ª Devocional</span>
               <span className="hp-btn-sub">Próximo dia →</span>
             </Link>
-          </nav>
+          </div>
 
         </div>
       </main>
