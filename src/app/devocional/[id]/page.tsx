@@ -101,21 +101,16 @@ export default async function DevocionalPage({ params }: Props) {
 
           {/* Corpo — texto corrido */}
           <div className="dv-corpo">
-            <p className="dv-secao-label">Para começar</p>
             <p>{d.paraComecar}</p>
 
-            <p className="dv-secao-label">O texto</p>
             <p>{d.oTexto}</p>
 
-            <p className="dv-secao-label">A verdade central</p>
             <div className="dv-verdade">
               <p style={{ margin: 0 }}>{d.verdadeCentral}</p>
             </div>
 
-            <p className="dv-secao-label">Cristo no texto</p>
             <p>{d.cristoNoTexto}</p>
 
-            <p className="dv-secao-label">Para hoje</p>
             <ul className="dv-lista">
               {d.paraHoje.map((item, i) => <li key={i}>{item}</li>)}
             </ul>
@@ -123,12 +118,10 @@ export default async function DevocionalPage({ params }: Props) {
 
           {/* Pergunta do dia */}
           <div className="dv-pergunta-bloco">
-            <p style={{ fontSize: '0.62rem', fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--dv-accent)', marginBottom: '0.4rem' }}>Pergunta do dia</p>
             <p className="dv-pergunta">{d.perguntaDoDia}</p>
           </div>
 
           {/* Oração */}
-          <p className="dv-secao-label">Oração</p>
           <div className="dv-oracao-bloco">
             <p className="dv-oracao-texto">{d.oracao}</p>
           </div>

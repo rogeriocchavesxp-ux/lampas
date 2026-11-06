@@ -225,10 +225,9 @@
 
 /* Pergunta do dia */
 .dv-pergunta-bloco {
-  background: var(--dv-surface);
-  border-radius: 4px;
-  padding: 1rem 1.3rem;
-  margin: 1.5rem 0;
+  border-left: 3px solid var(--dv-accent);
+  padding: 0.5rem 1.1rem;
+  margin: 1.8rem 0;
 }
 
 .dv-pergunta {
@@ -236,6 +235,7 @@
   font-size: 1.05rem;
   font-style: italic;
   color: var(--dv-ink);
+  margin: 0;
 }
 
 /* Oração */
