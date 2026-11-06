@@ -1,0 +1,102 @@
+.dv-root {
+  --dv-bg:     #faf9f4;
+  --dv-ink:    #1a1816;
+  --dv-muted:  #6a6460;
+  --dv-accent: #1e3d6b;
+  --dv-border: #dddad0;
+  --dv-ff-d: var(--font-crimson, 'Crimson Pro', Georgia, serif);
+  --dv-ff-b: var(--font-source, 'Source Sans 3', var(--font-inter, system-ui), sans-serif);
+
+  background: var(--dv-bg);
+  color: var(--dv-ink);
+  font-family: var(--dv-ff-b);
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+}
+
+@media (prefers-color-scheme: dark) {
+  .dv-root {
+    color-scheme: dark;
+    --dv-bg:     #161411;
+    --dv-ink:    #ede9e0;
+    --dv-muted:  #8a847a;
+    --dv-accent: #6ea0d5;
+    --dv-border: #2e2b24;
+  }
+}
+
+.dv-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 24px;
+  height: 52px;
+  border-bottom: 1px solid var(--dv-border);
+}
+
+.dv-brand {
+  font-family: var(--dv-ff-d);
+  font-size: 1.1rem;
+  font-style: italic;
+  color: var(--dv-ink);
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.dv-topnav { display: flex; align-items: center; gap: 12px; }
+
+.dv-entrar {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--dv-accent);
+  text-decoration: none;
+  border: 1.5px solid var(--dv-accent);
+  border-radius: 3px;
+  padding: 5px 14px;
+}
+
+.dv-main { padding: 80px 0 100px; }
+
+.dv-wrap {
+  max-width: 680px;
+  margin: 0 auto;
+  padding: 0 20px;
+}
+
+.dv-eyebrow {
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--dv-muted);
+  margin-bottom: 0.6rem;
+}
+
+.dv-title {
+  font-family: var(--dv-ff-d);
+  font-size: clamp(1.6rem, 5vw, 2.4rem);
+  font-weight: 400;
+  font-style: italic;
+  line-height: 1.2;
+  margin-bottom: 1.2rem;
+}
+
+.dv-body {
+  font-size: 1.05rem;
+  color: var(--dv-muted);
+  max-width: 55ch;
+  line-height: 1.65;
+}
+
+.dv-ctas { margin-top: 2rem; }
+
+.dv-btn {
+  display: inline-block;
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--dv-accent);
+  text-decoration: none;
+  border: 1.5px solid var(--dv-accent);
+  border-radius: 3px;
+  padding: 10px 20px;
+}
