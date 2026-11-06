@@ -4,18 +4,17 @@ import './homepage.css'
 
 export const metadata: Metadata = {
   title: 'Devocional Anual 2027 — De Gênesis a Apocalipse',
-  description: '313 devocionais, de segunda a sábado, para conhecer o Deus que salva e viver essa salvação em casa, na igreja e no trabalho.',
+  description: '312 devocionais em 52 blocos de seis dias, para conhecer o Deus que salva e viver essa salvação em casa, na igreja e no trabalho.',
 }
 
 const TIMELINE = [
-  { period: 'Janeiro a março',                name: 'Pentateuco',               sub: '1ª Devocional · No princípio, Deus criou' },
-  { period: 'Março a junho',                  name: 'Livros históricos',         sub: '67ª Devocional · A terra prometida' },
-  { period: 'Junho e julho',                  name: 'Poéticos e sapienciais',    sub: '157ª Devocional · Bem-aventurado o homem' },
-  { period: 'Julho a setembro',               name: 'Profetas',                  sub: '183ª Devocional · A voz que clama no deserto' },
-  { period: 'Transição',                      name: 'Entre os Testamentos',      sub: 'A espera do cumprimento das promessas' },
-  { period: 'Setembro e outubro',             name: 'Evangelhos e Atos',         sub: '229ª Devocional · No princípio era o Verbo' },
-  { period: 'Outubro a dezembro',             name: 'Cartas',                    sub: '267ª Devocional · Justificados pela fé' },
-  { period: 'Dezembro · terminando no Natal', name: 'Apocalipse',               sub: '309ª Devocional · A vitória do Cordeiro' },
+  { period: 'Janeiro a março',    name: 'Pentateuco',             sub: 'Dia 007 · No princípio, Deus criou' },
+  { period: 'Março a junho',      name: 'Livros históricos',      sub: 'Dia 073 · A terra prometida' },
+  { period: 'Junho e julho',      name: 'Poéticos e sapienciais', sub: 'Dia 145 · Bem-aventurado o homem' },
+  { period: 'Julho a setembro',   name: 'Profetas',               sub: 'Dia 175 · A voz que clama no deserto' },
+  { period: 'Setembro e outubro', name: 'Evangelhos e Atos',      sub: 'Dia 223 · No princípio era o Verbo' },
+  { period: 'Outubro a dezembro', name: 'Cartas',                 sub: 'Dia 253 · Justificados pela fé' },
+  { period: 'Dezembro',           name: 'Apocalipse',             sub: 'Dia 295 · A vitória do Cordeiro' },
 ]
 
 export default function HomePage() {
@@ -29,11 +28,11 @@ export default function HomePage() {
           <h1 className="hp-hero-title">Devocional Anual 2027</h1>
           <p className="hp-hero-sub">De Gênesis a Apocalipse, um dia de cada vez</p>
           <p className="hp-hero-support">
-            313 devocionais, de segunda a sábado, para conhecer o Deus que salva e viver essa salvação em casa, na igreja e no trabalho.
+            312 devocionais em 52 blocos de seis dias, para conhecer o Deus que salva e viver essa salvação em casa, na igreja e no trabalho.
           </p>
           <div className="hp-ctas">
             <Link href="/devocional/1" className="hp-btn hp-btn-primary">
-              <span className="hp-btn-label">Dia 01</span>
+              <span className="hp-btn-label">Dia 001</span>
               <span className="hp-btn-sub">A Escritura fala de Cristo</span>
             </Link>
             <Link href="#plano" className="hp-btn hp-btn-ghost">
@@ -221,7 +220,7 @@ export default function HomePage() {
           <p className="hp-cta-big">Uma página por dia. Um ano inteiro. Toda a Bíblia apontando para Cristo.</p>
           <div className="hp-ctas hp-ctas-center">
             <Link href="/devocional/1" className="hp-btn hp-btn-primary">
-              <span className="hp-btn-label">Dia 01</span>
+              <span className="hp-btn-label">Dia 001</span>
               <span className="hp-btn-sub">A Escritura fala de Cristo</span>
             </Link>
           </div>
