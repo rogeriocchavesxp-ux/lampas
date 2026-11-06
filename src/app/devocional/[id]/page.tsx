@@ -69,11 +69,10 @@ export default async function DevocionalPage({ params }: Props) {
 
           {/* Navegação superior */}
           <nav className="dv-nav" aria-label="Navegação entre dias">
-            {num > 1 ? (
-              <Link href={`/devocional/${num - 1}`} className="dv-nav-link">← Anterior</Link>
-            ) : (
-              <span />
-            )}
+            {num > 1
+              ? <Link href={`/devocional/${num - 1}`} className="dv-nav-link">← Anterior</Link>
+              : <Link href="/" className="dv-nav-link">← Início</Link>
+            }
             <Link href={`/devocional/${num + 1}`} className="dv-nav-link">Próximo →</Link>
           </nav>
 
