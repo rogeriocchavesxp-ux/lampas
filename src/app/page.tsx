@@ -33,8 +33,8 @@ export default function HomePage() {
           </p>
           <div className="hp-ctas">
             <Link href="/devocional/1" className="hp-btn hp-btn-primary">
-              <span className="hp-btn-label">1ª Devocional</span>
-              <span className="hp-btn-sub">No princípio, Deus criou</span>
+              <span className="hp-btn-label">Dia 01</span>
+              <span className="hp-btn-sub">A Escritura fala de Cristo</span>
             </Link>
             <Link href="#plano" className="hp-btn hp-btn-ghost">
               <span className="hp-btn-label">Ver o plano de leitura</span>
@@ -221,8 +221,8 @@ export default function HomePage() {
           <p className="hp-cta-big">Uma página por dia. Um ano inteiro. Toda a Bíblia apontando para Cristo.</p>
           <div className="hp-ctas hp-ctas-center">
             <Link href="/devocional/1" className="hp-btn hp-btn-primary">
-              <span className="hp-btn-label">1ª Devocional</span>
-              <span className="hp-btn-sub">No princípio, Deus criou</span>
+              <span className="hp-btn-label">Dia 01</span>
+              <span className="hp-btn-sub">A Escritura fala de Cristo</span>
             </Link>
           </div>
           <div className="hp-email-ph">

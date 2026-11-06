@@ -40,7 +40,7 @@ export default async function DevocionalPage({ params }: Props) {
         </header>
         <main className="dv-main">
           <div className="dv-wrap">
-            <p className="dv-meta">Devocional {num}</p>
+            <p className="dv-meta">Dia {String(num).padStart(2, '0')}</p>
             <h1 className="dv-title">Em preparação</h1>
             <p style={{ color: 'var(--dv-muted)', fontSize: '0.95rem' }}>
               O conteúdo desta devocional estará disponível em 2027.
@@ -79,8 +79,8 @@ export default async function DevocionalPage({ params }: Props) {
 
           {/* Metadados */}
           <p className="dv-meta">
-            {d.diaSemana.charAt(0).toUpperCase() + d.diaSemana.slice(1)}, {d.data.split('-').reverse().join('/')}
-            {d.semana > 0 && ` · Semana ${d.semana} · ${d.unidade}`}
+            Dia {String(num).padStart(2, '0')}
+            {d.semana > 0 ? ` · Semana ${d.semana} · ${d.unidade}` : ` · ${d.unidade}`}
           </p>
 
           {/* Tags */}
@@ -139,7 +139,7 @@ export default async function DevocionalPage({ params }: Props) {
           {/* Navegação inferior */}
           <div className="dv-nav-bottom">
             <Link href={`/devocional/${num + 1}`} className="hp-btn hp-btn-primary">
-              <span className="hp-btn-label">{num + 1}ª Devocional</span>
+              <span className="hp-btn-label">Dia {String(num + 1).padStart(2, '0')}</span>
               <span className="hp-btn-sub">Próximo dia →</span>
             </Link>
           </div>
