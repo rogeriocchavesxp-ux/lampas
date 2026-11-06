@@ -145,7 +145,7 @@ export default function TopNav() {
   useEffect(() => { setOpenDrop(null); setMobileOpen(false) }, [pathname])
 
   // Body padding
-  const hidden = !user || !loaded || HIDE_ON_PATHS.includes(pathname ?? '') || pathname?.startsWith('/auth/') || pathname?.startsWith('/workspace')
+  const hidden = !user || !loaded || HIDE_ON_PATHS.includes(pathname ?? '') || pathname?.startsWith('/auth/') || pathname?.startsWith('/workspace') || pathname?.startsWith('/devocional')
   useEffect(() => {
     if (!hidden) {
       document.body.style.paddingTop = `${NAV_HEIGHT}px`
