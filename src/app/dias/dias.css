@@ -1,0 +1,263 @@
+.ds-root {
+  --ds-bg:        #faf9f4;
+  --ds-surface:   #f2eee3;
+  --ds-ink:       #1a1816;
+  --ds-muted:     #6a6460;
+  --ds-accent:    #1e3d6b;
+  --ds-border:    #dddad0;
+  --ds-sintese:   #e8e4d8;
+
+  /* Cores por seção */
+  --ds-c-introducao: #1e3d6b;
+  --ds-c-pentateuco: #5a4a1e;
+  --ds-c-historicos: #1e4a2e;
+  --ds-c-poeticos:   #3d1e5a;
+  --ds-c-profetas:   #5a1e1e;
+  --ds-c-evangelhos: #1e3d6b;
+  --ds-c-cartas:     #1e4a4a;
+  --ds-c-apocalipse: #4a1e1e;
+  --ds-c-conclusao:  #2a3a2a;
+
+  background: var(--ds-bg);
+  color: var(--ds-ink);
+  font-family: var(--font-source, system-ui), sans-serif;
+  font-size: 15px;
+  line-height: 1.5;
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+}
+
+@media (prefers-color-scheme: dark) {
+  .ds-root {
+    color-scheme: dark;
+    --ds-bg:      #161411;
+    --ds-surface: #1f1d18;
+    --ds-ink:     #ede9e0;
+    --ds-muted:   #8a847a;
+    --ds-accent:  #6ea0d5;
+    --ds-border:  #2e2b24;
+    --ds-sintese: #252218;
+  }
+}
+
+/* ── Topbar ── */
+.ds-topbar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 0 20px;
+  height: 50px;
+  border-bottom: 1px solid var(--ds-border);
+  position: sticky;
+  top: 0;
+  background: var(--ds-bg);
+  z-index: 10;
+}
+
+.ds-brand {
+  font-family: var(--font-crimson, Georgia, serif);
+  font-size: 1.1rem;
+  font-style: italic;
+  font-weight: 600;
+  color: var(--ds-ink);
+  text-decoration: none;
+}
+
+.ds-topbar-title {
+  font-size: 0.8rem;
+  color: var(--ds-muted);
+  flex: 1;
+}
+
+.ds-entrar {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--ds-accent);
+  text-decoration: none;
+  border: 1.5px solid var(--ds-accent);
+  border-radius: 3px;
+  padding: 4px 12px;
+}
+
+/* ── Layout ── */
+.ds-main { padding: 48px 0 80px; }
+
+.ds-wrap {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 0 20px;
+}
+
+.ds-intro { margin-bottom: 48px; }
+
+.ds-h1 {
+  font-family: var(--font-crimson, Georgia, serif);
+  font-size: clamp(1.6rem, 5vw, 2.4rem);
+  font-weight: 400;
+  font-style: italic;
+  margin-bottom: 0.4rem;
+}
+
+.ds-sub {
+  font-size: 0.9rem;
+  color: var(--ds-muted);
+}
+
+/* ── Seções ── */
+.ds-secao { margin-bottom: 48px; }
+
+.ds-secao-titulo {
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ds-muted);
+  margin-bottom: 12px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--ds-border);
+}
+
+/* Cor do número do bloco por seção */
+.ds-secao-introducao .ds-bloco-num  { color: var(--ds-c-introducao); }
+.ds-secao-pentateuco .ds-bloco-num  { color: var(--ds-c-pentateuco); }
+.ds-secao-historicos .ds-bloco-num  { color: var(--ds-c-historicos); }
+.ds-secao-poeticos   .ds-bloco-num  { color: var(--ds-c-poeticos); }
+.ds-secao-profetas   .ds-bloco-num  { color: var(--ds-c-profetas); }
+.ds-secao-evangelhos .ds-bloco-num  { color: var(--ds-c-evangelhos); }
+.ds-secao-cartas     .ds-bloco-num  { color: var(--ds-c-cartas); }
+.ds-secao-apocalipse .ds-bloco-num  { color: var(--ds-c-apocalipse); }
+.ds-secao-conclusao  .ds-bloco-num  { color: var(--ds-c-conclusao); }
+
+/* ── Blocos ── */
+.ds-blocos-lista {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.ds-bloco {
+  border: 1px solid var(--ds-border);
+  border-radius: 6px;
+  overflow: hidden;
+  background: var(--ds-bg);
+}
+
+.ds-bloco-header {
+  display: grid;
+  grid-template-columns: 68px 1fr auto;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 16px;
+  background: var(--ds-surface);
+  border-bottom: 1px solid var(--ds-border);
+}
+
+.ds-bloco-num {
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.ds-bloco-nome {
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--ds-ink);
+}
+
+.ds-bloco-range {
+  font-size: 0.72rem;
+  color: var(--ds-muted);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+/* ── Dias ── */
+.ds-dias {
+  display: flex;
+  flex-direction: column;
+}
+
+.ds-dia {
+  display: grid;
+  grid-template-columns: 44px 110px 1fr auto;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 16px;
+  text-decoration: none;
+  color: inherit;
+  border-bottom: 1px solid var(--ds-border);
+  transition: background 0.1s;
+}
+
+.ds-dia:last-child { border-bottom: none; }
+
+.ds-dia:hover { background: var(--ds-surface); }
+
+.ds-dia.ds-sintese {
+  background: var(--ds-sintese);
+}
+
+.ds-dia.ds-sintese:hover {
+  filter: brightness(0.97);
+}
+
+.ds-dia-num {
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  color: var(--ds-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.ds-dia-leitura {
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: var(--ds-accent);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.ds-dia-tema {
+  font-size: 0.82rem;
+  color: var(--ds-ink);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ds-dia-vc {
+  font-size: 0.7rem;
+  color: var(--ds-muted);
+  white-space: nowrap;
+  font-style: italic;
+}
+
+/* ── Mobile ── */
+@media (max-width: 600px) {
+  .ds-topbar { padding: 0 14px; }
+  .ds-wrap   { padding: 0 14px; }
+  .ds-main   { padding: 32px 0 64px; }
+
+  .ds-bloco-header {
+    grid-template-columns: 1fr auto;
+    gap: 6px;
+  }
+
+  .ds-bloco-num { grid-column: 1; }
+  .ds-bloco-nome { grid-column: 1 / -1; order: -1; }
+  .ds-bloco-range { grid-column: 2; grid-row: 1; }
+
+  .ds-dia {
+    grid-template-columns: 36px 1fr;
+    grid-template-rows: auto auto;
+    gap: 2px 10px;
+    padding: 10px 14px;
+  }
+
+  .ds-dia-num { grid-row: 1; }
+  .ds-dia-tema { grid-column: 2; grid-row: 1; font-size: 0.84rem; white-space: normal; }
+  .ds-dia-leitura { grid-column: 2; grid-row: 2; font-size: 0.75rem; }
+  .ds-dia-vc { display: none; }
+}
