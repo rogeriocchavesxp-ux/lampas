@@ -53,7 +53,21 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* 3. O fio da história */}
+      {/* 3. Como ler */}
+      <section className="hp-section">
+        <div className="hp-wrap">
+          <p className="hp-eyebrow">O ponto de partida</p>
+          <h2 className="hp-section-title">Ler e interpretar</h2>
+          <p className="hp-body">
+            A Bíblia é o livro mais lido e traduzido da história — e também um dos mais mal interpretados. Dois erros são recorrentes. O primeiro lê o texto de forma mística e alegórica, como se ele fosse um repositório de sinais ocultos ou palavras de consolo para o momento. O segundo o lê com os óculos da modernidade: uma razão que estranha a violência, o sofrimento e os costumes do mundo antigo, e rejeita o que não se encaixa nos valores de hoje.
+          </p>
+          <p className="hp-body">
+            A Bíblia não é nenhum dos dois. Ela é a Palavra de Deus expressa em linguagem humana — com autoria divino-humana, escrita em contextos históricos precisos, com gêneros literários definidos e com uma lógica interna que atravessa os dois Testamentos. Portanto, não basta saber ler: é preciso saber interpretar. Ler o texto dentro do seu contexto histórico e literário é o único caminho para compreender o que Deus quis comunicar aos seres humanos.
+          </p>
+        </div>
+      </section>
+
+      {/* 4. O fio da história */}
       <section className="hp-section">
         <div className="hp-wrap">
           <p className="hp-eyebrow">O fio da história</p>
