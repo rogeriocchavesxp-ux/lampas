@@ -8,14 +8,14 @@ export const metadata: Metadata = {
 }
 
 const TIMELINE = [
-  { period: 'Janeiro a março',              name: 'Pentateuco',               sub: '1ª Devocional · No princípio, Deus criou' },
-  { period: 'Março a junho',                name: 'Livros históricos',         sub: '67ª Devocional · A terra prometida' },
-  { period: 'Junho e julho',                name: 'Poéticos e sapienciais',    sub: '157ª Devocional · Bem-aventurado o homem' },
-  { period: 'Julho a setembro',             name: 'Profetas',                  sub: '183ª Devocional · A voz que clama no deserto' },
-  { period: 'Transição',                    name: 'Entre os Testamentos',      sub: 'A espera do cumprimento das promessas' },
-  { period: 'Setembro e outubro',           name: 'Evangelhos e Atos',         sub: '229ª Devocional · No princípio era o Verbo' },
-  { period: 'Outubro a dezembro',           name: 'Cartas',                    sub: '267ª Devocional · Justificados pela fé' },
-  { period: 'Dezembro · terminando no Natal', name: 'Apocalipse',             sub: '309ª Devocional · A vitória do Cordeiro' },
+  { period: 'Janeiro a março',                name: 'Pentateuco',               sub: '1ª Devocional · No princípio, Deus criou' },
+  { period: 'Março a junho',                  name: 'Livros históricos',         sub: '67ª Devocional · A terra prometida' },
+  { period: 'Junho e julho',                  name: 'Poéticos e sapienciais',    sub: '157ª Devocional · Bem-aventurado o homem' },
+  { period: 'Julho a setembro',               name: 'Profetas',                  sub: '183ª Devocional · A voz que clama no deserto' },
+  { period: 'Transição',                      name: 'Entre os Testamentos',      sub: 'A espera do cumprimento das promessas' },
+  { period: 'Setembro e outubro',             name: 'Evangelhos e Atos',         sub: '229ª Devocional · No princípio era o Verbo' },
+  { period: 'Outubro a dezembro',             name: 'Cartas',                    sub: '267ª Devocional · Justificados pela fé' },
+  { period: 'Dezembro · terminando no Natal', name: 'Apocalipse',               sub: '309ª Devocional · A vitória do Cordeiro' },
 ]
 
 export default function HomePage() {
@@ -63,13 +63,48 @@ export default function HomePage() {
             O fio que une a Bíblia é a aliança. De Adão a Noé, de Abraão a Moisés e a Davi, Deus faz promessas e as cumpre, até que elas se realizam em Jesus Cristo. Cada devocional mostra como o texto do dia aponta para ele.
           </p>
           <blockquote className="hp-blockquote">
-            <p>"Eis o tabernáculo de Deus com os homens. Deus habitará com eles. Eles serão povos de Deus, e Deus mesmo estará com eles."</p>
+            <p>&ldquo;Eis o tabernáculo de Deus com os homens. Deus habitará com eles. Eles serão povos de Deus, e Deus mesmo estará com eles.&rdquo;</p>
             <cite>Apocalipse 21:3 — Almeida Revista e Atualizada</cite>
           </blockquote>
         </div>
       </section>
 
-      {/* 4. Três perguntas */}
+      {/* 4. As perguntas da vida */}
+      <section className="hp-section">
+        <div className="hp-wrap">
+          <p className="hp-eyebrow">As perguntas da vida</p>
+          <h2 className="hp-section-title">Respondidas ao longo da história</h2>
+          <p className="hp-body">
+            Toda pessoa faz perguntas sobre a vida, mesmo sem perceber: o que é real? Quem sou eu? Como sei o que é certo? O que acontece quando morremos? Para onde vai a história? Ao longo do ano, a própria Bíblia responde a essas perguntas, no ponto da história em que cada texto está. O fio continua sendo a história da salvação: as perguntas são respondidas dentro dela, e não fora dela.
+          </p>
+
+          <div className="hp-q-grid">
+            <div className="hp-q-card">
+              <div className="hp-q-label">Para quem procura</div>
+              <p>As perguntas de quem ainda não crê ou começou agora. O que é real? O que é o ser humano? Existe certo e errado?</p>
+            </div>
+            <div className="hp-q-card">
+              <div className="hp-q-label">Para quem pratica a religião</div>
+              <p>As perguntas que os religiosos faziam a Jesus. O que preciso fazer para ser aceito? Quem tem autoridade? A tradição basta?</p>
+            </div>
+            <div className="hp-q-card">
+              <div className="hp-q-label">Para quem segue Jesus</div>
+              <p>As perguntas dos próprios discípulos. Como orar? Como perdoar? Para quem iremos?</p>
+            </div>
+          </div>
+
+          <p className="hp-trail-note">
+            Cada devocional traz duas etiquetas: em que ponto da história da salvação o texto está e qual pergunta ele responde naquele dia. Quem escolhe a pergunta é o próprio texto.
+          </p>
+
+          <blockquote className="hp-blockquote hp-blockquote-sm">
+            <p>&ldquo;Respondeu-lhe Jesus: Eu sou o caminho, e a verdade, e a vida.&rdquo;</p>
+            <cite>João 14:6 — Almeida Revista e Atualizada</cite>
+          </blockquote>
+        </div>
+      </section>
+
+      {/* 5. Três perguntas para o ano */}
       <section className="hp-section">
         <div className="hp-wrap">
           <p className="hp-eyebrow">O que percorre o ano</p>
@@ -91,13 +126,13 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* 5. Como funciona */}
+      {/* 6. Como funciona */}
       <section className="hp-section">
         <div className="hp-wrap">
           <p className="hp-eyebrow">A estrutura diária</p>
           <h2 className="hp-section-title">Como funciona</h2>
           <p className="hp-how-intro">
-            Todo dia há uma página geral, com a leitura, o versículo-chave, o contexto, a verdade central, a ligação com Cristo, uma aplicação e uma oração. A partir dela, você pode seguir para quatro trilhas que aplicam o mesmo texto à sua vida.
+            Todo dia há uma página geral, com a leitura, o versículo-chave, o contexto, a verdade central, a ligação com Cristo, uma aplicação e uma oração. Abaixo do título de cada dia, duas etiquetas mostram em que ponto da história da salvação o texto está e qual pergunta da vida ele responde. A partir da página geral, você pode seguir para quatro trilhas que aplicam o mesmo texto à sua vida.
           </p>
 
           <div className="hp-trail-grid">
@@ -148,7 +183,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* 6. A jornada do ano */}
+      {/* 7. A jornada do ano */}
       <section className="hp-section" id="plano">
         <div className="hp-wrap">
           <p className="hp-eyebrow">O percurso</p>
@@ -159,7 +194,7 @@ export default function HomePage() {
                 <div className="hp-tl-dot" aria-hidden="true" />
                 <div className="hp-tl-body">
                   <div className="hp-tl-period">{period}</div>
-                  <div className="hp-tl-name"><a href="#">{name}</a></div>
+                  <div className="hp-tl-name">{name}</div>
                   <div className="hp-tl-sub">{sub}</div>
                 </div>
               </div>
@@ -168,7 +203,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* 7. Em que cremos */}
+      {/* 8. Em que cremos */}
       <section className="hp-section">
         <div className="hp-wrap">
           <p className="hp-eyebrow">Base e identidade</p>
@@ -180,7 +215,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* 8. Chamada final */}
+      {/* 9. Chamada final */}
       <section className="hp-cta-section" id="comecar">
         <div className="hp-wrap">
           <p className="hp-cta-big">Uma página por dia. Um ano inteiro. Toda a Bíblia apontando para Cristo.</p>
@@ -197,12 +232,14 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* 9. Rodapé */}
+      {/* 10. Rodapé */}
       <footer className="hp-footer">
         <div className="hp-wrap">
           <nav className="hp-foot-nav" aria-label="Links do rodapé">
-            <a href="#">Plano de leitura</a>
+            <a href="#plano">Plano de leitura</a>
             <a href="#">Introduções às seções</a>
+            <a href="#">Perguntas</a>
+            <a href="#">Calendário</a>
             <a href="#">Sobre o projeto</a>
             <a href="#">Contato</a>
           </nav>

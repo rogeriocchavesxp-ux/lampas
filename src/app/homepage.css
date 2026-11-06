@@ -204,6 +204,10 @@
   font-style: normal;
 }
 
+.hp-blockquote-sm {
+  margin-top: 1.5rem;
+}
+
 /* Três perguntas */
 .hp-q-grid {
   display: grid;

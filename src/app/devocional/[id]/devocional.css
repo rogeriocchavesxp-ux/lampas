@@ -1,15 +1,27 @@
 .dv-root {
-  --dv-bg:     #faf9f4;
-  --dv-ink:    #1a1816;
-  --dv-muted:  #6a6460;
-  --dv-accent: #1e3d6b;
-  --dv-border: #dddad0;
+  --dv-bg:          #faf9f4;
+  --dv-surface:     #f2eee3;
+  --dv-ink:         #1a1816;
+  --dv-muted:       #6a6460;
+  --dv-accent:      #1e3d6b;
+  --dv-accent-tint: #e5ecf5;
+  --dv-border:      #dddad0;
+  --dv-familia-bg:  #e3ece3;
+  --dv-familia-bd:  #7aaa7a;
+  --dv-homem-bg:    #e3eaf5;
+  --dv-homem-bd:    #5578aa;
+  --dv-mulher-bg:   #f5e3ec;
+  --dv-mulher-bd:   #aa6688;
+  --dv-coisas-bg:   #f5ede0;
+  --dv-coisas-bd:   #aa9060;
   --dv-ff-d: var(--font-crimson, 'Crimson Pro', Georgia, serif);
   --dv-ff-b: var(--font-source, 'Source Sans 3', var(--font-inter, system-ui), sans-serif);
 
   background: var(--dv-bg);
   color: var(--dv-ink);
   font-family: var(--dv-ff-b);
+  font-size: 18px;
+  line-height: 1.65;
   min-height: 100vh;
   -webkit-font-smoothing: antialiased;
 }
@@ -17,14 +29,25 @@
 @media (prefers-color-scheme: dark) {
   .dv-root {
     color-scheme: dark;
-    --dv-bg:     #161411;
-    --dv-ink:    #ede9e0;
-    --dv-muted:  #8a847a;
-    --dv-accent: #6ea0d5;
-    --dv-border: #2e2b24;
+    --dv-bg:          #161411;
+    --dv-surface:     #1f1d18;
+    --dv-ink:         #ede9e0;
+    --dv-muted:       #8a847a;
+    --dv-accent:      #6ea0d5;
+    --dv-accent-tint: #182233;
+    --dv-border:      #2e2b24;
+    --dv-familia-bg:  #182218;
+    --dv-familia-bd:  #4a7850;
+    --dv-homem-bg:    #182230;
+    --dv-homem-bd:    #3a5888;
+    --dv-mulher-bg:   #281420;
+    --dv-mulher-bd:   #884468;
+    --dv-coisas-bg:   #24180c;
+    --dv-coisas-bd:   #806040;
   }
 }
 
+/* ── Topbar ── */
 .dv-topbar {
   display: flex;
   align-items: center;
@@ -32,6 +55,10 @@
   padding: 0 24px;
   height: 52px;
   border-bottom: 1px solid var(--dv-border);
+  position: sticky;
+  top: 0;
+  background: var(--dv-bg);
+  z-index: 10;
 }
 
 .dv-brand {
@@ -55,7 +82,8 @@
   padding: 5px 14px;
 }
 
-.dv-main { padding: 80px 0 100px; }
+/* ── Layout ── */
+.dv-main { padding: 48px 0 100px; }
 
 .dv-wrap {
   max-width: 680px;
@@ -63,40 +91,288 @@
   padding: 0 20px;
 }
 
+/* ── Navegação entre dias ── */
+.dv-nav-dias {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 2rem;
+  font-size: 0.82rem;
+}
+
+.dv-nav-link {
+  color: var(--dv-accent);
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.dv-nav-next { margin-left: auto; }
+
+.dv-nav-bottom {
+  margin-top: 3rem;
+  justify-content: center;
+}
+
+.dv-nav-prox { text-decoration: none; }
+
+/* ── Metadados ── */
 .dv-eyebrow {
   font-size: 0.72rem;
   font-weight: 600;
-  letter-spacing: 0.12em;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
   color: var(--dv-muted);
-  margin-bottom: 0.6rem;
+  margin-bottom: 0.9rem;
 }
 
-.dv-title {
-  font-family: var(--dv-ff-d);
-  font-size: clamp(1.6rem, 5vw, 2.4rem);
-  font-weight: 400;
-  font-style: italic;
-  line-height: 1.2;
+/* ── Etiquetas ── */
+.dv-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
   margin-bottom: 1.2rem;
 }
 
-.dv-body {
-  font-size: 1.05rem;
-  color: var(--dv-muted);
-  max-width: 55ch;
-  line-height: 1.65;
+.dv-tag {
+  font-size: 0.72rem;
+  padding: 4px 10px;
+  border-radius: 3px;
+  font-weight: 500;
+  line-height: 1.4;
 }
 
-.dv-ctas { margin-top: 2rem; }
-
-.dv-btn {
-  display: inline-block;
-  font-size: 0.88rem;
-  font-weight: 600;
+.dv-tag-historia {
+  background: var(--dv-accent-tint);
   color: var(--dv-accent);
-  text-decoration: none;
-  border: 1.5px solid var(--dv-accent);
+}
+
+.dv-tag-pergunta {
+  background: var(--dv-surface);
+  color: var(--dv-muted);
+  border: 1px solid var(--dv-border);
+}
+
+/* ── Título e leitura ── */
+.dv-title {
+  font-family: var(--dv-ff-d);
+  font-size: clamp(1.5rem, 5vw, 2.2rem);
+  font-weight: 400;
+  font-style: italic;
+  line-height: 1.25;
+  margin-bottom: 0.5rem;
+  text-wrap: balance;
+}
+
+.dv-leitura {
+  font-size: 0.88rem;
+  color: var(--dv-muted);
+  margin-bottom: 1.5rem;
+}
+
+/* ── Versículo-chave ── */
+.dv-versiculo {
+  border-left: 3px solid var(--dv-accent);
+  padding: 1.1rem 1.5rem;
+  margin: 0 0 1.5rem;
+  background: var(--dv-accent-tint);
+  border-radius: 0 5px 5px 0;
+}
+
+.dv-versiculo p {
+  font-family: var(--dv-ff-d);
+  font-size: 1.1rem;
+  font-style: italic;
+  color: var(--dv-ink);
+  margin-bottom: 0.5rem;
+}
+
+.dv-versiculo cite {
+  display: block;
+  font-size: 0.75rem;
+  color: var(--dv-muted);
+  font-style: normal;
+  font-family: var(--dv-ff-b);
+}
+
+/* ── Selo de destaque ── */
+.dv-destaque-selo {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--dv-surface);
+  border: 1px solid var(--dv-border);
+  border-radius: 4px;
+  padding: 6px 12px;
+  font-size: 0.8rem;
+  color: var(--dv-muted);
+  margin-bottom: 2.5rem;
+  font-weight: 500;
+}
+
+.dv-destaque-ico { color: var(--dv-accent); font-size: 0.7rem; }
+
+/* ── Blocos de conteúdo ── */
+.dv-bloco {
+  margin-bottom: 2rem;
+  padding-bottom: 2rem;
+  border-bottom: 1px solid var(--dv-border);
+}
+
+.dv-bloco:last-of-type { border-bottom: none; }
+
+.dv-bloco-titulo {
+  font-family: var(--dv-ff-d);
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--dv-accent);
+  margin-bottom: 0.6rem;
+}
+
+.dv-bloco-destaque {
+  background: var(--dv-surface);
+  border-radius: 5px;
+  padding: 1.4rem 1.5rem;
+  border-bottom: none;
+  margin-bottom: 2rem;
+}
+
+.dv-bloco-destaque .dv-bloco-titulo { margin-bottom: 0.5rem; }
+
+/* ── Lista para hoje ── */
+.dv-lista {
+  padding-left: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.dv-lista li { line-height: 1.6; }
+
+/* ── Pergunta do dia ── */
+.dv-bloco-pergunta {
+  background: var(--dv-surface);
+  border-radius: 5px;
+  padding: 1.2rem 1.5rem;
+  border-bottom: none;
+}
+
+.dv-pergunta-label {
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--dv-accent);
+  margin-bottom: 0.4rem;
+}
+
+.dv-pergunta {
+  font-family: var(--dv-ff-d);
+  font-size: 1.1rem;
+  font-style: italic;
+  color: var(--dv-ink);
+}
+
+/* ── Oração ── */
+.dv-bloco-oracao {
+  background: var(--dv-accent-tint);
+  border-radius: 5px;
+  padding: 1.4rem 1.5rem;
+  border-bottom: none;
+}
+
+.dv-oracao-texto {
+  font-family: var(--dv-ff-d);
+  font-size: 1.05rem;
+  font-style: italic;
+  color: var(--dv-ink);
+}
+
+/* ── Trilhas ── */
+.dv-trilhas {
+  margin-top: 3rem;
+  padding-top: 2rem;
+  border-top: 2px solid var(--dv-border);
+}
+
+.dv-trilhas-titulo {
+  font-family: var(--dv-ff-d);
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--dv-ink);
+  margin-bottom: 1.5rem;
+}
+
+.dv-trilha-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 16px;
+}
+
+.dv-trilha-card {
+  border-radius: 6px;
+  padding: 1.4rem;
+  border-left: 4px solid;
+  position: relative;
+}
+
+.dv-trilha-homem   { background: var(--dv-homem-bg);   border-left-color: var(--dv-homem-bd); }
+.dv-trilha-familia { background: var(--dv-familia-bg); border-left-color: var(--dv-familia-bd); }
+.dv-trilha-mulher  { background: var(--dv-mulher-bg);  border-left-color: var(--dv-mulher-bd); }
+.dv-trilha-coisas  { background: var(--dv-coisas-bg);  border-left-color: var(--dv-coisas-bd); }
+
+.dv-trilha-em-destaque { box-shadow: 0 2px 12px rgba(0,0,0,0.08); }
+
+.dv-trilha-badge {
+  display: inline-block;
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  background: var(--dv-accent);
+  color: #fff;
+  padding: 2px 8px;
   border-radius: 3px;
-  padding: 10px 20px;
+  margin-bottom: 0.6rem;
+}
+
+.dv-trilha-nome {
+  font-family: var(--dv-ff-d);
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: var(--dv-ink);
+  margin-bottom: 0.8rem;
+}
+
+.dv-trilha-secao-label {
+  font-size: 0.65rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--dv-muted);
+  margin-top: 0.8rem;
+  margin-bottom: 0.2rem;
+}
+
+.dv-trilha-card p {
+  font-size: 0.9rem;
+  line-height: 1.6;
+  color: var(--dv-ink);
+}
+
+.dv-trilha-pergunta {
+  font-family: var(--dv-ff-d);
+  font-style: italic;
+  color: var(--dv-ink) !important;
+  margin-top: 1rem;
+  padding-top: 0.8rem;
+  border-top: 1px solid rgba(0,0,0,0.08);
+}
+
+/* ── Mobile ── */
+@media (max-width: 480px) {
+  .dv-topbar { padding: 0 16px; }
+  .dv-main   { padding: 32px 0 72px; }
+  .dv-trilha-grid { grid-template-columns: 1fr; }
+  .dv-nav-dias { flex-wrap: wrap; gap: 8px; }
 }
