@@ -33,7 +33,7 @@ const sourceSans = Source_Sans_3({
 })
 
 export const metadata: Metadata = {
-  title: 'Lampas — Devocional Anual 2027',
+  title: 'Lampas — Devocional Anual',
   description: 'De Gênesis ao Apocalipse em um ano. Devocionais diários enraizados na Escritura.',
 }
 

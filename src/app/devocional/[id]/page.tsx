@@ -43,7 +43,7 @@ export default async function DevocionalPage({ params }: Props) {
             <p className="dv-meta">Dia {String(num).padStart(3, '0')}</p>
             <h1 className="dv-title">Em preparação</h1>
             <p style={{ color: 'var(--dv-muted)', fontSize: '0.95rem' }}>
-              O conteúdo desta devocional estará disponível em 2027.
+              O conteúdo desta devocional estará disponível em breve.
             </p>
             <div style={{ marginTop: '1.5rem' }}>
               <Link href="/" className="dv-nav-link">← Voltar ao início</Link>

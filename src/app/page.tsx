@@ -3,7 +3,7 @@ import Link from 'next/link'
 import './homepage.css'
 
 export const metadata: Metadata = {
-  title: 'Devocional Anual 2027 — De Gênesis a Apocalipse',
+  title: 'Devocional Anual — De Gênesis a Apocalipse',
   description: '312 devocionais em 52 blocos de seis dias, para conhecer o Deus que salva e viver essa salvação em casa, na igreja e no trabalho.',
 }
 
@@ -25,7 +25,7 @@ export default function HomePage() {
       <header className="hp-hero">
         <div className="hp-wrap">
           <p className="hp-eyebrow">Discipulado bíblico para cristãos e famílias</p>
-          <h1 className="hp-hero-title">Devocional Anual 2027</h1>
+          <h1 className="hp-hero-title">Devocional Anual</h1>
           <p className="hp-hero-sub">De Gênesis a Apocalipse, um dia de cada vez</p>
           <p className="hp-hero-support">
             312 devocionais em 52 blocos de seis dias, para conhecer o Deus que salva e viver essa salvação em casa, na igreja e no trabalho.
@@ -48,7 +48,7 @@ export default function HomePage() {
           <p className="hp-eyebrow">O projeto</p>
           <h2 className="hp-section-title">O que é</h2>
           <p className="hp-body">
-            O Devocional Anual 2027 é um programa de discipulado bíblico para cristãos e famílias. Ao longo de 2027, de segunda a sábado, a jornada percorre a Bíblia inteira, de Gênesis a Apocalipse, para que você conheça a grande história que Deus está contando: criação, queda, redenção e consumação.
+            O Devocional Anual é um programa de discipulado bíblico para cristãos e famílias. De segunda a sábado, a jornada percorre a Bíblia inteira, de Gênesis a Apocalipse, para que você conheça a grande história que Deus está contando: criação, queda, redenção e consumação.
           </p>
         </div>
       </section>
@@ -277,7 +277,7 @@ export default function HomePage() {
             <a href="#">Sobre o projeto</a>
             <a href="#">Contato</a>
           </nav>
-          <p className="hp-foot-copy">© 2027 Devocional Anual — Citações bíblicas conforme a Almeida Revista e Atualizada</p>
+          <p className="hp-foot-copy">© Devocional Anual — Citações bíblicas conforme a Almeida Revista e Atualizada</p>
         </div>
       </footer>
 

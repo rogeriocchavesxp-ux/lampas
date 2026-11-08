@@ -4,7 +4,7 @@ import { blocos, SECAO_LABEL, SECAO_ORDER, type Bloco } from '@/data/blocos'
 import './dias.css'
 
 export const metadata: Metadata = {
-  title: 'Todos os dias — Devocional Anual 2027',
+  title: 'Todos os dias — Devocional Anual',
   description: '312 devocionais em 52 blocos de seis dias, de Gênesis a Apocalipse.',
 }
 
