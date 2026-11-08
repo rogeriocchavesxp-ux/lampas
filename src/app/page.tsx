@@ -62,7 +62,10 @@ export default function HomePage() {
             A Bíblia é o livro mais lido e traduzido da história — e também um dos mais mal interpretados. Dois erros são recorrentes. O primeiro lê o texto de forma mística e alegórica, como se ele fosse um repositório de sinais ocultos ou palavras de consolo para o momento. O segundo o lê com os óculos da modernidade: uma razão que estranha a violência, o sofrimento e os costumes do mundo antigo, e rejeita o que não se encaixa nos valores de hoje.
           </p>
           <p className="hp-body">
-            A Bíblia não é nenhum dos dois. Ela é a Palavra de Deus expressa em linguagem humana — com autoria divino-humana, escrita em contextos históricos precisos, com gêneros literários definidos e com uma lógica interna que atravessa os dois Testamentos. Portanto, não basta saber ler: é preciso saber interpretar. Ler o texto dentro do seu contexto histórico e literário é o único caminho para compreender o que Deus quis comunicar aos seres humanos.
+            Há um terceiro equívoco, mais recente: o da desconstrução pós-moderna das metanarrativas. Stanley Grenz, em <em>Pós-Modernismo</em>, descreve como o pensamento contemporâneo herdou de Jean-François Lyotard a &ldquo;incredulidade em relação às metanarrativas&rdquo; — a suspeita de que qualquer história que pretende explicar a realidade inteira é, no fundo, uma estrutura de poder disfarçada de verdade universal. A Bíblia, porém, é exatamente uma metanarrativa: ela conta a história da criação, da queda, da redenção e da consumação de todas as coisas. Lê-la como uma coleção de textos independentes, sem fio condutor, é perder o que ela própria reivindica ser.
+          </p>
+          <p className="hp-body">
+            A Bíblia não é nenhum dos três. Ela é a Palavra de Deus expressa em linguagem humana — com autoria divino-humana, escrita em contextos históricos precisos, com gêneros literários definidos e com uma lógica interna que atravessa os dois Testamentos. Portanto, não basta saber ler: é preciso saber interpretar. Ler o texto dentro do seu contexto histórico e literário é o único caminho para compreender o que Deus quis comunicar aos seres humanos.
           </p>
         </div>
       </section>
