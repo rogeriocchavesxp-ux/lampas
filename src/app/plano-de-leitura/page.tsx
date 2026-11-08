@@ -4,7 +4,7 @@ import { semanas, BLOCOS, type Semana } from '@/data/semanas'
 import './plano.css'
 
 export const metadata: Metadata = {
-  title: 'Plano de Leitura — Devocional Anual',
+  title: 'Plano de Leitura — A Grande História',
   description: 'De Gênesis a Apocalipse em 51 semanas: todas as passagens, as verdades centrais e o fio pactual que liga cada semana ao seguinte.',
 }
 
@@ -32,7 +32,7 @@ export default function PlanoPage() {
         <div className="pl-wrap">
 
           <div className="pl-hero">
-            <p className="pl-eyebrow">Devocional Anual</p>
+            <p className="pl-eyebrow">A Grande História</p>
             <h1 className="pl-title">Plano de leitura</h1>
             <p className="pl-subtitle">
               51 semanas, de segunda a sábado, de Gênesis a Apocalipse. O fio que liga cada semana é a aliança: Deus que promete, cumpre e habita com o seu povo em Cristo.
@@ -77,7 +77,7 @@ export default function PlanoPage() {
 
       <footer className="pl-footer">
         <div className="pl-wrap">
-          <p className="pl-foot-copy">© Devocional Anual — Revisão Pactual baseada em <em>O Cristo dos Pactos</em>, de O. Palmer Robertson</p>
+          <p className="pl-foot-copy">© A Grande História — Revisão Pactual baseada em <em>O Cristo dos Pactos</em>, de O. Palmer Robertson</p>
         </div>
       </footer>
     </div>
